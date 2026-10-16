@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>レアアース・クラフト - 地下採掘トレンチ・ラン</title>
+  <style>
+    body { background-color: #1a1a2e; color: #fff; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+    .phone { width: 360px; height: 740px; background: #0f3460; border: 4px solid #16213e; border-radius: 24px; display: flex; flex-direction: column; overflow: hidden; position: relative; box-sizing: border-box; }
+    
+    /* ヘッダー */
+    .header { background: #16213e; padding: 8px 10px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: bold; border-bottom: 2px solid #00fff5; flex-shrink: 0; }
+    
+    /* BGMトグルボタン */
+    .bgm-btn {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid #00fff5;
+      color: #00fff5;
+      border-radius: 12px;
+      padding: 2px 8px;
+      font-size: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      transition: all 0.2s;
+    }
+    .bgm-btn.muted {
+      border-color: #e94560;
+      color: #e94560;
+      background: rgba(233, 69, 96, 0.2);
+    }
+
+    .content { flex: 1; padding: 10px; display: flex; flex-direction: column; gap: 8px; position: relative; overflow: hidden; box-sizing: border-box; }
+    
+    /* ステータスパネル */
+    .status-panel {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(22,33,62,0.8);
+      border: 1px solid #00fff5;
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-size: 11px;
+    }
+
+    /* ゲームエリア（縦スクロール・3レーン） */
+    .game-area {
+      flex: 1;
+      background: rgba(15,23,42,0.9);
+      border: 2px solid #00fff5;
+      border-radius: 12px;
+      position: relative;
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+
+    /* レーンのガイドライン */
+    .lane-line {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 1px;
+      background: rgba(0, 255, 245, 0.15);
+    }
+    .lane-1 { left: 33.33%; }
+    .lane-2 { left: 66.66%; }
+
+    /* 自機（ドリルマシン） */
+    .player-drill {
+      position: absolute;
+      bottom: 20px;
+      width: 44px;
+      height: 44px;
+      background: #16213e;
+      border: 2px solid #ffde59;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      transform: translateX(-50%);
+      transition: left 0.08s ease-out;
+      box-shadow: 0 0 10px rgba(255, 222, 89, 0.5);
+      z-index: 10;
+    }
+
+    /* 落ちてくるアイテム（極端に小さく＆アイコン拡大） */
+    .falling-object {
+      position: absolute;
+      width: 26px;
+      height: 26px;
+      background: #16213e;
+      border: 1.5px solid #00fff5;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transform: translateX(-50%);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+      z-index: 5;
+    }
+    .falling-object.danger { border-color: #ff4757; }
+    .falling-object.gold { border-color: #ffde59; animation: blinkSlow 1s infinite alternate; }
+    .falling-object.meteor { border-color: #a855f7; box-shadow: 0 0 10px #a855f7; }
+
+    @keyframes blinkSlow {
+      0% { opacity: 0.3; transform: translateX(-50%) scale(0.9); }
+      100% { opacity: 1; transform: translateX(-50%) scale(1.1); }
+    }
+
+    .obj-icon { font-size: 16px; }
+
+    /* キャッチ対象外エリアに大きく表示する名称テキスト */
+    .obj-name-label {
+      position: absolute;
+      transform: translateX(-50%);
+      font-size: 9px;
+      font-weight: bold;
+      color: #fff;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.9);
+      white-space: nowrap;
+      z-index: 6;
+      pointer-events: none;
+    }
+
+    /* 下部の左右移動コントロールボタン */
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+    .control-btn {
+      background: #16213e;
+      border: 2px solid #00fff5;
+      color: #fff;
+      padding: 12px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: bold;
+      cursor: pointer;
+      text-align: center;
+      transition: background 0.1s;
+    }
+    .control-btn:active { background: #00fff5; color: #0f3460; }
+
+    .btn-back { background: #e94560; color: #fff; border: none; padding: 8px; font-weight: bold; border-radius: 8px; cursor: pointer; width: 100%; font-size: 11px; margin-top: 4px; }
+
+    /* --- モーダル共通 --- */
+    .modal-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(10, 15, 30, 0.9);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 100;
+      backdrop-filter: blur(2px);
+      box-sizing: border-box;
+      padding: 16px;
+    }
+
+    .modal-content {
+      background: #16213e;
+      border: 2px solid #00fff5;
+      border-radius: 16px;
+      padding: 16px;
+      width: 100%;
+      max-width: 270px;
+      text-align: center;
+      box-shadow: 0 0 20px rgba(0, 255, 245, 0.3);
+      animation: popup 0.3s ease-out;
+      box-sizing: border-box;
+    }
+
+    @keyframes popup {
+      0% { transform: scale(0.8); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .result-breakdown {
+      background: rgba(15,23,42,0.8);
+      border: 1px solid #00fff5;
+      border-radius: 8px;
+      padding: 8px;
+      margin: 8px 0;
+      font-size: 11px;
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .result-row {
+      display: flex;
+      justify-content: space-between;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- BGMおよび効果音 -->
+  <audio id="bgm" src="BGM_siwake.ogg" loop preload="auto"></audio>
+  <audio id="seType" src="type.mp3" preload="auto"></audio>
+  <audio id="seSeikai" src="mini_seikai.mp3" preload="auto"></audio>
+  <audio id="seFuseikai" src="mini_fuseikai.mp3" preload="auto"></audio>
+  <audio id="seCountdown" src="mini_cowntdown.mp3" preload="auto"></audio>
+
+  <div class="phone">
+    <div class="header">
+      <span>⛏️ 地下採掘トレンチ・ラン</span>
+      <span>⏱️ 残り: <span id="time">30</span>秒</span>
+      <button id="bgm-btn" class="bgm-btn" onclick="toggleBGM()">🎵 ON</button>
+    </div>
+    
+    <div class="content">
+      <div class="status-panel">
+        <span>原石回収: <span id="score">0</span>個 (金: <span id="goldScore">0</span>個)</span>
+        <span>被弾: <span id="penalty">0</span>回</span>
+      </div>
+
+      <!-- ゲームエリア -->
+      <div class="game-area" id="gameArea">
+        <div class="lane-line lane-1"></div>
+        <div class="lane-line lane-2"></div>
+        <!-- 自機ドリルマシン -->
+        <div class="player-drill" id="playerDrill">🛞</div>
+      </div>
+
+      <!-- 左右移動コントロールボタン -->
+      <div class="controls">
+        <button class="control-btn" onclick="movePlayer(-1)">◀️ 左へ移動</button>
+        <button class="control-btn" onclick="movePlayer(1)">右へ移動 ▶️</button>
+      </div>
+
+      <button class="btn-back" onclick="location.href='map.html'">🗺️ マップに戻る</button>
+    </div>
+
+    <!-- スタート説明画面モーダル -->
+    <div id="startModal" class="modal-overlay">
+      <div class="modal-content">
+        <div style="font-size: 28px;">⛏️</div>
+        <div style="font-size: 15px; font-weight: bold; color: #00fff5; margin: 6px 0;">地下採掘トレンチ・ラン (Hard)</div>
+        <div style="font-size: 11px; color: #dcdde1; text-align: left; line-height: 1.4; margin-bottom: 12px; background: rgba(15,23,42,0.8); padding: 8px; border-radius: 6px;">
+          スピードアップしたハードモード！極小サイズの<b>原石やゴールド（金）</b>をキャッチせよ。<br>
+          ✨たまに出現する点滅する<b>金</b>は高得点！<br>
+          ⚡超高速の<b>落盤・隕石</b>には要注意！
+        </div>
+        <button class="btn-back" style="background: #00fff5; color: #0f3460; font-size: 12px; padding: 10px;" onclick="startDrillGame()">
+          🚀 採掘スタート！
+        </button>
+      </div>
+    </div>
+
+    <!-- 結果用ポップアップモーダル -->
+    <div id="resultModal" class="modal-overlay" style="display: none;">
+      <div class="modal-content">
+        <div style="font-size: 28px;">🎉</div>
+        <div style="font-size: 15px; font-weight: bold; color: #00fff5; margin: 4px 0;">採掘＆売却完了！</div>
+        
+        <div class="result-breakdown">
+          <div class="result-row">
+            <span>💎 原石回収数:</span>
+            <span style="color:#00fff5;"><span id="finalScore">0</span>個 (+<span id="earnScore">0</span>G)</span>
+          </div>
+          <div class="result-row">
+            <span>✨ ゴールド獲得:</span>
+            <span style="color:#ffde59;"><span id="finalGold">0</span>個 (+<span id="earnGold">0</span>G)</span>
+          </div>
+          <div class="result-row">
+            <span>⚡ ペナルティ:</span>
+            <span style="color:#ff4757;"><span id="finalPenalty">0</span>回 (-<span id="earnPenalty">0</span>G)</span>
+          </div>
+          <div style="border-top: 1px dashed #00fff5; margin-top: 2px; padding-top: 4px; font-weight: bold; display: flex; justify-content: space-between;">
+            <span>💰 最終売却益:</span>
+            <span style="color:#55ff55;" id="totalMoney">+0 G</span>
+          </div>
+        </div>
+
+        <button class="btn-back" style="background: #00fff5; color: #0f3460; font-size: 12px; padding: 10px;" onclick="saveAndReturn()">
+          💰 資金を受け取ってマップへ
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const bgm = document.getElementById('bgm');
+    const bgmBtn = document.getElementById('bgm-btn');
+    bgm.volume = 0.3;
+
+    let isMuted = localStorage.getItem('bgmMuted') === 'true';
+
+    function updateBgmUI() {
+      if (isMuted) {
+        bgm.muted = true;
+        bgmBtn.innerText = '🔇 OFF';
+        bgmBtn.classList.add('muted');
+      } else {
+        bgm.muted = false;
+        bgmBtn.innerText = '🎵 ON';
+        bgmBtn.classList.remove('muted');
+      }
+    }
+
+    function toggleBGM() {
+      isMuted = !isMuted;
+      localStorage.setItem('bgmMuted', isMuted);
+      updateBgmUI();
+      if (!isMuted) {
+        bgm.play().catch(e => {});
+      } else {
+        bgm.pause();
+      }
+    }
+
+    function tryPlayBgm() {
+      updateBgmUI();
+      if (!isMuted && bgm.paused) {
+        bgm.play().then(() => {
+          document.removeEventListener('click', tryPlayBgm);
+          document.removeEventListener('touchstart', tryPlayBgm);
+        }).catch(err => {});
+      }
+    }
+
+    document.addEventListener('click', tryPlayBgm);
+    document.addEventListener('touchstart', tryPlayBgm);
+
+    let currentLane = 1;
+    const lanePositions = ['16.6%', '50%', '83.3%'];
+    
+    let score = 0;
+    let goldScore = 0;
+    let penalty = 0;
+    let timeLeft = 30;
+    let activeObjects = [];
+    let gameInterval, spawnerInterval, timerInterval;
+
+    const objectList = [
+      { type: 'gem', icon: '💎', name: 'レアアース原石', speed: 5 },
+      { type: 'gem', icon: '✨', name: '高純度鉱石', speed: 5 },
+      { type: 'gold', icon: '💰', name: '金（ゴールド）', speed: 3.5 }, // 珍しく、点滅してゆっくり
+      { type: 'danger', icon: '🪨', name: '落盤の岩', speed: 6 },
+      { type: 'danger', icon: '☄️', name: '超高速隕石', speed: 9.5 } // 超高速で追い越してくる
+    ];
+
+    window.onload = function() {
+      updateBgmUI();
+      tryPlayBgm();
+      updatePlayerPosition();
+    };
+
+    function startDrillGame() {
+      tryPlayBgm();
+      document.getElementById('seType').play().catch(e => {});
+      document.getElementById('startModal').style.display = 'none';
+      
+      score = 0;
+      goldScore = 0;
+      penalty = 0;
+      timeLeft = 30;
+      currentLane = 1;
+      updatePlayerPosition();
+
+      document.getElementById('score').innerText = score;
+      document.getElementById('goldScore').innerText = goldScore;
+      document.getElementById('penalty').innerText = penalty;
+      document.getElementById('time').innerText = timeLeft;
+
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        document.getElementById('time').innerText = timeLeft;
+
+        if (timeLeft === 3) {
+          document.getElementById('seCountdown').play().catch(e => {});
+        }
+
+        if (timeLeft <= 0) {
+          endGame();
+        }
+      }, 1000);
+
+      spawnerInterval = setInterval(spawnObject, 850);
+      gameInterval = setInterval(updateGameLoop, 30);
+    }
+
+    function movePlayer(direction) {
+      document.getElementById('seType').currentTime = 0;
+      document.getElementById('seType').play().catch(e => {});
+
+      currentLane += direction;
+      if (currentLane < 0) currentLane = 0;
+      if (currentLane > 2) currentLane = 2;
+
+      updatePlayerPosition();
+    }
+
+    function updatePlayerPosition() {
+      const drill = document.getElementById('playerDrill');
+      drill.style.left = lanePositions[currentLane];
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') movePlayer(-1);
+      if (e.key === 'ArrowRight') movePlayer(1);
+    });
+
+    function spawnObject() {
+      const gameArea = document.getElementById('gameArea');
+      
+      // 確率の重み付け（金や隕石はレアに出現）
+      let rand = Math.random();
+      let chosenObj;
+      if (rand < 0.08) {
+        chosenObj = objectList[3]; // 金（ゴールド）
+      } else if (rand < 0.20) {
+        chosenObj = objectList[4]; // 超高速隕石
+      } else {
+        chosenObj = objectList[Math.floor(Math.random() * 3)]; // 原石など
+      }
+
+      const lane = Math.floor(Math.random() * 3);
+
+      const objEl = document.createElement('div');
+      let classStr = 'falling-object';
+      if (chosenObj.type === 'danger') classStr += ' danger';
+      if (chosenObj.type === 'gold') classStr += ' gold';
+      if (chosenObj.name === '超高速隕石') classStr += ' meteor';
+      objEl.className = classStr;
+      objEl.style.left = lanePositions[lane];
+      objEl.style.top = '-20px';
+      objEl.innerHTML = `<span class="obj-icon">${chosenObj.icon}</span>`;
+
+      // 文字部分はキャッチ対象外エリア（オブジェクトの上下）に大きく視認性高く配置
+      const nameEl = document.createElement('div');
+      nameEl.className = 'obj-name-label';
+      nameEl.style.left = lanePositions[lane];
+      nameEl.style.top = '-36px';
+      nameEl.innerText = chosenObj.name;
+
+      gameArea.appendChild(objEl);
+      gameArea.appendChild(nameEl);
+
+      activeObjects.push({
+        element: objEl,
+        nameElement: nameEl,
+        type: chosenObj.type,
+        lane: lane,
+        y: -20,
+        speed: chosenObj.speed
+      });
+    }
+
+    function updateGameLoop() {
+      for (let i = activeObjects.length - 1; i >= 0; i--) {
+        let obj = activeObjects[i];
+        obj.y += obj.speed; // 個別のスピードで落下
+        obj.element.style.top = obj.y + 'px';
+        obj.nameElement.style.top = (obj.y - 16) + 'px';
+
+        // 当たり判定
+        if (obj.y >= 390 && obj.y <= 440) {
+          if (obj.lane === currentLane) {
+            if (obj.type === 'gem') {
+              document.getElementById('seSeikai').currentTime = 0;
+              document.getElementById('seSeikai').play().catch(e => {});
+              score++;
+              document.getElementById('score').innerText = score;
+            } else if (obj.type === 'gold') {
+              document.getElementById('seSeikai').currentTime = 0;
+              document.getElementById('seSeikai').play().catch(e => {});
+              goldScore++;
+              document.getElementById('goldScore').innerText = goldScore;
+            } else {
+              document.getElementById('seFuseikai').currentTime = 0;
+              document.getElementById('seFuseikai').play().catch(e => {});
+              penalty++;
+              score = Math.max(0, score - 1);
+              document.getElementById('penalty').innerText = penalty;
+              document.getElementById('score').innerText = score;
+            }
+            obj.element.remove();
+            obj.nameElement.remove();
+            activeObjects.splice(i, 1);
+            continue;
+          }
+        }
+
+        // 画面外に消えたとき
+        if (obj.y > 480) {
+          obj.element.remove();
+          obj.nameElement.remove();
+          activeObjects.splice(i, 1);
+        }
+      }
+    }
+
+    function endGame() {
+      clearInterval(timerInterval);
+      clearInterval(spawnerInterval);
+      clearInterval(gameInterval);
+
+      const priceGem = 80;
+      const priceGold = 300;
+      const penaltyCost = 50;
+
+      const earnScore = score * priceGem;
+      const earnGold = goldScore * priceGold;
+      const totalPenalty = penalty * penaltyCost;
+      const totalEarn = Math.max(0, (earnScore + earnGold) - totalPenalty);
+
+      document.getElementById('finalScore').innerText = score;
+      document.getElementById('earnScore').innerText = earnScore;
+      document.getElementById('finalGold').innerText = goldScore;
+      document.getElementById('earnGold').innerText = earnGold;
+      document.getElementById('finalPenalty').innerText = penalty;
+      document.getElementById('earnPenalty').innerText = totalPenalty;
+      document.getElementById('totalMoney').innerText = `+${totalEarn.toLocaleString()} G`;
+
+      window.earnedMoney = totalEarn;
+      document.getElementById('resultModal').style.display = 'flex';
+    }
+
+    function saveAndReturn() {
+      let gameState = JSON.parse(localStorage.getItem('rareEarthGameState')) || { money: 1500, level: 1, mudStock: 5 };
+      gameState.money += (window.earnedMoney || 0);
+      localStorage.setItem('rareEarthGameState', JSON.stringify(gameState));
+      location.href = 'map.html';
+    }
+  </script>
+</body>
+</html>

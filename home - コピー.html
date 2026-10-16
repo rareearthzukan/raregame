@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>レアアース・クラフト - マイホーム（ナチュラルルーム＆ガーデン）</title>
+  <style>
+    /* ─── スクロールバーのカスタマイズ ─── */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--scrollbar-track, rgba(240, 244, 248, 0.8)); border-radius: 10px; }
+    ::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb, linear-gradient(180deg, #38bdf8, #818cf8)); border-radius: 10px; }
+
+    body { background-color: var(--body-bg, #f8fafc); color: var(--text-color, #1e293b); font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+    
+    .phone { 
+      width: 360px; height: 860px; background: var(--phone-bg, #ffffff); 
+      border: 4px solid var(--phone-border, #cbd5e1); border-radius: 24px; 
+      display: flex; flex-direction: column; overflow: hidden; position: relative; box-sizing: border-box; box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
+      transition: background 0.3s, border-color 0.3s;
+    }
+    
+    .header { background: var(--header-bg, #f1f5f9); padding: 8px 10px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: bold; border-bottom: 2px solid var(--border-color, #e2e8f0); color: var(--header-text, #334155); flex-shrink: 0; }
+    
+    .bgm-btn {
+      background: var(--btn-bg, #ffffff); border: 1px solid var(--border-color, #cbd5e1);
+      color: var(--text-color, #475569); border-radius: 12px; padding: 2px 8px; font-size: 11px;
+      cursor: pointer; display: flex; align-items: center; gap: 3px; transition: all 0.2s;
+    }
+    .bgm-btn.muted { border-color: #f43f5e; color: #f43f5e; background: #ffe4e6; }
+
+    .koutei-bar {
+      background: var(--header-bg, #f8fafc); border-bottom: 1px solid var(--border-color, #e2e8f0);
+      padding: 6px 10px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
+    }
+    .home-status-badge {
+      background: var(--badge-bg, #eff6ff); border: 1px solid var(--badge-border, #bfdbfe);
+      border-radius: 8px; padding: 4px 8px; font-size: 10px; color: var(--badge-text, #2563eb); font-weight: bold;
+    }
+
+    .content { flex: 1; background: var(--content-bg, linear-gradient(180deg, #f0f9ff 0%, #f8fafc 100%)); padding: 6px 10px; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; box-sizing: border-box; }
+    
+    .card { background: var(--card-bg, #ffffff); border: 1px solid var(--border-color, #e2e8f0); border-radius: 12px; padding: 8px 10px; font-size: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+
+    /* 🏠 広々とした2D室内＆ガーデンステージ（高さ340px） */
+    .room-stage {
+      width: 100%; height: 340px;
+      border: 2.5px solid var(--stage-border, #fcd34d); border-radius: 12px;
+      position: relative; overflow: hidden; box-shadow: inset 0 4px 12px rgba(0,0,0,0.06); box-sizing: border-box;
+      display: flex; flex-direction: column; flex-shrink: 0;
+    }
+    
+    /* 室内壁エリア (70%) */
+    .room-wall-area {
+      height: 70%;
+      width: 100%;
+      background: var(--wall-bg, linear-gradient(180deg, #fef3c7 0%, #fffbeb 100%));
+      position: relative;
+    }
+    
+    /* 床境界線モール */
+    .room-border-line {
+      height: 4px;
+      width: 100%;
+      background: var(--border-line-bg, #d97706);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+      z-index: 2;
+    }
+
+    /* 室内床エリア (30%) */
+    .room-floor-area {
+      height: 30%;
+      width: 100%;
+      background: var(--floor-bg, linear-gradient(180deg, #f59e0b 0%, #d97706 100%));
+      position: relative;
+    }
+
+    /* 🌿 お庭（屋外）背景レイヤー */
+    .garden-stage-bg {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background: linear-gradient(180deg, #38bdf8 0%, #bae6fd 60%, #4ade80 60%, #16a34a 100%);
+      z-index: 1; display: none;
+    }
+
+    /* 方角＆お庭 切り替えコントロールバー */
+    .room-view-controls {
+      position: absolute; top: 6px; left: 4px; right: 4px; z-index: 10;
+      display: flex; justify-content: space-between; align-items: center;
+      background: var(--controls-bg, rgba(255,255,255,0.92)); padding: 4px 6px;
+      border-radius: 8px; border: 1px solid var(--border-color, #e2e8f0); box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .dir-btn {
+      background: var(--btn-bg, #f1f5f9); border: 1px solid var(--border-color, #cbd5e1);
+      color: var(--text-color, #475569); padding: 2px 5px; border-radius: 6px; font-size: 8.5px; font-weight: bold; cursor: pointer;
+    }
+    .dir-btn.active { background: var(--active-bg, #3b82f6); color: #ffffff; border-color: var(--active-bg, #3b82f6); }
+    .dir-btn.garden-btn { border-color: #16a34a; color: #15803d; }
+    .dir-btn.garden-btn.active { background: #16a34a; color: #ffffff; border-color: #16a34a; }
+
+    .placed-object {
+      position: absolute; cursor: grab; text-align: center; z-index: 5; user-select: none; transition: transform 0.1s;
+    }
+    .placed-object:active { cursor: grabbing; transform: scale(1.05); }
+    .placed-object img {
+      width: 65px; height: 65px; object-fit: contain; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2)); display: block; margin: 0 auto;
+    }
+
+    #gameToast {
+      position: absolute; bottom: 70px; left: 50%; transform: translateX(-50%) translateY(20px);
+      background: #1e293b; color: #ffffff; padding: 8px 16px; border-radius: 20px;
+      font-size: 11px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+      z-index: 9999; opacity: 0; pointer-events: none; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); white-space: nowrap;
+    }
+    #gameToast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    .modal-overlay {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(15, 23, 42, 0.6); display: flex; justify-content: center; align-items: center;
+      z-index: 10000; backdrop-filter: blur(2px); box-sizing: border-box; padding: 16px;
+    }
+    .modal-box {
+      background: #ffffff; border: 2px solid #cbd5e1; border-radius: 16px; padding: 16px;
+      width: 270px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.15); animation: popIn 0.2s ease-out; max-height: 80vh; overflow-y: auto;
+    }
+    @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+    .tab-row { display: flex; gap: 2px; margin-bottom: 6px; }
+    .tab-btn {
+      flex: 1; background: var(--btn-bg, #f1f5f9); border: 1px solid var(--border-color, #cbd5e1); color: var(--text-color, #64748b);
+      padding: 6px 1px; font-size: 9px; font-weight: bold; border-radius: 6px; cursor: pointer; text-align: center;
+    }
+    .tab-btn.active { background: var(--active-bg, #3b82f6); color: #ffffff; border-color: var(--active-bg, #3b82f6); box-shadow: 0 2px 6px rgba(59,130,246,0.3); }
+
+    /* メニューリスト */
+    .shop-list { 
+      display: flex; flex-direction: column; gap: 6px; 
+      min-height: 200px; max-height: 320px; 
+      overflow-y: auto; padding-right: 2px; 
+    }
+    .shop-item {
+      background: var(--item-bg, #f8fafc); color: var(--text-color, #1e293b); border-radius: 8px; padding: 8px 10px;
+      display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border-color, #e2e8f0);
+    }
+    .shop-item.owned { background-color: var(--item-owned-bg, #f1f5f9); opacity: 0.85; }
+    .shop-info { flex: 1; text-align: left; }
+    .shop-name { font-weight: bold; font-size: 11px; color: var(--text-color, #334155); }
+    .shop-cost { font-size: 9px; color: #64748b; margin-top: 1px; }
+
+    /* イットリウムのキャラ吹き出しナビ */
+    .chara-guide-box {
+      display: flex; align-items: flex-start; gap: 8px; background: #eff6ff; border: 1.5px solid #3b82f6; border-radius: 12px; padding: 6px 8px; margin-bottom: 6px;
+    }
+    .chara-avatar-circle {
+      width: 42px; height: 42px; border-radius: 50%; background: #ffffff; border: 2px solid #ffde59; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden;
+    }
+    .chara-avatar-circle img { width: 38px; height: 38px; object-fit: contain; }
+    .chara-balloon {
+      position: relative; background: #ffffff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 6px 8px; font-size: 9.5px; color: #1e3a8a; line-height: 1.35; flex: 1;
+    }
+    .chara-balloon::before {
+      content: ''; position: absolute; left: -6px; top: 10px; border-width: 5px 6px 5px 0; border-style: solid; border-color: transparent #ffffff transparent transparent;
+    }
+
+    .btn {
+      background-color: var(--active-bg, #3b82f6); color: #ffffff; border: none; padding: 6px 12px;
+      font-size: 10px; font-weight: bold; border-radius: 8px; cursor: pointer;
+    }
+    .btn:active { transform: scale(0.95); }
+    .btn.owned-btn { background-color: #10b981; cursor: default; }
+
+    .nav { height: 56px; background: var(--header-bg, #f1f5f9); display: flex; justify-content: space-around; align-items: center; padding: 0 8px; flex-shrink: 0; border-top: 2px solid var(--border-color, #e2e8f0); box-sizing: border-box; }
+    .nav-item { color: #64748b; cursor: pointer; text-align: center; background: var(--btn-bg, #ffffff); border: 1px solid var(--border-color, #cbd5e1); border-radius: 10px; padding: 4px 8px; font-size: 10px; font-weight: bold; flex: 1; margin: 0 3px; }
+    .nav-item.active { color: #2563eb; background: #eff6ff; border-color: #3b82f6; box-shadow: 0 2px 6px rgba(59,130,246,0.2); }
+  </style>
+</head>
+<body id="bodyRoot">
+
+  <audio id="bgm" src="BGM_room.ogg" loop preload="auto"></audio>
+  <audio id="se-unlock" src="itemget.mp3" preload="auto"></audio>
+  <audio id="se-gogogo" src="gogogo.mp3" preload="auto"></audio>
+
+  <div class="phone" id="phoneFrame">
+    <div id="gameToast">メッセージ</div>
+
+    <div id="customModal" class="modal-overlay" style="display: none;">
+      <div class="modal-box">
+        <div style="font-size: 13px; font-weight: bold; color: #1e293b; margin-bottom: 8px;" id="modalTitle">確認</div>
+        <div style="font-size: 11px; color: #64748b; margin-bottom: 14px; line-height: 1.4;" id="modalDesc">内容</div>
+        <div style="display: flex; gap: 8px;" id="modalButtons">
+          <button class="btn" style="background: #cbd5e1; color: #475569; flex: 1;" onclick="closeModal()">キャンセル</button>
+          <button class="btn" style="background: #ef4444; color: #ffffff; flex: 1;" id="modalOkBtn">OK</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="header">
+      <span>✈️ <span id="miles">0</span> マイル</span>
+      <span>🌟 Lv.<span id="level">1</span></span>
+      <button id="bgm-btn" class="bgm-btn" onclick="toggleBGM()">🎵 ON</button>
+    </div>
+
+    <div class="koutei-bar">
+      <div class="home-status-badge">🏠 居心地 Lv.<span id="roomLevel">1</span></div>
+      <div class="home-status-badge">✨ 精製ボーナス：+<span id="bonus">0</span>%</div>
+    </div>
+
+    <div class="content">
+      
+      <!-- 🏠 広々室内＆お庭ステージ -->
+      <div class="card" style="padding: 0; overflow: hidden; border: none; flex-shrink: 0;">
+        <div class="room-stage" id="roomStage">
+          
+          <!-- 壁面＆お庭切り替えコントロールバー -->
+          <div class="room-view-controls">
+            <span style="font-size: 9.5px; font-weight: bold;" id="dirTitle">北の壁 (リビング)</span>
+            <div style="display: flex; gap: 2px;">
+              <button class="dir-btn active" id="dir0" onclick="changeDirection(0)">北</button>
+              <button class="dir-btn" id="dir1" onclick="changeDirection(1)">東</button>
+              <button class="dir-btn" id="dir2" onclick="changeDirection(2)">南</button>
+              <button class="dir-btn" id="dir3" onclick="changeDirection(3)">西</button>
+              <button class="dir-btn garden-btn" id="dir4" onclick="changeDirection(4)">🌿 庭</button>
+            </div>
+          </div>
+
+          <!-- 室内用レイヤー (壁70% / 床30%) -->
+          <div id="indoorLayer" style="width:100%; height:100%; display:flex; flex-direction:column;">
+            <div class="room-wall-area" id="wallArea"></div>
+            <div class="room-border-line" id="borderLine"></div>
+            <div class="room-floor-area" id="floorArea"></div>
+          </div>
+
+          <!-- 屋外お庭レイヤー -->
+          <div class="garden-stage-bg" id="gardenLayer"></div>
+
+          <!-- オブジェクト配置コンテナ -->
+          <div id="roomObjectsContainer" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5;"></div>
+        </div>
+      </div>
+
+      <!-- メニューエリア -->
+      <div class="card" style="flex: 1; display: flex; flex-direction: column;">
+        <div class="tab-row">
+          <button class="tab-btn active" id="shopTab" onclick="switchTab('shop')">🛒ショップ</button>
+          <button class="tab-btn" id="displayTab" onclick="switchTab('display')">📦配置</button>
+          <button class="tab-btn" id="themeTab" onclick="switchTab('theme')">🎨テイスト</button>
+          <button class="tab-btn" id="musicTab" onclick="switchTab('music')">🎵音楽</button>
+          <button class="tab-btn" id="saveTab" onclick="switchTab('save')">💾セーブ</button>
+        </div>
+
+        <div class="shop-list" id="shopList"></div>
+        <div class="shop-list" id="displayList" style="display: none;"></div>
+        <div class="shop-list" id="themeList" style="display: none;"></div>
+        <div class="shop-list" id="musicList" style="display: none;"></div>
+        
+        <!-- 💾 セーブパネル -->
+        <div class="shop-list" id="saveList" style="display: none; flex-direction: column; gap: 6px;">
+          <div class="chara-guide-box">
+            <div class="chara-avatar-circle">
+              <img src="chara0_Y.png" alt="イットリウム" onerror="this.src='chara0_Y.png'">
+            </div>
+            <div class="chara-balloon">
+              <b>【イットリウムからのアドバイス】</b><br>
+              普段は<b>自動で保存</b>されているからそのまま遊んでOK！<br>
+              別のスマホやパソコンで遊ぶときや、万が一のときだけ<b>「コードコピー」</b>を押してメモ帳に保存してね！
+            </div>
+          </div>
+
+          <textarea id="saveCodeArea" placeholder="ここにセーブコードが表示されます / 貼り付けます" style="width: 100%; height: 90px; font-size: 9px; border: 1px solid #cbd5e1; border-radius: 8px; padding: 6px; box-sizing: border-box; resize: none; background: #ffffff; color: #334155; line-height: 1.3;"></textarea>
+          
+          <div style="display: flex; gap: 6px;">
+            <button class="btn" style="flex: 1; background: #3b82f6; font-size: 10px; padding: 7px 2px;" onclick="exportSaveCode()">📋 コードコピー（バックアップ）</button>
+            <button class="btn" style="flex: 1; background: #10b981; font-size: 10px; padding: 7px 2px;" onclick="importSaveCode()">📥 コード復元（つづきから）</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 下部ナビゲーション（一番右端にホーム） -->
+    <div class="nav">
+      <div class="nav-item" onclick="location.href='map.html'"><span style="font-size:14px; display:block;">🗺️</span>マップ</div>
+      <div class="nav-item" onclick="location.href='seisei.html'"><span style="font-size:14px; display:block;">🧪</span>精製</div>
+      <div class="nav-item" onclick="location.href='factory.html'"><span style="font-size:14px; display:block;">🏭</span>工場</div>
+      <div class="nav-item" onclick="location.href='zukan.html'"><span style="font-size:14px; display:block;">📖</span>図鑑</div>
+      <div class="nav-item active" onclick="location.href='home.html'"><span style="font-size:14px; display:block;">🏠</span>ホーム</div>
+    </div>
+  </div>
+
+  <script>
+    const bgmMaster = {
+      'room': { name: 'マイホーム基本BGM', file: 'BGM_room.ogg' },
+      'map': { name: '世界マップBGM', file: 'BGM_map.ogg' },
+      'seisei': { name: '元素精製プラントBGM', file: 'BGM_seisei.ogg' },
+      'factory': { name: '製造工場BGM', file: 'BGM_koujyo.ogg' },
+      'mine': { name: '採掘場BGM (陸上)', file: 'BGM_mine.ogg' },
+      'siwake': { name: 'リサイクル工場BGM', file: 'BGM_siwake.ogg' },
+      'hinan': { name: '緊急避難訓練BGM', file: 'BGM_hinan.ogg' },
+      'karaoke': { name: 'カラオケイベントBGM', file: 'karaoke.ogg' }
+    };
+
+    const themesMaster = {
+      'natural': { 
+        name: '🌿 ナチュラル (北欧白木目)', 
+        wallBg: 'linear-gradient(180deg, #fef3c7 0%, #fffbeb 100%)',
+        borderLine: '#d97706',
+        floorBg: 'linear-gradient(180deg, #f59e0b 0%, #d97706 100%)',
+        phoneBg: '#ffffff', phoneBorder: '#cbd5e1', headerBg: '#f1f5f9', headerText: '#334155', contentBg: 'linear-gradient(180deg, #f0f9ff 0%, #f8fafc 100%)', cardBg: '#ffffff', borderColor: '#e2e8f0', btnBg: '#f1f5f9', activeBg: '#3b82f6', textColor: '#1e293b', itemBg: '#f8fafc' 
+      },
+      'wood': { 
+        name: '🪵 ウッド＆ウォームカフェ', 
+        wallBg: 'linear-gradient(180deg, #f7f1e3 0%, #eccc68 100%)',
+        borderLine: '#b33939',
+        floorBg: 'linear-gradient(180deg, #cd6133 0%, #84817a 100%)',
+        phoneBg: '#fdf6e2', phoneBorder: '#d4b595', headerBg: '#f5ebd0', headerText: '#5c4033', contentBg: 'linear-gradient(180deg, #faf0dc 0%, #fdf6e2 100%)', cardBg: '#fffdf9', borderColor: '#e3d2bc', btnBg: '#f5ebd0', activeBg: '#a0522d', textColor: '#4a3525', itemBg: '#f7f1e3' 
+      },
+      'pink': { 
+        name: '🌸 スイートパステルピンク', 
+        wallBg: 'linear-gradient(180deg, #fff1f2 0%, #ffe4e6 100%)',
+        borderLine: '#f472b6',
+        floorBg: 'linear-gradient(180deg, #fbcfe8 0%, #f472b6 100%)',
+        phoneBg: '#fff1f2', phoneBorder: '#fbcfe8', headerBg: '#ffe4e6', headerText: '#9f1239', contentBg: 'linear-gradient(180deg, #fff1f2 0%, #ffe4e6 100%)', cardBg: '#ffffff', borderColor: '#fbcfe8', btnBg: '#ffe4e6', activeBg: '#ec4899', textColor: '#881337', itemBg: '#fff1f2' 
+      },
+      'blue': { 
+        name: '🌊 ミント＆スカイブルー', 
+        wallBg: 'linear-gradient(180deg, #ecfdf5 0%, #d1fae5 100%)',
+        borderLine: '#059669',
+        floorBg: 'linear-gradient(180deg, #6ee7b7 0%, #059669 100%)',
+        phoneBg: '#f0fdf4', phoneBorder: '#bbf7d0', headerBg: '#dcfce7', headerText: '#166534', contentBg: 'linear-gradient(180deg, #f0fdf4 0%, #dcfce7 100%)', cardBg: '#ffffff', borderColor: '#bbf7d0', btnBg: '#dcfce7', activeBg: '#059669', textColor: '#064e3b', itemBg: '#f0fdf4' 
+      },
+      'cyber': { 
+        name: '⚡ サイバーネオン', 
+        wallBg: 'linear-gradient(180deg, #1e293b 0%, #0f172a 100%)',
+        borderLine: '#00fff5',
+        floorBg: 'linear-gradient(180deg, #334155 0%, #0f172a 100%)',
+        phoneBg: '#0f3460', phoneBorder: '#00fff5', headerBg: '#16213e', headerText: '#00fff5', contentBg: 'linear-gradient(180deg, #1b4f72 0%, #0f3460 100%)', cardBg: 'rgba(22,33,62,0.9)', borderColor: '#00fff5', btnBg: '#16213e', activeBg: '#00fff5', textColor: '#ffffff', itemBg: 'rgba(15,23,42,0.8)' 
+      },
+      'monotone': { 
+        name: '🎱 モノトーンシック', 
+        wallBg: 'linear-gradient(180deg, #3f3f46 0%, #27272a 100%)',
+        borderLine: '#a1a1aa',
+        floorBg: 'linear-gradient(180deg, #52525b 0%, #18181b 100%)',
+        phoneBg: '#18181b', phoneBorder: '#52525b', headerBg: '#27272a', headerText: '#f4f4f5', contentBg: 'linear-gradient(180deg, #27272a 0%, #18181b 100%)', cardBg: '#27272a', borderColor: '#3f3f46', btnBg: '#3f3f46', activeBg: '#fafafa', textColor: '#f4f4f5', itemBg: '#18181b' 
+      }
+    };
+
+    let gameState = JSON.parse(localStorage.getItem('rareEarthGameState')) || {
+      miles: 500, level: 1, products: {}, homeFurnishings: [], placedItems: [], currentTheme: 'natural', currentBgm: 'room'
+    };
+    if (!gameState.placedItems) gameState.placedItems = [];
+    if (!gameState.currentTheme) gameState.currentTheme = 'natural';
+    if (!gameState.currentBgm) gameState.currentBgm = 'room';
+
+    const bgm = document.getElementById('bgm');
+    const bgmBtn = document.getElementById('bgm-btn');
+    bgm.volume = 0.3;
+    let isMuted = localStorage.getItem('bgmMutedHome') === 'true';
+
+    function updateBgmSource() {
+      const track = bgmMaster[gameState.currentBgm] || bgmMaster['room'];
+      bgm.src = track.file;
+    }
+
+    function updateBgmUI() {
+      bgm.muted = isMuted;
+      bgmBtn.innerText = isMuted ? '🔇 OFF' : '🎵 ON';
+      bgmBtn.className = isMuted ? 'bgm-btn muted' : 'bgm-btn';
+    }
+
+    function toggleBGM() {
+      isMuted = !isMuted;
+      localStorage.setItem('bgmMutedHome', isMuted);
+      updateBgmUI();
+      if (!isMuted) bgm.play().catch(e => {}); else bgm.pause();
+    }
+
+    window.addEventListener('load', () => {
+      updateBgmSource();
+      updateBgmUI();
+      if (!isMuted) bgm.play().catch(e => {});
+      applyTheme(gameState.currentTheme);
+      updateUI();
+    });
+
+    function applyTheme(themeKey) {
+      const t = themesMaster[themeKey] || themesMaster['natural'];
+      
+      document.getElementById('wallArea').style.background = t.wallBg;
+      document.getElementById('borderLine').style.background = t.borderLine;
+      document.getElementById('floorArea').style.background = t.floorBg;
+
+      const phone = document.getElementById('phoneFrame');
+      phone.style.setProperty('--phone-bg', t.phoneBg);
+      phone.style.setProperty('--phone-border', t.phoneBorder);
+      phone.style.setProperty('--header-bg', t.headerBg);
+      phone.style.setProperty('--header-text', t.headerText);
+      phone.style.setProperty('--content-bg', t.contentBg);
+      phone.style.setProperty('--card-bg', t.cardBg);
+      phone.style.setProperty('--border-color', t.borderColor);
+      phone.style.setProperty('--btn-bg', t.btnBg);
+      phone.style.setProperty('--active-bg', t.activeBg);
+      phone.style.setProperty('--text-color', t.textColor);
+      phone.style.setProperty('--item-bg', t.itemBg);
+      phone.style.setProperty('--item-owned-bg', t.btnBg);
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('gameToast');
+      toast.innerText = msg;
+      toast.classList.add('show');
+      setTimeout(() => { toast.classList.remove('show'); }, 2000);
+    }
+
+    function showCustomModal(title, desc, okText, onOkCallback) {
+      document.getElementById('modalTitle').innerText = title;
+      document.getElementById('modalDesc').innerText = desc;
+      const okBtn = document.getElementById('modalOkBtn');
+      okBtn.innerText = okText;
+      okBtn.onclick = () => {
+        closeModal();
+        if (onOkCallback) onOkCallback();
+      };
+      document.getElementById('customModal').style.display = 'flex';
+    }
+    function closeModal() {
+      document.getElementById('customModal').style.display = 'none';
+    }
+
+    function exportSaveCode() {
+      try {
+        const rawData = localStorage.getItem('rareEarthGameState') || JSON.stringify(gameState);
+        const encoded = btoa(unescape(encodeURIComponent(rawData)));
+        const textArea = document.getElementById('saveCodeArea');
+        textArea.value = encoded;
+        textArea.select();
+        navigator.clipboard.writeText(encoded).then(() => {
+          showToast('📋 セーブコードをコピーしました！');
+        }).catch(() => {
+          showToast('📋 コードを生成しました（手動コピーしてください）');
+        });
+      } catch (e) {
+        showToast('⚠️ エクスポートに失敗しました');
+      }
+    }
+
+    function importSaveCode() {
+      const code = document.getElementById('saveCodeArea').value.trim();
+      if (!code) {
+        showToast('⚠️ 復元コードを入力してください');
+        return;
+      }
+      showCustomModal('セーブデータの復元', '現在の進行データが上書きされます。よろしいですか？', '復元する', () => {
+        try {
+          const decoded = decodeURIComponent(escape(atob(code)));
+          const parsed = JSON.parse(decoded);
+          if (parsed && typeof parsed === 'object') {
+            localStorage.setItem('rareEarthGameState', JSON.stringify(parsed));
+            gameState = parsed;
+            applyTheme(gameState.currentTheme || 'natural');
+            updateBgmSource();
+            updateUI();
+            showToast('✨ セーブデータを正常に復元しました！');
+          } else {
+            throw new Error('Invalid data');
+          }
+        } catch (e) {
+          showToast('⚠️ 無効なセーブコードです');
+        }
+      });
+    }
+
+    const furnitureMaster = {
+      'desk_l': { name: 'おしゃれなデスク', cost: 200, bonus: 0.3, img: 'chara0_Pm.png' },
+      'sofa_m': { name: 'デザイナーズソファ', cost: 1000, bonus: 1.0, img: 'chara0_Sm.png' },
+      'tv_l':   { name: '大型モニター', cost: 2500, bonus: 1.8, img: 'chara0_Nd.png' },
+      'plant_s':{ name: '観葉植物', cost: 400, bonus: 0.4, img: 'chara0_Tb.png' }
+    };
+
+    const recipes = [
+      { id: 'lighter', name: 'ライター（石）', img: 'seihin_raita.png' },
+      { id: 'headphones', name: '高音質ヘッドホン', img: 'seihin_hedohon.png' },
+      { id: 'led', name: '省エネLEDライト', img: 'seihin_led.png' },
+      { id: 'neodymium_magnet', name: 'ネオジム磁石', img: 'seihin_neojimu.png' },
+      { id: 'pc', name: '次世代ノートパソコン', img: 'seihin_pasokon.png' }
+    ];
+
+    let currentDirection = 0; // 0:北, 1:東, 2:南, 3:西, 4:庭
+    const dirNames = ['北の壁 (リビング)', '東の壁 (ダイニング)', '南の壁 (ベッド)', '西の壁 (趣味スペース)', '🌿 お庭 (ガーデン屋外)'];
+
+    function changeDirection(dir) {
+      currentDirection = dir;
+      for(let i=0; i<5; i++) {
+        const btn = document.getElementById(`dir${i}`);
+        if(i === 4) {
+          btn.className = i === dir ? 'dir-btn garden-btn active' : 'dir-btn garden-btn';
+        } else {
+          btn.className = i === dir ? 'dir-btn active' : 'dir-btn';
+        }
+      }
+      document.getElementById('dirTitle').innerText = dirNames[dir];
+
+      // 庭（屋外）と室内レイヤーの表示切り替え
+      const indoor = document.getElementById('indoorLayer');
+      const garden = document.getElementById('gardenLayer');
+      if (dir === 4) {
+        indoor.style.display = 'none';
+        garden.style.display = 'block';
+      } else {
+        indoor.style.display = 'flex';
+        garden.style.display = 'none';
+      }
+
+      renderRoomObjects();
+    }
+
+    function updateUI() {
+      document.getElementById('miles').innerText = (gameState.miles || 0).toLocaleString();
+      document.getElementById('level').innerText = gameState.level;
+      
+      let totalBonus = 0;
+      gameState.placedItems.forEach(item => {
+        if (item.type === 'furn' && furnitureMaster[item.id]) totalBonus += furnitureMaster[item.id].bonus;
+        if (item.type === 'prod') totalBonus += 0.2;
+      });
+      document.getElementById('bonus').innerText = totalBonus.toFixed(1);
+      document.getElementById('roomLevel').innerText = Math.floor(1 + totalBonus / 1.5);
+
+      renderShopList();
+      renderDisplayList();
+      renderThemeList();
+      renderMusicList();
+      renderRoomObjects();
+    }
+
+    function switchTab(tab) {
+      document.getElementById('shopList').style.display = tab === 'shop' ? 'flex' : 'none';
+      document.getElementById('displayList').style.display = tab === 'display' ? 'flex' : 'none';
+      document.getElementById('themeList').style.display = tab === 'theme' ? 'flex' : 'none';
+      document.getElementById('musicList').style.display = tab === 'music' ? 'flex' : 'none';
+      document.getElementById('saveList').style.display = tab === 'save' ? 'flex' : 'none';
+
+      document.getElementById('shopTab').className = tab === 'shop' ? 'tab-btn active' : 'tab-btn';
+      document.getElementById('displayTab').className = tab === 'display' ? 'tab-btn active' : 'tab-btn';
+      document.getElementById('themeTab').className = tab === 'theme' ? 'tab-btn active' : 'tab-btn';
+      document.getElementById('musicTab').className = tab === 'music' ? 'tab-btn active' : 'tab-btn';
+      document.getElementById('saveTab').className = tab === 'save' ? 'tab-btn active' : 'tab-btn';
+    }
+
+    function renderRoomObjects() {
+      const container = document.getElementById('roomObjectsContainer');
+      container.innerHTML = '';
+
+      gameState.placedItems.forEach((item, index) => {
+        if (item.dir !== currentDirection) return;
+
+        const objDiv = document.createElement('div');
+        objDiv.className = 'placed-object';
+        objDiv.style.left = (item.x || 40) + '%';
+        objDiv.style.top = (item.y || 50) + '%';
+
+        let name = '';
+        let imgSrc = '';
+        if (item.type === 'furn') {
+          name = furnitureMaster[item.id].name;
+          imgSrc = furnitureMaster[item.id].img;
+        } else {
+          const rec = recipes.find(r => r.id === item.id);
+          name = rec ? rec.name : '製品';
+          imgSrc = rec ? rec.img : '';
+        }
+
+        objDiv.innerHTML = `<img src="${imgSrc}" alt="${name}" onerror="this.src='chara0_Y.png'">`;
+
+        objDiv.onclick = (e) => {
+          e.stopPropagation();
+          showCustomModal('レイアウト変更', `「${name}」をお部屋から片付けますか？`, '片付ける', () => {
+            gameState.placedItems.splice(index, 1);
+            localStorage.setItem('rareEarthGameState', JSON.stringify(gameState));
+            updateUI();
+            showToast('📦 インテリアを片付けました');
+          });
+        };
+
+        makeDraggable(objDiv, item);
+        container.appendChild(objDiv);
+      });
+    }
+
+    function makeDraggable(elm, itemData) {
+      let startX, startY;
+      elm.onmousedown = dragMouseDown;
+      elm.ontouchstart = dragTouchStart;
+
+      function dragMouseDown(e) { e.preventDefault(); startX = e.clientX; startY = e.clientY; document.onmouseup = closeDragElement; document.onmousemove = elementDrag; }
+      function dragTouchStart(e) { startX = e.touches[0].clientX; startY = e.touches[0].clientY; document.ontouchend = closeDragElement; document.ontouchmove = elementTouchDrag; }
+      function elementDrag(e) { e.preventDefault(); moveCalc(e.clientX, e.clientY); }
+      function elementTouchDrag(e) { moveCalc(e.touches[0].clientX, e.touches[0].clientY); }
+      function moveCalc(clientX, clientY) {
+        let dx = clientX - startX; let dy = clientY - startY;
+        startX = clientX; startY = clientY;
+        let stage = document.getElementById('roomStage').getBoundingClientRect();
+        let nx = itemData.x + (dx / stage.width) * 100;
+        let ny = itemData.y + (dy / stage.height) * 100;
+        itemData.x = Math.max(-10, Math.min(95, nx));
+        itemData.y = Math.max(-5, Math.min(90, ny));
+        elm.style.left = itemData.x + '%';
+        elm.style.top = itemData.y + '%';
+      }
+      function closeDragElement() {
+        document.onmouseup = null; document.onmousemove = null;
+        document.ontouchend = null; document.ontouchmove = null;
+        localStorage.setItem('rareEarthGameState', JSON.stringify(gameState));
+      }
+    }
+
+    function renderShopList() {
+      const list = document.getElementById('shopList');
+      list.innerHTML = '';
+      Object.keys(furnitureMaster).forEach(fId => {
+        const item = furnitureMaster[fId];
+        const owned = gameState.homeFurnishings.includes(fId);
+        const div = document.createElement('div');
+        div.className = owned ? 'shop-item owned' : 'shop-item';
+        div.innerHTML = `
+          <div class="shop-info"><div class="shop-name">${item.name}</div><div class="shop-cost">価格:${item.cost}マイル / ボーナス:+${item.bonus}%</div></div>
+          ${owned ? '<button class="btn owned-btn">所持済</button>' : `<button class="btn" onclick="buyFurniture('${fId}')">購入</button>`}
+        `;
+        list.appendChild(div);
+      });
+    }
+
+    function buyFurniture(fId) {
+      const item = furnitureMaster[fId];
+      if (gameState.miles < item.cost) { showToast('⚠️ マイルが足りません！'); return; }
+      gameState.miles -= item.cost;
+      gameState.homeFurnishings.push(fId);
+      localStorage.setItem('rareEarthGameState', JSON.stringify(gameState));
+      document.getElementById('se-unlock').currentTime = 0;
+      document.getElementById('se-unlock').play().catch(e => {});
+      showToast(`🎉 『${item.name}』を購入しました！`);
+      updateUI();
+    }
+
+    function renderDisplayList() {
+      const list = document.getElementById('displayList');
+      list.innerHTML = '';
+      gameState.homeFurnishings.forEach(fId => {
+        const item = furnitureMaster[fId];
+        const div = document.createElement('div');
+        div.className = 'shop-item';
+        div.innerHTML = `<div class="shop-info"><div class="shop-name">${item.name}</div></div><button class="btn" style="background:#3b82f6; color:#ffffff;" onclick="placeItem('furn', '${fId}')">配置</button>`;
+        list.appendChild(div);
+      });
+      recipes.forEach(rec => {
+        const stock = (gameState.products && gameState.products[rec.id]) ? gameState.products[rec.id] : 0;
+        if (stock > 0) {
+          const div = document.createElement('div');
+          div.className = 'shop-item';
+          div.innerHTML = `<div class="shop-info"><div class="shop-name">${rec.name} (在庫:${stock})</div></div><button class="btn" style="background:#eab308; color:#ffffff;" onclick="placeItem('prod', '${rec.id}')">配置</button>`;
+          list.appendChild(div);
+        }
+      });
+    }
+
+    function placeItem(type, id) {
+      gameState.placedItems.push({ type: type, id: id, dir: currentDirection, x: 35 + Math.random()*20, y: 55 + Math.random()*15 });
+      localStorage.setItem('rareEarthGameState', JSON.stringify(gameState));
+      document.getElementById('se-gogogo').currentTime = 0;
+      document.getElementById('se-gogogo').play().catch(e => {});
+      showToast('✨ お部屋に配置しました！');
+      updateUI();
+    }
+
+    function renderThemeList() {
+      const list = document.getElementById('themeList');
+      list.innerHTML = '';
+      if (gameState.level < 3) {
+        list.innerHTML = `<div style="text-align:center; color:#64748b; padding:15px 0; font-size:11px;">🔒 Lv.3 到達でテイスト変更が解放されます！</div>`;
+        return;
+      }
+      Object.keys(themesMaster).forEach(tKey => {
+        const t = themesMaster[tKey];
+        const isCurrent = (gameState.currentTheme === tKey);
+        const div = document.createElement('div');
+        div.className = isCurrent ? 'shop-item owned' : 'shop-item';
+        div.innerHTML = `<div class="shop-info"><div class="shop-name">${t.name}</div></div>${isCurrent ? '<button class="btn owned-btn">適用中</button>' : `<button class="btn" style="background:#8b5cf6; color:#fff;" onclick="setTheme('${tKey}')">変更</button>`}`;
+        list.appendChild(div);
+      });
+    }
+
+    function setTheme(tKey) {
+      gameState.currentTheme = tKey;
+      localStorage.setItem('rareEarthGameState', JSON.stringify(gameState));
+      applyTheme(tKey);
+      updateUI();
+      showToast('🎨 テイストを変更しました！');
+    }
+
+    function renderMusicList() {
+      const list = document.getElementById('musicList');
+      list.innerHTML = '';
+      if (gameState.level < 5) {
+        list.innerHTML = `<div style="text-align:center; color:#64748b; padding:15px 0; font-size:11px;">🔒 Lv.5 到達でジュークボックスが解放されます！</div>`;
+        return;
+      }
+      Object.keys(bgmMaster).forEach(bKey => {
+        const track = bgmMaster[bKey];
+        const isCurrent = (gameState.currentBgm === bKey);
+        const div = document.createElement('div');
+        div.className = isCurrent ? 'shop-item owned' : 'shop-item';
+        div.innerHTML = `<div class="shop-info"><div class="shop-name">🎵 ${track.name}</div></div>${isCurrent ? '<button class="btn owned-btn">再生中</button>' : `<button class="btn" style="background:#ec4899; color:#fff;" onclick="setBgm('${bKey}')">再生</button>`}`;
+        list.appendChild(div);
+      });
+    }
+
+    function setBgm(bKey) {
+      gameState.currentBgm = bKey;
+      localStorage.setItem('rareEarthGameState', JSON.stringify(gameState));
+      updateBgmSource();
+      if (!isMuted) bgm.play().catch(e => {});
+      updateUI();
+      showToast(`🎶 BGMを「${bgmMaster[bKey].name}」に変更しました！`);
+    }
+  </script>
+</body>
+</html>
