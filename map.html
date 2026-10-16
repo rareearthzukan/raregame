@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>レアアース・クラフト - マップ選択</title>
   <style>
     /* ─── スクロールバーのおしゃれカスタマイズ ─── */
@@ -11,8 +11,46 @@
     ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #00fff5, #3b82f6); border-radius: 10px; box-shadow: 0 0 6px rgba(0, 255, 245, 0.5); }
     ::-webkit-scrollbar-thumb:hover { background: #ffde59; }
 
-    body { background-color: #1a1a2e; color: #fff; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-    .phone { width: 360px; height: 740px; background: #0f3460; border: 4px solid #16213e; border-radius: 24px; display: flex; flex-direction: column; overflow: hidden; position: relative; box-sizing: border-box; }
+    /* 画面全体：余白をなくし、ダブルタップズームを禁止 */
+    body { 
+      background-color: #1a1a2e; 
+      color: #fff; 
+      font-family: sans-serif; 
+      display: flex; 
+      justify-content: center; 
+      align-items: center; 
+      min-height: 100vh; 
+      margin: 0; 
+      touch-action: manipulation;
+      -webkit-user-select: none;
+      user-select: none;
+      overflow: hidden;
+    }
+
+    /* スマホ・タブレット対応：画面いっぱいに広げつつ最大幅を制限 */
+    .phone { 
+      width: 100vw; 
+      height: 100vh; 
+      max-width: 480px; 
+      max-height: 900px; 
+      background: #0f3460; 
+      border: none; 
+      border-radius: 0; 
+      display: flex; 
+      flex-direction: column; 
+      overflow: hidden; 
+      position: relative; 
+      box-sizing: border-box; 
+    }
+    @media (min-width: 481px) {
+      .phone {
+        border: 4px solid #16213e;
+        border-radius: 24px;
+        height: 92vh;
+        box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      }
+    }
+
     .header { background: #16213e; padding: 8px 10px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: bold; border-bottom: 2px solid #e94560; flex-shrink: 0; }
     
     .bgm-btn {
@@ -176,7 +214,7 @@
       <div class="card" style="padding: 6px 10px;">
         <div class="map-title">🗺️ 採掘エリアを選択してください</div>
         <div class="map-box">
-          <!-- 正しい国旗画像＆位置に調整されたスポットピン -->
+          <!-- スポットピン -->
           <div class="spot" id="spot-greenland" style="top: 22%; left: 32%;" onclick="selectSpot('greenland')"><img src="hata_greenisland.png" alt="GL">グリーンランド</div>
           <div class="spot" id="spot-america" style="top: 36%; left: 18%;" onclick="selectSpot('america')"><img src="hata_us.png" alt="US">マウンテンパス</div>
           <div class="spot" id="spot-baiyun" style="top: 32%; left: 63%;" onclick="selectSpot('baiyun')"><img src="hata_cn.png" alt="CN">白雲鄂博</div>
@@ -213,7 +251,7 @@
       </div>
     </div>
 
-    <!-- 統一フッターナビゲーション（右端にホーム） -->
+    <!-- 統一フッターナビゲーション -->
     <div class="nav">
       <div class="nav-item active" onclick="location.href='map.html'"><span style="font-size:14px; display:block;">🗺️</span>マップ</div>
       <div class="nav-item" onclick="location.href='seisei.html'"><span style="font-size:14px; display:block;">🧪</span>精製</div>
@@ -289,7 +327,6 @@
       updateHeader();
     });
 
-    // 🗺️ 正しいロードマップ＆国旗に対応したスポットデータ
     const spotsData = {
       'baiyun': { country: '🇨🇳 中国 内モンゴル自治区', title: '白雲鄂博（バイユンオボ鉱山）', desc: '世界最大の軽レアアース鉱山。ランタンやセリウムの生産拠点。', cost: 10, milesGain: 50, minLv: 1, target: 'La, Ce, Pr, Nd', btnColor: '#00fff5', btnText: '🚜 このエリアの陸上採掘へ移動！', img: 'area_image_cn.png', flag: 'hata_cn.png' },
       'america': { country: '🇺🇸 アメリカ合衆国', title: 'マウンテンパス鉱山', desc: 'かつて世界のユーロピウム供給を支えた歴史ある名門露天掘り鉱山。', cost: 30, milesGain: 80, minLv: 1, target: 'Eu, Y, La', btnColor: '#ffaa00', btnText: '🚜 このエリアの露天掘りへ移動！', img: 'area_image_america.png', flag: 'hata_us.png' },
