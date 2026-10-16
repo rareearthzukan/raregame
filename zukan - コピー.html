@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>レアアース・クラフト - キャラ図鑑＆ギャラリー</title>
+  <style>
+    /* ─── スクロールバーのおしゃれカスタマイズ（全画面共通） ─── */
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.6);
+      border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, #00fff5, #3b82f6);
+      border-radius: 10px;
+      box-shadow: 0 0 6px rgba(0, 255, 245, 0.5);
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #ffde59;
+    }
+
+    body { background-color: #1a1a2e; color: #fff; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+    .phone { width: 360px; height: 740px; background: #0f3460; border: 4px solid #16213e; border-radius: 24px; display: flex; flex-direction: column; overflow: hidden; position: relative; box-sizing: border-box; }
+    
+    /* ヘッダー */
+    .header { background: #16213e; padding: 8px 10px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: bold; border-bottom: 2px solid #e94560; flex-shrink: 0; }
+    
+    /* BGMトグルボタンのスタイル */
+    .bgm-btn {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid #00fff5;
+      color: #00fff5;
+      border-radius: 12px;
+      padding: 2px 8px;
+      font-size: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      transition: all 0.2s;
+    }
+    .bgm-btn.muted {
+      border-color: #e94560;
+      color: #e94560;
+      background: rgba(233, 69, 96, 0.2);
+    }
+
+    .content { flex: 1; background: linear-gradient(180deg, #1b4f72 0%, #0f3460 100%); padding: 8px 10px; display: flex; flex-direction: column; gap: 8px; overflow-y: auto; box-sizing: border-box; }
+    
+    .card { background: rgba(22, 33, 62, 0.9); border: 1px solid #00fff5; border-radius: 12px; padding: 8px 10px; font-size: 12px; flex-shrink: 0; }
+    .card-title { font-size: 13px; font-weight: bold; color: #00fff5; margin-bottom: 6px; }
+
+    /* キャラクター一覧グリッド */
+    .chara-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 5px;
+    }
+
+    .chara-card {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 4px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .chara-card:hover {
+      border-color: #00fff5;
+      background: rgba(0, 255, 245, 0.15);
+      transform: translateY(-2px);
+    }
+    .chara-card img {
+      width: 40px;
+      height: 40px;
+      object-fit: contain;
+      background: #16213e;
+      border-radius: 50%;
+      border: 1.5px solid #00fff5;
+      margin-bottom: 2px;
+    }
+    .chara-card .name {
+      font-size: 9px;
+      font-weight: bold;
+      color: #fff;
+    }
+    .chara-card .sub {
+      font-size: 7px;
+      color: #94a3b8;
+    }
+
+    /* 💎 鉱物・宝石図鑑コレクション・グリッド */
+    .gem-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 5px;
+      max-height: 200px;
+      overflow-y: auto;
+      padding-right: 2px;
+    }
+
+    .gem-item {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1.5px solid #334155;
+      border-radius: 8px;
+      padding: 6px 4px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+    .gem-item.unlocked {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: #00fff5;
+      box-shadow: 0 0 6px rgba(0, 255, 245, 0.2);
+    }
+    .gem-item.unlocked:hover {
+      background: rgba(0, 255, 245, 0.2);
+      transform: scale(1.03);
+    }
+    .gem-item.locked {
+      background: rgba(15, 23, 42, 0.4);
+      border-color: #1e293b;
+      opacity: 0.6;
+    }
+    .gem-img {
+      width: 32px;
+      height: 32px;
+      object-fit: contain;
+      margin-bottom: 2px;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+    }
+    .gem-locked-icon {
+      font-size: 18px;
+      line-height: 32px;
+      color: #64748b;
+    }
+    .gem-name {
+      font-size: 8px;
+      color: #cbd5e1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      width: 100%;
+    }
+    .gem-item.locked .gem-name {
+      color: #64748b;
+    }
+    .gem-id {
+      position: absolute;
+      top: 2px;
+      left: 4px;
+      font-size: 7px;
+      color: #94a3b8;
+    }
+
+    /* クレジットおよびサイト紹介カード */
+    .credit-card {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 10px;
+      padding: 8px;
+      font-size: 9px;
+      color: #94a3b8;
+      line-height: 1.4;
+      flex-shrink: 0;
+    }
+    .credit-title {
+      font-weight: bold;
+      color: #cbd5e1;
+      margin-bottom: 2px;
+      font-size: 10px;
+    }
+    .credit-card a {
+      color: #38bdf8;
+      text-decoration: underline;
+    }
+
+    /* 詳細・ギャラリーモーダル共通 */
+    .modal-overlay {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(10, 15, 30, 0.88);
+      display: flex; justify-content: center; align-items: center;
+      z-index: 100;
+      backdrop-filter: blur(3px);
+      box-sizing: border-box;
+      padding: 12px;
+    }
+    .modal-content {
+      background: #16213e;
+      border: 2px solid #00fff5;
+      border-radius: 16px;
+      padding: 14px 10px;
+      width: 100%;
+      max-width: 310px;
+      max-height: 620px;
+      overflow-y: auto;
+      text-align: center;
+      box-shadow: 0 0 25px rgba(0, 255, 245, 0.3);
+      animation: popup 0.3s ease-out;
+      box-sizing: border-box;
+    }
+    @keyframes popup {
+      0% { transform: scale(0.8); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    /* イラスト表示メインビュー */
+    .gallery-view-box {
+      background: #ffffff;
+      border: 2px solid #ffde59;
+      border-radius: 12px;
+      padding: 8px;
+      text-align: center;
+      position: relative;
+      margin-bottom: 8px;
+    }
+    .gallery-img {
+      width: 140px;
+      height: 140px;
+      object-fit: contain;
+      margin: 4px auto;
+      display: block;
+    }
+    .locked-overlay {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(15, 23, 42, 0.9);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      border-radius: 10px;
+      color: #fff;
+      padding: 10px;
+      box-sizing: border-box;
+    }
+
+    /* 5枚のサムネイル選択バー */
+    .thumb-nav {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+    .thumb-btn {
+      width: 42px;
+      height: 42px;
+      background: rgba(255,255,255,0.1);
+      border: 1.5px solid #64748b;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: bold;
+      color: #aaa;
+      transition: all 0.2s;
+    }
+    .thumb-btn.active {
+      border-color: #00fff5;
+      background: rgba(0,255,245,0.2);
+      color: #00fff5;
+      transform: scale(1.05);
+    }
+    .thumb-btn.unlocked {
+      border-color: #ffde59;
+      color: #ffde59;
+    }
+
+    .btn {
+      background-color: #e94560;
+      color: #ffffff;
+      border: none;
+      padding: 8px;
+      font-size: 11px;
+      font-weight: bold;
+      border-radius: 12px;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 6px;
+      box-shadow: 0 3px 10px rgba(233, 69, 96, 0.4);
+    }
+    .btn-unlock {
+      background-color: #eab308;
+      color: #0f3460;
+      font-size: 12px;
+      padding: 10px;
+      margin-top: 6px;
+    }
+
+    /* 下部ナビゲーション */
+    .nav { 
+      height: 56px; 
+      background: #16213e; 
+      display: flex; 
+      justify-content: space-around; 
+      align-items: center; 
+      padding: 0 8px;
+      flex-shrink: 0; 
+      border-top: 2px solid #1f293d;
+      box-sizing: border-box;
+    }
+    .nav-item { 
+      color: #a0aec0; 
+      cursor: pointer; 
+      text-align: center; 
+      background: rgba(255, 255, 255, 0.05); 
+      border: 1px solid rgba(0, 255, 245, 0.2); 
+      border-radius: 10px; 
+      padding: 4px 8px;
+      font-size: 10px; 
+      font-weight: bold;
+      flex: 1;
+      margin: 0 3px;
+      transition: all 0.2s;
+    }
+    .nav-item:active { transform: scale(0.95); }
+    .nav-item.active { 
+      color: #00fff5; 
+      background: rgba(0, 255, 245, 0.15); 
+      border-color: #00fff5;
+      box-shadow: 0 0 8px rgba(0, 255, 245, 0.3);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- BGMおよび効果音 -->
+  <audio id="bgm" src="BGM_zukan.ogg" loop preload="auto"></audio>
+  <audio id="se-unlock" src="itemget.mp3" preload="auto"></audio>
+  <audio id="se-fuseikai" src="mini_fuseikai.mp3" preload="auto"></audio>
+
+  <div class="phone">
+    <!-- ヘッダー -->
+    <div class="header">
+      <span>💰 <span id="money">1,500</span> G</span>
+      <span>🌟 Lv.<span id="level">1</span></span>
+      <button id="bgm-btn" class="bgm-btn" onclick="toggleBGM()">🎵 ON</button>
+    </div>
+
+    <!-- コンテンツエリア -->
+    <div class="content">
+      <!-- 1. キャラ図鑑カード -->
+      <div class="card">
+        <div class="card-title">🎨 レアアース・キャラクター図鑑 (全17元素)</div>
+        <div style="font-size: 10px; color: #94a3b8; margin-bottom: 6px;">
+          キャラクターをタップして、5枚の特別イラストやギャラリーを解放しよう！
+        </div>
+        <div class="chara-grid" id="charaGrid"></div>
+      </div>
+
+      <!-- 2. 💎 鉱物・宝石図鑑コレクションカード -->
+      <div class="card">
+        <div class="card-title" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+          <span>💎 鉱物・宝石図鑑コレクション</span>
+          <span id="collectionCount" style="font-size: 10px; color: #ffde59;">解放: 0 / 100</span>
+        </div>
+        <div style="font-size: 9px; color: #94a3b8; margin-bottom: 6px;">
+          マップやイベントでゲットした鉱物がここに展示されます！
+        </div>
+        <div class="gem-grid" id="gemGrid"></div>
+      </div>
+
+      <!-- クレジットおよびサイト紹介カード -->
+      <div class="credit-card">
+        <div class="credit-title">🎵 音源・クレジット</div>
+        ・フリーBGM・音楽素材 MusMus：<a href="https://musmus.main.jp" target="_blank" rel="noopener">https://musmus.main.jp</a><br>
+        ・効果音ラボ：<a href="https://soundeffect-lab.info/agreement/" target="_blank" rel="noopener">https://soundeffect-lab.info/agreement/</a>
+        
+        <div class="credit-title" style="margin-top: 6px;">📖 関連サイト＆クリエイター紹介</div>
+        <a href="https://17rareearth.github.io/17character/" target="_blank" rel="noopener">レアアース17元素キャラ図鑑 - 未来をつくる元素たち -</a><br>
+        イラスト：バルバロッサ上田
+      </div>
+    </div>
+
+    <!-- キャラ詳細・ギャラリーモーダル -->
+    <div id="galleryModal" class="modal-overlay" style="display: none;" onclick="closeGalleryModal()">
+      <div class="modal-content" onclick="event.stopPropagation()">
+        <div style="font-size: 14px; font-weight: bold; color: #ffde59; margin-bottom: 6px;" id="modalCharaTitle">キャラ名</div>
+        
+        <!-- サムネイル切替ボタン（5枚分） -->
+        <div class="thumb-nav" id="thumbNav"></div>
+
+        <!-- イラスト表示ビューボックス -->
+        <div class="gallery-view-box" id="galleryViewBox">
+          <img id="galleryImg" class="gallery-img" src="" alt="イラスト">
+          <div id="lockedOverlay" class="locked-overlay" style="display: none;">
+            <div style="font-size: 24px; margin-bottom: 4px;">🔒</div>
+            <div style="font-size: 11px; color: #ffde59; font-weight: bold; margin-bottom: 4px; text-align: center;" id="lockConditionText">解放条件</div>
+            <button class="btn btn-unlock" id="unlockBuyBtn" onclick="buyIllustration()" style="display: none;">💰 Gで解放する</button>
+          </div>
+        </div>
+
+        <!-- イラスト解説・セリフ -->
+        <div style="font-size: 11px; color: #f1f5f9; background: rgba(15,23,42,0.8); padding: 8px; border-radius: 8px; text-align: left; line-height: 1.4; margin-bottom: 8px;" id="galleryDesc">
+          解説文
+        </div>
+
+        <button class="btn" style="background: #3b82f6; color: #fff;" onclick="closeGalleryModal()">閉じる</button>
+      </div>
+    </div>
+
+    <!-- 鉱物詳細ポップアップ用モーダル -->
+    <div id="gemModal" class="modal-overlay" style="display: none;" onclick="closeGemModal()">
+      <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 260px;">
+        <img id="gemModalImg" src="" style="width: 70px; height: 70px; object-fit: contain; margin-bottom: 6px;" alt="鉱物" onerror="this.src='chara0_Y.png'">
+        <div id="gemModalTitle" style="font-size: 13px; font-weight: bold; color: #ffde59; margin-bottom: 4px;"></div>
+        <div id="gemModalDesc" style="font-size: 10px; color: #f1f5f9; text-align: left; line-height: 1.4; background: rgba(15,23,42,0.8); padding: 8px; border-radius: 6px; margin-bottom: 8px;"></div>
+        <button class="btn" style="background: #00fff5; color: #0f3460; margin-top:0;" onclick="closeGemModal()">閉じる</button>
+      </div>
+    </div>
+
+    <!-- 下部ナビゲーション（新フッターメニュー：マップ、精製、工場、図鑑、ホーム） -->
+    <div class="nav">
+      <div class="nav-item" onclick="location.href='map.html'"><span style="font-size:13px; display:block; margin-bottom:0px;">🗺️</span>マップ</div>
+      <div class="nav-item" onclick="location.href='seisei.html'"><span style="font-size:13px; display:block; margin-bottom:0px;">🧪</span>精製</div>
+      <div class="nav-item" onclick="location.href='factory.html'"><span style="font-size:13px; display:block; margin-bottom:0px;">🏭</span>工場</div>
+      <div class="nav-item active" onclick="location.href='zukan.html'"><span style="font-size:13px; display:block; margin-bottom:0px;">📖</span>図鑑</div>
+      <div class="nav-item" onclick="location.href='home.html'"><span style="font-size:13px; display:block; margin-bottom:0px;">🏠</span>ホーム</div>
+    </div>
+  </div>
+
+  <script>
+    // BGMの設定・再生制御
+    const bgm = document.getElementById('bgm');
+    const bgmBtn = document.getElementById('bgm-btn');
+    bgm.volume = 0.3;
+
+    let isMuted = localStorage.getItem('bgmMutedZukan') === 'true';
+
+    function updateBgmUI() {
+      if (isMuted) {
+        bgm.muted = true;
+        bgmBtn.innerText = '🔇 OFF';
+        bgmBtn.classList.add('muted');
+      } else {
+        bgm.muted = false;
+        bgmBtn.innerText = '🎵 ON';
+        bgmBtn.classList.remove('muted');
+      }
+    }
+
+    function toggleBGM() {
+      isMuted = !isMuted;
+      localStorage.setItem('bgmMutedZukan', isMuted);
+      updateBgmUI();
+      if (!isMuted) {
+        bgm.play().catch(e => {});
+      } else {
+        bgm.pause();
+      }
+    }
+
+    window.addEventListener('load', () => {
+      updateBgmUI();
+      if (!isMuted) {
+        bgm.play().catch(() => {
+          document.addEventListener('click', () => { if (!isMuted) bgm.play().catch(e=>{}); }, { once: true });
+        });
+      }
+    });
+
+    let savedData = JSON.parse(localStorage.getItem('rareEarthGameState'));
+    let gameState = savedData || {
+      money: 1500,
+      level: 1,
+      products: {},
+      unlockedIllustrations: {},
+      houseki: {}
+    };
+
+    if (!gameState.unlockedIllustrations) gameState.unlockedIllustrations = {};
+    if (!gameState.products) gameState.products = {};
+    if (!gameState.houseki) gameState.houseki = {};
+    
+    if (Object.keys(gameState.houseki).length === 0) {
+      [1, 2, 6, 18].forEach(id => { gameState.houseki[id] = true; });
+    }
+
+    // 💎 houseki1 〜 houseki100 までのマスターデータ
+    const gemsMaster = [
+      { id: 1, name: 'ダイヤモンド', img: 'houseki1.png', desc: '永遠の輝きを放つ、世界最高硬度の宝石。' },
+      { id: 2, name: 'ルビー', img: 'houseki2.png', desc: '情熱的な赤色を持つ、宝石の女王。' },
+      { id: 3, name: 'サファイア', img: 'houseki3.png', desc: '気高き青色を湛える、知性の石。' },
+      { id: 4, name: 'エメラルド', img: 'houseki4.png', desc: '深緑の美しさが際立つ、癒やしの宝石。' },
+      { id: 5, name: 'アメジスト', img: 'houseki5.png', desc: '高貴な紫色が美しい、神秘的な水晶。' },
+      { id: 6, name: 'シトリン', img: 'houseki6.png', desc: '太陽の光を閉じ込めたような黄色の水晶。' },
+      { id: 7, name: 'トパーズ', img: 'houseki7.png', desc: '透明感と豊かな色彩を持つ硬い鉱物。' },
+      { id: 8, name: 'ガーネット', img: 'houseki8.png', desc: 'ざくろの実のように深い赤色の結晶。' },
+      { id: 9, name: 'アクアマリン', img: 'houseki9.png', desc: '穏やかな海の水面を思わせる爽やかな宝石。' },
+      { id: 10, name: 'ペリドット', img: 'houseki10.png', desc: '夜の照明の下でも輝きを失わない黄緑色の石。' },
+      { id: 11, name: 'オパール', img: 'houseki11.png', desc: '虹色の遊色効果を持つ神秘の石。' },
+      { id: 12, name: 'ターコイズ', img: 'houseki12.png', desc: '空の色を映したような鮮やかなスカイブルーの石。' },
+      { id: 13, name: '翡翠（ヒスイ）', img: 'houseki13.png', desc: '古来より神聖視されてきた東洋の緑色宝石。' },
+      { id: 14, name: '琥珀（アンバー）', img: 'houseki14.png', desc: '太古の樹液が化石化した温もりある黄金色の宝石。' },
+      { id: 15, name: 'フローライト', img: 'houseki15.png', desc: '色とりどりのグラデーションが美しい蛍石。' },
+      { id: 16, name: 'ジャスパー', img: 'houseki16.png', desc: '大地の模様が織りなす個性豊かな碧玉。' },
+      { id: 17, name: 'メノウ', img: 'houseki17.png', desc: '縞模様が美しい、温かみのある微晶質クォーツ。' },
+      { id: 18, name: '水晶', img: 'houseki18.png', desc: '無色透明で完璧なまでの美しさを持つ万能の石。' },
+      { id: 19, name: 'スモーキークォーツ', img: 'houseki19.png', desc: '大地のような落ち着いた煙色を帯びた水晶。' },
+      { id: 20, name: 'ローズクォーツ', img: 'houseki20.png', desc: '優しいピンク色が心を癒やす愛の石。' },
+      { id: 21, name: 'ラピスラズリ', img: 'houseki21.png', desc: '夜空のような群青色に黄金のパイライトが輝く石。' },
+      { id: 22, name: 'タンザナイト', img: 'houseki22.png', desc: 'キリマンジャロの夕暮れのような多色性の青紫石。' },
+      { id: 23, name: 'トルマリン', img: 'houseki23.png', desc: '豊富なカラーバリエーションを持つ電気石。' },
+      { id: 24, name: 'ジルコン', img: 'houseki24.png', desc: 'ダイヤモンドに匹敵する強い輝きを持つ天然石。' },
+      { id: 25, name: 'スピネル', img: 'houseki25.png', desc: 'かつて王冠の宝石としてルビーと間違えられた美石。' },
+      { id: 26, name: 'ムーンストーン', img: 'houseki26.png', desc: '月光のようなシラー効果を宿す幻想的な石。' },
+      { id: 27, name: 'サンストーン', img: 'houseki27.png', desc: '内部のインクルージョンが黄金色に輝く石。' },
+      { id: 28, name: 'ブラッドストーン', img: 'houseki28.png', desc: '深緑に血飛沫のような赤斑が入る神聖な石。' },
+      { id: 29, name: 'カルセドニー', img: 'houseki29.png', desc: '滑らかな手触りと優しい半透明感を持つ石。' },
+      { id: 30, name: 'プレナイト', img: 'houseki30.png', desc: 'マスカットのような爽やかなグリーンが特徴の石。' },
+      { id: 31, name: 'クンツァイト', img: 'houseki31.png', desc: 'ライラックピンクの優しい輝きを放つ上品な石。' },
+      { id: 32, name: 'モルガナイト', img: 'houseki32.png', desc: '春の桜を思わせるピーチピンクのエレガントな石。' },
+      { id: 33, name: 'ヒデナイト', img: 'houseki33.png', desc: '淡い黄緑色が美しいスポジュメンの変種。' },
+      { id: 34, name: 'アパタイト', img: 'houseki34.png', desc: 'ネオンブルーや鮮やかなグリーンが目を引く石。' },
+      { id: 35, name: 'アイオライト', img: 'houseki35.png', desc: '見る角度によって色が変わるバイオレットブルーの石。' },
+      { id: 36, name: 'ジオード', img: 'houseki36.png', desc: '割ると内部に美しい結晶が広がる自然の宝箱。' },
+      { id: 37, name: 'ヘマタイト', img: 'houseki37.png', desc: 'メタリックな銀灰色で磨くと鏡面になる重厚な石。' },
+      { id: 38, name: 'パイライト', img: 'houseki38.png', desc: '黄金色に輝く立方体の結晶。「愚者の黄金」。' },
+      { id: 39, name: 'マラカイト', img: 'houseki39.png', desc: '美しい孔雀の羽のような緑色の同心円模様を持つ石。' },
+      { id: 40, name: 'アズライト', img: 'houseki40.png', desc: '吸い込まれそうな深い群青色を持つ銅の鉱物。' },
+      { id: 41, name: 'ロードナイト', img: 'houseki41.png', desc: 'バラ色の素地に黒い脈模様が入る愛の石。' },
+      { id: 42, name: 'ロードクロサイト', img: 'houseki42.png', desc: 'インカローズとも呼ばれる鮮やかなピンクの石。' },
+      { id: 43, name: 'クリソコラ', img: 'houseki43.png', desc: '地球を宇宙から見たようなマーブル模様の美しい石。' },
+      { id: 44, name: 'サーペンタイン', img: 'houseki44.png', desc: '蛇の皮膚のような模様を持つ滑らかな緑色の石。' },
+      { id: 45, name: 'ソーダライト', img: 'houseki45.png', desc: 'ディープブルーの落ち着いた色合いを持つ鉱物。' },
+      { id: 46, name: 'チャロアイト', img: 'houseki46.png', desc: 'マーブル模様の紫が織りなす世界三大ヒーリングストーン。' },
+      { id: 47, name: 'スギライト', img: 'houseki47.png', desc: '日本で発見された深い紫色が神秘的な癒やしの石。' },
+      { id: 48, name: 'ラリマー', img: 'houseki48.png', desc: 'カリブ海の海と空を閉じ込めたような美しい水色の石。' },
+      { id: 49, name: 'アンモライト', img: 'houseki49.png', desc: '化石が遊色効果を持つようになった奇跡の宝石。' },
+      { id: 50, name: 'テクタイト', img: 'houseki50.png', desc: '隕石衝突の衝撃で生まれた神秘的な黒いガラス質鉱物。' },
+      { id: 51, name: 'モルダバイト', img: 'houseki51.png', desc: '深いオリーブグリーンが特徴の美しいテクタイト。' },
+      { id: 52, name: 'オブシディアン', img: 'houseki52.png', desc: '漆黒の輝きを持つ火山ガラス。' },
+      { id: 53, name: 'リビアンガラス', img: 'houseki53.png', desc: 'エジプトの砂漠で見つかる黄金色の神秘的なガラス。' },
+      { id: 54, name: 'セレスタイト', img: 'houseki54.png', desc: '天使の羽のような空色の結晶が広がる天青石。' },
+      { id: 55, name: 'バライト', img: 'houseki55.png', desc: '重晶石と呼ばれ、ずっしりとした重みがある結晶。' },
+      { id: 56, name: 'アラゴナイト', img: 'houseki56.png', desc: '温かみのある黄色や白の放射状結晶を持つ石。' },
+      { id: 57, name: 'カルサイト', img: 'houseki57.png', desc: '多彩なカラーと高い複屈折を持つ方解石。' },
+      { id: 58, name: 'ドロマイト', img: 'houseki58.png', desc: '白亜の美しい結晶を形成する苦灰石。' },
+      { id: 59, name: 'ロードライト', img: 'houseki59.png', desc: '紫がかった上品な赤色を持つガーネットの仲間。' },
+      { id: 60, name: 'ヘソナイト', img: 'houseki60.png', desc: 'シナモンカラーの温かい輝きを持つガーネット。' },
+      { id: 61, name: 'アルマンディン', img: 'houseki61.png', desc: '深い赤紫色の鉄マンガン榴石。' },
+      { id: 62, name: 'パペイア', img: 'houseki62.png', desc: '蓮の花のようなピンクオレンジ色の幻のサファイア。' },
+      { id: 63, name: 'パライバトルマリン', img: 'houseki63.png', desc: 'ネオンブルーに発光する奇跡の稀少トルマリン。' },
+      { id: 64, name: 'デマントイド', img: 'houseki64.png', desc: 'ダイヤモンドを超える強い分散光を持つ緑のガーネット。' },
+      { id: 65, name: 'ツァボライト', img: 'houseki65.png', desc: 'サバンナの緑を思わせる鮮やかなグリーンのガーネット。' },
+      { id: 66, name: 'スフェーン', img: 'houseki66.png', desc: '強いファイアと独特の多色性を持つ黄緑の宝石。' },
+      { id: 67, name: 'アウイン', img: 'houseki67.png', desc: '鮮やかなコバルトブルーが強烈な印象を残すレアストーン。' },
+      { id: 68, name: 'ベニトアイト', img: 'houseki68.png', desc: 'サファイアを超える青い輝きを放つアメリカの稀少石。' },
+      { id: 69, name: 'グランディディエライト', img: 'houseki69.png', desc: '青緑色の神秘的な色合いを持つマダガスカルの秘宝。' },
+      { id: 70, name: 'ターフェライト', img: 'houseki70.png', desc: '発見が極めて少ない幻のモーヴカラー宝石。' },
+      { id: 71, name: 'ペタライト', img: 'houseki71.png', desc: '清らかな透明感を持つ、別名キャストライト。' },
+      { id: 72, name: 'ポルサイト', img: 'houseki72.png', desc: '美しい等軸晶系を描くレアなセシウム鉱物。' },
+      { id: 73, name: 'ダンビュライト', img: 'houseki73.png', desc: 'ダイヤモンドに似た清らかな透明感と強い輝きの石。' },
+      { id: 74, name: 'ベリル', img: 'houseki74.png', desc: 'エメラルドやアクアマリンの母体となる基本鉱物。' },
+      { id: 75, name: 'ジンカイト', img: 'houseki75.png', desc: '鮮やかな赤やオレンジの燃えるような亜鉛鉱物。' },
+      { id: 76, name: 'クォーツインクォーツ', img: 'houseki76.png', desc: '水晶の中に別の水晶が入り込んだ神秘的な鉱物。' },
+      { id: 77, name: 'ルチルクォーツ', img: 'houseki77.png', desc: '金色の針状結晶が内包された「金運の石」。' },
+      { id: 78, name: 'スーパーセブン', img: 'houseki78.png', desc: '7つの鉱物要素が奇跡的に共生した最強のパワーストーン。' },
+      { id: 79, name: 'オーラライト', img: 'houseki79.png', desc: '古代の波動を宿すとされる多層構造のスピリチュアルストーン。' },
+      { id: 80, name: 'ファントムクォーツ', img: 'houseki80.png', desc: '成長の軌跡が山型に刻まれた幻影水晶。' },
+      { id: 81, name: 'ギベオン', img: 'houseki81.png', desc: '宇宙から飛来した鉄隕石。ウィドマンシュテッテン構造。' },
+      { id: 82, name: 'メテオライト', img: 'houseki82.png', desc: '大気圏を突破して地球に到達した宇宙のロマン。' },
+      { id: 83, name: 'コンドライト', img: 'houseki83.png', desc: '太陽系誕生初期の物質をそのまま残す原始隕石。' },
+      { id: 84, name: 'パラサイト', img: 'houseki84.png', desc: '鉄ニッケルとカンラン石が混ざり合う宇宙の芸術品。' },
+      { id: 85, name: 'テクタイト鉱脈石', img: 'houseki85.png', desc: '未知のエネルギーを秘めた特殊なインパクト石。' },
+      { id: 86, name: 'ネフライト', img: 'houseki86.png', desc: 'しっとりとした深い緑色を持つ硬度の高い軟玉。' },
+      { id: 87, name: 'ジェダイト', img: 'houseki87.png', desc: '瑞々しい艶と美しい緑色を誇る本翡翠。' },
+      { id: 88, name: 'ピクチャージャスパー', img: 'houseki88.png', desc: 'まるで自然の風景画が描かれているかのような不思議な石。' },
+      { id: 89, name: 'オーシャンジャスパー', img: 'houseki89.png', desc: '波打ち際のような美しい模様が浮かぶ海の碧玉。' },
+      { id: 90, name: 'ユナカイト', img: 'houseki90.png', desc: '緑の緑泥石とピンクの長石が混ざり合う大地の石。' },
+      { id: 91, name: 'ホークスアイ', img: 'houseki91.png', desc: '鋭い眼光を思わせるブルーグレーのタイガーアイ。' },
+      { id: 92, name: 'タイガーアイ', img: 'houseki92.png', desc: '虎の目のようなシャトヤンシー効果を持つ金茶色の石。' },
+      { id: 93, name: 'ブルータイガーアイ', img: 'houseki93.png', desc: '落ち着いた青色と美しい光の筋を持つ石。' },
+      { id: 94, name: 'レッドタイガーアイ', img: 'houseki94.png', desc: '情熱的な赤褐色に光の筋が走るタイガーアイ。' },
+      { id: 95, name: 'ピーターサイト', img: 'houseki95.png', desc: '嵐の空のような複雑な模様が渦巻く神秘の石。' },
+      { id: 96, name: 'セイクリッドセブン', img: 'houseki96.png', desc: '高次元のエネルギーを宿すと言われる神秘の結晶。' },
+      { id: 97, name: 'ボルダーオパール', img: 'houseki97.png', desc: '母岩の隙間に虹色の輝きが宿るワイルドなオパール。' },
+      { id: 98, name: 'ファイヤーオパール', img: 'houseki98.png', desc: '夕焼けのように燃えるオレンジ色の美しいオパール。' },
+      { id: 99, name: 'ブラックオパール', img: 'houseki99.png', desc: '黒い母岩の上で虹色の遊色が一層引き立つ最高級オパール。' },
+      { id: 100, name: 'レアアース・プリズム鉱', img: 'houseki100.png', desc: 'すべての希土類エネルギーを束ねた究極の幻の鉱物。' }
+    ];
+
+    const charactersMaster = [
+      {
+        key: 'La', name: 'ランタン', symbol: 'La',
+        illusts: [
+          { title: '① 通常立ち絵', img: 'chara0_La.png', desc: 'カメラレンズをピカピカに磨き上げる職人肌の姿。', type: 'default', cost: 0 },
+          { title: '② 別表情', img: 'chara1_La.png', desc: '自信満々なドヤ顔ポーズ。', type: 'level', reqLevel: 2, cost: 0 },
+          { title: '③ 日常姿', img: 'chara2_La.png', desc: 'ライター等の関連製品クラフト貢献で解放！', type: 'craft', productIds: ['lighter'], reqCount: 5, cost: 0 },
+          { title: '④ イベント', img: 'chara3_La.png', desc: '夜の街をランタンの灯りで照らす幻想的なひとコマ。', type: 'level', reqLevel: 6, cost: 0 },
+          { title: '⑤ シークレット', img: 'chara4_La.png', desc: '最高級ドレスに身を包んだラグジュアリー姿。', type: 'gold', cost: 30000 }
+        ]
+      },
+      {
+        key: 'Ce', name: 'セリウム', symbol: 'Ce',
+        illusts: [
+          { title: '① 通常立ち絵', img: 'chara0_Ce.png', desc: '車の排ガスをキレイにするお仕事中！', type: 'default', cost: 0 },
+          { title: '② 別表情', img: 'chara1_Ce.png', desc: 'ニコニコ笑顔で環境保全をアピール。', type: 'level', reqLevel: 2, cost: 0 },
+          { title: '③ 日常姿', img: 'chara2_Ce.png', desc: '保護ガラスやマフラーのクラフト貢献で解放！', type: 'craft', productIds: ['glass', 'muffler'], reqCount: 5, cost: 0 },
+          { title: '④ イベント', img: 'chara3_Ce.png', desc: 'クリーンエネルギーの祭典での記念撮影。', type: 'level', reqLevel: 6, cost: 0 },
+          { title: '⑤ シークレット', img: 'chara4_Ce.png', desc: '未来都市のクリーンマイスター特別衣装。', type: 'gold', cost: 30000 }
+        ]
+      },
+      {
+        key: 'Pr', name: 'プラセオジム', symbol: 'Pr',
+        illusts: [
+          { title: '① 通常立ち絵', img: 'chara0_Pr.png', desc: 'ヘッドホンで音楽を聴きながらマイペース。', type: 'default', cost: 0 },
+          { title: '② 別表情', img: 'chara1_Pr.png', desc: 'お気に入りの曲にノリノリな笑顔。', type: 'level', reqLevel: 3, cost: 0 },
+          { title: '③ 日常姿', img: 'chara2_Pr.png', desc: 'カラフルガラスやヘッドホンのクラフト貢献で解放！', type: 'craft', productIds: ['tile', 'pottery', 'headphones'], reqCount: 8, cost: 0 },
+          { title: '④ イベント', img: 'chara3_Pr.png', desc: 'DJブースで華麗な音楽プレイを披露！', type: 'level', reqLevel: 7, cost: 0 },
+          { title: '⑤ シークレット', img: 'chara4_Pr.png', desc: 'サイバーネオン仕様のアーティスト限定スタイル。', type: 'gold', cost: 35000 }
+        ]
+      },
+      {
+        key: 'Nd', name: 'ネオジム', symbol: 'Nd',
+        illusts: [
+          { title: '① 通常立ち絵', img: 'chara0_Nd.png', desc: '強力な磁力で周囲を引き寄せる人気者。', type: 'default', cost: 0 },
+          { title: '② 別表情', img: 'chara1_Nd.png', desc: 'キリッとした戦闘・作業モードの表情。', type: 'level', reqLevel: 3, cost: 0 },
+          { title: '③ 日常姿', img: 'chara2_Nd.png', desc: 'サングラスや振動モーターのクラフト貢献で解放！', type: 'craft', productIds: ['sunglasses', 'headphones', 'vibe_motor', 'neodymium_magnet'], reqCount: 10, cost: 0 },
+          { title: '④ イベント', img: 'chara3_Nd.png', desc: '巨大モーターの組み立てに成功した瞬間！', type: 'level', reqLevel: 8, cost: 0 },
+          { title: '⑤ シークレット', img: 'chara4_Nd.png', desc: '磁界をまとうアーマード・マグネット姿。', type: 'gold', cost: 40000 }
+        ]
+      },
+      {
+        key: 'Sm', name: 'サマリウム', symbol: 'Sm',
+        illusts: [
+          { title: '① 通常立ち絵', img: 'chara0_Sm.png', desc: '高温の熱にも負けないタフなガードの持ち主。', type: 'default', cost: 0 },
+          { title: '② 別表情', img: 'chara1_Sm.png', desc: '頼もしくサムズアップするキメ顔。', type: 'level', reqLevel: 4, cost: 0 },
+          { title: '③ 日常姿', img: 'chara2_Sm.png', desc: 'スピーカーや耐熱磁石のクラフト貢献で解放！', type: 'craft', productIds: ['speaker', 'samarium_magnet', 'sensor', 'engine'], reqCount: 10, cost: 0 },
+          { title: '④ イベント', img: 'chara3_Sm.png', desc: '過酷な耐熱テストをクリアした記念撮影。', type: 'level', reqLevel: 9, cost: 0 },
+          { title: '⑤ シークレット', img: 'chara4_Sm.png', desc: 'マグマの耐熱合金アーマーをまとう戦士姿。', type: 'gold', cost: 45000 }
+        ]
+      },
+      {
+        key: 'Eu', name: 'ユーロピウム', symbol: 'Eu',
+        illusts: [
+          { title: '① 通常立ち絵', img: 'chara0_Eu.png', desc: '真っ赤な蛍光体で鮮やかにディスプレイを彩る！', type: 'default', cost: 0 },
+          { title: '② 別表情', img: 'chara1_Eu.png', desc: 'キラキラ輝く瞳で見つめる笑顔。', type: 'level', reqLevel: 4, cost: 0 },
+          { title: '③ 日常姿', img: 'chara2_Eu.png', desc: '蛍光塗料やLEDのクラフト貢献で解放！', type: 'craft', productIds: ['paint', 'money_ink', 'led', 'pc'], reqCount: 8, cost: 0 },
+          { title: '④ イベント', img: 'chara3_Eu.png', desc: '色鮮やかなイルミネーションの演出担当に抜擢！', type: 'level', reqLevel: 9, cost: 0 },
+          { title: '⑤ シークレット', img: 'chara4_Eu.png', desc: 'ルビーレッドに輝く妖精のクイーン衣装。', type: 'gold', cost: 45000 }
+        ]
+      },
+      {
+        key: 'Gd', name: 'ガドリニウム', symbol: 'Gd',
+        illusts: [
+          { title: '① 通常立ち絵', img: 'chara0_Gd.png', desc: '医療用MRIの造影剤や原子炉制御で大活躍。', type: 'default', cost: 0 },
+          { title: '② 別表情', img: 'chara1_Gd.png', desc: '知的で冷静沈着なドクター風の微笑み。', type: 'level', reqLevel: 5, cost: 0 },
+          { title: '③ 日常姿', img: 'chara2_Gd.png', desc: 'ブルーレイやMRI造影剤のクラフト貢献で解放！', type: 'craft', productIds: ['blu_ray', 'control_rod', 'mri', 'pet_scan'], reqCount: 12, cost: 0 },
+          { title: '④ イベント', img: 'chara3_Gd.png', desc: '最新鋭の医療センター開院セレモニーにて。', type: 'level', reqLevel: 10, cost: 0 },
+          { title: '⑤ シークレット', img: 'chara4_Gd.png', desc: '近未来の特命チーフメディカルドレス。', type: 'gold', cost: 50000 }
+        ]
+      },
+      {
+        key: 'Tb', name: 'テルビウム', symbol: 'Tb',
+        illusts: [
+          { title: '① 通常立ち絵', img: 'chara0_Tb.png', desc: '鮮やかな緑の光を放つディスプレイの要！', type: 'default', cost: 0 },
+          { title: '② 別表情', img: 'chara1_Tb.png', desc: '元気いっぱいに手を振るウェーブ姿。', type: 'level', reqLevel: 5, cost: 0 },
+          { title: '③ 日常姿', img: 'chara2_Tb.png', desc: '蛍光塗料や磁歪材料のクラフト貢献で解放！', type: 'craft', productIds: ['paint', 'blu_ray', 'magnetostrictive'], reqCount: 10, cost: 0 },
+          { title: '④ イベント', img: 'chara3_Tb.png', desc: '磁歪材料の変形実験でびっくり大成功！', type: 'level', reqLevel: 10, cost: 0 },
+          { title: '⑤ シークレット', img: 'chara4_Tb.png', desc: 'エメラルド・エルフの神秘的なフォレスト衣装。', type: 'gold', cost: 50000 }
+        ]
+      },
+      {
+        key: 'Dy', name: 'ジスプロシウム', symbol: 'Dy',
+        illusts: [
+          { title: '① 通常立ち絵', img: 'chara0_Dy.png', desc: 'ハイブリッドカーのモーターを支えるタフな相棒。', type: 'default', cost: 0 },
+          { title: '② 別表情', img: 'chara1_Dy.png', desc: '力強くガッツポーズを決める頼もしい顔。', type: 'level', reqLevel: 6, cost: 0 },
+          { title: '③ 日常姿', img: 'chara2_Dy.png', desc: 'ネオジム磁石やロケットフレームのクラフト貢献で解放！', type: 'craft', productIds: ['neodymium_magnet', 'magnetic_machine', 'engine', 'rocket_body'], reqCount: 15, cost: 0 },
+          { title: '④ イベント', img: 'chara3_Dy.png', desc: '宇宙ロケットのフレーム完成記念パーティー。', type: 'level', reqLevel: 11, cost: 0 },
+          { title: '⑤ シークレット', img: 'chara4_Dy.png', desc: '超硬質チタン・ハイブリッドパイロットスーツ。', type: 'gold', cost: 60000 }
+        ]
+      },
+      {
+        key: 'Ho', name: 'ホルミウム', symbol: 'Ho',
+        illusts: [
+          { title: '① 通常立ち絵', img: 'chara0_Ho.png', desc: '正確無比な医療用レーザーをしっかりサポート！', type: 'default', cost: 0 },
+          { title: '② 別表情', img: 'chara1_Ho.png', desc: 'きりっと狙いを定めるプロフェッショナルな目線。', type: 'level', reqLevel: 6, cost: 0 },
+          { title: '③ 日常姿', img: 'chara2_Ho.png', desc: '超精密レーザーメスのクラフト貢献で解放！', type: 'craft', productIds: ['laser'], reqCount: 8, cost: 0 },
+          { title: '④ イベント', img: 'chara3_Ho.png', desc: '先端医療技術コンテストでの表彰式。', type: 'level', reqLevel: 11, cost: 0 },
+          { title: '⑤ シークレット', img: 'chara4_Ho.png', desc: '最高峰のホログラフィック・サージェント衣装。', type: 'gold', cost: 60000 }
+        ]
+      },
+      {
+        key: 'Er', name: 'エルビウム', symbol: 'Er',
+        illusts: [
+          { title: '① 通常立ち絵', img: 'chara0_Er.png', desc: '光ファイバーアンプで通信を遠くまで届けるよ！', type: 'default', cost: 0 },
+          { title: '② 別表情', img: 'chara1_Er.png', desc: 'ピンクの髪を揺らして明るく微笑む表情。', type: 'level', reqLevel: 7, cost: 0 },
+          { title: '③ 日常姿', img: 'chara2_Er.png', desc: '超高速光通信ケーブルのクラフト貢献で解放！', type: 'craft', productIds: ['fiber'], reqCount: 8, cost: 0 },
+          { title: '④ イベント', img: 'chara3_Er.png', desc: '超高速通信網の開通式スイッチを押す瞬間！', type: 'level', reqLevel: 12, cost: 0 },
+          { title: '⑤ シークレット', img: 'chara4_Er.png', desc: '光の翼をまとったサイバー・ディーヴァ姿。', type: 'gold', cost: 70000 }
+        ]
+      },
+      {
+        key: 'Tm', name: 'ツリウム', symbol: 'Tm',
+        illusts: [
+          { title: '① 通常立ち絵', img: 'chara0_Tm.png', desc: '持ち運べるポータブルX線源として大活躍。', type: 'default', cost: 0 },
+          { title: '② 別表情', img: 'chara1_Tm.png', desc: 'ちょっと照れ屋で控えめな可愛い笑顔。', type: 'level', reqLevel: 7, cost: 0 },
+          { title: '③ 日常姿', img: 'chara2_Tm.png', desc: 'ハンディX線やレーザーメスのクラフト貢献で解放！', type: 'craft', productIds: ['xray', 'laser'], reqCount: 8, cost: 0 },
+          { title: '④ イベント', img: 'chara3_Tm.png', desc: '移動式ホスピタルでのボランティア活動。', type: 'level', reqLevel: 12, cost: 0 },
+          { title: '⑤ シークレット', img: 'chara4_Tm.png', desc: '透き通るクリスタル・レントゲンコート。', type: 'gold', cost: 70000 }
+        ]
+      },
+      {
+        key: 'Yb', name: 'イッテルビウム', symbol: 'Yb',
+        illusts: [
+          { title: '① 通常立ち絵', img: 'chara0_Yb.png', desc: '超正確な原子時計で時を刻む最新科学の要！', type: 'default', cost: 0 },
+          { title: '② 別表情', img: 'chara1_Yb.png', desc: '秒針の狂いを見つめる真剣な眼差し。', type: 'level', reqLevel: 8, cost: 0 },
+          { title: '③ 日常姿', img: 'chara2_Yb.png', desc: '光格子時計やがん治療薬のクラフト貢献で解放！', type: 'craft', productIds: ['ir_glass', 'sensor', 'cancer_drug', 'atomic_clock'], reqCount: 15, cost: 0 },
+          { title: '④ イベント', img: 'chara3_Yb.png', desc: '光格子時計のギネス記録認定式にて。', type: 'level', reqLevel: 13, cost: 0 },
+          { title: '⑤ シークレット', img: 'chara4_Yb.png', desc: '時空を司るクロノ・スチームパンクドレス。', type: 'gold', cost: 80000 }
+        ]
+      },
+      {
+        key: 'Lu', name: 'ルテチウム', symbol: 'Lu',
+        illusts: [
+          { title: '① 通常立ち絵', img: 'chara0_Lu.png', desc: 'がん診断のPETスキャンで輝く最も重いレアアース！', type: 'default', cost: 0 },
+          { title: '② 別表情', img: 'chara1_Lu.png', desc: '優しく患者を包み込むような温かい笑顔。', type: 'level', reqLevel: 8, cost: 0 },
+          { title: '③ 日常姿', img: 'chara2_Lu.png', desc: 'PETスキャンやがん治療薬のクラフト貢献で解放！', type: 'craft', productIds: ['pet_scan', 'cancer_drug'], reqCount: 12, cost: 0 },
+          { title: '④ イベント', img: 'chara3_Lu.png', desc: '最先端のがん治療薬開発成功の記者会見。', type: 'level', reqLevel: 13, cost: 0 },
+          { title: '⑤ シークレット', img: 'chara4_Lu.png', desc: '究極のヘビーメタル・プラチナメディカル天使。', type: 'gold', cost: 80000 }
+        ]
+      },
+      {
+        key: 'Sc', name: 'スカンジウム', symbol: 'Sc',
+        illusts: [
+          { title: '① 通常立ち絵', img: 'chara0_Sc.png', desc: '軽くて強い！航空宇宙や合金の未来を切り拓く！', type: 'default', cost: 0 },
+          { title: '② 別表情', img: 'chara1_Sc.png', desc: '空を見上げて大きくガッツポーズ！', type: 'level', reqLevel: 9, cost: 0 },
+          { title: '③ 日常姿', img: 'chara2_Sc.png', desc: '飛行機ボディやロケットフレームのクラフト貢献で解放！', type: 'craft', productIds: ['airplane_body', 'rocket_body'], reqCount: 15, cost: 0 },
+          { title: '④ イベント', img: 'chara3_Sc.png', desc: '次世代超軽量ロケットの打ち上げ成功！', type: 'level', reqLevel: 14, cost: 0 },
+          { title: '⑤ シークレット', img: 'chara4_Sc.png', desc: '宇宙航空最高司令官のフルメタル・アーマー。', type: 'gold', cost: 90000 }
+        ]
+      },
+      {
+        key: 'Y', name: 'イットリウム', symbol: 'Y',
+        illusts: [
+          { title: '① 通常立ち絵', img: 'chara0_Y.png', desc: '赤色ディスプレイやセラミックで大活躍する基本の姿！', type: 'default', cost: 0 },
+          { title: '② 別表情', img: 'chara1_Y.png', desc: '笑顔で元気に光ファイバーを点検中！', type: 'level', reqLevel: 5, cost: 0 },
+          { title: '③ 日常姿', img: 'chara2_Y.png', desc: 'LEDや通信ケーブルのクラフト貢献で解放！', type: 'craft', productIds: ['led', 'fiber', 'airplane_body'], reqCount: 12, cost: 0 },
+          { title: '④ イベント', img: 'chara3_Y.png', desc: '新技術の開発発表会でのワンシーン。', type: 'level', reqLevel: 10, cost: 0 },
+          { title: '⑤ シークレット', img: 'chara4_Y.png', desc: '極秘の最先端ラボで研究に没頭するプレミアム衣装！', type: 'gold', cost: 50000 }
+        ]
+      },
+      {
+        key: 'Pm', name: 'プロメチウム', symbol: 'Pm',
+        illusts: [
+          { title: '① 通常立ち絵', img: 'chara0_Pm.png', desc: '貴重なエネルギーを秘めた少しミステリアスな少女。', type: 'default', cost: 0 },
+          { title: '② 別表情', img: 'chara1_Pm.png', desc: '少し心を開いて見せてくれた柔らかな微笑み。', type: 'level', reqLevel: 6, cost: 0 },
+          { title: '③ 日常姿', img: 'chara2_Pm.png', desc: '厚さ計や原子力電池のクラフト貢献で解放！', type: 'craft', productIds: ['thickness', 'battery'], reqCount: 5, cost: 0 },
+          { title: '④ イベント', img: 'chara3_Pm.png', desc: '原子力電池の稼働実験を見守るシーン。', type: 'level', reqLevel: 11, cost: 0 },
+          { title: '⑤ シークレット', img: 'chara4_Pm.png', desc: '星空をモチーフにした神秘のドレス姿。', type: 'gold', cost: 60000 }
+        ]
+      }
+    ];
+
+    function updateUI() {
+      document.getElementById('money').innerText = gameState.money.toLocaleString();
+      document.getElementById('level').innerText = gameState.level;
+
+      // キャラ図鑑の描画
+      const grid = document.getElementById('charaGrid');
+      grid.innerHTML = '';
+      charactersMaster.forEach(chara => {
+        const defaultImg = chara.illusts[0].img;
+        const card = document.createElement('div');
+        card.className = 'chara-card';
+        card.onclick = () => openGallery(chara.key);
+        card.innerHTML = `
+          <img src="${defaultImg}" alt="${chara.name}" onerror="this.src='chara0_Y.png'">
+          <div class="name">${chara.name}</div>
+          <div class="sub">(${chara.symbol})</div>
+        `;
+        grid.appendChild(card);
+      });
+
+      // 💎 鉱物図鑑コレクションの描画
+      const gemGrid = document.getElementById('gemGrid');
+      gemGrid.innerHTML = '';
+      let unlockedGemCount = 0;
+
+      gemsMaster.forEach(gem => {
+        const isUnlocked = !!gameState.houseki[gem.id];
+        if (isUnlocked) unlockedGemCount++;
+
+        const item = document.createElement('div');
+        if (isUnlocked) {
+          item.className = 'gem-item unlocked';
+          item.onclick = () => showGemModal(gem);
+          item.innerHTML = `
+            <span class="gem-id">#${gem.id}</span>
+            <img src="${gem.img}" class="gem-img" alt="${gem.name}" onerror="this.src='chara0_Y.png'">
+            <div class="gem-name">${gem.name}</div>
+          `;
+        } else {
+          item.className = 'gem-item locked';
+          item.onclick = () => showLockedGemModal(gem.id);
+          item.innerHTML = `
+            <span class="gem-id">#${gem.id}</span>
+            <div class="gem-locked-icon">❓</div>
+            <div class="gem-name">？？？</div>
+          `;
+        }
+        gemGrid.appendChild(item);
+      });
+
+      document.getElementById('collectionCount').innerText = `解放: ${unlockedGemCount} / 100`;
+    }
+
+    // 鉱物モーダル制御
+    function showGemModal(gem) {
+      document.getElementById('gemModalImg').src = gem.img;
+      document.getElementById('gemModalTitle').innerText = `#${gem.id} ${gem.name}`;
+      document.getElementById('gemModalDesc').innerText = gem.desc;
+      document.getElementById('gemModal').style.display = 'flex';
+    }
+
+    function showLockedGemModal(id) {
+      document.getElementById('gemModalImg').src = 'chara0_Y.png';
+      document.getElementById('gemModalTitle').innerText = `#${id} 未入手の鉱物`;
+      document.getElementById('gemModalDesc').innerText = 'まだ発見していません。マップでの採掘やイベントを進めて鉱物を手に入れよう！';
+      document.getElementById('gemModal').style.display = 'flex';
+    }
+
+    function closeGemModal() {
+      document.getElementById('gemModal').style.display = 'none';
+    }
+
+    // キャラギャラリーモーダル制御
+    let currentChara = null;
+    let selectedIllustIndex = 0;
+
+    function openGallery(charaKey) {
+      currentChara = charactersMaster.find(c => c.key === charaKey);
+      if (!currentChara) return;
+
+      selectedIllustIndex = 0;
+      renderGalleryModal();
+      document.getElementById('galleryModal').style.display = 'flex';
+    }
+
+    function closeGalleryModal() {
+      document.getElementById('galleryModal').style.display = 'none';
+    }
+
+    function renderGalleryModal() {
+      document.getElementById('modalCharaTitle').innerText = `${currentChara.name} (${currentChara.symbol}) のギャラリー`;
+
+      const thumbNav = document.getElementById('thumbNav');
+      thumbNav.innerHTML = '';
+
+      currentChara.illusts.forEach((item, idx) => {
+        const isUnlocked = checkUnlocked(currentChara.key, idx);
+        const btn = document.createElement('div');
+        btn.className = `thumb-btn ${idx === selectedIllustIndex ? 'active' : ''} ${isUnlocked ? 'unlocked' : ''}`;
+        btn.innerText = `#${idx}`;
+        btn.onclick = () => {
+          selectedIllustIndex = idx;
+          renderGalleryModal();
+        };
+        thumbNav.appendChild(btn);
+      });
+
+      const illust = currentChara.illusts[selectedIllustIndex];
+      const isUnlocked = checkUnlocked(currentChara.key, selectedIllustIndex);
+
+      const galleryImg = document.getElementById('galleryImg');
+      const lockedOverlay = document.getElementById('lockedOverlay');
+      const galleryDesc = document.getElementById('galleryDesc');
+      const unlockBtn = document.getElementById('unlockBuyBtn');
+
+      galleryImg.src = illust.img;
+
+      if (isUnlocked) {
+        lockedOverlay.style.display = 'none';
+        galleryImg.style.filter = 'none';
+        galleryDesc.innerHTML = `<strong style="color:#ffde59;">${illust.title}</strong><br>${illust.desc}`;
+      } else {
+        lockedOverlay.style.display = 'flex';
+        galleryImg.style.filter = 'brightness(0) blur(4px)';
+        
+        let condText = '';
+        if (illust.type === 'level') {
+          condText = `🔒 解放条件：\nプレイヤー Lv.${illust.reqLevel} 以上`;
+          unlockBtn.style.display = 'none';
+        } else if (illust.type === 'craft') {
+          let totalCrafted = 0;
+          illust.productIds.forEach(pId => {
+            totalCrafted += (gameState.products[pId] || 0);
+          });
+          condText = `🔒 解放条件：\n関連製品の製造計 ${illust.reqCount}個\n(現在: ${totalCrafted} / ${illust.reqCount}個)`;
+          unlockBtn.style.display = 'none';
+        } else if (illust.type === 'event') {
+          condText = `🔒 解放条件：\n特定エリアの採掘・イベント達成`;
+          unlockBtn.style.display = 'none';
+        } else if (illust.type === 'gold') {
+          condText = `🔒 シークレット枠\n購入価格：${illust.cost.toLocaleString()} G`;
+          unlockBtn.style.display = 'block';
+          unlockBtn.innerText = `💰 ${illust.cost.toLocaleString()} G で解放する`;
+        }
+        document.getElementById('lockConditionText').innerText = condText;
+        galleryDesc.innerHTML = `<strong style="color:#ffde59;">${illust.title} (未解放)</strong><br>条件を満たしてイラストをアンロックしよう！`;
+      }
+    }
+
+    function checkUnlocked(charaKey, idx) {
+      if (idx === 0) return true;
+      const illust = charactersMaster.find(c => c.key === charaKey).illusts[idx];
+      
+      const saveKey = `${charaKey}_${idx}`;
+      if (gameState.unlockedIllustrations[saveKey]) return true;
+
+      if (illust.type === 'level' && gameState.level >= illust.reqLevel) {
+        return true;
+      }
+
+      if (illust.type === 'craft') {
+        let totalCrafted = 0;
+        illust.productIds.forEach(pId => {
+          totalCrafted += (gameState.products[pId] || 0);
+        });
+        if (totalCrafted >= illust.reqCount) {
+          return true;
+        }
+      }
+
+      return false;
+    }
+
+    function buyIllustration() {
+      const illust = currentChara.illusts[selectedIllustIndex];
+      if (gameState.money < illust.cost) {
+        const se = document.getElementById('se-fuseikai');
+        if (se) { se.currentTime = 0; se.play().catch(e => {}); }
+        alert('⚠️ 資金（G）が足りません！');
+        return;
+      }
+
+      gameState.money -= illust.cost;
+      const saveKey = `${currentChara.key}_${selectedIllustIndex}`;
+      gameState.unlockedIllustrations[saveKey] = true;
+
+      const se = document.getElementById('se-unlock');
+      if (se) { se.currentTime = 0; se.play().catch(e => {}); }
+
+      localStorage.setItem('rareEarthGameState', JSON.stringify(gameState));
+      updateUI();
+      renderGalleryModal();
+      alert(`🎉 「${currentChara.name}」のシークレットイラストを解放しました！`);
+    }
+
+    updateUI();
+  </script>
+</body>
+</html>

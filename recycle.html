@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>レアアース・クラフト - 都市鉱山リサイクル</title>
+  <style>
+    body { background-color: #1a1a2e; color: #fff; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+    .phone { width: 360px; height: 740px; background: #0f3460; border: 4px solid #16213e; border-radius: 24px; display: flex; flex-direction: column; overflow: hidden; position: relative; box-sizing: border-box; }
+    
+    /* ヘッダー */
+    .header { background: #16213e; padding: 8px 10px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: bold; border-bottom: 2px solid #e94560; flex-shrink: 0; }
+    
+    /* BGMトグルボタンのスタイル（精製画面と統一） */
+    .bgm-btn {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid #00fff5;
+      color: #00fff5;
+      border-radius: 12px;
+      padding: 2px 8px;
+      font-size: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      transition: all 0.2s;
+    }
+    .bgm-btn.muted {
+      border-color: #e94560;
+      color: #e94560;
+      background: rgba(233, 69, 96, 0.2);
+    }
+
+    .content { flex: 1; padding: 10px; display: flex; flex-direction: column; gap: 8px; position: relative; overflow: hidden; box-sizing: border-box; }
+    
+    /* ゲームエリア */
+    .game-area {
+      flex: 1;
+      height: 380px;
+      background: rgba(15,23,42,0.9);
+      border: 2px solid #00fff5;
+      border-radius: 12px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* 落ちてくるアイテム */
+    .falling-item {
+      position: absolute;
+      width: 55px;
+      height: 55px;
+      background: #16213e;
+      border: 2px solid #ffde59;
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transform: translateX(-50%);
+      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    }
+    .item-icon { font-size: 22px; }
+    .item-name { font-size: 8px; color: #fff; margin-top: 2px; text-align: center; }
+
+    /* アイテム右上の属性ヒントバッジ */
+    .type-badge {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #00fff5;
+      color: #0f3460;
+      font-size: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    }
+    .type-badge.danger-badge { background: #ff4757; color: #fff; }
+
+    /* 下部のキャッチボタンエリア */
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+    .catch-btn {
+      background: #16213e;
+      border: 2px solid #00fff5;
+      color: #fff;
+      padding: 12px 4px;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: bold;
+      cursor: pointer;
+      text-align: center;
+      transition: background 0.1s;
+    }
+    .catch-btn:active { background: #00fff5; color: #0f3460; }
+    .catch-btn.danger { border-color: #ff4757; color: #ff4757; }
+    .catch-btn.danger:active { background: #ff4757; color: #fff; }
+
+    /* スコア・状況表示 */
+    .status-panel {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(22,33,62,0.8);
+      border: 1px solid #00fff5;
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-size: 11px;
+    }
+
+    .mode-indicator {
+      font-size: 10px;
+      color: #00fff5;
+      font-weight: bold;
+    }
+    .mode-indicator.hard { color: #ff4757; animation: blink 0.8s infinite alternate; }
+
+    @keyframes blink {
+      from { opacity: 1; }
+      to { opacity: 0.4; }
+    }
+
+    .btn-back { background: #e94560; color: #fff; border: none; padding: 8px; font-weight: bold; border-radius: 8px; cursor: pointer; width: 100%; font-size: 11px; margin-top: 4px; }
+
+    /* --- スタート画面・結果用モーダル共通CSS --- */
+    .modal-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(10, 15, 30, 0.9);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 100;
+      backdrop-filter: blur(2px);
+      box-sizing: border-box;
+      padding: 16px;
+    }
+
+    .modal-content {
+      background: #16213e;
+      border: 2px solid #00fff5;
+      border-radius: 16px;
+      padding: 16px;
+      width: 100%;
+      max-width: 270px;
+      text-align: center;
+      box-shadow: 0 0 20px rgba(0, 255, 245, 0.3);
+      animation: popup 0.3s ease-out;
+      box-sizing: border-box;
+    }
+
+    @keyframes popup {
+      0% { transform: scale(0.8); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .result-breakdown {
+      background: rgba(15,23,42,0.8);
+      border: 1px solid #00fff5;
+      border-radius: 8px;
+      padding: 8px;
+      margin: 8px 0;
+      font-size: 11px;
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .result-row {
+      display: flex;
+      justify-content: space-between;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- BGM（BGM_siwake.ogg / もしmp3なら拡張子を合わせてください）および効果音の読み込み -->
+  <audio id="bgm" src="BGM_siwake.ogg" loop preload="auto"></audio>
+  <audio id="seSyutudai" src="mini_syutudai.mp3" preload="auto"></audio>
+  <audio id="seType" src="type.mp3" preload="auto"></audio>
+  <audio id="seSeikai" src="mini_seikai.mp3" preload="auto"></audio>
+  <audio id="seFuseikai" src="mini_fuseikai.mp3" preload="auto"></audio>
+  <audio id="seRakka" src="mini_rakka.mp3" preload="auto"></audio>
+  <audio id="seCountdown" src="mini_cowntdown.mp3" preload="auto"></audio>
+
+  <div class="phone">
+    <div class="header">
+      <span>♻️ 都市鉱山緊急チャージ</span>
+      <span>⏱️ 残り: <span id="time">30</span>秒</span>
+      <!-- BGMオン/オフ用アイコンボタン（精製画面と統一） -->
+      <button id="bgm-btn" class="bgm-btn" onclick="toggleBGM()">🎵 ON</button>
+    </div>
+    
+    <div class="content">
+      <div class="status-panel">
+        <span>獲得パーツ: <span id="score">0</span>個</span>
+        <span class="mode-indicator" id="modeIndicator">💡 ヒント表示中</span>
+      </div>
+
+      <!-- 落下ゲームのステージ -->
+      <div class="game-area" id="gameArea"></div>
+
+      <!-- キャッチボタン -->
+      <div class="controls">
+        <button class="catch-btn" onclick="catchItem('board')">📱<br>基板回収</button>
+        <button class="catch-btn" onclick="catchItem('magnet')">🧲<br>磁石回収</button>
+        <button class="catch-btn danger" onclick="catchItem('danger')">⚡<br>バッテリー避難</button>
+      </div>
+
+      <button class="btn-back" onclick="location.href='map.html'">🗺️ マップに戻る</button>
+    </div>
+
+    <!-- スタート説明画面モーダル -->
+    <div id="startModal" class="modal-overlay">
+      <div class="modal-content">
+        <div style="font-size: 28px;">♻️</div>
+        <div style="font-size: 15px; font-weight: bold; color: #00fff5; margin: 6px 0;">都市鉱山リサイクル</div>
+        <div style="font-size: 11px; color: #dcdde1; text-align: left; line-height: 1.4; margin-bottom: 12px; background: rgba(15,23,42,0.8); padding: 8px; border-radius: 6px;">
+          上から落ちてくるパーツを種類ごとに仕分けよう！<br>
+          📱<b>基板</b> / 🧲<b>磁石</b> / ⚡<b>バッテリー</b>のボタンで受け止めろ。<br>
+          ※バッテリーの取り逃がしや間違いは<b>ペナルティ（減点）</b>になるぞ！後半はヒントが消えるので注意！
+        </div>
+        <button class="btn-back" style="background: #00fff5; color: #0f3460; font-size: 12px; padding: 10px;" onclick="startMainGame()">
+          🚀 スタート！
+        </button>
+      </div>
+    </div>
+
+    <!-- ゲーム結果用ポップアップモーダル -->
+    <div id="resultModal" class="modal-overlay" style="display: none;">
+      <div class="modal-content">
+        <div style="font-size: 28px;">🎉</div>
+        <div style="font-size: 15px; font-weight: bold; color: #00fff5; margin: 4px 0;">リサイクル＆売却完了！</div>
+        
+        <div class="result-breakdown">
+          <div class="result-row">
+            <span>📱 基板回収:</span>
+            <span style="color:#00fff5;"><span id="countBoard">0</span>個 (+<span id="earnBoard">0</span>G)</span>
+          </div>
+          <div class="result-row">
+            <span>🧲 磁石回収:</span>
+            <span style="color:#ffde59;"><span id="countMagnet">0</span>個 (+<span id="earnMagnet">0</span>G)</span>
+          </div>
+          <div class="result-row">
+            <span>⚡ ペナルティ:</span>
+            <span style="color:#ff4757;"><span id="countPenalty">0</span>回 (<span id="earnPenalty">0</span>G)</span>
+          </div>
+          <div style="border-top: 1px dashed #00fff5; margin-top: 2px; padding-top: 4px; font-weight: bold; display: flex; justify-content: space-between;">
+            <span>💰 最終売却益:</span>
+            <span style="color:#55ff55;" id="totalMoney">+0 G</span>
+          </div>
+        </div>
+
+        <button class="btn-back" style="background: #00fff5; color: #0f3460; font-size: 12px; padding: 10px;" onclick="saveAndReturn()">
+          💰 資金を受け取ってマップへ
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // BGMの設定・再生制御（自動再生ブロック対応）
+    const bgm = document.getElementById('bgm');
+    const bgmBtn = document.getElementById('bgm-btn');
+    bgm.volume = 0.3;
+
+    let isMuted = localStorage.getItem('bgmMuted') === 'true';
+
+    function updateBgmUI() {
+      if (isMuted) {
+        bgm.muted = true;
+        bgmBtn.innerText = '🔇 OFF';
+        bgmBtn.classList.add('muted');
+      } else {
+        bgm.muted = false;
+        bgmBtn.innerText = '🎵 ON';
+        bgmBtn.classList.remove('muted');
+      }
+    }
+
+    function toggleBGM() {
+      isMuted = !isMuted;
+      localStorage.setItem('bgmMuted', isMuted);
+      updateBgmUI();
+      if (!isMuted) {
+        bgm.play().catch(e => console.log('BGM再生エラー:', e));
+      } else {
+        bgm.pause();
+      }
+    }
+
+    // 初回ユーザーインタラクション時に確実に再生をトリガー
+    function tryPlayBgm() {
+      updateBgmUI();
+      if (!isMuted && bgm.paused) {
+        bgm.play().then(() => {
+          document.removeEventListener('click', tryPlayBgm);
+          document.removeEventListener('touchstart', tryPlayBgm);
+        }).catch(err => {
+          console.log('自動再生待機中...', err);
+        });
+      }
+    }
+
+    document.addEventListener('click', tryPlayBgm);
+    document.addEventListener('touchstart', tryPlayBgm);
+
+    let score = 0;
+    let timeLeft = 30;
+    let activeItems = [];
+    let gameInterval, spawnerInterval, timerInterval;
+    let isHardMode = false;
+
+    // カウント用
+    let collectedBoard = 0;
+    let collectedMagnet = 0;
+    let penaltyCount = 0;
+
+    const itemList = [
+      { type: 'board', icon: '📱', name: 'スマホ', badge: '📱' },
+      { type: 'board', icon: '💻', name: 'ノートPC', badge: '📱' },
+      { type: 'board', icon: '🎮', name: 'ゲーム機', badge: '📱' },
+      { type: 'board', icon: '📷', name: 'デジカメ', badge: '📱' },
+      { type: 'magnet', icon: '⚙️', name: '小型モーター', badge: '🧲' },
+      { type: 'magnet', icon: '💽', name: 'ハードディスク', badge: '🧲' },
+      { type: 'magnet', icon: '🔊', name: 'スピーカー', badge: '🧲' },
+      { type: 'danger', icon: '🔋', name: 'リチウム電池', badge: '⚡' },
+      { type: 'danger', icon: '⚡', name: '発熱バッテリー', badge: '⚡' }
+    ];
+
+    // ページ読み込み時の処理
+    window.onload = function() {
+      updateBgmUI();
+      tryPlayBgm();
+      document.getElementById('seSyutudai').play().catch(e => console.log(e));
+    };
+
+    // 「スタート！」ボタンを押したときの処理
+    function startMainGame() {
+      tryPlayBgm();
+      document.getElementById('seType').play().catch(e => console.log(e));
+      document.getElementById('startModal').style.display = 'none';
+      startGame();
+    }
+
+    function startGame() {
+      score = 0;
+      timeLeft = 30;
+      collectedBoard = 0;
+      collectedMagnet = 0;
+      penaltyCount = 0;
+      isHardMode = false;
+      document.getElementById('score').innerText = score;
+      document.getElementById('time').innerText = timeLeft;
+
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        document.getElementById('time').innerText = timeLeft;
+
+        if (timeLeft === 3) {
+          document.getElementById('seCountdown').play().catch(e => console.log(e));
+        }
+
+        if (timeLeft <= 15 && !isHardMode) {
+          isHardMode = true;
+          const indicator = document.getElementById('modeIndicator');
+          indicator.innerText = '🔥 ヒント消滅！記憶で勝負！';
+          indicator.className = 'mode-indicator hard';
+
+          document.querySelectorAll('.type-badge').forEach(badge => badge.remove());
+        }
+
+        if (timeLeft <= 0) {
+          endGame();
+        }
+      }, 1000);
+
+      spawnerInterval = setInterval(spawnItem, 1300);
+      gameInterval = setInterval(updateItems, 30);
+    }
+
+    function endGame() {
+      clearInterval(timerInterval);
+      clearInterval(spawnerInterval);
+      clearInterval(gameInterval);
+
+      const priceBoard = 50;
+      const priceMagnet = 80;
+      const penaltyCost = 40;
+
+      const earnBoard = collectedBoard * priceBoard;
+      const earnMagnet = collectedMagnet * priceMagnet;
+      const totalPenalty = penaltyCount * penaltyCost;
+      const totalEarn = Math.max(0, (earnBoard + earnMagnet) - totalPenalty);
+
+      document.getElementById('countBoard').innerText = collectedBoard;
+      document.getElementById('earnBoard').innerText = earnBoard;
+      document.getElementById('countMagnet').innerText = collectedMagnet;
+      document.getElementById('earnMagnet').innerText = earnMagnet;
+      document.getElementById('countPenalty').innerText = penaltyCount;
+      document.getElementById('earnPenalty').innerText = totalPenalty;
+      document.getElementById('totalMoney').innerText = `+${totalEarn.toLocaleString()} G`;
+
+      window.earnedMoney = totalEarn;
+      document.getElementById('resultModal').style.display = 'flex';
+    }
+
+    function saveAndReturn() {
+      let gameState = JSON.parse(localStorage.getItem('rareEarthGameState')) || { money: 1500, level: 1, mudStock: 5 };
+      gameState.money += (window.earnedMoney || 0);
+      localStorage.setItem('rareEarthGameState', JSON.stringify(gameState));
+      location.href = 'map.html';
+    }
+
+    function spawnItem() {
+      const gameArea = document.getElementById('gameArea');
+      const randomItem = itemList[Math.floor(Math.random() * itemList.length)];
+      
+      const itemEl = document.createElement('div');
+      itemEl.className = 'falling-item';
+      
+      let badgeHTML = '';
+      if (!isHardMode) {
+        const badgeClass = randomItem.type === 'danger' ? 'type-badge danger-badge' : 'type-badge';
+        badgeHTML = `<div class="${badgeClass}">${randomItem.badge}</div>`;
+      }
+
+      itemEl.innerHTML = `
+        ${badgeHTML}
+        <span class="item-icon">${randomItem.icon}</span>
+        <span class="item-name">${randomItem.name}</span>
+      `;
+      
+      const randomX = Math.floor(Math.random() * 60) + 20;
+      itemEl.style.left = randomX + '%';
+      itemEl.style.top = '0px';
+
+      gameArea.appendChild(itemEl);
+
+      activeItems.push({
+        element: itemEl,
+        type: randomItem.type,
+        y: 0
+      });
+    }
+
+    function updateItems() {
+      for (let i = activeItems.length - 1; i >= 0; i--) {
+        let item = activeItems[i];
+        item.y += 3;
+        item.element.style.top = item.y + 'px';
+
+        if (item.y > 330) {
+          document.getElementById('seRakka').currentTime = 0;
+          document.getElementById('seRakka').play().catch(e => console.log(e));
+
+          if (item.type === 'danger') {
+            penaltyCount++;
+          }
+
+          item.element.remove();
+          activeItems.splice(i, 1);
+        }
+      }
+    }
+
+    function catchItem(actionType) {
+      if (activeItems.length === 0) return;
+
+      let targetItem = activeItems[0];
+
+      if (targetItem.type === actionType) {
+        document.getElementById('seSeikai').currentTime = 0;
+        document.getElementById('seSeikai').play().catch(e => console.log(e));
+
+        score++;
+        if (actionType === 'board') collectedBoard++;
+        if (actionType === 'magnet') collectedMagnet++;
+
+        document.getElementById('score').innerText = score;
+        targetItem.element.style.borderColor = '#00fff5';
+      } else {
+        document.getElementById('seFuseikai').currentTime = 0;
+        document.getElementById('seFuseikai').play().catch(e => console.log(e));
+
+        score = Math.max(0, score - 1);
+        penaltyCount++;
+        document.getElementById('score').innerText = score;
+        targetItem.element.style.borderColor = '#ff4757';
+      }
+
+      targetItem.element.remove();
+      activeItems.shift();
+    }
+  </script>
+</body>
+</html>

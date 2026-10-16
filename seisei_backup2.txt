@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>レアアース・クラフト - 精製プラント</title>
+  <style>
+    body { background-color: #1a1a2e; color: #fff; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+    .phone { width: 360px; height: 640px; background: #0f3460; border: 4px solid #16213e; border-radius: 24px; display: flex; flex-direction: column; overflow: hidden; position: relative; box-sizing: border-box; }
+    
+    /* ヘッダー */
+    .header { background: #16213e; padding: 10px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: bold; border-bottom: 2px solid #e94560; flex-shrink: 0; }
+    
+    /* BGMトグルボタンのスタイル */
+    .bgm-btn {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid #00fff5;
+      color: #00fff5;
+      border-radius: 12px;
+      padding: 2px 8px;
+      font-size: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      transition: all 0.2s;
+    }
+    .bgm-btn.muted {
+      border-color: #e94560;
+      color: #e94560;
+      background: rgba(233, 69, 96, 0.2);
+    }
+
+    .content { flex: 1; background: linear-gradient(180deg, #1b4f72 0%, #0f3460 100%); padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; overflow-y: auto; box-sizing: border-box; }
+    
+    .card { background: rgba(22, 33, 62, 0.9); border: 1px solid #00fff5; border-radius: 12px; padding: 8px 10px; font-size: 12px; }
+    .card-title { font-size: 13px; font-weight: bold; color: #00fff5; margin-bottom: 6px; }
+
+    /* 精製カットイン演出ボックス（背景白） */
+    .gacha-result-box {
+      background: #ffffff;
+      border: 2px solid #ffde59;
+      border-radius: 12px;
+      padding: 10px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      box-sizing: border-box;
+      box-shadow: inset 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    /* 画像を表示枠いっぱいの最大幅にする設定 */
+    .chara-avatar-img {
+      width: 100%;
+      height: 140px;
+      object-fit: contain;
+      margin: 4px 0;
+      filter: drop-shadow(0 3px 5px rgba(0,0,0,0.15));
+    }
+
+    .pop-anim {
+      animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @keyframes popIn {
+      0% { transform: scale(0.5); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .chara-name-tag {
+      font-size: 13px;
+      font-weight: bold;
+      color: #0f3460;
+      margin-bottom: 2px;
+    }
+
+    .speech-bubble {
+      background-color: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 6px 8px;
+      font-size: 11px;
+      color: #1e293b;
+      width: 100%;
+      box-sizing: border-box;
+      line-height: 1.3;
+      font-weight: bold;
+    }
+
+    .btn {
+      background-color: #e94560;
+      color: #ffffff;
+      border: none;
+      padding: 11px;
+      font-size: 13px;
+      font-weight: bold;
+      border-radius: 18px;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 6px;
+      box-shadow: 0 3px 10px rgba(233, 69, 96, 0.4);
+      transition: transform 0.1s;
+    }
+    .btn:active { transform: scale(0.97); }
+
+    .inventory-list {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 4px;
+      font-size: 11px;
+      max-height: 95px;
+      overflow-y: auto;
+      background: rgba(15, 23, 42, 0.6);
+      padding: 6px;
+      border: 1px solid #00fff5;
+      border-radius: 8px;
+    }
+
+    /* ミニゲーム用＆誘導用ポップアップモーダル */
+    .modal-overlay {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(10, 15, 30, 0.85);
+      display: flex; justify-content: center; align-items: center;
+      z-index: 100;
+      backdrop-filter: blur(2px);
+      box-sizing: border-box;
+      padding: 16px;
+    }
+    .modal-content {
+      background: #16213e;
+      border: 2px solid #00fff5;
+      border-radius: 16px;
+      padding: 16px 12px;
+      width: 100%;
+      max-width: 300px;
+      text-align: center;
+      box-shadow: 0 0 20px rgba(0, 255, 245, 0.3);
+      animation: popup 0.3s ease-out;
+      box-sizing: border-box;
+    }
+    @keyframes popup {
+      0% { transform: scale(0.8); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .modal-btn-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    /* ナビキャラ（テルビウム）案内用吹き出しコンテナ */
+    .guide-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(22, 33, 62, 0.95);
+      border: 1px solid #00fff5;
+      border-radius: 10px;
+      padding: 8px;
+      margin-bottom: 10px;
+      text-align: left;
+    }
+    .guide-icon {
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      border: 2px solid #00fff5;
+      object-fit: cover;
+      flex-shrink: 0;
+      background: #16213e;
+    }
+    .guide-bubble {
+      position: relative;
+      background: #f8f9fa;
+      border: 1px solid #00fff5;
+      border-radius: 8px;
+      padding: 6px 8px;
+      font-size: 11px;
+      color: #1a1a2e;
+      font-weight: bold;
+      flex: 1;
+      line-height: 1.3;
+    }
+
+    /* ハイ＆ロー結果の視覚的ビジュアルボックス（大・小を原子番号の大小に連動） */
+    .visual-comparison {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      margin: 8px 0;
+    }
+    .box-large {
+      width: 68px;
+      height: 68px;
+      background: #0f3460;
+      border: 2px solid #ffde59;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      font-weight: bold;
+      color: #ffde59;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+    .box-small {
+      width: 50px;
+      height: 50px;
+      background: #0f3460;
+      border: 1.5px solid #00fff5;
+      border-radius: 6px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      font-weight: bold;
+      color: #00fff5;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+
+    /* 下部ナビゲーション */
+    .nav { height: 50px; background: #16213e; display: flex; justify-content: space-around; align-items: center; font-size: 11px; flex-shrink: 0; }
+    .nav-item { color: #8a8a8a; cursor: pointer; text-align: center; }
+    .nav-item.active { color: #00fff5; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+  <!-- BGMおよび効果音の読み込み -->
+  <audio id="bgm" src="BGM_seisei.mp3" loop preload="auto"></audio>
+  <audio id="se-nyu1" src="nyu1.mp3" preload="auto"></audio>
+  <audio id="se-nyu2" src="nyu2.mp3" preload="auto"></audio>
+  <audio id="se-itemget" src="itemget.mp3" preload="auto"></audio>
+  <audio id="se-fuseikai" src="mini_fuseikai.mp3" preload="auto"></audio>
+  <audio id="se-gogogo" src="gogogo.mp3" preload="auto"></audio>
+
+  <div class="phone">
+    <!-- ヘッダー -->
+    <div class="header">
+      <span>💰 <span id="money">1,500</span> G</span>
+      <span>🌟 Lv.<span id="level">1</span></span>
+      <span>📦 泥: <span id="mud">5</span>個</span>
+      <!-- BGMオン/オフ用アイコンボタン -->
+      <button id="bgm-btn" class="bgm-btn" onclick="toggleBGM()">🎵 ON</button>
+    </div>
+
+    <!-- コンテンツエリア -->
+    <div class="content">
+      <div class="card" style="padding: 6px 10px;">
+        <div class="card-title">🧪 元素精製プラント</div>
+        
+        <!-- カットイン演出ボックス（背景白） -->
+        <div class="gacha-result-box">
+          <!-- 初期状態は精製施設画像 seisei.png -->
+          <img class="chara-avatar-img" id="chara-img" src="seisei.png" alt="精製プラント">
+          <div class="chara-name-tag" id="chara-name">🏭 プラント待機中</div>
+          <div class="speech-bubble" id="chara-speech">精製ボタンを押すと、元素が抽出されます！</div>
+        </div>
+
+        <button class="btn" onclick="refineElement()">✨ 泥を精製する (コスト: 50G / 泥1個)</button>
+      </div>
+
+      <!-- 所持元素コレクション -->
+      <div class="card">
+        <div class="card-title">📦 所持元素コレクション</div>
+        <div class="inventory-list" id="inventory-box"></div>
+      </div>
+    </div>
+
+    <!-- ミニゲーム・誘導用ポップアップモーダル（初期非表示） -->
+    <div id="minigameModal" class="modal-overlay" style="display: none;">
+      <div class="modal-content" id="modal-content-inner">
+        <!-- JSで動的に書き換えます -->
+      </div>
+    </div>
+
+    <!-- 下部ナビゲーション -->
+    <div class="nav">
+      <div class="nav-item" onclick="location.href='map.html'">🗺️<br>マップ</div>
+      <div class="nav-item active" onclick="location.href='seisei.html'">🧪<br>精製</div>
+      <div class="nav-item" onclick="location.href='factory.html'">🏭<br>工場</div>
+      <div class="nav-item" onclick="alert('🎨 キャラ図鑑は準備中です！')">🎨<br>キャラ</div>
+    </div>
+  </div>
+
+  <script>
+    let savedData = JSON.parse(localStorage.getItem('rareEarthGameState'));
+    let gameState = savedData || {
+      money: 1500,
+      level: 1,
+      mudStock: 5,
+      elements: {}
+    };
+
+    // BGMの設定・再生制御
+    const bgm = document.getElementById('bgm');
+    const bgmBtn = document.getElementById('bgm-btn');
+    bgm.volume = 0.3;
+
+    let isMuted = localStorage.getItem('bgmMuted') === 'true';
+
+    function updateBgmUI() {
+      if (isMuted) {
+        bgm.muted = true;
+        bgmBtn.innerText = '🔇 OFF';
+        bgmBtn.classList.add('muted');
+      } else {
+        bgm.muted = false;
+        bgmBtn.innerText = '🎵 ON';
+        bgmBtn.classList.remove('muted');
+      }
+    }
+
+    function toggleBGM() {
+      isMuted = !isMuted;
+      localStorage.setItem('bgmMuted', isMuted);
+      updateBgmUI();
+      if (!isMuted && bgm.paused) {
+        bgm.play().catch(() => {});
+      }
+    }
+
+    function startBgmOnFirstInteraction() {
+      updateBgmUI();
+      if (!isMuted) {
+        bgm.play().then(() => {
+          document.removeEventListener('click', startBgmOnFirstInteraction);
+          document.removeEventListener('touchstart', startBgmOnFirstInteraction);
+        }).catch(err => {});
+      }
+    }
+
+    document.addEventListener('click', startBgmOnFirstInteraction);
+    document.addEventListener('touchstart', startBgmOnFirstInteraction);
+
+    const allKeys = ['Y', 'La', 'Ce', 'Pr', 'Nd', 'Pm', 'Sm', 'Eu', 'Gd', 'Tb', 'Dy', 'Ho', 'Er', 'Tm', 'Yb', 'Lu', 'Sc'];
+    if (!gameState.elements) {
+      gameState.elements = {};
+    }
+    allKeys.forEach(k => {
+      if (gameState.elements[k] === undefined) {
+        gameState.elements[k] = 0;
+      }
+    });
+
+    const elementsMaster = {
+      'Y':  { name: 'イットリウム', symbol: 'Y', img: 'https://17rareearth.github.io/17character/Y0.png', speech: '「赤色ディスプレイやセラミックで大活躍！」', type: 'heavy', atomicNumber: 39 },
+      'La': { name: 'ランタン', symbol: 'La', img: 'https://17rareearth.github.io/17character/La0.png', speech: '「カメラのレンズをピカピカにするよ！」', type: 'light', atomicNumber: 57 },
+      'Ce': { name: 'セリウム', symbol: 'Ce', img: 'https://17rareearth.github.io/17character/Ce0.png', speech: '「車の排ガスをキレイにするお仕事はお任せ！」', type: 'light', atomicNumber: 58 },
+      'Pr': { name: 'プラセオジム', symbol: 'Pr', img: 'https://17rareearth.github.io/17character/Pr2_2.png', speech: '「ヘッドホンで音楽を聴きながらマイペースに行くさ〜」', type: 'light', atomicNumber: 59 },
+      'Nd': { name: 'ネオジム', symbol: 'Nd', img: 'https://17rareearth.github.io/17character/Nd.png', speech: '「ボクの強力な磁力、いろんな製品に役立ててよね！」', type: 'light', atomicNumber: 60 },
+      'Pm': { name: 'プロメチウム', symbol: 'Pm', img: 'https://17rareearth.github.io/17character/Pm0.png', speech: '「…ボクの貴重なエネルギー、大切に扱してね。」', type: 'heavy', atomicNumber: 61 },
+      'Sm': { name: 'サマリウム', symbol: 'Sm', img: 'https://17rareearth.github.io/17character/Sm.png', speech: '「高温の熱さにも負けない磁石のガードを見せるよ！」', type: 'light', atomicNumber: 62 },
+      'Eu': { name: 'ユウロピウム', symbol: 'Eu', img: 'https://17rareearth.github.io/17character/Eu.png', speech: '「真っ赤な蛍光体として鮮やかに照らし出すよ！」', type: 'heavy', atomicNumber: 63 },
+      'Gd': { name: 'ガドリニウム', symbol: 'Gd', img: 'https://17rareearth.github.io/17character/Gd0.png', speech: '「医療用MRIの造影剤や精密検査はお任せあれ。」', type: 'heavy', atomicNumber: 64 },
+      'Tb': { name: 'テルビウム', symbol: 'Tb', img: 'https://17rareearth.github.io/17character/Tb00.png', speech: '「鮮やかな緑の光を放つディスプレイの要さ！」', type: 'heavy', atomicNumber: 65 },
+      'Dy': { name: 'ジスプロシウム', symbol: 'Dy', img: 'https://17rareearth.github.io/17character/Dy.png', speech: '「ハイブリッドカーのモーターを支えるタフなやつさ。」', type: 'heavy', atomicNumber: 66 },
+      'Ho': { name: 'ホルミウム', symbol: 'Ho', img: 'https://17rareearth.github.io/17character/Ho.png', speech: '「正確無比な医療用レーザーをしっかりサポート！」', type: 'heavy', atomicNumber: 67 },
+      'Er': { name: 'エルビウム', symbol: 'Er', img: 'https://17rareearth.github.io/17character/Er.png', speech: '「光ファイバーアンプで通信を遠くまで届けるわ！」', type: 'heavy', atomicNumber: 68 },
+      'Tm': { name: 'ツリウム', symbol: 'Tm', img: 'https://17rareearth.github.io/17character/Tm0.png', speech: '「持ち運べるポータブルX線源として活躍するよ。」', type: 'heavy', atomicNumber: 69 },
+      'Yb': { name: 'イッテルビウム', symbol: 'Yb', img: 'https://17rareearth.github.io/17character/Yb0.png', speech: '「超正確な原子時計で時を刻む最新科学の要さ！」', type: 'heavy', atomicNumber: 70 },
+      'Lu': { name: 'ルテチウム', symbol: 'Lu', img: 'https://17rareearth.github.io/17character/Lu0.png', speech: '「がん診断のPETスキャンで輝く最も重いレアアースよ。」', type: 'heavy', atomicNumber: 71 },
+      'Sc': { name: 'スカンジウム', symbol: 'Sc', img: 'https://17rareearth.github.io/17character/Sc0.png', speech: '「軽くて強い！航空宇宙や合金の未来を切り拓くよ！」', type: 'light', atomicNumber: 21 }
+    };
+
+    const periodicTableAll = [
+      { name: '水素', symbol: 'H', num: 1 }, { name: 'ヘリウム', symbol: 'He', num: 2 }, { name: '炭素', symbol: 'C', num: 6 }, 
+      { name: '窒素', symbol: 'N', num: 7 }, { name: '酸素', symbol: 'O', num: 8 }, { name: 'ナトリウム', symbol: 'Na', num: 11 }, 
+      { name: 'マグネシウム', symbol: 'Mg', num: 12 }, { name: 'アルミニウム', symbol: 'Al', num: 13 }, { name: 'ケイ素', symbol: 'Si', num: 14 }, 
+      { name: 'リン', symbol: 'P', num: 15 }, { name: '硫黄', symbol: 'S', num: 16 }, { name: '塩素', symbol: 'Cl', num: 17 }, 
+      { name: 'カリウム', symbol: 'K', num: 19 }, { name: 'カルシウム', symbol: 'Ca', num: 20 }, { name: 'チタン', symbol: 'Ti', num: 22 }, 
+      { name: '鉄', symbol: 'Fe', num: 26 }, { name: '銅', symbol: 'Cu', num: 29 }, { name: '亜鉛', symbol: 'Zn', num: 30 }, 
+      { name: 'ガリウム', symbol: 'Ga', num: 31 }, { name: '銀', symbol: 'Ag', num: 47 }, { name: 'スズ', symbol: 'Sn', num: 50 }, 
+      { name: '金', symbol: 'Au', num: 79 }, { name: '水銀', symbol: 'Hg', num: 80 }, { name: '鉛', symbol: 'Pb', num: 82 }, 
+      { name: 'ウラン', symbol: 'U', num: 92 }, { name: 'プルトニウム', symbol: 'Pu', num: 94 }
+    ];
+
+    function updateUI() {
+      document.getElementById('money').innerText = gameState.money.toLocaleString();
+      document.getElementById('level').innerText = gameState.level;
+      document.getElementById('mud').innerText = gameState.mudStock;
+
+      const invBox = document.getElementById('inventory-box');
+      invBox.innerHTML = '';
+      
+      let hasItem = false;
+      for (let key in gameState.elements) {
+        if (gameState.elements[key] > 0) {
+          hasItem = true;
+          const div = document.createElement('div');
+          div.style.padding = '2px 0';
+          div.innerText = `🔹 ${elementsMaster[key].name}: ${gameState.elements[key]}個`;
+          invBox.appendChild(div);
+        }
+      }
+      if (!hasItem) {
+        invBox.innerHTML = '<div style="grid-column: span 2; text-align: center; color: #8a8a8a; padding: 6px 0;">まだ元素がありません。精製しよう！</div>';
+      }
+    }
+
+    function getRandomElementKey() {
+      const keys = Object.keys(elementsMaster);
+      let pool = [];
+      keys.forEach(k => {
+        if (elementsMaster[k].type === 'light') {
+          pool.push(k, k, k);
+        } else {
+          pool.push(k);
+        }
+      });
+      return pool[Math.floor(Math.random() * pool.length)];
+    }
+
+    function executeNormalRefine(targetKey, multiplier = 1) {
+      const picked = elementsMaster[targetKey];
+      gameState.elements[targetKey] += multiplier;
+
+      const imgEl = document.getElementById('chara-img');
+      imgEl.src = picked.img;
+      imgEl.alt = picked.name;
+      
+      let multText = multiplier > 1 ? ` 【${multiplier}倍ボーナス達成！】` : multiplier === 0 ? ` 【ハズレ…0個】` : '';
+      document.getElementById('chara-name').innerText = `✨ ${picked.name} (${targetKey}) を ${multiplier}個 精製！${multText}`;
+      document.getElementById('chara-speech').innerText = picked.speech;
+
+      imgEl.classList.remove('pop-anim');
+      void imgEl.offsetWidth; 
+      imgEl.classList.add('pop-anim');
+
+      localStorage.setItem('rareEarthGameState', JSON.stringify(gameState));
+      updateUI();
+    }
+
+    // 泥・資金不足時のスマートなポップアップ表示
+    function showShortageModal(type) {
+      const modal = document.getElementById('minigameModal');
+      const content = document.getElementById('modal-content-inner');
+
+      let titleText = type === 'mud' ? '泥が足りません！' : '資金が足りません！';
+      let descText = type === 'mud' 
+        ? 'マップに戻って新しいレアアース泥を採掘してこよう！' 
+        : 'リサイクル工場（都市鉱山）に行って資金を稼ごう！';
+
+      content.innerHTML = `
+        <div class="guide-container">
+          <img src="navtb.png" alt="テルビウム" class="guide-icon" onerror="this.src='hata_cn.png'">
+          <div class="guide-bubble">
+            おっと、${type === 'mud' ? '泥' : '資金'}が不足してるみたい！リサイクル工場で資金を稼ぐか、マップで採掘してきてね✨
+          </div>
+        </div>
+        <div style="font-size: 14px; font-weight: bold; color: #ff4757; margin-bottom: 4px;">⚠️ ${titleText}</div>
+        <div style="font-size: 11px; color: #dcdde1; margin-bottom: 12px; line-height: 1.4;">
+          ${descText}
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn" style="margin-top:0; background:#333; color:#aaa;" onclick="closeMinigameModal()">キャンセル</button>
+          <button class="btn" style="margin-top:0; background:#00fff5; color:#0f3460;" onclick="goToRecycle()">♻️ 工場へ行く</button>
+        </div>
+      `;
+      modal.style.display = 'flex';
+    }
+
+    function goToRecycle() {
+      const se = document.getElementById('se-gogogo');
+      if (se) {
+        se.currentTime = 0;
+        se.play().catch(e => {});
+      }
+      setTimeout(() => {
+        location.href = 'recycle.html';
+      }, 200);
+    }
+
+    function refineElement() {
+      if (gameState.mudStock <= 0) {
+        showShortageModal('mud');
+        return;
+      }
+      if (gameState.money < 50) {
+        showShortageModal('money');
+        return;
+      }
+
+      const soundId = Math.random() < 0.5 ? 'se-nyu1' : 'se-nyu2';
+      const se = document.getElementById(soundId);
+      if (se) {
+        se.currentTime = 0;
+        se.play().catch(e => console.log('音声再生エラー:', e));
+      }
+
+      gameState.money -= 50;
+      gameState.mudStock--;
+
+      const targetKey = getRandomElementKey();
+
+      // 約10%の確率で10倍ハイ＆ローイベント発動
+      const roll = Math.random();
+      if (roll < 0.10) {
+        showHighLowMinigame(targetKey);
+      } else {
+        executeNormalRefine(targetKey, 1);
+      }
+    }
+
+    // ─── 10倍イベント：10倍チャンス・ハイ＆ロー！ ───
+    function showHighLowMinigame(targetKey) {
+      const baseElement = elementsMaster[targetKey];
+      let compareCandidates = periodicTableAll.filter(e => e.num !== baseElement.atomicNumber);
+      let secretElement = compareCandidates[Math.floor(Math.random() * compareCandidates.length)];
+
+      const modal = document.getElementById('minigameModal');
+      const content = document.getElementById('modal-content-inner');
+
+      content.innerHTML = `
+        <div style="font-size: 14px; font-weight: bold; color: #ffde59; margin-bottom: 6px;">10倍チャンス・ハイ＆ロー！</div>
+        
+        <!-- カード風イラストエリア -->
+        <div style="background: #ffffff; border: 2px solid #ffde59; border-radius: 8px; padding: 6px; margin-bottom: 8px; text-align: center;">
+          <img src="${baseElement.img}" style="width: 70px; height: 70px; object-fit: contain;" alt="${baseElement.name}">
+        </div>
+
+        <div style="font-size: 11px; color: #dcdde1; margin-bottom: 8px; line-height: 1.4;">
+          次に出る元素は<strong>${baseElement.name}</strong>（原子番号：${baseElement.atomicNumber}）より、<br>
+          元素番号が<strong>【高い】</strong>か<strong>【低い】</strong>か、どっち❓❓❓<br><br>
+          <span style="color:#ff4757; font-weight:bold;">※外れたら入手数ゼロ個になります！</span>
+        </div>
+
+        <div style="display: flex; gap: 8px; margin-top: 4px;">
+          <button class="btn" style="margin-top:0; background:#27ae60;" onclick="evalHighLow('${targetKey}', ${baseElement.atomicNumber}, '${targetKey}', ${secretElement.num}, '${secretElement.name}', '${secretElement.symbol}', 'high')">⬆️ 高い (High)</button>
+          <button class="btn" style="margin-top:0; background:#c0392b;" onclick="evalHighLow('${targetKey}', ${baseElement.atomicNumber}, '${targetKey}', ${secretElement.num}, '${secretElement.name}', '${secretElement.symbol}', 'low')">⬇️ 低い (Low)</button>
+        </div>
+      `;
+      modal.style.display = 'flex';
+    }
+
+    function evalHighLow(targetKey, baseNum, baseSymbol, secretNum, secretName, secretSymbol, playerGuess) {
+      let isActualHigh = secretNum > baseNum;
+      let playerGuessHigh = (playerGuess === 'high');
+      let isWin = (playerGuessHigh === isActualHigh);
+
+      let mult = isWin ? 10 : 0;
+      executeNormalRefine(targetKey, mult);
+
+      // サウンド再生処理
+      if (isWin) {
+        const itemGetSe = document.getElementById('se-itemget');
+        if (itemGetSe) {
+          itemGetSe.currentTime = 0;
+          itemGetSe.play().catch(e => {});
+        }
+      } else {
+        const fuseikaiSe = document.getElementById('se-fuseikai');
+        if (fuseikaiSe) {
+          fuseikaiSe.currentTime = 0;
+          fuseikaiSe.play().catch(e => {});
+        }
+      }
+
+      // 原子番号の大小に応じて大きい方の大ボックス、小さい方の小ボックスに割り当て
+      let leftSymbol, leftNum, rightSymbol, rightNum;
+      if (secretNum >= baseNum) {
+        leftSymbol = secretSymbol; leftNum = secretNum;
+        rightSymbol = elementsMaster[baseSymbol].symbol; rightNum = baseNum;
+      } else {
+        leftSymbol = elementsMaster[baseSymbol].symbol; leftNum = baseNum;
+        rightSymbol = secretSymbol; rightNum = secretNum;
+      }
+
+      const content = document.getElementById('modal-content-inner');
+      content.innerHTML = `
+        <div style="font-size: 24px;">${isWin ? '🌟🌟🌟' : '💥'}</div>
+        <div style="font-size: 12px; color: #00fff5; margin: 2px 0; font-weight: bold;">
+          ${secretName}が現れました！
+        </div>
+        <div style="font-size: 13px; font-weight: bold; color: ${isWin ? '#ffde59' : '#ff4757'}; margin: 2px 0; line-height: 1.3;">
+          ${isWin ? '大正解！10倍ＧＥＴです！' : '残念…負けてしまいました（汗）<br>今回は０個ＧＥＴです。'}
+        </div>
+        
+        <!-- 勝敗ビジュアル化ボックス（原子番号の大きい方を大ボックス、小さい方を小ボックスに配置） -->
+        <div class="visual-comparison">
+          <div class="box-large" title="大きい原子番号">
+            <span style="font-size:15px;">${leftSymbol}</span>
+            <span style="font-size:11px; color:#fff;">${leftNum}</span>
+          </div>
+          <div style="font-size:14px; color:#8a8a8a; font-weight:bold;">VS</div>
+          <div class="box-small" title="小さい原子番号">
+            <span style="font-size:12px;">${rightSymbol}</span>
+            <span style="font-size:9px; color:#ddd;">${rightNum}</span>
+          </div>
+        </div>
+
+        <button class="btn" style="margin-top:4px;" onclick="closeMinigameModal()">閉じる</button>
+      `;
+    }
+
+    function closeMinigameModal() {
+      document.getElementById('minigameModal').style.display = 'none';
+    }
+
+    updateUI();
+  </script>
+</body>
+</html>

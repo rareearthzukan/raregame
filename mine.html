@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>レアアース・クラフト - 採掘場</title>
+  <style>
+    /* ─── スクロールバーのおしゃれカスタマイズ（全画面共通） ─── */
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.6);
+      border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, #00fff5, #3b82f6);
+      border-radius: 10px;
+      box-shadow: 0 0 6px rgba(0, 255, 245, 0.5);
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #ffde59;
+    }
+
+    body { background-color: #1a1a2e; color: #fff; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+    .phone { width: 360px; height: 740px; background: #0f3460; border: 4px solid #16213e; border-radius: 24px; display: flex; flex-direction: column; overflow: hidden; position: relative; box-sizing: border-box; }
+    .header { background: #16213e; padding: 8px 10px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: bold; border-bottom: 2px solid #e94560; flex-shrink: 0; }
+    
+    /* BGMトグルボタンのスタイル */
+    .bgm-btn {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid #00fff5;
+      color: #00fff5;
+      border-radius: 12px;
+      padding: 2px 8px;
+      font-size: 11px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      transition: all 0.2s;
+    }
+    .bgm-btn.muted {
+      border-color: #e94560;
+      color: #e94560;
+      background: rgba(233, 69, 96, 0.2);
+    }
+
+    /* ─── 工程ナビゲーションバー ─── */
+    .koutei-bar {
+      background: rgba(15, 23, 42, 0.9);
+      border-bottom: 1px solid #00fff5;
+      padding: 6px 4px;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .koutei-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+    .koutei-item {
+      width: 36px;
+      height: 36px;
+      background: #000;
+      border: 2px solid transparent;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .koutei-item.active {
+      border-color: #00fff5;
+      box-shadow: 0 0 10px rgba(0, 255, 245, 0.8);
+      animation: kouteiGlow 1.2s infinite alternate;
+    }
+    @keyframes kouteiGlow {
+      from { border-color: #00fff5; box-shadow: 0 0 4px rgba(0,255,245,0.4); }
+      to { border-color: #ffde59; box-shadow: 0 0 12px rgba(255,222,89,0.9); }
+    }
+    .koutei-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .koutei-label {
+      font-size: 8px;
+      color: #94a3b8;
+      font-weight: bold;
+      text-align: center;
+      white-space: nowrap;
+    }
+    .koutei-wrapper:has(.koutei-item.active) .koutei-label {
+      color: #00fff5;
+    }
+    
+    .content { 
+      flex: 1; 
+      background: linear-gradient(180deg, #1b4f72 0%, #0f3460 100%); 
+      padding: 6px 10px; 
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
+      justify-content: space-between; 
+      text-align: center; 
+      overflow-y: auto; 
+    }
+    
+    .area-title { 
+      font-weight: bold; 
+      color: #00fff5; 
+      font-size: 13px; 
+      margin: 2px 0;
+      line-height: 1.2;
+      flex-shrink: 0;
+    }
+
+    .area-description {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid #00fff5;
+      border-radius: 4px;
+      padding: 3px 6px;
+      font-size: 10px;
+      color: #dcdde1;
+      width: 100%;
+      box-sizing: border-box;
+      line-height: 1.2;
+      margin: 2px 0;
+      flex-shrink: 0;
+    }
+
+    /* ─── エリア風景画像BOX ─── */
+    .area-visual-box {
+      width: 100%;
+      height: 175px;
+      background: #000;
+      border: 2px solid #ffde59;
+      border-radius: 6px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+      margin: 2px 0;
+      flex-shrink: 0;
+    }
+
+    .area-visual-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .tool-overlay {
+      position: absolute;
+      bottom: 4px;
+      right: 4px;
+      font-size: 16px;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8));
+      animation: float 2s infinite alternate;
+    }
+
+    @keyframes float { 0% { transform: translateY(0); } 100% { transform: translateY(-2px); } }
+
+    .split-status-section {
+      width: 100%;
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      margin: 2px 0;
+      flex-shrink: 0;
+    }
+
+    /* ─── キャラクターアニメBOX ─── */
+    .anim-box {
+      width: 50%;
+      height: 155px;
+      background: #000;
+      border: 1px solid #00fff5;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .anim-gif {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .result-box {
+      width: 50%;
+      height: 155px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid #ffde59;
+      border-radius: 6px;
+      padding: 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .mining-status-text {
+      font-size: 11px;
+      color: #ffde59;
+      line-height: 1.4;
+      text-align: center;
+      font-weight: bold;
+      z-index: 2;
+      transform: translateY(-16px);
+    }
+
+    .jumping-ore {
+      position: absolute;
+      bottom: 8px;
+      width: 50px;
+      height: 50px;
+      object-fit: contain;
+      z-index: 1;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    @keyframes oreJump {
+      0% { transform: translateY(40px) scale(0.4) rotate(0deg); opacity: 0; }
+      40% { transform: translateY(-8px) scale(1.2) rotate(180deg); opacity: 1; }
+      70% { transform: translateY(4px) scale(1) rotate(270deg); opacity: 1; }
+      100% { transform: translateY(0px) scale(1) rotate(360deg); opacity: 1; }
+    }
+
+    .jump-active {
+      animation: oreJump 0.6s ease-out forwards;
+    }
+    
+    .btn-mine { background: #e94560; color: #fff; border: none; padding: 6px; font-size: 12px; font-weight: bold; border-radius: 6px; cursor: pointer; width: 100%; box-shadow: 0 2px 6px rgba(233, 69, 96, 0.4); margin: 2px 0; flex-shrink: 0; }
+    .btn-mine:active { transform: scale(0.97); }
+
+    .btn-back { background: #16213e; border: 1px solid #00fff5; color: #00fff5; padding: 5px; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: bold; width: 100%; margin: 2px 0; flex-shrink: 0; }
+    .btn-back:active { transform: scale(0.97); }
+
+    .btn-recycle-shortcut {
+      background: rgba(0, 255, 245, 0.15);
+      border: 1px solid #00fff5;
+      color: #00fff5;
+      padding: 5px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: bold;
+      width: 100%;
+      margin: 2px 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+    .btn-recycle-shortcut:active { background: rgba(0, 255, 245, 0.3); }
+
+    /* 精製プラントへの誘導ボタン */
+    .btn-next-step {
+      background: linear-gradient(135deg, #00fff5, #3b82f6);
+      color: #0f3460;
+      border: 1px solid #00fff5;
+      padding: 6px;
+      font-size: 11px;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+      width: 100%;
+      box-shadow: 0 2px 6px rgba(0, 255, 245, 0.4);
+      transition: transform 0.1s;
+      margin: 2px 0;
+      flex-shrink: 0;
+    }
+    .btn-next-step:active { transform: scale(0.97); }
+
+    /* ─── 丸囲みイットリウムちゃんの案内カード ─── */
+    .tb-guide-card {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid #00fff5;
+      border-radius: 8px;
+      padding: 5px 8px;
+      box-sizing: border-box;
+      margin: 2px 0;
+      flex-shrink: 0;
+      width: 100%;
+      text-align: left;
+    }
+    .tb-avatar-circle {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 2px solid #00fff5;
+      object-fit: cover;
+      background: #000;
+      flex-shrink: 0;
+      box-shadow: 0 0 6px rgba(0, 255, 245, 0.4);
+    }
+    .tb-speech-bubble {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 6px 8px;
+      font-size: 10px;
+      color: #1e293b;
+      line-height: 1.35;
+      position: relative;
+      flex: 1;
+      font-weight: bold;
+    }
+    .tb-speech-bubble::before {
+      content: '';
+      position: absolute;
+      left: -6px;
+      top: 50%;
+      transform: translateY(-50%);
+      border-top: 4px solid transparent;
+      border-bottom: 4px solid transparent;
+      border-right: 6px solid #ffffff;
+    }
+    .highlight-material {
+      color: #0f3460;
+      background: rgba(0, 255, 245, 0.25);
+      padding: 0 2px;
+      border-radius: 3px;
+    }
+    .highlight-product {
+      color: #d35400;
+      background: rgba(255, 222, 89, 0.35);
+      padding: 0 2px;
+      border-radius: 3px;
+    }
+
+    /* 下部ナビゲーション */
+    .nav { 
+      height: 56px; 
+      background: #16213e; 
+      display: flex; 
+      justify-content: space-around; 
+      align-items: center; 
+      padding: 0 8px;
+      flex-shrink: 0; 
+      border-top: 2px solid #1f293d;
+      box-sizing: border-box;
+    }
+    .nav-item { 
+      color: #a0aec0; 
+      cursor: pointer; 
+      text-align: center; 
+      background: rgba(255, 255, 255, 0.05); 
+      border: 1px solid rgba(0, 255, 245, 0.2); 
+      border-radius: 10px; 
+      padding: 4px 8px;
+      font-size: 10px; 
+      font-weight: bold;
+      flex: 1;
+      margin: 0 3px;
+      transition: all 0.2s;
+    }
+    .nav-item:active { transform: scale(0.95); }
+    .nav-item.active { 
+      color: #00fff5; 
+      background: rgba(0, 255, 245, 0.15); 
+      border-color: #00fff5;
+      box-shadow: 0 0 8px rgba(0, 255, 245, 0.3);
+    }
+
+    /* カスタムモーダル */
+    .modal-overlay {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(10, 15, 30, 0.85);
+      display: flex; justify-content: center; align-items: center;
+      z-index: 100;
+      backdrop-filter: blur(2px);
+    }
+    .modal-content {
+      background: #16213e;
+      border: 2px solid #00fff5;
+      border-radius: 16px;
+      padding: 16px 12px;
+      width: 260px;
+      text-align: center;
+      box-shadow: 0 0 20px rgba(0, 255, 245, 0.3);
+      animation: popup 0.3s ease-out;
+    }
+    @keyframes popup {
+      0% { transform: scale(0.8); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .modal-btn-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <audio id="bgm-mine" preload="auto" loop></audio>
+  <audio id="se-futsu" src="SE__mine_futsu.mp3" preload="auto"></audio>
+  <audio id="se-houseki" src="SE__mine_houseki.mp3" preload="auto"></audio>
+  <audio id="se-type" src="type.mp3" preload="auto"></audio>
+  <audio id="se-gogogo" src="gogogo.mp3" preload="auto"></audio>
+  <audio id="se-unlock" src="itemget.mp3" preload="auto"></audio>
+
+  <div class="phone">
+    <div class="header">
+      <span>💰 <span id="money">1,500</span> G</span>
+      <span>🌟 Lv.<span id="level">1</span> (EXP: <span id="exp">0</span>/<span id="max-exp">100</span>)</span>
+      <span>📦 採掘物: <span id="mud">0</span>個</span>
+      <button id="bgm-btn" class="bgm-btn" onclick="toggleBGM()">🎵 ON</button>
+    </div>
+    
+    <!-- 工程ナビゲーションバー -->
+    <div class="koutei-bar">
+      <div class="koutei-wrapper">
+        <div class="koutei-item active"><img src="koutei1.png" alt="採掘" onerror="this.style.display='none'"></div>
+        <div class="koutei-label">1.採掘</div>
+      </div>
+      <div class="koutei-wrapper">
+        <div class="koutei-item active"><img src="koutei2.png" alt="運搬" onerror="this.style.display='none'"></div>
+        <div class="koutei-label">2.運搬</div>
+      </div>
+      <div class="koutei-wrapper">
+        <div class="koutei-item"><img src="koutei3.png" alt="精製" onerror="this.style.display='none'"></div>
+        <div class="koutei-label">3.精製</div>
+      </div>
+      <div class="koutei-wrapper">
+        <div class="koutei-item"><img src="koutei4.png" alt="インゴット" onerror="this.style.display='none'"></div>
+        <div class="koutei-label">4.素材</div>
+      </div>
+      <div class="koutei-wrapper">
+        <div class="koutei-item"><img src="koutei5.png" alt="製造" onerror="this.style.display='none'"></div>
+        <div class="koutei-label">5.製造</div>
+      </div>
+      <div class="koutei-wrapper">
+        <div class="koutei-item"><img src="koutei6.png" alt="出荷" onerror="this.style.display='none'"></div>
+        <div class="koutei-label">6.出荷</div>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="area-title" id="current-area-title">【 エリア名 】</div>
+
+      <div class="area-description" id="area-feature-text">
+        エリアの特徴説明
+      </div>
+
+      <!-- 密着風景画像BOX -->
+      <div class="area-visual-box">
+        <img id="area-img" class="area-visual-img" src="area_cn.png" alt="エリアビジュアル">
+        <div class="tool-overlay" id="tool-icon">🚚🚜</div>
+      </div>
+
+      <!-- 左右分割エリア -->
+      <div class="split-status-section">
+        <div class="anim-box">
+          <img id="anim-img" class="anim-gif" src="anime_cn.gif" alt="動作アニメ">
+        </div>
+        <div class="result-box">
+          <div class="mining-status-text" id="mining-status">資源を採取する準備ができました</div>
+          <img id="jumping-ore-img" class="jumping-ore" src="kouseki1.png" alt="鉱石">
+        </div>
+      </div>
+
+      <div style="width: 100%; display: flex; flex-direction: column; gap: 2px;">
+        <button class="btn-mine" onclick="mineMud()">⛏️ 資源を採掘する (<span id="mine-cost">10</span>G +EXP)</button>
+
+        <!-- 🌟 丸囲みイットリウムちゃんの案内カード -->
+        <div class="tb-guide-card">
+          <img src="chara0_Y.png" alt="イットリウム" class="tb-avatar-circle" onerror="this.src='navtb.png'">
+          <div class="tb-speech-bubble">
+            採掘した<span class="highlight-material">採掘物（泥）は</span>精製プラントで加工して、<span class="highlight-product">レアアース元素</span>を取り出そう！
+          </div>
+        </div>
+
+        <button class="btn-next-step" onclick="goToRefinery()">🧪 精製プラントにすすむ</button>
+        <!-- 🗺️ マップに戻るボタンを上に配置 -->
+        <button class="btn-back" onclick="goBackMap()">🗺️ マップに戻ってエリアを変更する</button>
+        <!-- ♻️ リサイクル工場ボタンを下に配置 -->
+        <button class="btn-recycle-shortcut" onclick="goToRecycle()">
+          ♻️ リサイクル工場（資金稼ぎ）へ行く
+        </button>
+      </div>
+    </div>
+
+    <!-- 下部ナビゲーション -->
+    <div class="nav">
+      <div class="nav-item active" onclick="goBackMap()"><span style="font-size:14px; display:block; margin-bottom:1px;">🗺️</span>マップ</div>
+      <div class="nav-item" onclick="location.href='seisei.html'"><span style="font-size:14px; display:block; margin-bottom:1px;">🧪</span>精製</div>
+      <div class="nav-item" onclick="location.href='factory.html'"><span style="font-size:14px; display:block; margin-bottom:1px;">🏭</span>工場</div>
+      <div class="nav-item" onclick="location.href='zukan.html'"><span style="font-size:14px; display:block; margin-bottom:1px;">📖</span>図鑑</div>
+      <div class="nav-item" onclick="location.href='home.html'"><span style="font-size:14px; display:block; margin-bottom:1px;">🏠</span>ホーム</div>
+    </div>
+
+    <!-- 資金不足ポップアップ -->
+    <div id="noMoneyModal" class="modal-overlay" style="display: none;">
+      <div class="modal-content">
+        <div style="font-size: 26px;">⚠️</div>
+        <div style="font-size: 13px; font-weight: bold; color: #ff4757; margin: 4px 0;">資金が足りません！</div>
+        <div style="font-size: 12px; color: #dcdde1; margin-bottom: 10px; line-height: 1.4;">
+          リサイクル工場（都市鉱山）に行って<br>資金を稼ぎますか？
+        </div>
+        <div class="modal-btn-row">
+          <button class="btn-back" style="margin-top:0; background:#333; border-color:#888; color:#fff;" onclick="closeNoMoneyModal()">キャンセル</button>
+          <button class="btn-mine" style="margin-top:0; background:#00fff5; color:#0f3460;" onclick="goToRecycleWithSound()">行く！</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- きれいな鉱物・宝石発見ポップアップ（zukanと完全同期・堅牢保存） -->
+    <div id="firstJewelModal" class="modal-overlay" style="display: none;" onclick="closeFirstJewelModal()">
+      <div class="modal-content" onclick="event.stopPropagation()">
+        <div style="font-size: 24px;">💎</div>
+        <div style="font-size: 12px; font-weight: bold; color: #ffde59; margin: 4px 0; line-height: 1.4;">
+          奇跡の発見！【<span id="popup-jewel-name">トパーズ</span>】をGET！
+        </div>
+        <div style="margin: 6px 0;">
+          <img id="popup-jewel-img" src="houseki1.png" alt="鉱物" style="width: 70px; height: 70px; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5);" onerror="this.src='kouseki3.png'">
+        </div>
+        <div id="popup-jewel-desc" style="font-size: 10px; color: #dcdde1; margin-bottom: 10px; line-height: 1.4; background: rgba(15,23,42,0.8); padding: 6px; border-radius: 6px; text-align: left;">
+          図鑑コレクションに登録されました！
+        </div>
+        <button class="btn-mine" style="margin-top:0; background:#00fff5; color:#0f3460;" onclick="closeFirstJewelModal()">やったね！</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let gameState = JSON.parse(localStorage.getItem('rareEarthGameState')) || { money: 1500, level: 1, exp: 0, mudStock: 5, elements: {}, jewels: [], houseki: {} };
+    if (gameState.money === undefined) gameState.money = 1500;
+    if (gameState.level === undefined) gameState.level = 1;
+    if (gameState.exp === undefined) gameState.exp = 0;
+    if (gameState.mudStock === undefined) gameState.mudStock = 5;
+    if (!gameState.jewels) gameState.jewels = [];
+    if (!gameState.houseki) gameState.houseki = {};
+
+    function saveGameState() {
+      localStorage.setItem('rareEarthGameState', JSON.stringify(gameState));
+    }
+
+    function getRequiredExp(level) {
+      if (level >= 50) return 50000000;
+      const expTable = [
+        0, 
+        100, 300, 600, 1000, 1600, 2400, 3500, 4800, 6500, 8500,
+        11000, 14000, 18000, 23000, 29000, 36000, 45000, 56000, 70000, 90000,
+        115000, 145000, 180000, 220000, 270000, 330000, 400000, 480000, 580000, 700000,
+        850000, 1050000, 1300000, 1600000, 2000000, 2500000, 3100000, 3800000, 4700000, 5800000,
+        7200000, 9000000, 11200000, 14000000, 17500000, 22000000, 28000000, 36000000, 48000000
+      ];
+      return expTable[level] || (level * 2000000);
+    }
+
+    function addExp(amount) {
+      gameState.exp += amount;
+      let leveledUp = false;
+      
+      while (true) {
+        if (gameState.level >= 50) {
+          gameState.exp = 0;
+          break;
+        }
+        let reqExp = getRequiredExp(gameState.level);
+        if (gameState.exp >= reqExp) {
+          gameState.exp -= reqExp;
+          gameState.level++;
+          leveledUp = true;
+        } else {
+          break;
+        }
+      }
+
+      saveGameState();
+      updateUI();
+
+      if (leveledUp) {
+        triggerLevelUpEffect(gameState.level);
+      }
+    }
+
+    function triggerLevelUpEffect(newLevel) {
+      const se = document.getElementById('se-unlock');
+      if (se) { se.currentTime = 0; se.play().catch(e => {}); }
+
+      const oldModal = document.getElementById('commonLevelUpModal');
+      if (oldModal) oldModal.remove();
+
+      const modal = document.createElement('div');
+      modal.id = 'commonLevelUpModal';
+      modal.style.cssText = `
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(10, 15, 30, 0.9); display: flex; justify-content: center; align-items: center;
+        z-index: 9999; backdrop-filter: blur(4px);
+      `;
+
+      modal.innerHTML = `
+        <div style="
+          background: linear-gradient(135deg, #16213e, #0f3460);
+          border: 3px solid #ffde59; border-radius: 20px; padding: 24px 20px;
+          width: 280px; text-align: center; box-shadow: 0 0 30px rgba(255, 222, 89, 0.6);
+        ">
+          <div style="font-size: 36px; margin-bottom: 8px;">🎉</div>
+          <div style="font-size: 16px; font-weight: bold; color: #ffde59; margin-bottom: 4px;">LEVEL UP!</div>
+          <div style="font-size: 13px; color: #cbd5e1; margin-bottom: 12px;">職人ランクが上がりました！</div>
+          <div style="font-size: 26px; font-weight: bold; color: #00fff5; margin-bottom: 16px;">Lv. ${newLevel - 1} ➔ Lv. ${newLevel}</div>
+          <div style="font-size: 10px; color: #94a3b8; margin-bottom: 16px;">採掘技術と効率が向上しました！</div>
+          <button onclick="document.getElementById('commonLevelUpModal').remove()" style="
+            background: #00fff5; color: #0f3460; border: none; padding: 10px 20px;
+            font-size: 12px; font-weight: bold; border-radius: 12px; cursor: pointer;
+            width: 100%; box-shadow: 0 3px 10px rgba(0,255,245,0.4);
+          ">やったね！</button>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    }
+
+    let spotId = localStorage.getItem('currentSelectedSpot') || 'baiyun';
+    let oreToggle = false;
+
+    // 💎 zukan.html と完全同期した houseki1 〜 houseki100 のマスターデータ
+    const gemsMaster = [
+      { id: 1, name: 'ダイヤモンド', img: 'houseki1.png', desc: '永遠の輝きを放つ、世界最高硬度の宝石。' },
+      { id: 2, name: 'ルビー', img: 'houseki2.png', desc: '情熱的な赤色を持つ、宝石の女王。' },
+      { id: 3, name: 'サファイア', img: 'houseki3.png', desc: '気高き青色を湛える、知性の石。' },
+      { id: 4, name: 'エメラルド', img: 'houseki4.png', desc: '深緑の美しさが際立つ、癒やしの宝石。' },
+      { id: 5, name: 'アメジスト', img: 'houseki5.png', desc: '高貴な紫色が美しい、神秘的な水晶。' },
+      { id: 6, name: 'シトリン', img: 'houseki6.png', desc: '太陽の光を閉じ込めたような黄色の水晶。' },
+      { id: 7, name: 'トパーズ', img: 'houseki7.png', desc: '透明感と豊かな色彩を持つ硬い鉱物。' },
+      { id: 8, name: 'ガーネット', img: 'houseki8.png', desc: 'ざくろの実のように深い赤色の結晶。' },
+      { id: 9, name: 'アクアマリン', img: 'houseki9.png', desc: '穏やかな海の水面を思わせる爽やかな宝石。' },
+      { id: 10, name: 'ペリドット', img: 'houseki10.png', desc: '夜の照明の下でも輝きを失わない黄緑色の石。' },
+      { id: 11, name: 'オパール', img: 'houseki11.png', desc: '虹色の遊色効果を持つ神秘の石。' },
+      { id: 12, name: 'ターコイズ', img: 'houseki12.png', desc: '空の色を映したような鮮やかなスカイブルーの石。' },
+      { id: 13, name: '翡翠（ヒスイ）', img: 'houseki13.png', desc: '古来より神聖視されてきた東洋の緑色宝石。' },
+      { id: 14, name: '琥珀（アンバー）', img: 'houseki14.png', desc: '太古の樹液が化石化した温もりある黄金色の宝石。' },
+      { id: 15, name: 'フローライト', img: 'houseki15.png', desc: '色とりどりのグラデーションが美しい蛍石。' },
+      { id: 16, name: 'ジャスパー', img: 'houseki16.png', desc: '大地の模様が織りなす個性豊かな碧玉。' },
+      { id: 17, name: 'メノウ', img: 'houseki17.png', desc: '縞模様が美しい、温かみのある微晶質クォーツ。' },
+      { id: 18, name: '水晶', img: 'houseki18.png', desc: '無色透明で完璧なまでの美しさを持つ万能の石。' },
+      { id: 19, name: 'スモーキークォーツ', img: 'houseki19.png', desc: '大地のような落ち着いた煙色を帯びた水晶。' },
+      { id: 20, name: 'ローズクォーツ', img: 'houseki20.png', desc: '優しいピンク色が心を癒やす愛の石。' },
+      { id: 21, name: 'ラピスラズリ', img: 'houseki21.png', desc: '夜空のような群青色に黄金のパイライトが輝く石。' },
+      { id: 22, name: 'タンザナイト', img: 'houseki22.png', desc: 'キリマンジャロの夕暮れのような多色性の青紫石。' },
+      { id: 23, name: 'トルマリン', img: 'houseki23.png', desc: '豊富なカラーバリエーションを持つ電気石。' },
+      { id: 24, name: 'ジルコン', img: 'houseki24.png', desc: 'ダイヤモンドに匹敵する強い輝きを持つ天然石。' },
+      { id: 25, name: 'スピネル', img: 'houseki25.png', desc: 'かつて王冠の宝石としてルビーと間違えられた美石。' },
+      { id: 26, name: 'ムーンストーン', img: 'houseki26.png', desc: '月光のようなシラー効果を宿す幻想的な石。' },
+      { id: 27, name: 'サンストーン', img: 'houseki27.png', desc: '内部のインクルージョンが黄金色に輝く石。' },
+      { id: 28, name: 'ブラッドストーン', img: 'houseki28.png', desc: '深緑に血飛沫のような赤斑が入る神聖な石。' },
+      { id: 29, name: 'カルセドニー', img: 'houseki29.png', desc: '滑らかな手触りと優しい半透明感を持つ石。' },
+      { id: 30, name: 'プレナイト', img: 'houseki30.png', desc: 'マスカットのような爽やかなグリーンが特徴の石。' },
+      { id: 31, name: 'クンツァイト', img: 'houseki31.png', desc: 'ライラックピンクの優しい輝きを放つ上品な石。' },
+      { id: 32, name: 'モルガナイト', img: 'houseki32.png', desc: '春の桜を思わせるピーチピンクのエレガントな石。' },
+      { id: 33, name: 'ヒデナイト', img: 'houseki33.png', desc: '淡い黄緑色が美しいスポジュメンの変種。' },
+      { id: 34, name: 'アパタイト', img: 'houseki34.png', desc: 'ネオンブルーや鮮やかなグリーンが目を引く石。' },
+      { id: 35, name: 'アイオライト', img: 'houseki35.png', desc: '見る角度によって色が変わるバイオレットブルーの石。' },
+      { id: 36, name: 'ジオード', img: 'houseki36.png', desc: '割ると内部に美しい結晶が広がる自然の宝箱。' },
+      { id: 37, name: 'ヘマタイト', img: 'houseki37.png', desc: 'メタリックな銀灰色で磨くと鏡面になる重厚な石。' },
+      { id: 38, name: 'パイライト', img: 'houseki38.png', desc: '黄金色に輝く立方体の結晶。「愚者の黄金」。' },
+      { id: 39, name: 'マラカイト', img: 'houseki39.png', desc: '美しい孔雀の羽のような緑色の同心円模様を持つ石。' },
+      { id: 40, name: 'アズライト', img: 'houseki40.png', desc: '吸い込まれそうな深い群青色を持つ銅の鉱物。' },
+      { id: 41, name: 'ロードナイト', img: 'houseki41.png', desc: 'バラ色の素地に黒い脈模様が入る愛の石。' },
+      { id: 42, name: 'ロードクロサイト', img: 'houseki42.png', desc: 'インカローズとも呼ばれる鮮やかなピンクの石。' },
+      { id: 43, name: 'クリソコラ', img: 'houseki43.png', desc: '地球を宇宙から見たようなマーブル模様の美しい石。' },
+      { id: 44, name: 'サーペンタイン', img: 'houseki44.png', desc: '蛇の皮膚のような模様を持つ滑らかな緑色の石。' },
+      { id: 45, name: 'ソーダライト', img: 'houseki45.png', desc: 'ディープブルーの落ち着いた色合いを持つ鉱物。' },
+      { id: 46, name: 'チャロアイト', img: 'houseki46.png', desc: 'マーブル模様の紫が織りなす世界三大ヒーリングストーン。' },
+      { id: 47, name: 'スギライト', img: 'houseki47.png', desc: '日本で発見された深い紫色が神秘的な癒やしの石。' },
+      { id: 48, name: 'ラリマー', img: 'houseki48.png', desc: 'カリブ海の海と空を閉じ込めたような美しい水色の石。' },
+      { id: 49, name: 'アンモライト', img: 'houseki49.png', desc: '化石が遊色効果を持つようになった奇跡の宝石。' },
+      { id: 50, name: 'テクタイト', img: 'houseki50.png', desc: '隕石衝突の衝撃で生まれた神秘的な黒いガラス質鉱物。' },
+      { id: 51, name: 'モルダバイト', img: 'houseki51.png', desc: '深いオリーブグリーンが特徴の美しいテクタイト。' },
+      { id: 52, name: 'オブシディアン', img: 'houseki52.png', desc: '漆黒の輝きを持つ火山ガラス。' },
+      { id: 53, name: 'リビアンガラス', img: 'houseki53.png', desc: 'エジプトの砂漠で見つかる黄金色の神秘的なガラス。' },
+      { id: 54, name: 'セレスタイト', img: 'houseki54.png', desc: '天使の羽のような空色の結晶が広がる天青石。' },
+      { id: 55, name: 'バライト', img: 'houseki55.png', desc: '重晶石と呼ばれ、ずっしりとした重みがある結晶。' },
+      { id: 56, name: 'アラゴナイト', img: 'houseki56.png', desc: '温かみのある黄色や白の放射状結晶を持つ石。' },
+      { id: 57, name: 'カルサイト', img: 'houseki57.png', desc: '多彩なカラーと高い複屈折を持つ方解石。' },
+      { id: 58, name: 'ドロマイト', img: 'houseki58.png', desc: '白亜の美しい結晶を形成する苦灰石。' },
+      { id: 59, name: 'ロードライト', img: 'houseki59.png', desc: '紫がかった上品な赤色を持つガーネットの仲間。' },
+      { id: 60, name: 'ヘソナイト', img: 'houseki60.png', desc: 'シナモンカラーの温かい輝きを持つガーネット。' },
+      { id: 61, name: 'アルマンディン', img: 'houseki61.png', desc: '深い赤紫色の鉄マンガン榴石。' },
+      { id: 62, name: 'パペイア', img: 'houseki62.png', desc: '蓮の花のようなピンクオレンジ色の幻のサファイア。' },
+      { id: 63, name: 'パライバトルマリン', img: 'houseki63.png', desc: 'ネオンブルーに発光する奇跡の稀少トルマリン。' },
+      { id: 64, name: 'デマントイド', img: 'houseki64.png', desc: 'ダイヤモンドを超える強い分散光を持つ緑のガーネット。' },
+      { id: 65, name: 'ツァボライト', img: 'houseki65.png', desc: 'サバンナの緑を思わせる鮮やかなグリーンのガーネット。' },
+      { id: 66, name: 'スフェーン', img: 'houseki66.png', desc: '強いファイアと独特の多色性を持つ黄緑の宝石。' },
+      { id: 67, name: 'アウイン', img: 'houseki67.png', desc: '鮮やかなコバルトブルーが強烈な印象を残すレアストーン。' },
+      { id: 68, name: 'ベニトアイト', img: 'houseki68.png', desc: 'サファイアを超える青い輝きを放つアメリカの稀少石。' },
+      { id: 69, name: 'グランディディエライト', img: 'houseki69.png', desc: '青緑色の神秘的な色合いを持つマダガスカルの秘宝。' },
+      { id: 70, name: 'ターフェライト', img: 'houseki70.png', desc: '発見が極めて少ない幻のモーヴカラー宝石。' },
+      { id: 71, name: 'ペタライト', img: 'houseki71.png', desc: '清らかな透明感を持つ、別名キャストライト。' },
+      { id: 72, name: 'ポルサイト', img: 'houseki72.png', desc: '美しい等軸晶系を描くレアなセシウム鉱物。' },
+      { id: 73, name: 'ダンビュライト', img: 'houseki73.png', desc: 'ダイヤモンドに似た清らかな透明感と強い輝きの石。' },
+      { id: 74, name: 'ベリル', img: 'houseki74.png', desc: 'エメラルドやアクアマリンの母体となる基本鉱物。' },
+      { id: 75, name: 'ジンカイト', img: 'houseki75.png', desc: '鮮やかな赤やオレンジの燃えるような亜鉛鉱物。' },
+      { id: 76, name: 'クォーツインクォーツ', img: 'houseki76.png', desc: '水晶の中に別の水晶が入り込んだ神秘的な鉱物。' },
+      { id: 77, name: 'ルチルクォーツ', img: 'houseki77.png', desc: '金色の針状結晶が内包された「金運の石」。' },
+      { id: 78, name: 'スーパーセブン', img: 'houseki78.png', desc: '7つの鉱物要素が奇跡的に共生した最強のパワーストーン。' },
+      { id: 79, name: 'オーラライト', img: 'houseki79.png', desc: '古代の波動を宿すとされる多層構造のスピリチュアルストーン。' },
+      { id: 80, name: 'ファントムクォーツ', img: 'houseki80.png', desc: '成長の軌跡が山型に刻まれた幻影水晶。' },
+      { id: 81, name: 'ギベオン', img: 'houseki81.png', desc: '宇宙から飛来した鉄隕石。ウィドマンシュテッテン構造。' },
+      { id: 82, name: 'メテオライト', img: 'houseki82.png', desc: '大気圏を突破して地球に到達した宇宙のロマン。' },
+      { id: 83, name: 'コンドライト', img: 'houseki83.png', desc: '太陽系誕生初期の物質をそのまま残す原始隕石。' },
+      { id: 84, name: 'パラサイト', img: 'houseki84.png', desc: '鉄ニッケルとカンラン石が混ざり合う宇宙の芸術品。' },
+      { id: 85, name: 'テクタイト鉱脈石', img: 'houseki85.png', desc: '未知のエネルギーを秘めた特殊なインパクト石。' },
+      { id: 86, name: 'ネフライト', img: 'houseki86.png', desc: 'しっとりとした深い緑色を持つ硬度の高い軟玉。' },
+      { id: 87, name: 'ジェダイト', img: 'houseki87.png', desc: '瑞々しい艶と美しい緑色を誇る本翡翠。' },
+      { id: 88, name: 'ピクチャージャスパー', img: 'houseki88.png', desc: 'まるで自然の風景画が描かれているかのような不思議な石。' },
+      { id: 89, name: 'オーシャンジャスパー', img: 'houseki89.png', desc: '波打ち際のような美しい模様が浮かぶ海の碧玉。' },
+      { id: 90, name: 'ユナカイト', img: 'houseki90.png', desc: '緑の緑泥石とピンクの長石が混ざり合う大地の石。' },
+      { id: 91, name: 'ホークスアイ', img: 'houseki91.png', desc: '鋭い眼光を思わせるブルーグレーのタイガーアイ。' },
+      { id: 92, name: 'タイガーアイ', img: 'houseki92.png', desc: '虎の目のようなシャトヤンシー効果を持つ金茶色の石。' },
+      { id: 93, name: 'ブルータイガーアイ', img: 'houseki93.png', desc: '落ち着いた青色と美しい光の筋を持つ石。' },
+      { id: 94, name: 'レッドタイガーアイ', img: 'houseki94.png', desc: '情熱的な赤褐色に光の筋が走るタイガーアイ。' },
+      { id: 95, name: 'ピーターサイト', img: 'houseki95.png', desc: '嵐の空のような複雑な模様が渦巻く神秘の石。' },
+      { id: 96, name: 'セイクリッドセブン', img: 'houseki96.png', desc: '高次元のエネルギーを宿すと言われる神秘の結晶。' },
+      { id: 97, name: 'ボルダーオパール', img: 'houseki97.png', desc: '母岩の隙間に虹色の輝きが宿るワイルドなオパール。' },
+      { id: 98, name: 'ファイヤーオパール', img: 'houseki98.png', desc: '夕焼けのように燃えるオレンジ色の美しいオパール。' },
+      { id: 99, name: 'ブラックオパール', img: 'houseki99.png', desc: '黒い母岩の上で虹色の遊色が一層引き立つ最高級オパール。' },
+      { id: 100, name: 'レアアース・プリズム鉱', img: 'houseki100.png', desc: 'すべての希土類エネルギーを束ねた究極の幻の鉱物。' }
+    ];
+
+    const spotConfig = {
+      'baiyun': { name: '中国 モンゴル自治区 白雲鄂博', cost: 10, desc: '世界最大の軽レアアース鉱山。ランタンやセリウムの生産拠点。', img: 'area_cn.png', anim: 'anime_cn.gif', isSea: false },
+      'america': { name: 'アメリカ マウンテンパス鉱山', cost: 30, desc: 'かつて世界のユーロピウム供給を支えた歴史ある名門露天掘り鉱山。', img: 'area_us.png', anim: 'anime_us.gif', isSea: false },
+      'mount': { name: 'オーストラリア マウント・ウェルド鉱山', cost: 50, desc: '高品質な磁石向け軽レアアース（ネオジム等）を産出する安定供給地。', img: 'area_au.png', anim: 'anime_au.gif', isSea: false },
+      'myanmar': { name: 'ミャンマー イオン吸着鉱床', cost: 100, desc: 'EVや風力発電に不可欠な「重レアアース」が豊富にとれる粘土層鉱床。', img: 'area_mm.png', anim: 'anime_mm.png', isSea: false },
+      'africa': { name: '🌍 アフリカ新興鉱床', cost: 150, desc: '脱・中国依存に向けて近年世界中から開発が進む注目のフロンティア。', img: 'area_af.png', anim: 'anime_af.gif', isSea: false },
+      'greenland': { name: 'グリーンランド クバネフエルド鉱床', cost: 300, desc: '氷河の下に眠る、世界最大級の未開発レアアース・ウラン複合鉱床。', img: 'area_greenisland.png', anim: 'anime_BIG_GL.gif', isSea: false },
+      'tahiti': { name: 'タヒチ 南太平洋・マンガン団塊', cost: 200, desc: '深海底に転がる金属塊。重レアアースやコバルトを含む高価なゾーン。', img: 'area_tahiti.png', anim: 'anime_tahiti.gif', isSea: true },
+      'okinotori': { name: '日本 沖ノ鳥島沖（EEZ海底泥）', cost: 500, desc: '日本の未来を担う！水深数千mの海底に眠る超高濃度レアアース泥。', img: 'area_japan.png', anim: 'anime_cn.gif', isSea: true }
+    };
+
+    const currentSpot = spotConfig[spotId] || spotConfig['baiyun'];
+
+    // BGM切り替え設定
+    const bgm = document.getElementById('bgm-mine');
+    const bgmBtn = document.getElementById('bgm-btn');
+    bgm.volume = 0.4;
+
+    if (currentSpot.isSea) {
+      bgm.src = 'BGM_mine2.ogg';
+    } else {
+      bgm.src = 'BGM_mine.ogg';
+    }
+
+    let isMuted = localStorage.getItem('bgmMutedMine') === 'true';
+
+    function updateBgmUI() {
+      if (isMuted) {
+        bgm.muted = true;
+        bgmBtn.innerText = '🔇 OFF';
+        bgmBtn.classList.add('muted');
+      } else {
+        bgm.muted = false;
+        bgmBtn.innerText = '🎵 ON';
+        bgmBtn.classList.remove('muted');
+      }
+    }
+
+    function toggleBGM() {
+      isMuted = !isMuted;
+      localStorage.setItem('bgmMutedMine', isMuted);
+      updateBgmUI();
+      if (!isMuted) {
+        bgm.play().catch(() => {});
+      } else {
+        bgm.pause();
+      }
+    }
+
+    function unlockAndPlayMine() {
+      if (!isMuted) {
+        bgm.play().then(() => {
+          document.removeEventListener('click', unlockAndPlayMine);
+          document.removeEventListener('touchstart', unlockAndPlayMine);
+          document.removeEventListener('keydown', unlockAndPlayMine);
+        }).catch(() => {});
+      }
+    }
+
+    window.addEventListener('load', () => {
+      updateBgmUI();
+      if (!isMuted) {
+        bgm.play().catch(() => {
+          document.addEventListener('click', unlockAndPlayMine);
+          document.addEventListener('touchstart', unlockAndPlayMine);
+          document.addEventListener('keydown', unlockAndPlayMine);
+        });
+      }
+    });
+
+    function updateUI() {
+      document.getElementById('money').innerText = gameState.money.toLocaleString();
+      document.getElementById('level').innerText = gameState.level;
+      
+      const reqExp = getRequiredExp(gameState.level);
+      const expEl = document.getElementById('exp');
+      const maxExpEl = document.getElementById('max-exp');
+      if (expEl) expEl.innerText = gameState.level >= 50 ? 'MAX' : gameState.exp;
+      if (maxExpEl) maxExpEl.innerText = gameState.level >= 50 ? 'MAX' : reqExp;
+
+      document.getElementById('mud').innerText = gameState.mudStock;
+      document.getElementById('current-area-title').innerText = `【 ${currentSpot.name} 】`;
+      document.getElementById('area-feature-text').innerText = currentSpot.desc;
+      document.getElementById('mine-cost').innerText = currentSpot.cost;
+      document.getElementById('area-img').src = currentSpot.img;
+      document.getElementById('anim-img').src = currentSpot.anim;
+
+      const toolIcon = document.getElementById('tool-icon');
+      if (currentSpot.isSea) {
+        toolIcon.innerHTML = '🚢⚓';
+      } else {
+        toolIcon.innerHTML = '🚚🚜';
+      }
+    }
+
+    function mineMud() {
+      if (gameState.money < currentSpot.cost) {
+        document.getElementById('noMoneyModal').style.display = 'flex';
+        return;
+      }
+
+      gameState.money -= currentSpot.cost;
+
+      // ミャンマーでのカラオケ発生率を 8% (0.08) から 2% (0.02) に大幅ダウン！
+      if (spotId === 'myanmar' && Math.random() < 0.02) {
+        localStorage.setItem('rareEarthGameState', JSON.stringify(gameState));
+        setTimeout(() => {
+          location.href = 'karaoke.html';
+        }, 300);
+        return;
+      }
+
+      // 💎 3%の確率で「きれいな鉱物」発生判定
+      const isRareJewel = Math.random() < 0.03;
+      let obtainedJewel = null;
+
+      if (isRareJewel) {
+        const randomIndex = Math.floor(Math.random() * gemsMaster.length);
+        obtainedJewel = gemsMaster[randomIndex];
+        
+        // 🔒 図鑑と確実に同期するための堅牢な保存（配列＆オブジェクト両方に登録）
+        if (!gameState.jewels) gameState.jewels = [];
+        if (!gameState.jewels.includes(obtainedJewel.id)) gameState.jewels.push(obtainedJewel.id);
+        if (!gameState.jewels.includes(`houseki${obtainedJewel.id}`)) gameState.jewels.push(`houseki${obtainedJewel.id}`);
+
+        if (!gameState.houseki) gameState.houseki = {};
+        gameState.houseki[obtainedJewel.id] = true;
+        gameState.houseki[`houseki${obtainedJewel.id}`] = true;
+
+        const seHouseki = document.getElementById('se-houseki');
+        seHouseki.currentTime = 0;
+        seHouseki.play().catch(e => console.log('音声再生エラー:', e));
+      } else {
+        const seFutsu = document.getElementById('se-futsu');
+        seFutsu.currentTime = 0;
+        seFutsu.play().catch(e => console.log('音声再生エラー:', e));
+      }
+
+      const gained = Math.floor(Math.random() * 2) + 1;
+      gameState.mudStock += gained;
+      gameState.lastMinedSpot = spotId;
+
+      // 採掘EXP獲得 (1回につき25EXP)
+      addExp(25);
+
+      saveGameState();
+      updateUI();
+
+      const oreImg = document.getElementById('jumping-ore-img');
+      
+      if (isRareJewel) {
+        oreImg.src = obtainedJewel.img;
+      } else {
+        oreToggle = !oreToggle;
+        oreImg.src = oreToggle ? 'kouseki1.png' : 'kouseki2.png';
+      }
+
+      oreImg.classList.remove('jump-active');
+      void oreImg.offsetWidth;
+      oreImg.classList.add('jump-active');
+
+      if (isRareJewel) {
+        document.getElementById('mining-status').innerText = `💎 奇跡の発見！\n【${obtainedJewel.name}】`;
+        setTimeout(() => {
+          showFirstJewelModal(obtainedJewel);
+        }, 500);
+      } else {
+        document.getElementById('mining-status').innerText = `✨ 資源を\n${gained} 個獲得！`;
+      }
+    }
+
+    function showFirstJewelModal(jewel) {
+      document.getElementById('popup-jewel-name').innerText = jewel.name;
+      document.getElementById('popup-jewel-img').src = jewel.img;
+      document.getElementById('popup-jewel-desc').innerText = jewel.desc;
+      document.getElementById('firstJewelModal').style.display = 'flex';
+    }
+
+    function closeFirstJewelModal() {
+      document.getElementById('firstJewelModal').style.display = 'none';
+    }
+
+    function closeNoMoneyModal() {
+      document.getElementById('noMoneyModal').style.display = 'none';
+    }
+
+    function goToRefinery() {
+      const se = document.getElementById('se-gogogo');
+      if (se) { se.currentTime = 0; se.play().catch(e => {}); }
+      setTimeout(() => {
+        location.href = 'seisei.html';
+      }, 200);
+    }
+
+    function goToRecycle() {
+      const se = document.getElementById('se-gogogo');
+      if (se) { se.currentTime = 0; se.play().catch(e => console.log('音声再生エラー:', e)); }
+      setTimeout(() => {
+        location.href = 'recycle.html';
+      }, 300);
+    }
+
+    function goToRecycleWithSound() {
+      goToRecycle();
+    }
+
+    function goBackMap() {
+      const se = document.getElementById('se-type');
+      se.currentTime = 0;
+      se.play().catch(e => console.log('音声再生エラー:', e));
+
+      setTimeout(() => {
+        location.href = 'map.html';
+      }, 150);
+    }
+
+    updateUI();
+  </script>
+</body>
+</html>

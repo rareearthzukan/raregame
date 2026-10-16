@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>レアアース・クラフト - 元素エコー・ボーカル</title>
+  <style>
+    body { background-color: #1a1a2e; color: #fff; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+    .phone { width: 360px; height: 740px; background: #0f3460; border: 4px solid #16213e; border-radius: 24px; display: flex; flex-direction: column; overflow: hidden; position: relative; box-sizing: border-box; }
+    
+    /* ヘッダー */
+    .header { background: #16213e; padding: 8px 10px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: bold; border-bottom: 2px solid #00fff5; flex-shrink: 0; }
+    
+    /* BGMトグルボタン */
+    .bgm-btn {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid #00fff5;
+      color: #00fff5;
+      border-radius: 12px;
+      padding: 2px 8px;
+      font-size: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      transition: all 0.2s;
+    }
+    .bgm-btn.muted {
+      border-color: #e94560;
+      color: #e94560;
+      background: rgba(233, 69, 96, 0.2);
+    }
+
+    .content { flex: 1; padding: 10px; display: flex; flex-direction: column; gap: 8px; position: relative; overflow: hidden; box-sizing: border-box; }
+    
+    /* ステータスパネル */
+    .status-panel {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(22,33,62,0.8);
+      border: 1px solid #00fff5;
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-size: 11px;
+    }
+
+    /* 3レーン・リズムステージ */
+    .game-area {
+      flex: 1;
+      background: linear-gradient(180deg, #1f1140 0%, #0f3460 100%);
+      border: 2px solid #00fff5;
+      border-radius: 12px;
+      position: relative;
+      overflow: hidden;
+      box-sizing: border-box;
+      display: flex;
+    }
+
+    /* レーンの分割線 */
+    .lane {
+      flex: 1;
+      height: 100%;
+      border-right: 1px dashed rgba(0, 255, 245, 0.2);
+      position: relative;
+    }
+    .lane:last-child { border-right: none; }
+
+    /* 判定ライン */
+    .judgement-line {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 300px;
+      height: 42px;
+      box-sizing: border-box;
+      background: rgba(255, 222, 89, 0.25);
+      border-top: 2px solid #ffde59;
+      border-bottom: 2px solid #ffde59;
+      box-shadow: 0 0 12px rgba(255, 222, 89, 0.45);
+      z-index: 2;
+      pointer-events: none;
+    }
+    .judgement-line::after {
+      content: ''; position: absolute; left: 0; right: 0; top: 50%;
+      height: 2px; margin-top: -1px; background: rgba(255,255,255,0.7);
+    }
+    .target-ring {
+      position: absolute; left: 50%; width: 48px; height: 48px;
+      border: 3px dashed rgba(255,222,89,0.85); border-radius: 50%;
+      transform: translate(-50%, -50%); z-index: 3; pointer-events: none;
+    }
+    .lane.flash { background: rgba(255, 222, 89, 0.12); }
+    .hit-fx {
+      position: absolute; left: 50%; width: 48px; height: 48px; border-radius: 50%;
+      border: 3px solid #ffde59; transform: translate(-50%, -50%) scale(1);
+      z-index: 6; pointer-events: none; animation: hitfx 0.28s ease-out forwards;
+    }
+    @keyframes hitfx { to { transform: translate(-50%, -50%) scale(1.9); opacity: 0; } }
+
+    /* ノーツ（〇） */
+    .note {
+      position: absolute;
+      left: 50%;
+      top: 0;
+      width: 48px;
+      height: 48px;
+      margin-left: -24px;
+      background: #16213e;
+      border: 3px solid #00fff5;
+      border-radius: 50%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 10px rgba(0,255,245,0.5);
+      z-index: 4;
+      box-sizing: border-box;
+      will-change: transform;
+    }
+    .note-symbol { font-size: 13px; font-weight: bold; color: #ffde59; }
+    .note-text { font-size: 6px; color: #fff; }
+
+    /* 吹き出しフィードバック表示エリア */
+    .feedback-banner {
+      background: #ffffff;
+      color: #0f3460;
+      padding: 6px 10px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: bold;
+      text-align: center;
+      min-height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+      border: 2px solid #ffde59;
+      box-sizing: border-box;
+      flex-shrink: 0;
+    }
+
+    /* 下部の3レーンタップボタン群 */
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+    .tap-btn {
+      background: linear-gradient(135deg, #e94560, #ff6b6b);
+      border: 2px solid #ffde59;
+      color: #fff;
+      padding: 14px 4px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: bold;
+      cursor: pointer;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(233, 69, 96, 0.4);
+      transition: transform 0.05s;
+      touch-action: manipulation; user-select: none; -webkit-user-select: none;
+    }
+    .tap-btn:active { transform: scale(0.93); background: #ffde59; color: #0f3460; }
+
+    .btn-back { background: #e94560; color: #fff; border: none; padding: 8px; font-weight: bold; border-radius: 8px; cursor: pointer; width: 100%; font-size: 11px; margin-top: 4px; }
+
+    /* --- モーダル共通 --- */
+    .modal-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(10, 15, 30, 0.9);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 100;
+      backdrop-filter: blur(2px);
+      box-sizing: border-box;
+      padding: 16px;
+    }
+
+    .modal-content {
+      background: #16213e;
+      border: 2px solid #00fff5;
+      border-radius: 16px;
+      padding: 16px;
+      width: 100%;
+      max-width: 290px;
+      text-align: center;
+      box-shadow: 0 0 20px rgba(0, 255, 245, 0.3);
+      animation: popup 0.3s ease-out;
+      box-sizing: border-box;
+    }
+
+    @keyframes popup {
+      0% { transform: scale(0.8); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .result-breakdown {
+      background: rgba(15,23,42,0.8);
+      border: 1px solid #00fff5;
+      border-radius: 8px;
+      padding: 8px;
+      margin: 8px 0;
+      font-size: 11px;
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .result-row {
+      display: flex;
+      justify-content: space-between;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- カラオケ専用音源（mini_karaoke.ogg） -->
+  <audio id="karaokeBgm" src="mini_karaoke.ogg" preload="auto"></audio>
+  <audio id="seFuseikai" src="mini_fuseikai.mp3" preload="auto"></audio>
+
+  <div class="phone">
+    <div class="header">
+      <span>🎤 ミャンマー社内カラオケ</span>
+      <span>🎵 スコア: <span id="score">0</span></span>
+      <button id="bgm-btn" class="bgm-btn" onclick="toggleBGM()">🎵 ON</button>
+    </div>
+    
+    <div class="content">
+      <div class="status-panel">
+        <span>曲名: 「レアアース社歌」</span>
+        <span>コンボ: <span id="combo">0</span></span>
+      </div>
+
+      <!-- 3レーンゲームエリア -->
+      <div class="game-area" id="gameArea">
+        <div class="lane" id="lane0"></div>
+        <div class="lane" id="lane1"></div>
+        <div class="lane" id="lane2"></div>
+        <div class="judgement-line"></div>
+      </div>
+
+      <!-- 吹き出しフィードバックエリア -->
+      <div id="feedbackBanner" class="feedback-banner">
+        音楽に合わせてリズムよく叩け！
+      </div>
+
+      <!-- 下部の3レーンタップボタン群 -->
+      <div class="controls">
+        <button class="tap-btn" onpointerdown="tapLane(0, event)">👈 左</button>
+        <button class="tap-btn" onpointerdown="tapLane(1, event)">🎤 中央</button>
+        <button class="tap-btn" onpointerdown="tapLane(2, event)">右 👉</button>
+      </div>
+
+      <button class="btn-back" onclick="location.href='map.html'">🗺️ マップに戻る</button>
+    </div>
+
+    <!-- スタート確認モーダル -->
+    <div id="startModal" class="modal-overlay">
+      <div class="modal-content">
+        <div style="font-size: 28px;">🎤</div>
+        <div style="font-size: 15px; font-weight: bold; color: #00fff5; margin: 4px 0;">【定例】カラオケ大会の開催</div>
+        
+        <div style="font-size: 11px; color: #dcdde1; text-align: left; line-height: 1.4; margin: 8px 0; background: rgba(15,23,42,0.8); padding: 8px; border-radius: 6px;">
+          🎤 今どき珍しく社内行事が開催されるのです。<br>
+          ミャンマーの採掘現場に突如としてミラーボールと特設ステージが設置された……！
+        </div>
+
+        <div style="font-size: 10px; color: #cbd5e1; margin: 0 0 8px; display:flex; align-items:center; justify-content:center; gap:8px;">
+          ⏱ タイミング調整
+          <button class="bgm-btn" onclick="adjustOffset(-10)">－</button>
+          <span id="offsetLabel" style="min-width:48px;">0 ms</span>
+          <button class="bgm-btn" onclick="adjustOffset(10)">＋</button>
+        </div>
+        <div style="font-size: 9px; color: #94a3b8; margin-bottom: 8px;">
+          ※音が遅れて聞こえる時（Bluetooth等）は＋、早く感じる時は－
+        </div>
+
+        <button class="btn-back" style="background: #00fff5; color: #0f3460; font-size: 12px; padding: 10px; margin-bottom: 6px;" onclick="startKaraokeGame()">
+          🎶 参加します！
+        </button>
+
+        <div style="font-size: 9px; color: #94a3b8; margin-bottom: 8px;">
+          ※もちろんホワイト企業なので断ることもできます。
+        </div>
+
+        <button class="btn-back" style="background: #334155; color: #cbd5e1; font-size: 11px; padding: 8px;" onclick="skipKaraoke()">
+          🚪 今日は定時であがります。
+        </button>
+      </div>
+    </div>
+
+    <!-- 結果用ポップアップモーダル -->
+    <div id="resultModal" class="modal-overlay" style="display: none;">
+      <div class="modal-content">
+        <div style="font-size: 28px;">🏆</div>
+        <div style="font-size: 15px; font-weight: bold; color: #00fff5; margin: 4px 0;">カラオケ大会終了！</div>
+        
+        <div class="result-breakdown">
+          <div class="result-row">
+            <span>🎤 熱唱スコア:</span>
+            <span style="color:#00fff5;" id="finalScore">0 pt</span>
+          </div>
+          <div class="result-row">
+            <span>🔥 最大コンボ:</span>
+            <span style="color:#ffde59;" id="finalCombo">0</span>
+          </div>
+          <div style="border-top: 1px dashed #00fff5; margin-top: 2px; padding-top: 4px; font-weight: bold; display: flex; justify-content: space-between;">
+            <span>💰 ストレス発散報酬:</span>
+            <span style="color:#55ff55;" id="totalMoney">+0 G</span>
+          </div>
+        </div>
+
+        <button class="btn-back" style="background: #00fff5; color: #0f3460; font-size: 12px; padding: 10px;" onclick="saveAndReturn()">
+          💰 資金を受け取ってマップへ
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const karaokeBgm = document.getElementById('karaokeBgm');
+    karaokeBgm.volume = 0.5;
+    const BGM_VOLUME = 0.5;
+    const bgmBtn = document.getElementById('bgm-btn');
+    const gameArea = document.getElementById('gameArea');
+    const judgeLine = document.querySelector('.judgement-line');
+
+    let isMuted = localStorage.getItem('bgmMutedKaraoke') === 'true';
+
+    function updateBgmUI() {
+      karaokeBgm.muted = isMuted;
+      bgmBtn.innerText = isMuted ? '🔇 OFF' : '🎵 ON';
+      bgmBtn.classList.toggle('muted', isMuted);
+    }
+
+    function toggleBGM() {
+      isMuted = !isMuted;
+      localStorage.setItem('bgmMutedKaraoke', isMuted);
+      updateBgmUI();
+    }
+    updateBgmUI();
+
+    // ════════════════════════════════════════════════
+    //  譜面定義（ご指定のリズム・タイミングに完全同期）
+    // ════════════════════════════════════════════════
+    const BPM          = 130;
+    const BEAT         = 60 / BPM;      // 1拍の長さ
+    const CHART_START  = 4.0;           // 0:00:04（4.0秒）の頭から正確に開始
+    const SONG_END     = 66.0;          // 1分6秒のフレーズの切れ目で終了
+
+    const PATTERNS = {
+      // 16スロット（8拍分）: 1拍＝2スロット（半拍刻み）
+      // A: タン・休・タン・休・タン・休・タタ・タン
+      A: 'x...x...x...xxx.',
+      // C: タン・休・タン・休・タン・休・タン・休
+      C: 'x...x...x...x...',
+    };
+
+    const SONG = [
+      'A','A','C','A',
+      'A','A','C','A',
+      'A','A','C','C',
+      'A','A','C','A',
+      'A'
+    ];
+
+    const lyricNotes = [
+      { symbol: 'Nd', text: 'ネオジム' },
+      { symbol: 'Dy', text: 'ジスプロ' },
+      { symbol: 'La', text: 'ランタン' },
+      { symbol: 'Y',  text: 'イットリ' },
+      { symbol: 'Tb', text: 'テルビウム' },
+      { symbol: 'Sc', text: 'スカンジ' }
+    ];
+
+    const chart = [];
+    (function buildChart() {
+      const laneCycle = [1, 0, 2, 1, 2, 0];
+      let cycleIdx = 0, prevTime = -99, prevLane = 1;
+      SONG.forEach((key, p) => {
+        const pat = PATTERNS[key];
+        for (let j = 0; j < pat.length; j++) {
+          if (pat[j] !== 'x') continue;
+          const time = CHART_START + (p * 16 + j) * (BEAT / 2);
+          if (time >= SONG_END) return;
+          let lane;
+          if (time - prevTime <= BEAT / 2 + 0.01) lane = prevLane;
+          else lane = laneCycle[cycleIdx++ % laneCycle.length];
+          chart.push({ time: Number(time.toFixed(4)), lane });
+          prevTime = time; prevLane = lane;
+        }
+      });
+    })();
+
+    // ════════════════════════════════════════════════
+    //  判定・見た目パラメータ（より甘く快適な判定にチューニング）
+    // ════════════════════════════════════════════════
+    const WIN_GREAT = 0.100;      // ±100ms
+    const WIN_GOOD  = 0.160;      // ±160ms
+    const WIN_OK    = 0.220;      // ±220ms（プレイヤーが気持ちよく叩ける広めの判定）
+    const WIN_EARLY_MISS = 0.350; 
+    const FALL_DURATION  = 1.3;   
+    const NOTE_START_Y   = -30;   
+
+    let lineY = 300;              
+    let pxPerSec = 250;
+
+    function layoutStage() {
+      const H = gameArea.clientHeight;
+      lineY = H - 64;                                   
+      pxPerSec = (lineY - NOTE_START_Y) / FALL_DURATION;
+      const bandH = Math.max(34, Math.round(2 * WIN_GREAT * pxPerSec));
+      judgeLine.style.height = bandH + 'px';
+      judgeLine.style.top = (lineY - bandH / 2) + 'px';
+      document.querySelectorAll('.target-ring').forEach(e => e.remove());
+      for (let i = 0; i < 3; i++) {
+        const ring = document.createElement('div');
+        ring.className = 'target-ring';
+        ring.style.top = lineY + 'px';
+        document.getElementById('lane' + i).appendChild(ring);
+      }
+    }
+
+    let userOffset = (parseInt(localStorage.getItem('karaokeOffsetMs'), 10) || 0) / 1000;
+    function adjustOffset(deltaMs) {
+      let ms = Math.round(userOffset * 1000) + deltaMs;
+      ms = Math.max(-300, Math.min(300, ms));
+      userOffset = ms / 1000;
+      localStorage.setItem('karaokeOffsetMs', ms);
+      document.getElementById('offsetLabel').innerText = (ms > 0 ? '+' : '') + ms + ' ms';
+    }
+    adjustOffset(0);
+
+    let lastAudioT = 0, lastAudioP = 0, estT = 0, lastFrameP = 0;
+    function resetClock() { lastAudioT = 0; lastAudioP = performance.now(); estT = 0; lastFrameP = lastAudioP; }
+    function songTime() {
+      const nowP = performance.now();
+      const a = karaokeBgm.currentTime;
+      if (a !== lastAudioT) { lastAudioT = a; lastAudioP = nowP; }
+      const target = lastAudioT + (karaokeBgm.paused ? 0 : (nowP - lastAudioP) / 1000);
+      estT += (nowP - lastFrameP) / 1000;
+      estT += (target - estT) * 0.15;
+      if (Math.abs(target - estT) > 0.1) estT = target;
+      lastFrameP = nowP;
+      return estT - userOffset;       
+    }
+
+    let score = 0, combo = 0, maxCombo = 0;
+    let activeNotes = [];
+    let nextNoteIndex = 0;
+    let rafId = null, running = false;
+
+    function skipKaraoke() { location.href = 'map.html'; }
+
+    function startKaraokeGame() {
+      document.getElementById('startModal').style.display = 'none';
+      updateBgmUI();
+      layoutStage();
+
+      score = 0; combo = 0; maxCombo = 0; nextNoteIndex = 0;
+      document.getElementById('score').innerText = score;
+      document.getElementById('combo').innerText = combo;
+
+      karaokeBgm.volume = BGM_VOLUME;
+      karaokeBgm.currentTime = 0;
+      resetClock();
+      karaokeBgm.play().then(() => {
+        running = true;
+        resetClock();
+        rafId = requestAnimationFrame(frame);
+      }).catch(e => console.log('音声再生エラー:', e));
+    }
+
+    function frame() {
+      if (!running) return;
+      const t = songTime();
+
+      while (nextNoteIndex < chart.length && chart[nextNoteIndex].time - FALL_DURATION <= t) {
+        spawnNote(chart[nextNoteIndex]);
+        nextNoteIndex++;
+      }
+
+      for (let i = activeNotes.length - 1; i >= 0; i--) {
+        const n = activeNotes[i];
+        const y = lineY - (n.time - t) * pxPerSec;
+        n.element.style.transform = `translate3d(0, ${y - 24}px, 0)`;
+
+        if (t > n.time + WIN_OK) {
+          n.element.remove();
+          activeNotes.splice(i, 1);
+          registerMiss('がんばれ！');
+        }
+      }
+
+      const rawT = t + userOffset;
+      if (rawT > SONG_END - 1.5) {
+        karaokeBgm.volume = Math.max(0, BGM_VOLUME * (SONG_END - rawT) / 1.5);
+      }
+      if (rawT >= SONG_END || karaokeBgm.ended) { endGame(); return; }
+
+      rafId = requestAnimationFrame(frame);
+    }
+
+    function spawnNote(data) {
+      const laneEl = document.getElementById('lane' + data.lane);
+      const noteData = lyricNotes[Math.floor(Math.random() * lyricNotes.length)];
+      const el = document.createElement('div');
+      el.className = 'note';
+      el.style.transform = `translate3d(0, ${NOTE_START_Y - 24}px, 0)`;
+      el.innerHTML = `<span class="note-symbol">${noteData.symbol}</span><span class="note-text">${noteData.text}</span>`;
+      laneEl.appendChild(el);
+      activeNotes.push({ element: el, lane: data.lane, time: data.time });
+    }
+
+    function registerMiss(text) {
+      combo = 0;
+      document.getElementById('combo').innerText = combo;
+      showBanner(text, '#e94560');
+    }
+
+    function tapLane(laneIndex, ev) {
+      if (ev && ev.preventDefault) ev.preventDefault();
+      if (!running) return;
+
+      const laneEl = document.getElementById('lane' + laneIndex);
+      laneEl.classList.add('flash');
+      setTimeout(() => laneEl.classList.remove('flash'), 80);
+
+      const t = songTime();
+      let closest = null, closestDiff = 999, closestIdx = -1;
+      for (let i = 0; i < activeNotes.length; i++) {
+        if (activeNotes[i].lane !== laneIndex) continue;
+        const d = Math.abs(activeNotes[i].time - t);
+        if (d < closestDiff) { closestDiff = d; closest = activeNotes[i]; closestIdx = i; }
+      }
+      if (!closest) return;                       
+
+      if (closestDiff > WIN_OK) {
+        if (closestDiff <= WIN_EARLY_MISS && closest.time > t) {
+          closest.element.remove();
+          activeNotes.splice(closestIdx, 1);
+          registerMiss('はやい！');
+        }
+        return;
+      }
+
+      let addScore;
+      if (closestDiff <= WIN_GREAT)      { showBanner('Great!',  '#ffde59'); addScore = 200; }
+      else if (closestDiff <= WIN_GOOD)  { showBanner('いいよ～', '#00fff5'); addScore = 120; }
+      else                               { showBanner('まあまあ', '#cbd5e1'); addScore = 70;  }
+
+      combo++;
+      if (combo > maxCombo) maxCombo = combo;
+      score += addScore * Math.min(combo, 4);
+      document.getElementById('score').innerText = score;
+      document.getElementById('combo').innerText = combo;
+
+      const fx = document.createElement('div');
+      fx.className = 'hit-fx';
+      fx.style.top = lineY + 'px';
+      laneEl.appendChild(fx);
+      setTimeout(() => fx.remove(), 300);
+
+      closest.element.remove();
+      activeNotes.splice(closestIdx, 1);
+    }
+
+    const KEYMAP = { a: 0, s: 1, d: 2, ArrowLeft: 0, ArrowDown: 1, ArrowRight: 2 };
+    const keysDown = {};
+    document.addEventListener('keydown', e => {
+      if (!(e.key in KEYMAP) || keysDown[e.key]) return;
+      keysDown[e.key] = true;
+      tapLane(KEYMAP[e.key], e);
+    });
+    document.addEventListener('keyup', e => { delete keysDown[e.key]; });
+
+    let bannerTimer = null;
+    function showBanner(text, color) {
+      const banner = document.getElementById('feedbackBanner');
+      banner.innerText = text;
+      banner.style.color = color;
+      banner.style.transform = 'scale(1.06)';
+      clearTimeout(bannerTimer);
+      bannerTimer = setTimeout(() => { banner.style.transform = 'scale(1)'; }, 100);
+    }
+
+    function endGame() {
+      running = false;
+      cancelAnimationFrame(rafId);
+      karaokeBgm.pause();
+      karaokeBgm.volume = BGM_VOLUME;
+
+      activeNotes.forEach(n => n.element.remove());
+      activeNotes = [];
+
+      const totalEarn = Math.max(300, score + (maxCombo * 40));
+      document.getElementById('finalScore').innerText = `${score} pt`;
+      document.getElementById('finalCombo').innerText = maxCombo;
+      document.getElementById('totalMoney').innerText = `+${totalEarn.toLocaleString()} G`;
+
+      window.earnedMoney = totalEarn;
+      document.getElementById('resultModal').style.display = 'flex';
+    }
+
+    function saveAndReturn() {
+      let gameState = JSON.parse(localStorage.getItem('rareEarthGameState')) || { money: 1500, level: 1, mudStock: 5 };
+      gameState.money += (window.earnedMoney || 0);
+      localStorage.setItem('rareEarthGameState', JSON.stringify(gameState));
+      location.href = 'map.html';
+    }
+  </script>
+</body>
+</html>

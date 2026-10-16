@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>レアアース・クラフト - マップ選択</title>
+  <style>
+    /* ─── スクロールバーのおしゃれカスタマイズ（全画面共通） ─── */
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.6);
+      border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, #00fff5, #3b82f6);
+      border-radius: 10px;
+      box-shadow: 0 0 6px rgba(0, 255, 245, 0.5);
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #ffde59;
+    }
+
+    body { background-color: #1a1a2e; color: #fff; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+    .phone { width: 360px; height: 740px; background: #0f3460; border: 4px solid #16213e; border-radius: 24px; display: flex; flex-direction: column; overflow: hidden; position: relative; box-sizing: border-box; }
+    .header { background: #16213e; padding: 8px 10px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: bold; border-bottom: 2px solid #e94560; flex-shrink: 0; }
+    
+    /* BGMトグルボタンのスタイル */
+    .bgm-btn {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid #00fff5;
+      color: #00fff5;
+      border-radius: 12px;
+      padding: 2px 8px;
+      font-size: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      transition: all 0.2s;
+    }
+    .bgm-btn.muted {
+      border-color: #e94560;
+      color: #e94560;
+      background: rgba(233, 69, 96, 0.2);
+    }
+
+    /* ─── 工程ナビゲーションバー ─── */
+    .koutei-bar {
+      background: rgba(15, 23, 42, 0.9);
+      border-bottom: 1px solid #00fff5;
+      padding: 6px 4px;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .koutei-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+    .koutei-item {
+      width: 36px;
+      height: 36px;
+      background: #000;
+      border: 2px solid transparent;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .koutei-item.active {
+      border-color: #00fff5;
+      box-shadow: 0 0 10px rgba(0, 255, 245, 0.8);
+      animation: kouteiGlow 1.2s infinite alternate;
+    }
+    @keyframes kouteiGlow {
+      from { border-color: #00fff5; box-shadow: 0 0 4px rgba(0,255,245,0.4); }
+      to { border-color: #ffde59; box-shadow: 0 0 12px rgba(255,222,89,0.9); }
+    }
+    .koutei-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .koutei-label {
+      font-size: 8px;
+      color: #94a3b8;
+      font-weight: bold;
+      text-align: center;
+      white-space: nowrap;
+    }
+    .koutei-wrapper:has(.koutei-item.active) .koutei-label {
+      color: #00fff5;
+    }
+
+    .content { flex: 1; padding: 6px 10px; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; box-sizing: border-box; }
+    
+    /* キャラクターナビゲーション（吹き出し）エリア */
+    .chara-guide {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(22,33,62,0.9);
+      border: 1px solid #00fff5;
+      border-radius: 10px;
+      padding: 6px 8px;
+      flex-shrink: 0;
+    }
+    .chara-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 2px solid #00fff5;
+      object-fit: cover;
+      flex-shrink: 0;
+      background: #16213e;
+    }
+    .speech-bubble {
+      position: relative;
+      background: #f8f9fa;
+      border: 1px solid #00fff5;
+      border-radius: 8px;
+      padding: 5px 8px;
+      font-size: 11px;
+      color: #1a1a2e;
+      font-weight: bold;
+      flex: 1;
+      line-height: 1.3;
+    }
+    .speech-bubble::after {
+      content: '';
+      position: absolute;
+      left: -8px;
+      top: 50%;
+      transform: translateY(-50%);
+      border-width: 5px 8px 5px 0;
+      border-style: solid;
+      border-color: transparent #f8f9fa transparent;
+      display: block;
+    }
+
+    /* ─── マップ全体のボックス（周りの囲いを点滅発光） ─── */
+    .map-box { 
+      width: 100%; 
+      height: 140px; 
+      background: url('world_map_bg.jpeg') center/cover no-repeat; 
+      border: 2.5px solid #00fff5; 
+      border-radius: 10px; 
+      position: relative; 
+      overflow: hidden; 
+      flex-shrink: 0;
+      animation: mapBoxGlow 1.8s infinite alternate;
+    }
+    @keyframes mapBoxGlow {
+      0% { border-color: #00fff5; box-shadow: 0 0 4px rgba(0,255,245,0.4), inset 0 0 4px rgba(0,255,245,0.2); }
+      100% { border-color: #ffde59; box-shadow: 0 0 14px rgba(255,222,89,0.9), inset 0 0 8px rgba(255,222,89,0.4); }
+    }
+
+    .spot { position: absolute; background: #16213e; border: 1.5px solid #00fff5; color: #fff; padding: 2px 5px; border-radius: 6px; font-size: 9px; cursor: pointer; transform: translate(-50%,-50%); display: flex; align-items: center; gap: 2px; white-space: nowrap; z-index: 10; }
+    .spot img { width: 12px; height: 9px; object-fit: cover; border-radius: 1px; }
+    
+    .card { background: rgba(22,33,62,0.9); border: 1px solid #00fff5; border-radius: 10px; padding: 6px 8px; font-size: 11px; flex-shrink: 0; }
+    
+    .map-title {
+      font-weight: bold;
+      color: #00fff5;
+      margin-bottom: 4px;
+      font-size: 14px;
+      animation: titleBlink 1.5s infinite alternate;
+    }
+    @keyframes titleBlink {
+      0% { color: #00fff5; text-shadow: 0 0 4px rgba(0,255,245,0.4); }
+      100% { color: #ffde59; text-shadow: 0 0 10px rgba(255,222,89,0.8), 0 0 20px rgba(255,222,89,0.4); }
+    }
+
+    .spot-country { font-size: 10px; color: #8a8a8a; font-weight: normal; display: block; }
+    .spot-title { font-size: 14px; color: #ffde59; font-weight: bold; display: block; margin-top: 1px; }
+
+    .btn { background: #00fff5; color: #0f3460; border: none; padding: 6px; font-weight: bold; border-radius: 12px; cursor: pointer; width: 100%; margin-top: 3px; font-size: 11px; transition: background 0.2s; }
+    
+    .area-image-box {
+      width: 100%;
+      height: 140px;
+      background: rgba(15,23,42,0.8);
+      border: 1px solid #00fff5;
+      border-radius: 10px;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .area-image-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* 下部ナビゲーション（ボタン風タイルデザイン） */
+    .nav { 
+      height: 56px; 
+      background: #16213e; 
+      display: flex; 
+      justify-content: space-around; 
+      align-items: center; 
+      padding: 0 8px;
+      flex-shrink: 0; 
+      border-top: 2px solid #1f293d;
+      box-sizing: border-box;
+    }
+    .nav-item { 
+      color: #a0aec0; 
+      cursor: pointer; 
+      text-align: center; 
+      background: rgba(255, 255, 255, 0.05); 
+      border: 1px solid rgba(0, 255, 245, 0.2); 
+      border-radius: 10px; 
+      padding: 4px 8px;
+      font-size: 10px; 
+      font-weight: bold;
+      flex: 1;
+      margin: 0 3px;
+      transition: all 0.2s;
+    }
+    .nav-item:active {
+      transform: scale(0.95);
+    }
+    .nav-item.active { 
+      color: #00fff5; 
+      background: rgba(0, 255, 245, 0.15); 
+      border-color: #00fff5;
+      box-shadow: 0 0 8px rgba(0, 255, 245, 0.3);
+    }
+
+    /* ─── 画面内ポップアップモーダル用スタイル ─── */
+    .modal-overlay {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(10, 15, 30, 0.85);
+      display: flex; justify-content: center; align-items: center;
+      z-index: 100;
+      backdrop-filter: blur(2px);
+      box-sizing: border-box;
+      padding: 16px;
+    }
+    .modal-content {
+      background: #16213e;
+      border: 2px solid #00fff5;
+      border-radius: 16px;
+      padding: 16px 12px;
+      width: 100%;
+      max-width: 270px;
+      text-align: center;
+      box-shadow: 0 0 20px rgba(0, 255, 245, 0.3);
+      animation: popup 0.3s ease-out;
+      box-sizing: border-box;
+    }
+    @keyframes popup {
+      0% { transform: scale(0.8); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <audio id="bgm" src="BGM_map.ogg" loop preload="auto"></audio>
+
+  <div class="phone">
+    <div class="header">
+      <span>💰 <span id="money">1,500</span> G</span>
+      <span>🌟 Lv.<span id="level">1</span></span>
+      <span>📦 泥: <span id="mud">0</span>個</span>
+      <button id="bgm-btn" class="bgm-btn" onclick="toggleBGM()">🎵 ON</button>
+    </div>
+
+    <!-- 工程ナビゲーションバー（koutei1〜6） -->
+    <div class="koutei-bar">
+      <div class="koutei-wrapper">
+        <div class="koutei-item active"><img src="koutei1.png" alt="採掘" onerror="this.style.display='none'"></div>
+        <div class="koutei-label">1.採掘</div>
+      </div>
+      <div class="koutei-wrapper">
+        <div class="koutei-item active"><img src="koutei2.png" alt="運搬" onerror="this.style.display='none'"></div>
+        <div class="koutei-label">2.運搬</div>
+      </div>
+      <div class="koutei-wrapper">
+        <div class="koutei-item"><img src="koutei3.png" alt="精製" onerror="this.style.display='none'"></div>
+        <div class="koutei-label">3.精製</div>
+      </div>
+      <div class="koutei-wrapper">
+        <div class="koutei-item"><img src="koutei4.png" alt="インゴット" onerror="this.style.display='none'"></div>
+        <div class="koutei-label">4.素材</div>
+      </div>
+      <div class="koutei-wrapper">
+        <div class="koutei-item"><img src="koutei5.png" alt="製造" onerror="this.style.display='none'"></div>
+        <div class="koutei-label">5.製造</div>
+      </div>
+      <div class="koutei-wrapper">
+        <div class="koutei-item"><img src="koutei6.png" alt="出荷" onerror="this.style.display='none'"></div>
+        <div class="koutei-label">6.出荷</div>
+      </div>
+    </div>
+
+    <div class="content">
+      
+      <div class="chara-guide">
+        <img src="navtb.png" alt="テルビウム" class="chara-icon" onerror="this.src='hata_cn.png'">
+        <div class="speech-bubble">
+          世界地図から気になるエリアをポチッと選んでね！どんなレアアースが眠っているかワクワクしちゃうね✨
+        </div>
+      </div>
+
+      <div class="card" style="padding: 6px 10px;">
+        <div class="map-title">🗺️ 採掘エリアを選択してください</div>
+        <div class="map-box">
+          <div class="spot" style="top: 22%; left: 32%;" onclick="selectSpot('greenland')"><img src="グリーンランドの画像名.png" alt="GL" onerror="this.src='hata_greenisland.png'">グリーンランド</div>
+          <div class="spot" style="top: 36%; left: 18%;" onclick="selectSpot('america')"><img src="hata_us.png" alt="US">マウンテンパス</div>
+          <div class="spot" style="top: 32%; left: 63%;" onclick="selectSpot('baiyun')"><img src="中国の旗画像名.png" alt="CN" onerror="this.src='hata_cn.png'">白雲鄂博</div>
+          <div class="spot" style="top: 50%; left: 52%;" onclick="selectSpot('myanmar')"><img src="ミャンマーの旗画像名.png" alt="MM" onerror="this.src='hata_mm.png'">ミャンマー</div>
+          <div class="spot" style="top: 65%; left: 38%;" onclick="selectSpot('africa')"><img src="hata_af.png" alt="AF">アフリカ</div>
+          <div class="spot" style="top: 78%; left: 70%;" onclick="selectSpot('mount')"><img src="オーストラリアの旗画像名.png" alt="AU" onerror="this.src='hata_au.png'">マウントウェルド</div>
+          <div class="spot" style="top: 45%; left: 82%;" onclick="selectSpot('okinotori')"><img src="日本の旗画像名.png" alt="JP" onerror="this.src='hata_jp.png'">沖ノ鳥島</div>
+          <div class="spot" style="top: 78%; left: 24%;" onclick="selectSpot('tahiti')"><img src="南太平洋の旗画像名.png" alt="PF" onerror="this.src='hata_pf.png'">南太平洋</div>
+        </div>
+      </div>
+
+      <!-- 🌟 最初は「完全に未選択のガイド表示」かつ裏では中国（baiyun）がセットされている状態 -->
+      <div class="card" id="info-card">
+        <div id="spot-name">
+          <span class="spot-country" style="color:#00fff5;">📍 採掘エリアを選ね</span>
+          <span class="spot-title" style="font-size:12px;">上の世界地図からピンをタップしよう！</span>
+        </div>
+        <div style="font-size:10px; color:#dcdde1; margin:2px 0;" id="spot-desc">ピンを選ぶと、それぞれの土地の特徴が表示されます。</div>
+        <div style="font-size:10px; color:#8a8a8a;" id="spot-detail">（このまま下のボタンを押すと「白雲鄂博鉱山」に出発します）</div>
+        <button class="btn" id="action-btn" style="background: #00fff5; color: #0f3460;" onclick="goToMine()">🚜 このエリアの陸上採掘へ移動！</button>
+      </div>
+
+      <div class="area-image-box">
+        <img id="area-img" src="world_map_bg.jpeg" alt="エリア画像" onerror="this.src='world_map_bg.jpeg'">
+      </div>
+    </div>
+
+    <!-- 画面内ポップアップモーダル -->
+    <div id="customModal" class="modal-overlay" style="display: none;">
+      <div class="modal-content">
+        <div style="font-size: 24px; margin-bottom: 2px;">🔒</div>
+        <div id="modalTitle" style="font-size: 13px; font-weight: bold; color: #ffde59; margin-bottom: 4px;">解放条件</div>
+        <div id="modalDesc" style="font-size: 11px; color: #f1f5f9; margin-bottom: 10px; line-height: 1.4;">説明文</div>
+        <button class="btn" style="background: #00fff5; color: #0f3460; margin-top: 0;" onclick="closeModal()">閉じる</button>
+      </div>
+    </div>
+
+    <div class="nav">
+      <div class="nav-item active" onclick="location.href='map.html'"><span style="font-size:15px; display:block; margin-bottom:1px;">🗺️</span>マップ</div>
+      <div class="nav-item" onclick="location.href='seisei.html'"><span style="font-size:15px; display:block; margin-bottom:1px;">🧪</span>精製</div>
+      <div class="nav-item" onclick="location.href='factory.html'"><span style="font-size:15px; display:block; margin-bottom:1px;">🏭</span>工場</div>
+      <div class="nav-item" onclick="location.href='zukan.html'"><span style="font-size:15px; display:block; margin-bottom:1px;">📖</span>図鑑</div>
+    </div>
+  </div>
+
+  <script>
+    let gameState = JSON.parse(localStorage.getItem('rareEarthGameState')) || { money: 1500, level: 1, mudStock: 5 };
+    
+    // 🌟 最初は見た目未選択、裏では中国（baiyun）が出発用としてセットされている状態
+    let selectedSpotId = 'baiyun';
+
+    function showModal(title, desc) {
+      document.getElementById('modalTitle').innerText = title;
+      document.getElementById('modalDesc').innerText = desc;
+      document.getElementById('customModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('customModal').style.display = 'none';
+    }
+
+    const bgm = document.getElementById('bgm');
+    const bgmBtn = document.getElementById('bgm-btn');
+    bgm.volume = 0.3;
+
+    let isMuted = localStorage.getItem('bgmMuted') === 'true';
+
+    function updateBgmUI() {
+      if (isMuted) {
+        bgm.muted = true;
+        bgmBtn.innerText = '🔇 OFF';
+        bgmBtn.classList.add('muted');
+      } else {
+        bgm.muted = false;
+        bgmBtn.innerText = '🎵 ON';
+        bgmBtn.classList.remove('muted');
+      }
+    }
+
+    function toggleBGM() {
+      isMuted = !isMuted;
+      localStorage.setItem('bgmMuted', isMuted);
+      updateBgmUI();
+      if (isMuted) {
+        bgm.pause();
+      } else {
+        bgm.play().catch(() => {});
+      }
+    }
+
+    // 🌟 ページ読み込み時：ブロックされても「画面内のどこかがクリックされた瞬間」に即座に音楽が目を覚ます強力なアンロック処理
+    function unlockAndPlay() {
+      if (!isMuted) {
+        bgm.play().then(() => {
+          document.removeEventListener('click', unlockAndPlay);
+          document.removeEventListener('touchstart', unlockAndPlay);
+          document.removeEventListener('keydown', unlockAndPlay);
+        }).catch(() => {});
+      }
+    }
+
+    window.addEventListener('load', () => {
+      updateBgmUI();
+      if (!isMuted) {
+        bgm.play().catch(() => {
+          // ブラウザの自動再生ブロックに引っかかった場合、最初のユーザー操作を待つ
+          document.addEventListener('click', unlockAndPlay);
+          document.addEventListener('touchstart', unlockAndPlay);
+          document.addEventListener('keydown', unlockAndPlay);
+        });
+      }
+    });
+
+    const spotsData = {
+      'baiyun': { country: '🇨🇳 中国 内モンゴル自治区', title: '白雲鄂博（バイユンオボ鉱山）', desc: '世界最大の軽レアアース鉱山。ランタンやセリウムの生産拠点。', cost: 10, target: 'La, Ce, Pr, Nd', btnColor: '#00fff5', btnText: '🚜 このエリアの陸上採掘へ移動！', img: 'area_image_cn.png' },
+      'america': { country: '🇺🇸 アメリカ合衆国', title: 'マウンテンパス鉱山', desc: 'かつて世界のユーロピウム供給を支えた歴史ある名門露天掘り鉱山。', cost: 30, target: 'Eu, Y, La', btnColor: '#ffaa00', btnText: '🚜 このエリアの露天掘りへ移動！', img: 'area_image_america.png' },
+      'mount': { country: '🇦🇺 オーストラリア', title: 'マウント・ウェルド鉱山', desc: '高品質な磁石向け軽レアアース（ネオジム等）を産出する安定供給地。', cost: 50, target: 'Nd, Sm, Pr', btnColor: '#55ff55', btnText: '🚜 このエリアの鉱山採掘へ移動！', img: 'area_image_mount.png' },
+      'myanmar': { country: '🇲🇲 ミャンマー', title: 'イオン吸着鉱床', desc: 'EVや風力発電に不可欠な「重レアアース`が豊富にとれる粘土層鉱床。', cost: 100, target: 'Dy, Tb, Y', btnColor: '#ff55ff', btnText: '🚜 このエリアの粘土層採掘へ移動！', img: 'area_image_myanmar.png' },
+      'africa': { country: '🌍 アフリカ新興国（マラウイ等）', title: 'アフリカ新興鉱床', desc: '脱・中国依存に向けて近年世界中から開発が進む注目のフロンティア。', cost: 150, target: 'Lu, Yb, Sc', btnColor: '#ffbb55', btnText: '🚜 このエリアの開拓採掘へ移動！', img: 'area_image_africa.png' },
+      'greenland': { country: '🇬🇱 グリーンランド', title: 'クバネフエルド鉱床', desc: '氷河の下に眠る、世界最大級の未開発レアアース・ウラン複合鉱床。', cost: 300, target: 'Gd, Ho, Er', btnColor: '#55ffff', btnText: '⛏️ 氷河エリアの採掘へ移動！', img: 'area_image_greenland.png' },
+      'okinotori': { country: '🇯🇵 日本（南鳥島・沖ノ鳥島）', title: 'EEZ海底泥エリア', desc: '日本の未来を担う！水深数千mの海底に眠る超高濃度レアアース泥。', cost: 500, target: '全17元素（高純度）', btnColor: '#3498db', btnText: '🚢 このエリアの海中探査・採掘へ移動！', img: 'area_image_okinotori.png' },
+      'tahiti': { country: '🇫🇷 フランス領ポリネシア', title: '南太平洋・マンガン団塊', desc: '深海底に転がる金属塊。重レアアースやコバルトを含む高価なゾーン。', cost: 200, target: 'Dy, Tb, Er, Yb', btnColor: '#2980b9', btnText: '🚢 このエリアの深海探査へ移動！', img: 'area_image_tahiti.png' }
+    };
+
+    function selectSpot(id) {
+      if (id === 'okinotori' && gameState.level < 50) {
+        showModal('沖ノ鳥島はロックされています', '沖ノ鳥島はプレイヤーレベル50以上で解放されます！');
+        return;
+      }
+      selectedSpotId = id;
+      const data = spotsData[id];
+      
+      document.getElementById('spot-name').innerHTML = `
+        <span class="spot-country">${data.country}</span>
+        <span class="spot-title">${data.title}</span>
+      `;
+      document.getElementById('spot-desc').innerText = data.desc;
+      document.getElementById('spot-detail').innerText = `コスト: ${data.cost}G / 主な獲得元素: ${data.target}`;
+      
+      const btn = document.getElementById('action-btn');
+      btn.style.background = data.btnColor;
+      btn.style.color = '#0f3460';
+      btn.style.cursor = 'pointer';
+      btn.disabled = false;
+      btn.innerText = data.btnText;
+
+      document.getElementById('area-img').src = data.img;
+    }
+
+    function goToMine() {
+      if (!selectedSpotId) {
+        showModal('エリア未選択', '採掘エリアが選択されていません！マップ上のピンを選んでください。');
+        return;
+      }
+      localStorage.setItem('currentSelectedSpot', selectedSpotId);
+      location.href = 'mine.html';
+    }
+
+    document.getElementById('money').innerText = gameState.money.toLocaleString();
+    document.getElementById('level').innerText = gameState.level;
+    document.getElementById('mud').innerText = gameState.mudStock;
+  </script>
+</body>
+</html>
