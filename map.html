@@ -9,12 +9,11 @@
   <meta name="format-detection" content="telephone=no">
   <title>レアアース・クラフト - マップ選択</title>
   <style>
-    /* 全体を約20%小さく（ベースサイズを調整） */
     :root { --maxw: 720px; }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     html {
       height: 100%;
-      font-size: clamp(12px, min(calc(10.5px + 1vw), 2.8vh), 19px);
+      font-size: clamp(10px, min(calc(9px + 0.8vw), 2.3vh), 16px);
       -webkit-text-size-adjust: 100%; text-size-adjust: 100%;
       touch-action: manipulation;
     }
@@ -25,11 +24,11 @@
       -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
     }
 
-    /* ─── スクロールバー（幅を倍の10pxに） ─── */
-    ::-webkit-scrollbar { width: 10px; height: 10px; }
+    /* ─── スクロールバー（幅20px） ─── */
+    ::-webkit-scrollbar { width: 20px; height: 20px; }
     ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); border-radius: 10px; }
-    ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #00fff5, #3b82f6); border-radius: 10px; box-shadow: 0 0 6px rgba(0, 255, 245, 0.5); }
-    ::-webkit-scrollbar-thumb:hover { background: #ffde59; }
+    ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #00fff5, #3b82f6); border-radius: 10px; box-shadow: 0 0 6px rgba(0, 255, 245, 0.5); border: 4px solid transparent; background-clip: padding-box; }
+    ::-webkit-scrollbar-thumb:hover { background: #ffde59; background-clip: padding-box; }
 
     .phone {
       position: fixed; top: 0; bottom: 0; left: 0; right: 0;
@@ -105,19 +104,20 @@
       100% { border-color: #ffde59; box-shadow: 0 0 14px rgba(255,222,89,0.9), inset 0 0 8px rgba(255,222,89,0.4); }
     }
 
+    /* エリア名スポットピン（全体的に15%右へシフト） */
     .spot {
       position: absolute; background: #16213e; border: 1.5px solid #00fff5; color: #fff;
       padding: .35rem .6rem; min-height: 2rem; border-radius: .6rem; font-size: .82rem; font-weight: bold;
-      cursor: pointer; transform: translate(-50%,-50%); display: flex; align-items: center; gap: .3rem;
+      cursor: pointer; transform: translate(-35%,-50%); display: flex; align-items: center; gap: .3rem;
       white-space: nowrap; z-index: 10; transition: transform 0.2s; touch-action: manipulation;
     }
     @media (max-width: 480px) {
-      .spot { font-size: 0.65rem; padding: 0.2rem 0.35rem; min-height: 1.5rem; gap: 0.2rem; }
+      .spot { font-size: 0.65rem; padding: 0.2rem 0.35rem; min-height: 1.5rem; gap: 0.2rem; transform: translate(-35%,-50%); }
       .spot img { width: 0.9rem; height: 0.65rem; }
     }
 
-    @media (hover: hover) { .spot:hover { transform: translate(-50%,-50%) scale(1.1); } }
-    .spot:active { transform: translate(-50%,-50%) scale(1.08); }
+    @media (hover: hover) { .spot:hover { transform: translate(-35%,-50%) scale(1.1); } }
+    .spot:active { transform: translate(-35%,-50%) scale(1.08); }
     .spot.locked { border-color: #e94560; opacity: 0.9; background: #2a1b2e; }
     .spot img { width: 1.2rem; height: .9rem; object-fit: cover; border-radius: 1px; }
 
@@ -250,7 +250,7 @@
       <div class="chara-guide">
         <img src="navtb.png" alt="テルビウム" class="chara-icon" onerror="this.src='hata_cn.png'">
         <div class="speech-bubble">
-          世界地図から採掘エリアを選ぼう！
+          世界地図から気になるエリアをポチッと選んでね！どんなレアアースが眠っているかワクワクしちゃうね✨
         </div>
       </div>
 
@@ -268,7 +268,6 @@
         </div>
       </div>
 
-      <!-- ボタンと説明文の位置を入れ替えた情報カード -->
       <div class="card" id="info-card">
         <div id="spot-name">
           <span class="spot-country" style="color:#00fff5;">📍 採掘エリアを選ぼう</span>
