@@ -2,418 +2,229 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#16213e">
+  <meta name="format-detection" content="telephone=no">
   <title>レアアース・クラフト - キャラ図鑑＆ギャラリー</title>
   <style>
-    /* ─── スクロールバーのおしゃれカスタマイズ（全画面共通） ─── */
-    ::-webkit-scrollbar {
-      width: 5px;
-      height: 5px;
+    :root { --maxw: 720px; }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    
+    /* 全体は丁度よかったベストなサイズ感をベースにする */
+    html {
+      height: 100%;
+      font-size: clamp(14px, min(calc(12px + 1.1vw), 3.2vh), 21px);
+      -webkit-text-size-adjust: 100%; text-size-adjust: 100%;
+      touch-action: manipulation;
     }
-    ::-webkit-scrollbar-track {
-      background: rgba(15, 23, 42, 0.6);
-      border-radius: 10px;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: linear-gradient(180deg, #00fff5, #3b82f6);
-      border-radius: 10px;
-      box-shadow: 0 0 6px rgba(0, 255, 245, 0.5);
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: #ffde59;
+    body {
+      margin: 0; height: 100%; overflow: hidden; overscroll-behavior: none;
+      background: #0b1224; color: #fff; touch-action: manipulation;
+      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", Meiryo, sans-serif;
+      -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
     }
 
-    body { background-color: #1a1a2e; color: #fff; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-    .phone { width: 360px; height: 740px; background: #0f3460; border: 4px solid #16213e; border-radius: 24px; display: flex; flex-direction: column; overflow: hidden; position: relative; box-sizing: border-box; }
-    
-    /* ヘッダー */
-    .header { background: #16213e; padding: 8px 10px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: bold; border-bottom: 2px solid #e94560; flex-shrink: 0; }
-    
-    /* BGMトグルボタンのスタイル */
+    /* ─── スクロールバー（幅20px） ─── */
+    ::-webkit-scrollbar { width: 20px; height: 20px; }
+    ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); border-radius: 10px; }
+    ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #00fff5, #3b82f6); border-radius: 10px; box-shadow: 0 0 6px rgba(0, 255, 245, 0.5); border: 4px solid transparent; background-clip: padding-box; }
+    ::-webkit-scrollbar-thumb:hover { background: #ffde59; background-clip: padding-box; }
+
+    .phone {
+      position: fixed; top: 0; bottom: 0; left: 0; right: 0;
+      width: 100%; max-width: var(--maxw); margin: 0 auto;
+      background: #0f3460; display: flex; flex-direction: column; overflow: hidden;
+      padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px);
+      box-shadow: 0 0 0 1px #16213e, 0 0 40px rgba(0,0,0,.6);
+    }
+    @media (orientation: landscape) and (min-width: 700px) { :root { --maxw: 1200px; } }
+
+    /* ═══ ヘッダー：パラメータが収まるように文字をコンパクトに維持 ═══ */
+    .header {
+      background: #16213e; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
+      padding: calc(.4rem + env(safe-area-inset-top, 0px)) .6rem .4rem;
+      font-size: 0.78rem; font-weight: bold; border-bottom: 2px solid #e94560;
+    }
     .bgm-btn {
-      background: rgba(0, 0, 0, 0.4);
-      border: 1px solid #00fff5;
-      color: #00fff5;
-      border-radius: 12px;
-      padding: 2px 8px;
-      font-size: 12px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 3px;
-      transition: all 0.2s;
+      background: rgba(0, 0, 0, 0.4); border: 1px solid #00fff5; color: #00fff5;
+      border-radius: 1rem; padding: .25rem .6rem; min-height: 1.8rem; font-size: .75rem; cursor: pointer;
+      display: flex; align-items: center; gap: .2rem; transition: all 0.2s; touch-action: manipulation;
     }
-    .bgm-btn.muted {
-      border-color: #e94560;
-      color: #e94560;
-      background: rgba(233, 69, 96, 0.2);
+    .bgm-btn.muted { border-color: #e94560; color: #e94560; background: rgba(233, 69, 96, 0.2); }
+
+    /* 工程ナビゲーションバー（ベストな大きさ） */
+    .koutei-bar {
+      background: rgba(15, 23, 42, 0.9); border-bottom: 1px solid #00fff5;
+      padding: .4rem .25rem; display: flex; justify-content: space-around; align-items: center; flex-shrink: 0;
     }
-
-    .content { flex: 1; background: linear-gradient(180deg, #1b4f72 0%, #0f3460 100%); padding: 8px 10px; display: flex; flex-direction: column; gap: 8px; overflow-y: auto; box-sizing: border-box; }
-    
-    .card { background: rgba(22, 33, 62, 0.9); border: 1px solid #00fff5; border-radius: 12px; padding: 8px 10px; font-size: 12px; flex-shrink: 0; }
-    .card-title { font-size: 13px; font-weight: bold; color: #00fff5; margin-bottom: 6px; }
-
-    /* キャラクター一覧グリッド */
-    .chara-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 5px;
+    .koutei-wrapper { display: flex; flex-direction: column; align-items: center; gap: .15rem; }
+    .koutei-item {
+      width: 2.6rem; height: 2.6rem; background: #000; border: 2px solid transparent;
+      border-radius: .4rem; overflow: hidden; display: flex; align-items: center; justify-content: center;
     }
+    .koutei-item.active { border-color: #00fff5; box-shadow: 0 0 10px rgba(0, 255, 245, 0.8); animation: kouteiGlow 1.2s infinite alternate; }
+    @keyframes kouteiGlow {
+      from { border-color: #00fff5; box-shadow: 0 0 4px rgba(0,255,245,0.4); }
+      to { border-color: #ffde59; box-shadow: 0 0 12px rgba(255,222,89,0.9); }
+    }
+    .koutei-item img { width: 100%; height: 100%; object-fit: cover; }
+    .koutei-label { font-size: .68rem; color: #94a3b8; font-weight: bold; text-align: center; white-space: nowrap; }
+    .koutei-wrapper:has(.koutei-item.active) .koutei-label { color: #00fff5; }
 
+
+    /* ═══ コンテンツ ═══ */
+    .content {
+      flex: 1; min-height: 0; background: linear-gradient(180deg, #1b4f72 0%, #0f3460 100%);
+      padding: .6rem .7rem; display: flex; flex-direction: column; gap: .55rem;
+      overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+    }
+    .card { background: rgba(22, 33, 62, 0.9); border: 1px solid #00fff5; border-radius: .8rem; padding: .55rem .7rem; font-size: .8rem; flex-shrink: 0; min-width: 0; }
+    .card-title { font-size: .9rem; font-weight: bold; color: #00fff5; margin-bottom: .4rem; line-height: 1.35; }
+    .card-title-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: .2rem .6rem; margin-bottom: .3rem; }
+    .collection-count { font-size: .75rem; color: #ffde59; }
+    .card-note { font-size: .72rem; color: #94a3b8; margin-bottom: .45rem; line-height: 1.5; }
+
+    /* キャラクター一覧（画面幅に応じて列数が自動で増減） */
+    .chara-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(5.2rem, 1fr)); gap: .35rem; }
     .chara-card {
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid #cbd5e1;
-      border-radius: 8px;
-      padding: 4px;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.2s;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      background: rgba(255, 255, 255, 0.08); border: 1px solid #cbd5e1; border-radius: .6rem; padding: .35rem .25rem;
+      text-align: center; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; align-items: center; min-width: 0;
+      touch-action: manipulation;
     }
-    .chara-card:hover {
-      border-color: #00fff5;
-      background: rgba(0, 255, 245, 0.15);
-      transform: translateY(-2px);
-    }
+    @media (hover: hover) { .chara-card:hover { border-color: #00fff5; background: rgba(0, 255, 245, 0.15); transform: translateY(-2px); } }
+    .chara-card:active { border-color: #00fff5; background: rgba(0, 255, 245, 0.15); }
     .chara-card img {
-      width: 40px;
-      height: 40px;
-      object-fit: contain;
-      background: #16213e;
-      border-radius: 50%;
-      border: 1.5px solid #00fff5;
-      margin-bottom: 2px;
+      width: 3.2rem; height: 3.2rem; object-fit: contain; background: #16213e; border-radius: 50%;
+      border: 1.5px solid #00fff5; margin-bottom: .15rem;
     }
-    .chara-card .name {
-      font-size: 9px;
-      font-weight: bold;
-      color: #fff;
-    }
-    .chara-card .sub {
-      font-size: 7px;
-      color: #94a3b8;
-    }
+    .chara-card .name { font-size: .75rem; font-weight: bold; color: #fff; line-height: 1.3; }
+    .chara-card .sub { font-size: .68rem; color: #94a3b8; }
 
-    /* 💎 鉱物・宝石図鑑コレクション・グリッド */
-    .gem-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 5px;
-      max-height: 200px;
-      overflow-y: auto;
-      padding-right: 2px;
-    }
-
+    /* 💎 鉱物コレクション */
+    .gem-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(4.4rem, 1fr)); gap: .3rem; max-height: 24rem; overflow-y: auto; }
     .gem-item {
-      background: rgba(15, 23, 42, 0.7);
-      border: 1.5px solid #334155;
-      border-radius: 8px;
-      padding: 6px 4px;
-      text-align: center;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all 0.2s;
-      position: relative;
+      background: rgba(15, 23, 42, 0.7); border: 1.5px solid #334155; border-radius: .5rem; padding: .5rem .2rem .3rem;
+      text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      cursor: pointer; transition: all 0.2s; position: relative; min-width: 0; min-height: 4.4rem; touch-action: manipulation;
     }
-    .gem-item.unlocked {
-      background: rgba(255, 255, 255, 0.1);
-      border-color: #00fff5;
-      box-shadow: 0 0 6px rgba(0, 255, 245, 0.2);
-    }
-    .gem-item.unlocked:hover {
-      background: rgba(0, 255, 245, 0.2);
-      transform: scale(1.03);
-    }
-    .gem-item.locked {
-      background: rgba(15, 23, 42, 0.4);
-      border-color: #1e293b;
-      opacity: 0.6;
-    }
-    .gem-img {
-      width: 32px;
-      height: 32px;
-      object-fit: contain;
-      margin-bottom: 2px;
-      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
-    }
-    .gem-locked-icon {
-      font-size: 18px;
-      line-height: 32px;
-      color: #64748b;
-    }
-    .gem-name {
-      font-size: 8px;
-      color: #cbd5e1;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      width: 100%;
-    }
-    .gem-item.locked .gem-name {
-      color: #64748b;
-    }
-    .gem-id {
-      position: absolute;
-      top: 2px;
-      left: 4px;
-      font-size: 7px;
-      color: #94a3b8;
-    }
+    .gem-item.unlocked { background: rgba(255, 255, 255, 0.1); border-color: #00fff5; box-shadow: 0 0 6px rgba(0, 255, 245, 0.2); }
+    @media (hover: hover) { .gem-item.unlocked:hover { background: rgba(0, 255, 245, 0.2); transform: scale(1.03); } }
+    .gem-item.unlocked:active { background: rgba(0, 255, 245, 0.2); }
+    .gem-item.locked { background: rgba(15, 23, 42, 0.4); border-color: #1e293b; opacity: 0.7; }
+    .gem-img { width: 2.4rem; height: 2.4rem; object-fit: contain; margin-bottom: .1rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+    .gem-locked-icon { font-size: 1.3rem; line-height: 2.4rem; color: #64748b; }
+    .gem-name { font-size: .68rem; color: #cbd5e1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; }
+    .gem-item.locked .gem-name { color: #64748b; }
+    .gem-id { position: absolute; top: .1rem; left: .25rem; font-size: .62rem; color: #94a3b8; }
 
-    /* クレジットおよびサイト紹介カード */
+    /* クレジット */
     .credit-card {
-      background: rgba(15, 23, 42, 0.6);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 10px;
-      padding: 8px;
-      font-size: 9px;
-      color: #94a3b8;
-      line-height: 1.4;
-      flex-shrink: 0;
+      background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: .7rem; padding: .6rem .7rem;
+      font-size: .72rem; color: #94a3b8; line-height: 1.6; flex-shrink: 0; overflow-wrap: anywhere; user-select: text; -webkit-user-select: text;
     }
-    .credit-title {
-      font-weight: bold;
-      color: #cbd5e1;
-      margin-bottom: 2px;
-      font-size: 10px;
-    }
-    .credit-card a {
-      color: #38bdf8;
-      text-decoration: underline;
-    }
+    .credit-title { font-weight: bold; color: #cbd5e1; margin-bottom: .15rem; font-size: .78rem; }
+    .credit-title.second { margin-top: .5rem; }
+    .credit-card a { color: #38bdf8; text-decoration: underline; }
 
-    /* 詳細・ギャラリーモーダル共通 */
-    .modal-overlay {
-      position: absolute;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(10, 15, 30, 0.88);
-      display: flex; justify-content: center; align-items: center;
-      z-index: 100;
-      backdrop-filter: blur(3px);
-      box-sizing: border-box;
-      padding: 12px;
-    }
-    .modal-content {
-      background: #16213e;
-      border: 2px solid #00fff5;
-      border-radius: 16px;
-      padding: 14px 10px;
-      width: 100%;
-      max-width: 310px;
-      max-height: 620px;
-      overflow-y: auto;
-      text-align: center;
-      box-shadow: 0 0 25px rgba(0, 255, 245, 0.3);
-      animation: popup 0.3s ease-out;
-      box-sizing: border-box;
-    }
-    @keyframes popup {
-      0% { transform: scale(0.8); opacity: 0; }
-      100% { transform: scale(1); opacity: 1; }
-    }
-
-    /* イラスト表示メインビュー（キャラギャラリー用） */
+    /* ═══ モーダル（画面全体） ═══ */
+    .modal-overlay { background: rgba(10, 15, 30, 0.88); backdrop-filter: blur(3px); }
+    .modal-content { max-width: min(100%, 26rem); max-height: calc(100vh - 2rem); overflow-y: auto; }
     .gallery-view-box {
-      background: #ffffff;
-      border: 2px solid #ffde59;
-      border-radius: 12px;
-      padding: 8px;
-      text-align: center;
-      position: relative;
-      margin-bottom: 8px;
+      background: #fff; border: 2px solid #ffde59; border-radius: .8rem; padding: .5rem; text-align: center; position: relative; margin-bottom: .5rem;
     }
-    .gallery-img {
-      width: 130px;
-      height: 130px;
-      object-fit: contain;
-      margin: 4px auto;
-      display: block;
-    }
+    .gallery-img { width: min(100%, 40vh, 18rem); aspect-ratio: 1 / 1; height: auto; object-fit: contain; margin: .25rem auto; display: block; }
     .locked-overlay {
-      position: absolute;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(15, 23, 42, 0.9);
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      border-radius: 10px;
-      color: #fff;
-      padding: 10px;
-      box-sizing: border-box;
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.9);
+      display: flex; flex-direction: column; justify-content: center; align-items: center; border-radius: .7rem; color: #fff; padding: .6rem;
     }
-
-    /* 5枚のサムネイル選択バー */
-    .thumb-nav {
-      display: flex;
-      justify-content: center;
-      gap: 6px;
-      margin-bottom: 8px;
-    }
+    .thumb-nav { display: flex; justify-content: center; gap: .4rem; margin-bottom: .5rem; }
     .thumb-btn {
-      width: 42px;
-      height: 42px;
-      background: rgba(255,255,255,0.1);
-      border: 1.5px solid #64748b;
-      border-radius: 8px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 11px;
-      font-weight: bold;
-      color: #aaa;
-      transition: all 0.2s;
+      width: 2.7rem; height: 2.7rem; background: rgba(255,255,255,0.1); border: 1.5px solid #64748b; border-radius: .5rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; font-size: .78rem; font-weight: bold; color: #aaa; transition: all 0.2s; touch-action: manipulation;
     }
-    .thumb-btn.active {
-      border-color: #00fff5;
-      background: rgba(0,255,245,0.2);
-      color: #00fff5;
-      transform: scale(1.05);
-    }
-    .thumb-btn.unlocked {
-      border-color: #ffde59;
-      color: #ffde59;
-    }
+    .thumb-btn.active { border-color: #00fff5; background: rgba(0,255,245,0.2); color: #00fff5; transform: scale(1.05); }
+    .thumb-btn.unlocked { border-color: #ffde59; color: #ffde59; }
 
     .btn {
-      background-color: #e94560;
-      color: #ffffff;
-      border: none;
-      padding: 8px;
-      font-size: 11px;
-      font-weight: bold;
-      border-radius: 12px;
-      cursor: pointer;
-      width: 100%;
-      margin-top: 6px;
-      box-shadow: 0 3px 10px rgba(233, 69, 96, 0.4);
+      background-color: #e94560; color: #fff; border: none; padding: .55rem; min-height: 2.8rem; font-size: .88rem; font-weight: bold;
+      border-radius: .8rem; cursor: pointer; width: 100%; margin-top: .4rem; box-shadow: 0 3px 10px rgba(233, 69, 96, 0.4);
+      touch-action: manipulation; font-family: inherit;
     }
-    .btn-unlock {
-      background-color: #eab308;
-      color: #0f3460;
-      font-size: 12px;
-      padding: 10px;
-      margin-top: 6px;
-    }
+    .btn:active { transform: scale(0.97); }
+    .btn-unlock { background-color: #eab308; color: #0f3460; font-size: .9rem; padding: .6rem; margin-top: .4rem; }
     .btn-present {
-      background: linear-gradient(135deg, #00fff5, #3b82f6);
-      color: #0f3460;
-      font-size: 11px;
-      font-weight: bold;
-      padding: 8px;
-      border-radius: 10px;
-      border: none;
-      cursor: pointer;
-      width: 100%;
-      margin-bottom: 8px;
-      box-shadow: 0 2px 6px rgba(0,255,245,0.4);
+      background: linear-gradient(135deg, #00fff5, #3b82f6); color: #0f3460; font-size: .85rem; font-weight: bold; padding: .5rem; min-height: 2.8rem;
+      border-radius: .7rem; border: none; cursor: pointer; width: 100%; margin-bottom: .5rem; box-shadow: 0 2px 6px rgba(0,255,245,0.4);
+      touch-action: manipulation; font-family: inherit;
     }
 
-    /* 🎁 プレゼント選択用サブモーダルの中のグリッド */
     .present-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 6px;
-      max-height: 220px;
-      overflow-y: auto;
-      margin: 8px 0;
-      background: rgba(15,23,42,0.6);
-      padding: 6px;
-      border-radius: 8px;
-      border: 1px solid #334155;
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(4.4rem, 1fr)); gap: .4rem; max-height: 16rem; overflow-y: auto;
+      margin: .5rem 0; background: rgba(15,23,42,0.6); padding: .4rem; border-radius: .5rem; border: 1px solid #334155;
     }
     .present-item {
-      background: rgba(255,255,255,0.08);
-      border: 1px solid #00fff5;
-      border-radius: 6px;
-      padding: 4px;
-      text-align: center;
-      cursor: pointer;
+      background: rgba(255,255,255,0.08); border: 1px solid #00fff5; border-radius: .4rem; padding: .3rem; text-align: center;
+      cursor: pointer; min-height: 3.6rem; min-width: 0; touch-action: manipulation;
     }
     .present-item:active { transform: scale(0.95); }
-    .present-item img {
-      width: 32px;
-      height: 32px;
-      object-fit: contain;
-    }
+    .present-item img { width: 2.2rem; height: 2.2rem; object-fit: contain; }
 
-    /* 💎 250ピクセル大画面鉱物ポップアップ用スタイル */
+    /* 💎 鉱物の大画面ポップアップ */
     .gem-modal-content {
-      background: linear-gradient(135deg, #16213e, #0f3460);
-      border: 3px solid #ffde59;
-      border-radius: 20px;
-      padding: 16px 12px;
-      width: 94%;
-      max-width: 330px; /* スマホ枠内で限界まで大きく */
-      text-align: center;
-      box-shadow: 0 0 30px rgba(255, 222, 89, 0.5);
-      animation: popup 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      box-sizing: border-box;
+      background: linear-gradient(135deg, #16213e, #0f3460); border: 3px solid #ffde59; border-radius: 1.2rem; padding: 1rem .8rem;
+      width: min(100%, 24rem); max-height: calc(100vh - 2rem); overflow-y: auto; text-align: center;
+      box-shadow: 0 0 30px rgba(255, 222, 89, 0.5); animation: popup 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
     .gem-modal-img {
-      width: 240px;  /* 約240〜250pxのド迫力サイズ */
-      height: 240px;
-      object-fit: contain;
-      background: rgba(0, 0, 0, 0.4);
-      border: 2px solid #00fff5;
-      border-radius: 16px;
-      padding: 8px;
-      margin: 8px auto;
-      box-shadow: inset 0 0 15px rgba(0,255,245,0.3);
-      display: block;
+      width: min(100%, 42vh, 17rem); aspect-ratio: 1 / 1; height: auto; object-fit: contain; background: rgba(0, 0, 0, 0.4);
+      border: 2px solid #00fff5; border-radius: 1rem; padding: .5rem; margin: .5rem auto; box-shadow: inset 0 0 15px rgba(0,255,245,0.3); display: block;
     }
     .modal-stock {
-      font-size: 11px;
-      font-weight: bold;
-      color: #00fff5;
-      background: rgba(0, 255, 245, 0.15);
-      border: 1px solid #00fff5;
-      border-radius: 8px;
-      padding: 4px 10px;
-      margin-bottom: 8px;
-      display: inline-block;
+      font-size: .8rem; font-weight: bold; color: #00fff5; background: rgba(0, 255, 245, 0.15); border: 1px solid #00fff5;
+      border-radius: .5rem; padding: .3rem .7rem; margin-bottom: .5rem; display: inline-block;
     }
 
-    /* 下部ナビゲーション */
-    .nav { 
-      height: 56px; 
-      background: #16213e; 
-      display: flex; 
-      justify-content: space-around; 
-      align-items: center; 
-      padding: 0 8px;
-      flex-shrink: 0; 
-      border-top: 2px solid #1f293d;
-      box-sizing: border-box;
+    /* 横長（タブレット横・PC）：左にキャラ図鑑、右に鉱物コレクション */
+    @media (orientation: landscape) and (min-width: 700px) {
+      .content { display: grid; grid-template-columns: 1fr 1fr; align-items: start; gap: .7rem; }
+      .credit-card { grid-column: 1 / -1; }
+      .gem-grid { max-height: max(14rem, calc(100vh - 17rem)); }
     }
-    .nav-item { 
-      color: #a0aec0; 
-      cursor: pointer; 
-      text-align: center; 
-      background: rgba(255, 255, 255, 0.05); 
-      border: 1px solid rgba(0, 255, 245, 0.2); 
-      border-radius: 10px; 
-      padding: 4px 8px;
-      font-size: 10px; 
-      font-weight: bold;
-      flex: 1;
-      margin: 0 3px;
-      transition: all 0.2s;
+
+    /* ═══ 下部フッター（ベストな大きさ） ═══ */
+    .nav {
+      flex-shrink: 0; position: relative; z-index: 50; background: #16213e; border-top: 2px solid #1f293d;
+      display: flex; justify-content: space-around; align-items: stretch; gap: .3rem;
+      padding: .4rem .5rem calc(.4rem + env(safe-area-inset-bottom, 0px));
     }
+    .nav-item {
+      color: #a0aec0; cursor: pointer; text-align: center; background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(0, 255, 245, 0.2); border-radius: .7rem; padding: .3rem .2rem;
+      min-height: 3rem; font-size: .72rem; font-weight: bold; flex: 1;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .1rem;
+      transition: all 0.2s; touch-action: manipulation;
+    }
+    .nav-ico { font-size: 1.15rem; line-height: 1; display: block; }
     .nav-item:active { transform: scale(0.95); }
-    .nav-item.active { 
-      color: #00fff5; 
-      background: rgba(0, 255, 245, 0.15); 
-      border-color: #00fff5;
-      box-shadow: 0 0 8px rgba(0, 255, 245, 0.3);
+    .nav-item.active { color: #00fff5; background: rgba(0, 255, 245, 0.15); border-color: #00fff5; box-shadow: 0 0 8px rgba(0, 255, 245, 0.3); }
+
+    /* モーダル */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(10, 15, 30, 0.85); display: flex; justify-content: center; align-items: center;
+      z-index: 200; backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); padding: 1rem;
     }
+    .modal-content {
+      background: #16213e; border: 2px solid #00fff5; border-radius: 1rem; padding: 1.2rem 1rem;
+      width: 100%; max-width: 22rem; text-align: center; box-shadow: 0 0 20px rgba(0, 255, 245, 0.3);
+      animation: popup 0.3s ease-out;
+    }
+    .modal-icon { font-size: 2rem; margin-bottom: .2rem; }
+    .modal-title { font-size: 1.05rem; font-weight: bold; color: #ffde59; margin-bottom: .4rem; }
+    .modal-desc { font-size: .88rem; color: #f1f5f9; margin-bottom: .8rem; line-height: 1.55; white-space: pre-line; }
+    @keyframes popup { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
   </style>
 </head>
 <body>
@@ -436,21 +247,17 @@
       <!-- 1. キャラ図鑑カード -->
       <div class="card">
         <div class="card-title">🎨 レアアース・キャラクター図鑑 (全17元素)</div>
-        <div style="font-size: 10px; color: #94a3b8; margin-bottom: 6px;">
-          キャラクターをタップして、5枚の特別イラストやギャラリーを解放しよう！
-        </div>
+        <div class="card-note">キャラクターをタップして、5枚の特別イラストやギャラリーを解放しよう！</div>
         <div class="chara-grid" id="charaGrid"></div>
       </div>
 
       <!-- 2. 💎 鉱物・宝石図鑑コレクションカード -->
       <div class="card">
-        <div class="card-title" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+        <div class="card-title card-title-row">
           <span>💎 鉱物・宝石図鑑コレクション</span>
-          <span id="collectionCount" style="font-size: 10px; color: #ffde59;">解放: 0 / 100</span>
+          <span id="collectionCount" class="collection-count">解放: 0 / 100</span>
         </div>
-        <div style="font-size: 9px; color: #94a3b8; margin-bottom: 6px;">
-          マップやイベントでゲットした鉱物はここに展示されます！
-        </div>
+        <div class="card-note">マップやイベントでゲットした鉱物はここに展示されます！</div>
         <div class="gem-grid" id="gemGrid"></div>
       </div>
 
@@ -459,8 +266,8 @@
         <div class="credit-title">🎵 音源・クレジット</div>
         ・フリーBGM・音楽素材 MusMus：<a href="https://musmus.main.jp" target="_blank" rel="noopener">https://musmus.main.jp</a><br>
         ・効果音ラボ：<a href="https://soundeffect-lab.info/agreement/" target="_blank" rel="noopener">https://soundeffect-lab.info/agreement/</a>
-        
-        <div class="credit-title" style="margin-top: 6px;">📖 関連サイト＆クリエイター紹介</div>
+
+        <div class="credit-title second">📖 関連サイト＆クリエイター紹介</div>
         <a href="https://17rareearth.github.io/17character/" target="_blank" rel="noopener">レアアース17元素キャラ図鑑 - 未来をつくる元素たち -</a><br>
         イラスト：バルバロッサ上田
       </div>
@@ -469,7 +276,7 @@
     <!-- キャラ詳細・ギャラリーモーダル -->
     <div id="galleryModal" class="modal-overlay" style="display: none;" onclick="closeGalleryModal()">
       <div class="modal-content" onclick="event.stopPropagation()">
-        <div style="font-size: 14px; font-weight: bold; color: #ffde59; margin-bottom: 6px;" id="modalCharaTitle">キャラ名</div>
+        <div style="font-size: 1.006rem; font-weight: bold; color: #ffde59; margin-bottom: 0.375rem;" id="modalCharaTitle">キャラ名</div>
         
         <!-- サムネイル切替ボタン（5枚分） -->
         <div class="thumb-nav" id="thumbNav"></div>
@@ -478,19 +285,19 @@
         <div class="gallery-view-box" id="galleryViewBox">
           <img id="galleryImg" class="gallery-img" src="" alt="イラスト">
           <div id="lockedOverlay" class="locked-overlay" style="display: none;">
-            <div style="font-size: 24px; margin-bottom: 4px;">🔒</div>
-            <div style="font-size: 11px; color: #ffde59; font-weight: bold; margin-bottom: 4px; text-align: center;" id="lockConditionText">解放条件</div>
+            <div style="font-size: 1.725rem; margin-bottom: 0.25rem;">🔒</div>
+            <div style="font-size: 0.791rem; color: #ffde59; font-weight: bold; margin-bottom: 0.25rem; text-align: center;" id="lockConditionText">解放条件</div>
             <button class="btn btn-unlock" id="unlockBuyBtn" onclick="buyIllustration()" style="display: none;">💰 Gで解放する</button>
           </div>
         </div>
 
         <!-- 🎁 Lv.40以上で出現するプレゼントボタン -->
-        <div id="presentBtnContainer" style="display: none; margin-bottom: 6px;">
+        <div id="presentBtnContainer" style="display: none; margin-bottom: 0.375rem;">
           <button class="btn-present" onclick="openPresentModal()">🎁 きれいな鉱物をプレゼントする</button>
         </div>
 
         <!-- イラスト解説・セリフ -->
-        <div style="font-size: 11px; color: #f1f5f9; background: rgba(15,23,42,0.8); padding: 8px; border-radius: 8px; text-align: left; line-height: 1.4; margin-bottom: 8px;" id="galleryDesc">
+        <div style="font-size: 0.791rem; color: #f1f5f9; background: rgba(15,23,42,0.8); padding: 0.5rem; border-radius: 0.5rem; text-align: left; line-height: 1.4; margin-bottom: 0.5rem;" id="galleryDesc">
           解説文
         </div>
 
@@ -500,44 +307,49 @@
 
     <!-- 🎁 鉱物プレゼント選択モーダル（セリフ付き） -->
     <div id="presentModal" class="modal-overlay" style="display: none;" onclick="closePresentModal()">
-      <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 280px;">
-        <div style="font-size: 13px; font-weight: bold; color: #ffde59; margin-bottom: 4px;" id="presentModalTitle">💎 鉱物をプレゼント</div>
-        <div style="font-size: 10px; color: #f1f5f9; text-align: left; line-height: 1.4; background: rgba(15, 23, 42, 0.8); padding: 8px; border-radius: 8px; margin-bottom: 8px; border: 1px solid #334155;" id="presentHintText">
+      <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 17.5rem;">
+        <div style="font-size: 0.934rem; font-weight: bold; color: #ffde59; margin-bottom: 0.25rem;" id="presentModalTitle">💎 鉱物をプレゼント</div>
+        <div style="font-size: 0.72rem; color: #f1f5f9; text-align: left; line-height: 1.4; background: rgba(15, 23, 42, 0.8); padding: 0.5rem; border-radius: 0.5rem; margin-bottom: 0.5rem; border: 1px solid #334155;" id="presentHintText">
           キャラクターからのヒントセリフ
         </div>
         
-        <div style="font-size: 10px; color: #94a3b8; margin-bottom: 4px;">所持している鉱物から選んで渡そう：</div>
+        <div style="font-size: 0.72rem; color: #94a3b8; margin-bottom: 0.25rem;">所持している鉱物から選んで渡そう：</div>
         <div class="present-grid" id="presentGrid"></div>
 
-        <button class="btn" style="background: #334155; color: #fff; margin-top: 4px;" onclick="closePresentModal()">もどる</button>
+        <button class="btn" style="background: #334155; color: #fff; margin-top: 0.25rem;" onclick="closePresentModal()">もどる</button>
       </div>
     </div>
 
     <!-- 💎 250px大画面鉱物詳細ポップアップ用モーダル -->
     <div id="gemModal" class="modal-overlay" style="display: none;" onclick="closeGemModal()">
       <div class="gem-modal-content" onclick="event.stopPropagation()">
-        <div id="gemModalId" style="font-size: 10px; color: #94a3b8; margin-bottom: 2px;">No.1</div>
-        <div id="gemModalTitle" style="font-size: 16px; font-weight: bold; color: #ffde59; margin-bottom: 2px;">ダイヤモンド</div>
+        <div id="gemModalId" style="font-size: 0.72rem; color: #94a3b8; margin-bottom: 2px;">No.1</div>
+        <div id="gemModalTitle" style="font-size: 1.15rem; font-weight: bold; color: #ffde59; margin-bottom: 2px;">ダイヤモンド</div>
         <img id="gemModalImg" class="gem-modal-img" src="" alt="鉱物" onerror="this.src='chara0_Y.png'">
         <div>
           <span class="modal-stock" id="gemModalStock">発掘所持数: 0個</span>
         </div>
-        <div id="gemModalDesc" style="font-size: 11px; color: #f1f5f9; text-align: left; line-height: 1.4; background: rgba(15, 23, 42, 0.8); padding: 10px; border-radius: 10px; margin-bottom: 12px; border: 1px solid #334155;"></div>
-        <button class="btn" style="background: #00fff5; color: #0f3460; margin-top:0; padding: 10px;" onclick="closeGemModal()">閉じる</button>
+        <div id="gemModalDesc" style="font-size: 0.791rem; color: #f1f5f9; text-align: left; line-height: 1.4; background: rgba(15, 23, 42, 0.8); padding: 0.625rem; border-radius: 0.625rem; margin-bottom: 0.75rem; border: 1px solid #334155;"></div>
+        <button class="btn" style="background: #00fff5; color: #0f3460; margin-top:0; padding: 0.625rem;" onclick="closeGemModal()">閉じる</button>
       </div>
     </div>
 
     <!-- 下部ナビゲーション -->
     <div class="nav">
-      <div class="nav-item" onclick="location.href='map.html'"><span style="font-size:13px; display:block; margin-bottom:0px;">🗺️</span>マップ</div>
-      <div class="nav-item" onclick="location.href='seisei.html'"><span style="font-size:13px; display:block; margin-bottom:0px;">🧪</span>精製</div>
-      <div class="nav-item" onclick="location.href='factory.html'"><span style="font-size:13px; display:block; margin-bottom:0px;">🏭</span>工場</div>
-      <div class="nav-item active" onclick="location.href='zukan.html'"><span style="font-size:13px; display:block; margin-bottom:0px;">📖</span>図鑑</div>
-      <div class="nav-item" onclick="location.href='home.html'"><span style="font-size:13px; display:block; margin-bottom:0px;">🏠</span>ホーム</div>
+      <div class="nav-item" onclick="location.href='map.html'"><span class="nav-ico">🗺️</span>マップ</div>
+      <div class="nav-item" onclick="location.href='seisei.html'"><span class="nav-ico">🧪</span>精製</div>
+      <div class="nav-item" onclick="location.href='factory.html'"><span class="nav-ico">🏭</span>工場</div>
+      <div class="nav-item active" onclick="location.href='zukan.html'"><span class="nav-ico">📖</span>図鑑</div>
+      <div class="nav-item" onclick="location.href='home.html'"><span class="nav-ico">🏠</span>ホーム</div>
     </div>
   </div>
 
   <script>
+    // ピンチ／ダブルタップによる意図しない拡大・表示ブレを防止（iOS Safari 対策含む）
+    ['gesturestart', 'gesturechange', 'gestureend'].forEach(ev =>
+      document.addEventListener(ev, e => e.preventDefault())
+    );
+    document.addEventListener('dblclick', e => e.preventDefault());
     // BGMの設定・再生制御
     const bgm = document.getElementById('bgm');
     const bgmBtn = document.getElementById('bgm-btn');
@@ -1045,7 +857,7 @@
       let ownedGems = gemsMaster.filter(g => gameState.houseki[g.id]);
 
       if (ownedGems.length === 0) {
-        grid.innerHTML = `<div style="grid-column: span 3; font-size: 10px; color: #94a3b8; padding: 10px;">持っているきれいな鉱物がまだありません。マップで採掘しよう！</div>`;
+        grid.innerHTML = `<div style="grid-column: 1 / -1; font-size: 0.72rem; color: #94a3b8; padding: 0.625rem;">持っているきれいな鉱物がまだありません。マップで採掘しよう！</div>`;
       } else {
         ownedGems.forEach(gem => {
           const item = document.createElement('div');
@@ -1053,7 +865,7 @@
           item.onclick = () => tryGivePresent(gem);
           item.innerHTML = `
             <img src="${gem.img}" alt="${gem.name}" onerror="this.src='chara0_Y.png'">
-            <div style="font-size: 7px; color: #fff; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${gem.name}</div>
+            <div style="font-size: 0.72rem; color: #fff; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${gem.name}</div>
           `;
           grid.appendChild(item);
         });
