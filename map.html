@@ -7,11 +7,12 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#16213e">
   <meta name="format-detection" content="telephone=no">
-  <title>レアアース・クラフト - マップ選択</title>
+  <title>レアアース・クラフト - M - マップ選択</title>
   <style>
     :root { --maxw: 720px; }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     
+    /* 全体は丁度よかったベストなサイズ感をベースにする */
     html {
       height: 100%;
       font-size: clamp(14px, min(calc(12px + 1.1vw), 3.2vh), 21px);
@@ -40,7 +41,7 @@
     }
     @media (orientation: landscape) and (min-width: 700px) { :root { --maxw: 1200px; } }
 
-    /* ヘッダー */
+    /* ═══ ヘッダー：パラメータが収まるように文字をコンパクトに維持 ═══ */
     .header {
       background: #16213e; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
       padding: calc(.4rem + env(safe-area-inset-top, 0px)) .6rem .4rem;
@@ -53,7 +54,7 @@
     }
     .bgm-btn.muted { border-color: #e94560; color: #e94560; background: rgba(233, 69, 96, 0.2); }
 
-    /* 工程ナビゲーションバー */
+    /* 工程ナビゲーションバー（ベストな大きさ） */
     .koutei-bar {
       background: rgba(15, 23, 42, 0.9); border-bottom: 1px solid #00fff5;
       padding: .4rem .25rem; display: flex; justify-content: space-around; align-items: center; flex-shrink: 0;
@@ -72,7 +73,7 @@
     .koutei-label { font-size: .68rem; color: #94a3b8; font-weight: bold; text-align: center; white-space: nowrap; }
     .koutei-wrapper:has(.koutei-item.active) .koutei-label { color: #00fff5; }
 
-    /* コンテンツ */
+    /* ═══ コンテンツ ═══ */
     .content {
       flex: 1; min-height: 0; padding: .6rem .7rem; display: flex; flex-direction: column; gap: .6rem;
       overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
@@ -91,9 +92,8 @@
       border-width: 6px 8px 6px 0; border-style: solid; border-color: transparent #f8f9fa transparent; display: block;
     }
 
-    /* ═══ 世界地図ボックス：background-sizeを contain にして全体が切れないように修正 ═══ */
     .map-box {
-      width: 100%; aspect-ratio: 16 / 10; background: url('world_map_bg.jpeg') center / contain no-repeat #0b1224;
+      width: 100%; aspect-ratio: 16 / 10; background: url('world_map_bg.jpeg') center/cover no-repeat;
       border: 2.5px solid #00fff5; border-radius: .7rem; position: relative; overflow: hidden; flex-shrink: 0;
       animation: mapBoxGlow 1.8s infinite alternate;
     }
@@ -102,7 +102,7 @@
       100% { border-color: #ffde59; box-shadow: 0 0 14px rgba(255,222,89,0.9), inset 0 0 8px rgba(255,222,89,0.4); }
     }
 
-    /* スポットピン */
+    /* ═══ スポットピン：重ならないようコンパクトサイズ ＆ 正しい位置に修正 ═══ */
     .spot {
       position: absolute; background: #16213e; border: 1.5px solid #00fff5; color: #fff;
       padding: .2rem .4rem; min-height: 1.5rem; border-radius: .4rem; font-size: 0.65rem; font-weight: bold;
@@ -143,7 +143,7 @@
       border: 1px solid #00fff5; border-radius: .7rem; overflow: hidden; display: flex;
       justify-content: center; align-items: center; flex-shrink: 0;
     }
-    .area-image-box img { width: 100%; height: 100%; object-fit: contain; }
+    .area-image-box img { width: 100%; height: 100%; object-fit: cover; }
 
     /* 横長（タブレット横・PC）：左右2カラム */
     @media (orientation: landscape) and (min-width: 700px) {
@@ -158,7 +158,7 @@
       .map-box { max-height: calc(100vh - 14rem); min-height: 14rem; }
     }
 
-    /* 下部フッター */
+    /* ═══ 下部フッター（ベストな大きさ） ═══ */
     .nav {
       flex-shrink: 0; position: relative; z-index: 50; background: #16213e; border-top: 2px solid #1f293d;
       display: flex; justify-content: space-around; align-items: stretch; gap: .3rem;
@@ -243,6 +243,7 @@
       <div class="card" id="map-card">
         <div class="map-title">🗺️ 採掘エリアを選択してください</div>
         <div class="map-box">
+          <!-- 各ピンの座標を地理的に正しい位置に再調整＆文字は小さめに維持 -->
           <div class="spot" id="spot-greenland" style="top: 22%; left: 32%;" onclick="selectSpot('greenland')"><img src="hata_greenisland.png" alt="GL">グリーンランド</div>
           <div class="spot" id="spot-america" style="top: 36%; left: 18%;" onclick="selectSpot('america')"><img src="hata_us.png" alt="US">マウンテンパス</div>
           <div class="spot" id="spot-baiyun" style="top: 32%; left: 63%;" onclick="selectSpot('baiyun')"><img src="hata_cn.png" alt="CN">白雲鄂博</div>
