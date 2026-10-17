@@ -2,411 +2,238 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#16213e">
+  <meta name="format-detection" content="telephone=no">
   <title>レアアース・クラフト - 採掘場</title>
   <style>
-    /* ─── スクロールバーのおしゃれカスタマイズ（全画面共通） ─── */
-    ::-webkit-scrollbar {
-      width: 5px;
-      height: 5px;
-    }
-    ::-webkit-scrollbar-track {
-      background: rgba(15, 23, 42, 0.6);
-      border-radius: 10px;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: linear-gradient(180deg, #00fff5, #3b82f6);
-      border-radius: 10px;
-      box-shadow: 0 0 6px rgba(0, 255, 245, 0.5);
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: #ffde59;
-    }
-
-    body { background-color: #1a1a2e; color: #fff; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-    .phone { width: 360px; height: 740px; background: #0f3460; border: 4px solid #16213e; border-radius: 24px; display: flex; flex-direction: column; overflow: hidden; position: relative; box-sizing: border-box; }
-    .header { background: #16213e; padding: 8px 10px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: bold; border-bottom: 2px solid #e94560; flex-shrink: 0; }
+    :root { --maxw: 720px; }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     
-    /* BGMトグルボタンのスタイル */
-    .bgm-btn {
-      background: rgba(0, 0, 0, 0.4);
-      border: 1px solid #00fff5;
-      color: #00fff5;
-      border-radius: 12px;
-      padding: 2px 8px;
-      font-size: 11px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 3px;
-      transition: all 0.2s;
+    html {
+      height: 100%;
+      font-size: clamp(14px, min(calc(12px + 1.1vw), 3.2vh), 21px);
+      -webkit-text-size-adjust: 100%; text-size-adjust: 100%;
+      touch-action: manipulation;
     }
-    .bgm-btn.muted {
-      border-color: #e94560;
-      color: #e94560;
-      background: rgba(233, 69, 96, 0.2);
+    body {
+      margin: 0; height: 100%; overflow: hidden; overscroll-behavior: none;
+      background: #0b1224; color: #fff; touch-action: manipulation;
+      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", Meiryo, sans-serif;
+      -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
     }
 
-    /* ─── 工程ナビゲーションバー ─── */
+    /* ─── スクロールバー（幅20px） ─── */
+    ::-webkit-scrollbar { width: 20px; height: 20px; }
+    ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); border-radius: 10px; }
+    ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #00fff5, #3b82f6); border-radius: 10px; box-shadow: 0 0 6px rgba(0, 255, 245, 0.5); border: 4px solid transparent; background-clip: padding-box; }
+    ::-webkit-scrollbar-thumb:hover { background: #ffde59; background-clip: padding-box; }
+
+    .phone {
+      position: fixed; top: 0; bottom: 0; left: 0; right: 0;
+      width: 100%; max-width: var(--maxw); margin: 0 auto;
+      background: #0f3460; display: flex; flex-direction: column; overflow: hidden;
+      padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px);
+      box-shadow: 0 0 0 1px #16213e, 0 0 40px rgba(0,0,0,.6);
+    }
+    @media (orientation: landscape) and (min-width: 700px) { :root { --maxw: 1200px; } }
+
+    /* ヘッダー */
+    .header {
+      background: #16213e; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
+      padding: calc(.4rem + env(safe-area-inset-top, 0px)) .6rem .4rem;
+      font-size: 0.78rem; font-weight: bold; border-bottom: 2px solid #e94560;
+    }
+    .bgm-btn {
+      background: rgba(0, 0, 0, 0.4); border: 1px solid #00fff5; color: #00fff5;
+      border-radius: 1rem; padding: .25rem .6rem; min-height: 1.8rem; font-size: .75rem; cursor: pointer;
+      display: flex; align-items: center; gap: .2rem; transition: all 0.2s; touch-action: manipulation;
+    }
+    .bgm-btn.muted { border-color: #e94560; color: #e94560; background: rgba(233, 69, 96, 0.2); }
+
+    /* 工程ナビゲーションバー */
     .koutei-bar {
-      background: rgba(15, 23, 42, 0.9);
-      border-bottom: 1px solid #00fff5;
-      padding: 6px 4px;
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      flex-shrink: 0;
+      background: rgba(15, 23, 42, 0.9); border-bottom: 1px solid #00fff5;
+      padding: .4rem .25rem; display: flex; justify-content: space-around; align-items: center; flex-shrink: 0;
     }
-    .koutei-wrapper {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 2px;
-    }
+    .koutei-wrapper { display: flex; flex-direction: column; align-items: center; gap: .15rem; }
     .koutei-item {
-      width: 36px;
-      height: 36px;
-      background: #000;
-      border: 2px solid transparent;
-      border-radius: 6px;
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      width: 2.6rem; height: 2.6rem; background: #000; border: 2px solid transparent;
+      border-radius: .4rem; overflow: hidden; display: flex; align-items: center; justify-content: center;
     }
-    .koutei-item.active {
-      border-color: #00fff5;
-      box-shadow: 0 0 10px rgba(0, 255, 245, 0.8);
-      animation: kouteiGlow 1.2s infinite alternate;
-    }
+    .koutei-item.active { border-color: #00fff5; box-shadow: 0 0 10px rgba(0, 255, 245, 0.8); animation: kouteiGlow 1.2s infinite alternate; }
     @keyframes kouteiGlow {
       from { border-color: #00fff5; box-shadow: 0 0 4px rgba(0,255,245,0.4); }
       to { border-color: #ffde59; box-shadow: 0 0 12px rgba(255,222,89,0.9); }
     }
-    .koutei-item img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    .koutei-label {
-      font-size: 8px;
-      color: #94a3b8;
-      font-weight: bold;
-      text-align: center;
-      white-space: nowrap;
-    }
-    .koutei-wrapper:has(.koutei-item.active) .koutei-label {
-      color: #00fff5;
-    }
-    
-    .content { 
-      flex: 1; 
-      background: linear-gradient(180deg, #1b4f72 0%, #0f3460 100%); 
-      padding: 6px 10px; 
-      display: flex; 
-      flex-direction: column; 
-      align-items: center; 
-      justify-content: space-between; 
-      text-align: center; 
-      overflow-y: auto; 
+    .koutei-item img { width: 100%; height: 100%; object-fit: cover; }
+    .koutei-label { font-size: .68rem; color: #94a3b8; font-weight: bold; text-align: center; white-space: nowrap; }
+    .koutei-wrapper:has(.koutei-item.active) .koutei-label { color: #00fff5; }
+
+    /* コンテンツ */
+    .content {
+      flex: 1; min-height: 0; padding: .6rem .7rem; display: flex; flex-direction: column; gap: .6rem;
+      overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+      background: linear-gradient(180deg, #1b4f72 0%, #0f3460 100%);
     }
     
     .area-title { 
-      font-weight: bold; 
-      color: #00fff5; 
-      font-size: 13px; 
-      margin: 2px 0;
-      line-height: 1.2;
-      flex-shrink: 0;
+      font-weight: bold; color: #00fff5; font-size: 1.05rem; margin: 0;
+      line-height: 1.2; flex-shrink: 0; text-align: center;
     }
 
     .area-description {
-      background: rgba(15, 23, 42, 0.85);
-      border: 1px solid #00fff5;
-      border-radius: 4px;
-      padding: 3px 6px;
-      font-size: 10px;
-      color: #dcdde1;
-      width: 100%;
-      box-sizing: border-box;
-      line-height: 1.2;
-      margin: 2px 0;
-      flex-shrink: 0;
+      background: rgba(15, 23, 42, 0.85); border: 1px solid #00fff5; border-radius: .7rem;
+      padding: .5rem .7rem; font-size: .82rem; color: #dcdde1; width: 100%; box-sizing: border-box;
+      line-height: 1.45; flex-shrink: 0;
     }
 
-    /* ─── エリア風景画像BOX ─── */
+    /* エリア風景画像BOX */
     .area-visual-box {
-      width: 100%;
-      height: 175px;
-      background: #000;
-      border: 2px solid #ffde59;
-      border-radius: 6px;
-      overflow: hidden;
-      position: relative;
-      box-shadow: 0 3px 8px rgba(0,0,0,0.4);
-      margin: 2px 0;
-      flex-shrink: 0;
+      width: 100%; aspect-ratio: 16 / 9; background: #000; border: 2px solid #ffde59;
+      border-radius: .7rem; overflow: hidden; position: relative; box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+      flex-shrink: 0; display: flex; justify-content: center; align-items: center;
     }
-
-    .area-visual-img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-
+    .area-visual-img { width: 100%; height: 100%; object-fit: contain; display: block; }
     .tool-overlay {
-      position: absolute;
-      bottom: 4px;
-      right: 4px;
-      font-size: 16px;
-      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8));
-      animation: float 2s infinite alternate;
+      position: absolute; bottom: 6px; right: 8px; font-size: 1.4rem;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8)); animation: float 2s infinite alternate;
     }
-
-    @keyframes float { 0% { transform: translateY(0); } 100% { transform: translateY(-2px); } }
+    @keyframes float { 0% { transform: translateY(0); } 100% { transform: translateY(-3px); } }
 
     .split-status-section {
-      width: 100%;
-      display: flex;
-      gap: 6px;
-      align-items: center;
-      margin: 2px 0;
-      flex-shrink: 0;
+      width: 100%; display: flex; gap: .6rem; align-items: stretch; flex-shrink: 0;
     }
 
-    /* ─── キャラクターアニメBOX ─── */
     .anim-box {
-      width: 50%;
-      height: 155px;
-      background: #000;
-      border: 1px solid #00fff5;
-      border-radius: 6px;
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      width: 50%; aspect-ratio: 4 / 3; background: #000; border: 1px solid #00fff5;
+      border-radius: .7rem; overflow: hidden; display: flex; align-items: center; justify-content: center;
     }
-
-    .anim-gif {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
+    .anim-gif { width: 100%; height: 100%; object-fit: cover; display: block; }
 
     .result-box {
-      width: 50%;
-      height: 155px;
-      background: rgba(15, 23, 42, 0.85);
-      border: 1px solid #ffde59;
-      border-radius: 6px;
-      padding: 6px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      box-sizing: border-box;
-      position: relative;
-      overflow: hidden;
+      width: 50%; aspect-ratio: 4 / 3; background: rgba(15, 23, 42, 0.85); border: 1px solid #ffde59;
+      border-radius: .7rem; padding: .5rem; display: flex; flex-direction: column; align-items: center;
+      justify-content: center; box-sizing: border-box; position: relative; overflow: hidden;
     }
-
     .mining-status-text {
-      font-size: 11px;
-      color: #ffde59;
-      line-height: 1.4;
-      text-align: center;
-      font-weight: bold;
+      font-size: 0.85rem; color: #ffde59; line-height: 1.4; text-align: center; font-weight: bold;
       z-index: 2;
-      transform: translateY(-16px);
     }
-
     .jumping-ore {
-      position: absolute;
-      bottom: 8px;
-      width: 50px;
-      height: 50px;
-      object-fit: contain;
-      z-index: 1;
-      opacity: 0;
-      pointer-events: none;
+      position: absolute; bottom: 6px; width: 45px; height: 45px; object-fit: contain;
+      z-index: 1; opacity: 0; pointer-events: none;
     }
-
     @keyframes oreJump {
-      0% { transform: translateY(40px) scale(0.4) rotate(0deg); opacity: 0; }
-      40% { transform: translateY(-8px) scale(1.2) rotate(180deg); opacity: 1; }
-      70% { transform: translateY(4px) scale(1) rotate(270deg); opacity: 1; }
+      0% { transform: translateY(30px) scale(0.4) rotate(0deg); opacity: 0; }
+      40% { transform: translateY(-6px) scale(1.2) rotate(180deg); opacity: 1; }
+      70% { transform: translateY(3px) scale(1) rotate(270deg); opacity: 1; }
       100% { transform: translateY(0px) scale(1) rotate(360deg); opacity: 1; }
     }
-
-    .jump-active {
-      animation: oreJump 0.6s ease-out forwards;
-    }
+    .jump-active { animation: oreJump 0.6s ease-out forwards; }
     
-    .btn-mine { background: #e94560; color: #fff; border: none; padding: 6px; font-size: 12px; font-weight: bold; border-radius: 6px; cursor: pointer; width: 100%; box-shadow: 0 2px 6px rgba(233, 69, 96, 0.4); margin: 2px 0; flex-shrink: 0; }
+    .btn-mine { 
+      background: #e94560; color: #fff; border: none; padding: .75rem; font-size: 0.95rem; font-weight: bold; 
+      border-radius: .8rem; cursor: pointer; width: 100%; box-shadow: 0 2px 6px rgba(233, 69, 96, 0.4); flex-shrink: 0; 
+    }
     .btn-mine:active { transform: scale(0.97); }
 
-    .btn-back { background: #16213e; border: 1px solid #00fff5; color: #00fff5; padding: 5px; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: bold; width: 100%; margin: 2px 0; flex-shrink: 0; }
+    .btn-back { 
+      background: #16213e; border: 1px solid #00fff5; color: #00fff5; padding: .65rem; border-radius: .8rem; 
+      cursor: pointer; font-size: 0.85rem; font-weight: bold; width: 100%; flex-shrink: 0; 
+    }
     .btn-back:active { transform: scale(0.97); }
 
     .btn-recycle-shortcut {
-      background: rgba(0, 255, 245, 0.15);
-      border: 1px solid #00fff5;
-      color: #00fff5;
-      padding: 5px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 11px;
-      font-weight: bold;
-      width: 100%;
-      margin: 2px 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 4px;
-      flex-shrink: 0;
+      background: rgba(0, 255, 245, 0.15); border: 1px solid #00fff5; color: #00fff5; padding: .65rem;
+      border-radius: .8rem; cursor: pointer; font-size: 0.85rem; font-weight: bold; width: 100%;
+      display: flex; align-items: center; justify-content: center; gap: .3rem; flex-shrink: 0;
     }
     .btn-recycle-shortcut:active { background: rgba(0, 255, 245, 0.3); }
 
-    /* 精製プラントへの誘導ボタン */
     .btn-next-step {
-      background: linear-gradient(135deg, #00fff5, #3b82f6);
-      color: #0f3460;
-      border: 1px solid #00fff5;
-      padding: 6px;
-      font-size: 11px;
-      font-weight: bold;
-      border-radius: 6px;
-      cursor: pointer;
-      width: 100%;
-      box-shadow: 0 2px 6px rgba(0, 255, 245, 0.4);
-      transition: transform 0.1s;
-      margin: 2px 0;
-      flex-shrink: 0;
+      background: linear-gradient(135deg, #00fff5, #3b82f6); color: #0f3460; border: 1px solid #00fff5;
+      padding: .75rem; font-size: 0.9rem; font-weight: bold; border-radius: .8rem; cursor: pointer;
+      width: 100%; box-shadow: 0 2px 6px rgba(0, 255, 245, 0.4); flex-shrink: 0;
     }
     .btn-next-step:active { transform: scale(0.97); }
 
-    /* ─── 丸囲みイットリウムちゃんの案内カード ─── */
+    /* キャラクター案内カード */
     .tb-guide-card {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(15, 23, 42, 0.85);
-      border: 1px solid #00fff5;
-      border-radius: 8px;
-      padding: 5px 8px;
-      box-sizing: border-box;
-      margin: 2px 0;
-      flex-shrink: 0;
-      width: 100%;
-      text-align: left;
+      display: flex; align-items: center; gap: .6rem; background: rgba(15, 23, 42, 0.85);
+      border: 1px solid #00fff5; border-radius: .7rem; padding: .5rem .7rem; box-sizing: border-box;
+      flex-shrink: 0; width: 100%; text-align: left;
     }
     .tb-avatar-circle {
-      width: 42px;
-      height: 42px;
-      border-radius: 50%;
-      border: 2px solid #00fff5;
-      object-fit: cover;
-      background: #000;
-      flex-shrink: 0;
-      box-shadow: 0 0 6px rgba(0, 255, 245, 0.4);
+      width: 3.2rem; height: 3.2rem; border-radius: 50%; border: 2px solid #00fff5; object-fit: cover;
+      background: #000; flex-shrink: 0; box-shadow: 0 0 6px rgba(0, 255, 245, 0.4);
     }
     .tb-speech-bubble {
-      background: #ffffff;
-      border: 1px solid #cbd5e1;
-      border-radius: 8px;
-      padding: 6px 8px;
-      font-size: 10px;
-      color: #1e293b;
-      line-height: 1.35;
-      position: relative;
-      flex: 1;
-      font-weight: bold;
+      background: #ffffff; border: 1px solid #cbd5e1; border-radius: .6rem; padding: .45rem .65rem;
+      font-size: .8rem; color: #1e293b; line-height: 1.4; position: relative; flex: 1; font-weight: bold;
     }
     .tb-speech-bubble::before {
-      content: '';
-      position: absolute;
-      left: -6px;
-      top: 50%;
-      transform: translateY(-50%);
-      border-top: 4px solid transparent;
-      border-bottom: 4px solid transparent;
-      border-right: 6px solid #ffffff;
+      content: ''; position: absolute; left: -6px; top: 50%; transform: translateY(-50%);
+      border-top: 5px solid transparent; border-bottom: 5px solid transparent; border-right: 7px solid #ffffff;
     }
-    .highlight-material {
-      color: #0f3460;
-      background: rgba(0, 255, 245, 0.25);
-      padding: 0 2px;
-      border-radius: 3px;
-    }
-    .highlight-product {
-      color: #d35400;
-      background: rgba(255, 222, 89, 0.35);
-      padding: 0 2px;
-      border-radius: 3px;
-    }
+    .highlight-material { color: #0f3460; background: rgba(0, 255, 245, 0.25); padding: 0 2px; border-radius: 3px; }
+    .highlight-product { color: #d35400; background: rgba(255, 222, 89, 0.35); padding: 0 2px; border-radius: 3px; }
 
-    /* 下部ナビゲーション */
-    .nav { 
-      height: 56px; 
-      background: #16213e; 
-      display: flex; 
-      justify-content: space-around; 
-      align-items: center; 
-      padding: 0 8px;
-      flex-shrink: 0; 
-      border-top: 2px solid #1f293d;
-      box-sizing: border-box;
+    /* 下部ナビゲーション（map.htmlと完全一致デザイン） */
+    .nav {
+      flex-shrink: 0; position: relative; z-index: 50; background: #16213e; border-top: 2px solid #1f293d;
+      display: flex; justify-content: space-around; align-items: stretch; gap: .3rem;
+      padding: .4rem .5rem calc(.4rem + env(safe-area-inset-bottom, 0px));
     }
-    .nav-item { 
-      color: #a0aec0; 
-      cursor: pointer; 
-      text-align: center; 
-      background: rgba(255, 255, 255, 0.05); 
-      border: 1px solid rgba(0, 255, 245, 0.2); 
-      border-radius: 10px; 
-      padding: 4px 8px;
-      font-size: 10px; 
-      font-weight: bold;
-      flex: 1;
-      margin: 0 3px;
-      transition: all 0.2s;
+    .nav-item {
+      color: #a0aec0; cursor: pointer; text-align: center; background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(0, 255, 245, 0.2); border-radius: .7rem; padding: .3rem .2rem;
+      min-height: 3rem; font-size: .72rem; font-weight: bold; flex: 1;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .1rem;
+      transition: all 0.2s; touch-action: manipulation;
     }
+    .nav-ico { font-size: 1.15rem; line-height: 1; display: block; }
     .nav-item:active { transform: scale(0.95); }
-    .nav-item.active { 
-      color: #00fff5; 
-      background: rgba(0, 255, 245, 0.15); 
-      border-color: #00fff5;
-      box-shadow: 0 0 8px rgba(0, 255, 245, 0.3);
-    }
+    .nav-item.active { color: #00fff5; background: rgba(0, 255, 245, 0.15); border-color: #00fff5; box-shadow: 0 0 8px rgba(0, 255, 245, 0.3); }
 
-    /* カスタムモーダル */
+    /* モーダル */
     .modal-overlay {
-      position: absolute;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(10, 15, 30, 0.85);
-      display: flex; justify-content: center; align-items: center;
-      z-index: 100;
-      backdrop-filter: blur(2px);
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(10, 15, 30, 0.85); display: flex; justify-content: center; align-items: center;
+      z-index: 200; backdrop-filter: blur(2px);
     }
     .modal-content {
-      background: #16213e;
-      border: 2px solid #00fff5;
-      border-radius: 16px;
-      padding: 16px 12px;
-      width: 260px;
-      text-align: center;
-      box-shadow: 0 0 20px rgba(0, 255, 245, 0.3);
+      background: #16213e; border: 2px solid #00fff5; border-radius: 1rem; padding: 1.2rem 1rem;
+      width: 100%; max-width: 22rem; text-align: center; box-shadow: 0 0 20px rgba(0, 255, 245, 0.3);
       animation: popup 0.3s ease-out;
     }
-    @keyframes popup {
-      0% { transform: scale(0.8); opacity: 0; }
-      100% { transform: scale(1); opacity: 1; }
-    }
-    .modal-btn-row {
-      display: flex;
-      gap: 8px;
-      margin-top: 10px;
+    @keyframes popup { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+    .modal-btn-row { display: flex; gap: .5rem; margin-top: .8rem; }
+
+    /* PC・タブレット横長時のレイアウト最適化 */
+    @media (orientation: landscape) and (min-width: 700px) {
+      .content {
+        display: grid;
+        grid-template-columns: 1.1fr 1fr;
+        grid-template-rows: auto auto auto auto;
+        grid-template-areas:
+          "title   guide"
+          "desc    split"
+          "visual  split"
+          "actions actions";
+        gap: .6rem;
+        align-content: start;
+      }
+      .area-title { grid-area: title; text-align: left; }
+      .area-description { grid-area: desc; }
+      .area-visual-box { grid-area: visual; }
+      .tb-guide-card { grid-area: guide; }
+      .split-status-section { grid-area: split; width: 100%; height: 100%; }
+      .anim-box, .result-box { height: 100%; aspect-ratio: auto; }
+      .action-buttons-group { grid-area: actions; display: flex; gap: .5rem; flex-wrap: wrap; }
+      .action-buttons-group > * { flex: 1 1 45%; }
     }
   </style>
 </head>
@@ -461,7 +288,7 @@
         エリアの特徴説明
       </div>
 
-      <!-- 密着風景画像BOX -->
+      <!-- 風景画像BOX -->
       <div class="area-visual-box">
         <img id="area-img" class="area-visual-img" src="area_cn.png" alt="エリアビジュアル">
         <div class="tool-overlay" id="tool-icon">🚚🚜</div>
@@ -478,21 +305,18 @@
         </div>
       </div>
 
-      <div style="width: 100%; display: flex; flex-direction: column; gap: 2px;">
-        <button class="btn-mine" onclick="mineMud()">⛏️ 資源を採掘する (<span id="mine-cost">10</span>G +EXP)</button>
-
-        <!-- 🌟 丸囲みイットリウムちゃんの案内カード -->
-        <div class="tb-guide-card">
-          <img src="chara0_Y.png" alt="イットリウム" class="tb-avatar-circle" onerror="this.src='navtb.png'">
-          <div class="tb-speech-bubble">
-            採掘した<span class="highlight-material">採掘物（泥）は</span>精製プラントで加工して、<span class="highlight-product">レアアース元素</span>を取り出そう！
-          </div>
+      <!-- キャラクター案内カード -->
+      <div class="tb-guide-card">
+        <img src="chara0_Y.png" alt="イットリウム" class="tb-avatar-circle" onerror="this.src='navtb.png'">
+        <div class="tb-speech-bubble">
+          採掘した<span class="highlight-material">採掘物（泥）は</span>精製プラントで加工して、<span class="highlight-product">レアアース元素</span>を取り出そう！
         </div>
+      </div>
 
+      <div class="action-buttons-group" style="width: 100%; display: flex; flex-direction: column; gap: .5rem; flex-shrink: 0;">
+        <button class="btn-mine" onclick="mineMud()">⛏️ 資源を採掘する (<span id="mine-cost">10</span>G +EXP)</button>
         <button class="btn-next-step" onclick="goToRefinery()">🧪 精製プラントにすすむ</button>
-        <!-- 🗺️ マップに戻るボタンを上に配置 -->
         <button class="btn-back" onclick="goBackMap()">🗺️ マップに戻ってエリアを変更する</button>
-        <!-- ♻️ リサイクル工場ボタンを下に配置 -->
         <button class="btn-recycle-shortcut" onclick="goToRecycle()">
           ♻️ リサイクル工場（資金稼ぎ）へ行く
         </button>
@@ -501,42 +325,42 @@
 
     <!-- 下部ナビゲーション -->
     <div class="nav">
-      <div class="nav-item active" onclick="goBackMap()"><span style="font-size:14px; display:block; margin-bottom:1px;">🗺️</span>マップ</div>
-      <div class="nav-item" onclick="location.href='seisei.html'"><span style="font-size:14px; display:block; margin-bottom:1px;">🧪</span>精製</div>
-      <div class="nav-item" onclick="location.href='factory.html'"><span style="font-size:14px; display:block; margin-bottom:1px;">🏭</span>工場</div>
-      <div class="nav-item" onclick="location.href='zukan.html'"><span style="font-size:14px; display:block; margin-bottom:1px;">📖</span>図鑑</div>
-      <div class="nav-item" onclick="location.href='home.html'"><span style="font-size:14px; display:block; margin-bottom:1px;">🏠</span>ホーム</div>
+      <div class="nav-item active" onclick="goBackMap()"><span class="nav-ico">🗺️</span>マップ</div>
+      <div class="nav-item" onclick="location.href='seisei.html'"><span class="nav-ico">🧪</span>精製</div>
+      <div class="nav-item" onclick="location.href='factory.html'"><span class="nav-ico">🏭</span>工場</div>
+      <div class="nav-item" onclick="location.href='zukan.html'"><span class="nav-ico">📖</span>図鑑</div>
+      <div class="nav-item" onclick="location.href='home.html'"><span class="nav-ico">🏠</span>ホーム</div>
     </div>
 
     <!-- 資金不足ポップアップ -->
     <div id="noMoneyModal" class="modal-overlay" style="display: none;">
       <div class="modal-content">
-        <div style="font-size: 26px;">⚠️</div>
-        <div style="font-size: 13px; font-weight: bold; color: #ff4757; margin: 4px 0;">資金が足りません！</div>
-        <div style="font-size: 12px; color: #dcdde1; margin-bottom: 10px; line-height: 1.4;">
+        <div style="font-size: 2.2rem; margin-bottom: .2rem;">⚠️</div>
+        <div style="font-size: 1.1rem; font-weight: bold; color: #ff4757; margin-bottom: .4rem;">資金が足りません！</div>
+        <div style="font-size: 0.9rem; color: #dcdde1; margin-bottom: 1rem; line-height: 1.5;">
           リサイクル工場（都市鉱山）に行って<br>資金を稼ぎますか？
         </div>
         <div class="modal-btn-row">
-          <button class="btn-back" style="margin-top:0; background:#333; border-color:#888; color:#fff;" onclick="closeNoMoneyModal()">キャンセル</button>
-          <button class="btn-mine" style="margin-top:0; background:#00fff5; color:#0f3460;" onclick="goToRecycleWithSound()">行く！</button>
+          <button class="btn-back" style="background:#333; border-color:#888; color:#fff; margin-top:0;" onclick="closeNoMoneyModal()">キャンセル</button>
+          <button class="btn-mine" style="background:#00fff5; color:#0f3460; margin-top:0;" onclick="goToRecycleWithSound()">行く！</button>
         </div>
       </div>
     </div>
 
-    <!-- きれいな鉱物・宝石発見ポップアップ（zukanと完全同期・堅牢保存） -->
+    <!-- 宝石発見ポップアップ -->
     <div id="firstJewelModal" class="modal-overlay" style="display: none;" onclick="closeFirstJewelModal()">
       <div class="modal-content" onclick="event.stopPropagation()">
-        <div style="font-size: 24px;">💎</div>
-        <div style="font-size: 12px; font-weight: bold; color: #ffde59; margin: 4px 0; line-height: 1.4;">
+        <div style="font-size: 2rem; margin-bottom: .2rem;">💎</div>
+        <div style="font-size: 1.05rem; font-weight: bold; color: #ffde59; margin-bottom: .4rem; line-height: 1.4;">
           奇跡の発見！【<span id="popup-jewel-name">トパーズ</span>】をGET！
         </div>
-        <div style="margin: 6px 0;">
-          <img id="popup-jewel-img" src="houseki1.png" alt="鉱物" style="width: 70px; height: 70px; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5);" onerror="this.src='kouseki3.png'">
+        <div style="margin: .5rem 0;">
+          <img id="popup-jewel-img" src="houseki1.png" alt="鉱物" style="width: 4.5rem; height: 4.5rem; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5);" onerror="this.src='kouseki3.png'">
         </div>
-        <div id="popup-jewel-desc" style="font-size: 10px; color: #dcdde1; margin-bottom: 10px; line-height: 1.4; background: rgba(15,23,42,0.8); padding: 6px; border-radius: 6px; text-align: left;">
+        <div id="popup-jewel-desc" style="font-size: 0.85rem; color: #dcdde1; margin-bottom: 1rem; line-height: 1.5; background: rgba(15,23,42,0.8); padding: .6rem; border-radius: .6rem; text-align: left;">
           図鑑コレクションに登録されました！
         </div>
-        <button class="btn-mine" style="margin-top:0; background:#00fff5; color:#0f3460;" onclick="closeFirstJewelModal()">やったね！</button>
+        <button class="btn-mine" style="background:#00fff5; color:#0f3460; margin-top:0;" onclick="closeFirstJewelModal()">やったね！</button>
       </div>
     </div>
   </div>
@@ -633,7 +457,6 @@
     let spotId = localStorage.getItem('currentSelectedSpot') || 'baiyun';
     let oreToggle = false;
 
-    // 💎 zukan.html と完全同期した houseki1 〜 houseki100 のマスターデータ
     const gemsMaster = [
       { id: 1, name: 'ダイヤモンド', img: 'houseki1.png', desc: '永遠の輝きを放つ、世界最高硬度の宝石。' },
       { id: 2, name: 'ルビー', img: 'houseki2.png', desc: '情熱的な赤色を持つ、宝石の女王。' },
@@ -750,7 +573,6 @@
 
     const currentSpot = spotConfig[spotId] || spotConfig['baiyun'];
 
-    // BGM切り替え設定
     const bgm = document.getElementById('bgm-mine');
     const bgmBtn = document.getElementById('bgm-btn');
     bgm.volume = 0.4;
@@ -840,7 +662,6 @@
 
       gameState.money -= currentSpot.cost;
 
-      // ミャンマーでのカラオケ発生率を 8% (0.08) から 2% (0.02) に大幅ダウン！
       if (spotId === 'myanmar' && Math.random() < 0.02) {
         localStorage.setItem('rareEarthGameState', JSON.stringify(gameState));
         setTimeout(() => {
@@ -849,7 +670,6 @@
         return;
       }
 
-      // 💎 3%の確率で「きれいな鉱物」発生判定
       const isRareJewel = Math.random() < 0.03;
       let obtainedJewel = null;
 
@@ -857,7 +677,6 @@
         const randomIndex = Math.floor(Math.random() * gemsMaster.length);
         obtainedJewel = gemsMaster[randomIndex];
         
-        // 🔒 図鑑と確実に同期するための堅牢な保存（配列＆オブジェクト両方に登録）
         if (!gameState.jewels) gameState.jewels = [];
         if (!gameState.jewels.includes(obtainedJewel.id)) gameState.jewels.push(obtainedJewel.id);
         if (!gameState.jewels.includes(`houseki${obtainedJewel.id}`)) gameState.jewels.push(`houseki${obtainedJewel.id}`);
@@ -868,18 +687,17 @@
 
         const seHouseki = document.getElementById('se-houseki');
         seHouseki.currentTime = 0;
-        seHouseki.play().catch(e => console.log('音声再生エラー:', e));
+        seHouseki.play().catch(e => {});
       } else {
         const seFutsu = document.getElementById('se-futsu');
         seFutsu.currentTime = 0;
-        seFutsu.play().catch(e => console.log('音声再生エラー:', e));
+        seFutsu.play().catch(e => {});
       }
 
       const gained = Math.floor(Math.random() * 2) + 1;
       gameState.mudStock += gained;
       gameState.lastMinedSpot = spotId;
 
-      // 採掘EXP獲得 (1回につき25EXP)
       addExp(25);
 
       saveGameState();
@@ -933,7 +751,7 @@
 
     function goToRecycle() {
       const se = document.getElementById('se-gogogo');
-      if (se) { se.currentTime = 0; se.play().catch(e => console.log('音声再生エラー:', e)); }
+      if (se) { se.currentTime = 0; se.play().catch(e => {}); }
       setTimeout(() => {
         location.href = 'recycle.html';
       }, 300);
@@ -946,7 +764,7 @@
     function goBackMap() {
       const se = document.getElementById('se-type');
       se.currentTime = 0;
-      se.play().catch(e => console.log('音声再生エラー:', e));
+      se.play().catch(e => {});
 
       setTimeout(() => {
         location.href = 'map.html';
