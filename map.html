@@ -9,11 +9,12 @@
   <meta name="format-detection" content="telephone=no">
   <title>レアアース・クラフト - マップ選択</title>
   <style>
+    /* 全体を約20%小さく（ベースサイズを調整） */
     :root { --maxw: 720px; }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     html {
       height: 100%;
-      font-size: clamp(15px, min(calc(13px + 1.2vw), 3.4vh), 23px);
+      font-size: clamp(12px, min(calc(10.5px + 1vw), 2.8vh), 19px);
       -webkit-text-size-adjust: 100%; text-size-adjust: 100%;
       touch-action: manipulation;
     }
@@ -24,8 +25,8 @@
       -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
     }
 
-    /* ─── スクロールバー ─── */
-    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    /* ─── スクロールバー（幅を倍の10pxに） ─── */
+    ::-webkit-scrollbar { width: 10px; height: 10px; }
     ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); border-radius: 10px; }
     ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #00fff5, #3b82f6); border-radius: 10px; box-shadow: 0 0 6px rgba(0, 255, 245, 0.5); }
     ::-webkit-scrollbar-thumb:hover { background: #ffde59; }
@@ -37,7 +38,6 @@
       padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px);
       box-shadow: 0 0 0 1px #16213e, 0 0 40px rgba(0,0,0,.6);
     }
-    /* 横長画面（タブレット横・PC）は広く使いつつ、75%縮小の感覚に合わせる */
     @media (orientation: landscape) and (min-width: 700px) { :root { --maxw: 1024px; } }
 
     .header {
@@ -152,7 +152,7 @@
     }
     .area-image-box img { width: 100%; height: 100%; object-fit: cover; }
 
-    /* ═══ 横長画面（PC・タブレット横）：左右2カラムできれいに収める ═══ */
+    /* ═══ 横長画面（PC・タブレット横）：左右2カラム ═══ */
     @media (orientation: landscape) and (min-width: 700px) {
       .content {
         display: grid;
@@ -250,7 +250,7 @@
       <div class="chara-guide">
         <img src="navtb.png" alt="テルビウム" class="chara-icon" onerror="this.src='hata_cn.png'">
         <div class="speech-bubble">
-          世界地図から採掘エリアを選んで出発しよう！レベルが上がると新しい鉱山が解放されるよ✨
+          世界地図から採掘エリアを選ぼう！
         </div>
       </div>
 
@@ -268,14 +268,15 @@
         </div>
       </div>
 
+      <!-- ボタンと説明文の位置を入れ替えた情報カード -->
       <div class="card" id="info-card">
         <div id="spot-name">
           <span class="spot-country" style="color:#00fff5;">📍 採掘エリアを選ぼう</span>
           <span class="spot-title is-hint">上の世界地図からピンをタップしよう！</span>
         </div>
+        <button class="btn" id="action-btn" style="background: #00fff5; color: #0f3460;" onclick="goToMine()">🚜 このエリアの採掘へ移動！</button>
         <div class="spot-desc" id="spot-desc">ピンを選ぶと、それぞれの土地の特徴が表示されます。</div>
         <div class="spot-detail" id="spot-detail">（初期解放：中国・アメリカ）</div>
-        <button class="btn" id="action-btn" style="background: #00fff5; color: #0f3460;" onclick="goToMine()">🚜 このエリアの採掘へ移動！</button>
       </div>
 
       <div class="area-image-box">
