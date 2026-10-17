@@ -46,20 +46,19 @@ body{margin:0;height:100%;overflow:hidden;overscroll-behavior:none;background:#0
   background:linear-gradient(var(--base),var(--base)) 50% 0/.2rem 100% no-repeat,linear-gradient(var(--base),var(--base)) 0 50%/100% .2rem no-repeat,linear-gradient(180deg,#bfe3f7,#eaf7ff);
   box-shadow:0 .25rem .8rem rgba(0,0,0,.15)}
 .floor{position:absolute;left:0;right:0;top:64%;bottom:0;background:var(--floor);border-top:.35rem solid var(--base);box-shadow:inset 0 .8rem 1rem -.5rem rgba(0,0,0,.28)}
-.rug{position:absolute;left:50%;top:80%;width:46%;height:22%;transform:translateX(-50%);border-radius:50%;background:var(--rug);box-shadow:0 0 0 .25rem var(--rug2) inset,0 .2rem .5rem rgba(0,0,0,.2);opacity:.9}
-#garden{display:none;background:
-  radial-gradient(ellipse 14% 6% at 20% 14%,#fff 60%,transparent 62%),radial-gradient(ellipse 18% 7% at 72% 22%,#fff 60%,transparent 62%),
-  repeating-linear-gradient(90deg,#f5e9d3 0 1.4%,#e9d7b6 1.4% 1.8%) 0 52%/100% 12% no-repeat,
-  linear-gradient(180deg,#7cc4ef 0%,#d8f0fb 52%,#7fcf6b 52%,#4aa84a 100%)}
+#garden{display:none;background:var(--garden)}
 #objs{z-index:5}
+.door{position:absolute;left:60%;bottom:0;width:19%;height:74%;background:var(--door);border:.25rem solid var(--base);border-bottom:0;border-radius:.3rem .3rem 0 0;box-shadow:inset 0 0 0 .35rem var(--door2),.2rem 0 .6rem rgba(0,0,0,.18);z-index:1;display:none}
+.door::after{content:"";position:absolute;right:10%;top:55%;width:.55rem;height:.55rem;border-radius:50%;background:var(--knob);box-shadow:0 .1rem .2rem rgba(0,0,0,.35)}
+.flat .wall::after{display:none}.flat .floor{box-shadow:none}
 .obj{position:absolute;transform:translate(-50%,-100%);touch-action:none;cursor:grab;z-index:5}
 .obj:active{cursor:grabbing;filter:brightness(1.05)}
 .obj img{width:100%;height:auto;display:block;pointer-events:none;filter:drop-shadow(0 .3rem .4rem rgba(0,0,0,.28))}
 .obj .ph{display:flex;flex-direction:column;align-items:center;font-size:7cqw;line-height:1.1;text-align:center;filter:drop-shadow(0 .2rem .3rem rgba(0,0,0,.3))}
 .obj .ph small{font-size:.55rem;background:rgba(0,0,0,.55);color:#fff;border-radius:.4rem;padding:0 .3rem}
-.controls{position:absolute;top:.4rem;left:.4rem;right:.4rem;z-index:10;display:flex;justify-content:space-between;align-items:center;gap:.3rem;
+.controls{position:absolute;top:.4rem;left:.4rem;right:.4rem;z-index:10;display:flex;justify-content:space-between;align-items:center;gap:.3rem;flex-wrap:wrap;
   background:var(--card);border:1px solid var(--line);border-radius:.6rem;padding:.25rem .4rem;opacity:.94}
-.controls b{font-size:.7rem}
+.controls b{font-size:.7rem}.dirs{margin-left:auto;display:flex;gap:.2rem}.dir:disabled{opacity:.35;cursor:default}
 .dir{background:transparent;border:1px solid var(--line);color:var(--text);border-radius:.4rem;min-width:1.7rem;min-height:1.6rem;font-size:.68rem;font-weight:bold;cursor:pointer;font-family:inherit}
 .dir.on{background:var(--accent);color:var(--onaccent);border-color:var(--accent)}
 
@@ -74,7 +73,6 @@ body{margin:0;height:100%;overflow:hidden;overscroll-behavior:none;background:#0
 .item.own{opacity:.8}
 .item .nm{flex:1;font-weight:bold;font-size:.78rem}
 .item .nm small{display:block;font-weight:normal;font-size:.65rem;opacity:.7}
-.thumb{width:2.2rem;height:2.2rem;border-radius:.4rem;object-fit:contain;background:rgba(128,128,128,.12);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0}
 .swatch{width:2.2rem;height:2.2rem;border-radius:.4rem;border:1px solid var(--line);flex-shrink:0;overflow:hidden;display:flex;flex-direction:column}
 .swatch i{flex:1.4}.swatch i+i{flex:1}
 .btn{background:var(--accent);color:var(--onaccent);border:none;border-radius:.6rem;min-height:2rem;padding:.3rem .8rem;font-size:.72rem;font-weight:bold;cursor:pointer;font-family:inherit}
@@ -116,11 +114,12 @@ textarea{width:100%;height:5rem;font-size:.65rem;border:1px solid var(--line);bo
     <div class="stage" id="stage">
       <div class="controls">
         <b id="dirTitle">北の壁</b>
-        <div style="display:flex;gap:.2rem" id="dirBtns"></div>
+        <div class="dirs" style="margin-left:0"><button class="dir" id="undoBtn" onclick="undo()" title="元に戻す">↶</button><button class="dir" id="redoBtn" onclick="redo()" title="やり直す">↷</button><button class="dir" onclick="resetRoom()" title="リセット">🗑️</button></div>
+        <div class="dirs" id="dirBtns"></div>
       </div>
       <div id="indoor">
-        <div class="layer wall"><div class="win"></div></div>
-        <div class="floor"></div><div class="rug"></div>
+        <div class="layer wall"><div class="win" id="win"></div><div class="door" id="door"></div></div>
+        <div class="floor"></div>
       </div>
       <div class="layer" id="garden"></div>
       <div class="layer" id="objs"></div>
@@ -155,7 +154,7 @@ textarea{width:100%;height:5rem;font-size:.65rem;border:1px solid var(--line);bo
 
 <div id="toast"></div>
 <div class="overlay" id="modal"><div class="modal"><h3 id="mTitle"></h3><p id="mDesc"></p>
-  <div class="row"><button class="btn" style="background:#94a3b8;color:#fff" onclick="closeModal()">キャンセル</button><button class="btn" id="mOk" style="background:#ef4444;color:#fff">OK</button></div></div></div>
+  <div class="row"><button class="btn" style="background:#94a3b8;color:#fff" id="mNo" onclick="closeModal()">キャンセル</button><button class="btn" id="mOk" style="background:#ef4444;color:#fff">OK</button></div></div></div>
 
 <script>
 ['gesturestart','gesturechange','gestureend'].forEach(e=>document.addEventListener(e,x=>x.preventDefault()));
@@ -207,32 +206,58 @@ const bgmMaster = {
    ★ テイスト（お部屋の雰囲気）★  1つ足せば選択肢が増えます
    壁紙(柄)・腰壁・巾木・フローリング・ラグまで重ねて「お部屋らしさ」を出しています
    wall/wain/rail/pat : 壁色 / 腰壁(下半分)の色 / 腰壁の上の線 / 壁紙の柄
-   base : 巾木と窓枠の色    floor : 床   rug/rug2 : ラグ
+   base : 巾木と窓枠の色    floor : 床   garden : お庭の背景(省略可)  floorH : 東西の床=横線(省略可)  flat:true : 影も付けない
    bg/card/text/line/accent/item : 画面全体のUI色
    ═════════════════════════════════════════════════════════════ */
+const GARDEN_DEFAULT = `radial-gradient(ellipse 14% 6% at 20% 14%,#fff 60%,transparent 62%),radial-gradient(ellipse 18% 7% at 72% 22%,#fff 60%,transparent 62%),repeating-linear-gradient(90deg,#f5e9d3 0 1.4%,#e9d7b6 1.4% 1.8%) 0 52%/100% 12% no-repeat,linear-gradient(180deg,#7cc4ef 0%,#d8f0fb 52%,#7fcf6b 52%,#4aa84a 100%)`;
 const wallBg = (c,pat,wain,rail)=>`linear-gradient(180deg,transparent 74%,${rail} 74% 77%,${wain} 77%),${pat},${c}`;
 const planks = (a,b,seam)=>`repeating-linear-gradient(90deg,${seam} 0 .1rem,transparent .1rem 16%),linear-gradient(180deg,${a},${b})`;
+const planksH=(a,b,seam)=>`repeating-linear-gradient(180deg,${seam} 0 .1rem,transparent .1rem 2rem),linear-gradient(180deg,${a},${b})`;
 const tiles  = (a,b)=>`conic-gradient(${a} 25%,${b} 0 50%,${a} 0 75%,${b} 0) 0 0/16% 38%`;
 const themesMaster = {
   natural:{name:'🌿 ナチュラル（白木と生成り）', wall:wallBg('#f3ead9','repeating-linear-gradient(90deg,rgba(255,255,255,.45) 0 1.1rem,transparent 1.1rem 2.2rem)','#e4d3b4','#fffaf0'),
-    base:'#fffaf0', floor:planks('#d9b382','#c4965f','rgba(90,55,20,.28)'), rug:'#a8c3a0', rug2:'#e8f0e2',
-    bg:'#f6f1e7', card:'#fffdf8', text:'#4a3f33', line:'#e0d3bd', accent:'#6f9a6b', item:'#faf5ea', onaccent:'#fff'},
+    base:'#fffaf0', floor:planks('#d9b382','#c4965f','rgba(90,55,20,.28)'), floorH:planksH('#d9b382','#c4965f','rgba(90,55,20,.28)'), bg:'#f6f1e7', card:'#fffdf8', text:'#4a3f33', line:'#e0d3bd', accent:'#6f9a6b', item:'#faf5ea', onaccent:'#fff'},
   wood:{name:'☕ ウッド＆カフェ', wall:wallBg('#e9dcc6','radial-gradient(rgba(120,80,40,.07) 2px,transparent 2.5px) 0 0/.9rem .9rem','#3f5a4a','#c9a24d'),
-    base:'#2f4538', floor:planks('#9a5f36','#7a4524','rgba(30,15,5,.4)'), rug:'#a63d40', rug2:'#e8c9a0',
-    bg:'#f3ead8', card:'#fffaf0', text:'#4a3525', line:'#d9c4a4', accent:'#3f5a4a', item:'#f6edd9', onaccent:'#fff'},
-  pink:{name:'🌸 さくらピンク', wall:wallBg('#fde8ec','radial-gradient(rgba(255,255,255,.75) .18rem,transparent .22rem) 0 0/1.3rem 1.3rem','#f9c9d4','#fff'),
-    base:'#fff', floor:planks('#f1d2b8','#e0b896','rgba(140,80,60,.22)'), rug:'#f5a3b8', rug2:'#fff0f3',
-    bg:'#fff4f6', card:'#fff', text:'#7a3b4b', line:'#f6cdd6', accent:'#e0728f', item:'#fff0f3', onaccent:'#fff'},
+    base:'#2f4538', floor:planks('#9a5f36','#7a4524','rgba(30,15,5,.4)'), floorH:planksH('#9a5f36','#7a4524','rgba(30,15,5,.4)'), bg:'#f3ead8', card:'#fffaf0', text:'#4a3525', line:'#d9c4a4', accent:'#3f5a4a', item:'#f6edd9', onaccent:'#fff'},
+  pink:{name:'🌸 さくらピンク', wall:wallBg('#fde8ec','linear-gradient(transparent,transparent)','#f9c9d4','#fff'),
+    base:'#fff', floor:planks('#f1d2b8','#e0b896','rgba(140,80,60,.22)'), floorH:planksH('#f1d2b8','#e0b896','rgba(140,80,60,.22)'), bg:'#fff4f6', card:'#fff', text:'#7a3b4b', line:'#f6cdd6', accent:'#e0728f', item:'#fff0f3', onaccent:'#fff'},
   blue:{name:'🌊 ミント＆スカイ', wall:wallBg('#e3f4ee','linear-gradient(rgba(255,255,255,.5) .15rem,transparent .15rem) 0 0/1.4rem 1.4rem,linear-gradient(90deg,rgba(255,255,255,.5) .15rem,transparent .15rem) 0 0/1.4rem 1.4rem','#b9e1d6','#fff'),
-    base:'#fff', floor:tiles('#f4efe4','#d5e8e2'), rug:'#7fb9d9', rug2:'#e7f4fb',
-    bg:'#eef8f4', card:'#fff', text:'#2c5a52', line:'#c5e4da', accent:'#3fa38e', item:'#f0faf6', onaccent:'#fff'},
+    base:'#fff', floor:tiles('#f4efe4','#d5e8e2'), bg:'#eef8f4', card:'#fff', text:'#2c5a52', line:'#c5e4da', accent:'#3fa38e', item:'#f0faf6', onaccent:'#fff'},
   cyber:{name:'⚡ サイバーネオン', wall:wallBg('#141a33','linear-gradient(rgba(0,255,245,.12) .08rem,transparent .08rem) 0 0/1.4rem 1.4rem,linear-gradient(90deg,rgba(0,255,245,.12) .08rem,transparent .08rem) 0 0/1.4rem 1.4rem','#1c2548','#00fff5'),
-    base:'#00c9c0', floor:planks('#2a3358','#161c38','rgba(0,255,245,.25)'), rug:'#7c3aed', rug2:'#00fff5',
-    bg:'#0f1a3a', card:'#16213e', text:'#e6f7ff', line:'#1f6f84', accent:'#00fff5', item:'#0f1830', onaccent:'#0f3460'},
+    base:'#00c9c0', floor:planks('#2a3358','#161c38','rgba(0,255,245,.25)'), floorH:planksH('#2a3358','#161c38','rgba(0,255,245,.25)'), bg:'#0f1a3a', card:'#16213e', text:'#e6f7ff', line:'#1f6f84', accent:'#00fff5', item:'#0f1830', onaccent:'#0f3460'},
   monotone:{name:'🎱 モノトーンシック', wall:wallBg('#d8d8da','repeating-linear-gradient(90deg,rgba(0,0,0,.05) 0 .12rem,transparent .12rem .9rem)','#4a4a50','#fafafa'),
-    base:'#2a2a2e', floor:planks('#8a7f74','#6d635a','rgba(0,0,0,.35)'), rug:'#2f2f33', rug2:'#bdbdc2',
-    bg:'#ececee', card:'#fafafa', text:'#27272a', line:'#cfcfd4', accent:'#27272a', item:'#f2f2f4', onaccent:'#fff'}
+    base:'#2a2a2e', floor:planks('#8a7f74','#6d635a','rgba(0,0,0,.35)'), floorH:planksH('#8a7f74','#6d635a','rgba(0,0,0,.35)'), bg:'#ececee', card:'#fafafa', text:'#27272a', line:'#cfcfd4', accent:'#27272a', item:'#f2f2f4', onaccent:'#fff'},
+  lab:{name:'🔬 研究室（無機質）', wall:wallBg('#eef2f4','linear-gradient(rgba(120,140,150,.28) .06rem,transparent .06rem) 0 0/2rem 2rem,linear-gradient(90deg,rgba(120,140,150,.28) .06rem,transparent .06rem) 0 0/2rem 2rem','#aab4bb','#dfe5e8'),
+    base:'#7b868d', floor:tiles('#cfd6da','#bcc5ca'),
+    garden:'repeating-linear-gradient(45deg,rgba(70,80,90,.4) 0 .08rem,transparent .08rem .7rem) 0 34%/100% 20% no-repeat,repeating-linear-gradient(-45deg,rgba(70,80,90,.4) 0 .08rem,transparent .08rem .7rem) 0 34%/100% 20% no-repeat,repeating-linear-gradient(90deg,rgba(0,0,0,.2) 0 .1rem,transparent .1rem 20%) 0 100%/100% 42% no-repeat,linear-gradient(180deg,#aeb6bd 0%,#d2d7db 58%,#8e949a 58%,#6f757b 100%)',
+    bg:'#e9eef0', card:'#fff', text:'#26343b', line:'#c3ccd1', accent:'#2b7a9b', item:'#f3f6f7', onaccent:'#fff'},
+  candy:{name:'🍰 おかしの家', wall:wallBg('#fff0f5','linear-gradient(rgba(255,150,180,.25) 50%,transparent 50%) 0 0/1.6rem 1.6rem,linear-gradient(90deg,rgba(255,150,180,.25) 50%,transparent 50%) 0 0/1.6rem 1.6rem','#7b4a3a','#ffe3a8'),
+    base:'#ffe3a8', floor:tiles('#fff6e6','#f4b6c8'),
+    garden:'linear-gradient(180deg,#ffd3e4 0%,#fff0f6 54%,#b9f0cf 54%,#8fdcb0 100%)',
+    bg:'#fff6ee', card:'#fff', text:'#6b3a2e', line:'#f3cfc0', accent:'#e8688a', item:'#fff3ea', onaccent:'#fff'},
+  space:{name:'🌌 宇宙ステーション', wall:'radial-gradient(#fff .06rem,transparent .1rem) 0 0/2.3rem 2.3rem,radial-gradient(rgba(180,200,255,.8) .05rem,transparent .09rem) 1.1rem 1.4rem/3.1rem 3.1rem,#0c1030',
+    base:'#8b9cff', floor:'linear-gradient(180deg,#2c3566,#141a3d)',
+    garden:'radial-gradient(circle at 78% 22%,#fff6c9 0 5%,transparent 5.5%),linear-gradient(180deg,#050816 0%,#1a1f4d 54%,#8a8fa8 54%,#5c6078 100%)',
+    bg:'#0b0f2a', card:'#151b40', text:'#e8ecff', line:'#34408a', accent:'#8b9cff', item:'#10153a', onaccent:'#0b0f2a'},
+  plain:{name:'⬜ 無地（真っ白）', wall:'#ffffff', base:'#ffffff', floor:'#ffffff', garden:'#ffffff', flat:true,
+    bg:'#f7f7f7', card:'#ffffff', text:'#333333', line:'#dddddd', accent:'#555555', item:'#fafafa', onaccent:'#ffffff'}
 };
+/* ═══ ★ 窓とドアの設定 ★ ═══
+   窓 : 南の壁だけに出ます。出したくないテイストは win:false
+   ドア: door(色・背景) door2(枠の内側) knob(取っ手)。出す壁は doorDir (0北 1東 2南 3西、省略=東)。ドアなしは書かない */
+const DECOR={
+  natural:{door:'#c9a06b',door2:'#b78a52',knob:'#fff8e6'},
+  wood:{door:'#6b4328',door2:'#573520',knob:'#e0b44c'},
+  pink:{door:'#ffffff',door2:'#fbd0da',knob:'#e0728f'},
+  blue:{door:'#f4efe4',door2:'#cfe8e0',knob:'#3fa38e'},
+  cyber:{door:'#1c2548',door2:'#0f1630',knob:'#00fff5'},
+  monotone:{door:'#2f2f33',door2:'#1f1f23',knob:'#d4d4d8'},
+  candy:{door:'#6e4030',door2:'#5a3326',knob:'#ffd27a'},
+  space:{win:false,door:'#2a3470',door2:'#1d2556',knob:'#e8ecff'},
+  lab:{win:false,doorDir:0,door:'linear-gradient(#d4ecf7,#d4ecf7) 50% 16%/46% 28% no-repeat,#8d99a1',door2:'#6f7c85',knob:'#d9dee2'},
+  plain:{win:false}
+};
+Object.keys(DECOR).forEach(k=>Object.assign(themesMaster[k],DECOR[k]));
 const dirNames = ['北の壁','東の壁','南の壁','西の壁','🌿 お庭'];
 const dirLabels = ['北','東','南','西','🌿'];
 
@@ -252,14 +277,26 @@ function toggleBGM(){ isMuted=!isMuted; localStorage.setItem('bgmMutedHome',isMu
 function unlock(){ bgm.play().then(()=>['click','touchstart'].forEach(e=>document.removeEventListener(e,unlock))).catch(()=>{}); }
 
 /* ═════════ テイスト適用 ═════════ */
+let curTheme=null;
+/* 方角とテイストに合わせて 窓・ドア・床の線の向き を切り替える */
+function scene(){
+  const t=curTheme||themesMaster.natural;
+  $('win').style.display=(dir===2&&t.win!==false)?'block':'none';
+  $('door').style.display=(t.door&&dir===(t.doorDir===undefined?1:t.doorDir))?'block':'none';
+  $('phone').style.setProperty('--floor',((dir===1||dir===3)&&t.floorH)?t.floorH:t.floor);
+  $('stage').classList.toggle('flat',!!t.flat);
+}
 function applyTheme(k){
   const t=themesMaster[k]||themesMaster.natural, s=$('phone').style;
-  ['wall','base','floor','rug','rug2','bg','card','text','line','accent','item','onaccent'].forEach(p=>s.setProperty('--'+p,t[p]));
+  ['wall','base','floor','bg','card','text','line','accent','item','onaccent'].forEach(p=>s.setProperty('--'+p,t[p]));
+  s.setProperty('--garden',t.garden||GARDEN_DEFAULT);
+  ['door','door2','knob'].forEach(p=>s.setProperty('--'+p,t[p]||'none'));
+  curTheme=t; scene();
 }
 
 /* ═════════ 表示 ═════════ */
 function toast(m){ const t=$('toast'); t.innerText=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2000); }
-function askModal(title,desc,ok,fn){ $('mTitle').innerText=title; $('mDesc').innerText=desc; $('mOk').innerText=ok;
+function askModal(title,desc,ok,fn,no){ $('mTitle').innerText=title; $('mDesc').innerText=desc; $('mOk').innerText=ok; $('mNo').innerText=no||'キャンセル';
   $('mOk').onclick=()=>{closeModal();fn&&fn();}; $('modal').style.display='flex'; }
 function closeModal(){ $('modal').style.display='none'; }
 
@@ -271,7 +308,7 @@ function buildControls(){
 function changeDirection(d){
   dir=d; $('dirTitle').innerText=dirNames[d];
   for(let i=0;i<5;i++) $('dir'+i).classList.toggle('on',i===d);
-  $('indoor').style.display=d===4?'none':'block'; $('garden').style.display=d===4?'block':'none';
+  $('indoor').style.display=d===4?'none':'block'; $('garden').style.display=d===4?'block':'none'; scene();
   renderRoom();
 }
 function switchTab(t){
@@ -285,46 +322,56 @@ function updateUI(){
   renderShop(); renderDisplay(); renderTheme(); renderMusic(); renderRoom();
 }
 
-/* 画像（見つからなければ絵文字＋名前で代用） */
-function imgHTML(src,emoji,name){ return `<img src="${IMG_DIR}${src}" alt="${name}" onerror="this.outerHTML='<span>${emoji||'📦'}</span>'">`; }
 
 function renderRoom(){
   const box=$('objs'); box.innerHTML='';
   gameState.placedItems.forEach((it,idx)=>{
     if(it.dir!==dir) return;
-    let name,src,emoji,size,x=it.x,y=it.y;
+    let name,src,emoji,size;
     if(it.type==='furn'){ const f=furnitureMaster[it.id]; if(!f) return; name=f.name; src=f.img; emoji=f.emoji; size=f.size; }
+    else if(it.type==='chara'){ const c=CHARAS[it.id]; if(!c) return; name=c.name; src=CHARA_PREFIX+it.id+'.png'; emoji='🧪'; size=CHARA_SIZE; }
     else { const r=recipes.find(r=>r.id===it.id)||{}; name=r.name||'製品'; src=r.img; emoji=r.emoji; size=PROD_SIZE; }
+    it.s=it.s||1;
     const el=document.createElement('div'); el.className='obj';
-    el.style.cssText=`left:${x}%;top:${y}%;width:${size}%`;
+    el.style.cssText=`left:${it.x}%;top:${it.y}%;width:${size*it.s}%`;
     const im=document.createElement('img'); im.src=IMG_DIR+src; im.alt=name;
     im.onerror=()=>{ im.remove(); el.innerHTML=`<div class="ph">${emoji||'📦'}<small>${name}</small></div>`; console.warn('画像が見つかりません:',IMG_DIR+src); };
-    el.appendChild(im); drag(el,it,idx,name); box.appendChild(el);
+    el.appendChild(im); drag(el,it,idx,name,size); box.appendChild(el);
   });
 }
-/* ドラッグ（マウス・タッチ共通）。動かさずに離したら「片付ける」確認 */
-function drag(el,it,idx,name){
-  let sx,sy,moved=false;
-  el.addEventListener('pointerdown',e=>{ e.preventDefault(); el.setPointerCapture(e.pointerId); sx=e.clientX; sy=e.clientY; moved=false; });
+/* ドラッグで移動 / 2本指ピンチ（PCはマウスホイール）で拡大縮小 / 動かさずタップで片付け */
+function drag(el,it,idx,name,size){
+  const P=new Map(); let moved=false,tot=0,pre='',d0=1,s0=1,wp='',wt;
+  const dist=()=>{ const a=[...P.values()]; return Math.max(1,Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y)); };
+  const setW=()=>{ el.style.width=size*it.s+'%'; };
+  const clamp=v=>Math.max(.3,Math.min(3,v));
+  el.addEventListener('pointerdown',e=>{ e.preventDefault(); el.setPointerCapture(e.pointerId); P.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(P.size===1){ moved=false; tot=0; pre=cur(); } else if(P.size===2){ d0=dist(); s0=it.s; moved=true; } });
   el.addEventListener('pointermove',e=>{
-    if(!el.hasPointerCapture(e.pointerId)) return;
-    const r=$('stage').getBoundingClientRect(), dx=e.clientX-sx, dy=e.clientY-sy;
-    if(Math.abs(dx)+Math.abs(dy)>4) moved=true;
-    sx=e.clientX; sy=e.clientY;
+    const p=P.get(e.pointerId); if(!p) return;
+    const dx=e.clientX-p.x, dy=e.clientY-p.y; p.x=e.clientX; p.y=e.clientY;
+    if(P.size>=2){ it.s=clamp(s0*dist()/d0); setW(); return; }
+    tot+=Math.abs(dx)+Math.abs(dy); if(tot>6) moved=true;
+    const r=$('stage').getBoundingClientRect();
     it.x=Math.max(0,Math.min(100,it.x+dx/r.width*100)); it.y=Math.max(10,Math.min(100,it.y+dy/r.height*100));
     el.style.left=it.x+'%'; el.style.top=it.y+'%';
   });
-  el.addEventListener('pointerup',()=>{
-    if(moved){ save(); return; }
-    askModal('レイアウト変更',`「${name}」をお部屋から片付けますか？`,'片付ける',()=>{ gameState.placedItems.splice(idx,1); save(); updateUI(); toast('📦 片付けました'); });
-  });
+  const up=e=>{
+    if(!P.delete(e.pointerId)||P.size>0) return;
+    if(moved){ if(cur()!==pre){ hist(pre); save(); } return; }
+    askModal('レイアウト変更',`「${name}」をお部屋から片付けますか？`,'片付ける',()=>{ hist(); gameState.placedItems.splice(idx,1); save(); updateUI(); toast('📦 片付けました'); });
+  };
+  el.addEventListener('pointerup',up); el.addEventListener('pointercancel',up);
+  el.addEventListener('wheel',e=>{ e.preventDefault(); if(!wp) wp=cur();
+    it.s=clamp(it.s*(e.deltaY<0?1.08:.93)); setW();
+    clearTimeout(wt); wt=setTimeout(()=>{ if(cur()!==wp){ hist(wp); save(); } wp=''; },400); },{passive:false});
 }
 
 function row(thumb,name,sub,btn){ return `<div class="item ${btn.own?'own':''}">${thumb}<div class="nm">${name}${sub?`<small>${sub}</small>`:''}</div>${btn.html}</div>`; }
 function renderShop(){
   $('L-shop').innerHTML=Object.keys(furnitureMaster).map(id=>{
     const f=furnitureMaster[id], own=gameState.homeFurnishings.includes(id);
-    return row(`<div class="thumb">${imgHTML(f.img,f.emoji,f.name)}</div>`,f.name,`${f.cost}マイル ／ +${f.bonus}%`,
+    return row('',f.name,`${f.cost}マイル ／ +${f.bonus}%`,
       {own,html:own?'<button class="btn done">所持済</button>':`<button class="btn" onclick="buy('${id}')">購入</button>`});
   }).join('');
 }
@@ -335,21 +382,21 @@ function buy(id){
   $('se-unlock').currentTime=0; $('se-unlock').play().catch(()=>{}); toast(`🎉 『${f.name}』を購入！`); updateUI();
 }
 function renderDisplay(){
-  let h=gameState.homeFurnishings.map(id=>{ const f=furnitureMaster[id]; if(!f) return '';
-    return row(`<div class="thumb">${imgHTML(f.img,f.emoji,f.name)}</div>`,f.name,'',{html:`<button class="btn" onclick="place('furn','${id}')">配置</button>`}); }).join('');
+  let h=gameState.charaOwned.map(id=>{ const c=CHARAS[id]; return row('',`🧑 ${c.name}`,'',{html:`<button class="btn" style="background:#8b5cf6;color:#fff" onclick="place('chara','${id}')">配置</button>`}); }).join('')+gameState.homeFurnishings.map(id=>{ const f=furnitureMaster[id]; if(!f) return '';
+    return row('',f.name,'',{html:`<button class="btn" onclick="place('furn','${id}')">配置</button>`}); }).join('');
   recipes.forEach(r=>{ const n=(gameState.products||{})[r.id]||0;
-    if(n>0) h+=row(`<div class="thumb">${imgHTML(r.img,r.emoji,r.name)}</div>`,r.name,`在庫:${n}`,{html:`<button class="btn" style="background:#eab308;color:#fff" onclick="place('prod','${r.id}')">配置</button>`}); });
-  $('L-display').innerHTML=h||'<div style="text-align:center;opacity:.7;padding:1rem;font-size:.75rem">まだ配置できるものがありません。ショップで購入しよう！</div>';
+    if(gameState.crafted&&gameState.crafted[r.id]) h+=row('',r.name,n>0?`在庫:${n}`:'製造済み',{html:`<button class="btn" style="background:#eab308;color:#fff" onclick="place('prod','${r.id}')">配置</button>`}); });
+  $('L-display').innerHTML=h+`<div style="text-align:center;opacity:.7;padding:.5rem;font-size:.7rem">${nextCharaText()}</div>`;
 }
 function place(type,id){
-  const f=furnitureMaster[id];
-  gameState.placedItems.push({type,id,dir,x:(f?f.x:40+Math.random()*20),y:(f?f.y:80)});
-  save(); $('se-gogogo').currentTime=0; $('se-gogogo').play().catch(()=>{}); toast('✨ 配置しました！ドラッグで移動できます'); updateUI();
+  const f=furnitureMaster[id]; hist();
+  gameState.placedItems.push({type,id,dir,s:1,x:(f?f.x:30+Math.random()*40),y:(f?f.y:(type==='chara'?90:80))});
+  save(); $('se-gogogo').currentTime=0; $('se-gogogo').play().catch(()=>{}); toast('✨ 配置！ドラッグで移動・2本指で拡大縮小'); updateUI();
 }
 function renderTheme(){
   if(gameState.level<3){ $('L-theme').innerHTML='<div style="text-align:center;opacity:.7;padding:1rem;font-size:.75rem">🔒 Lv.3 到達でテイスト変更が解放されます！</div>'; return; }
   $('L-theme').innerHTML=Object.keys(themesMaster).map(k=>{ const t=themesMaster[k], cur=gameState.currentTheme===k;
-    const sw=`<div class="swatch"><i style="background:${t.wall.split(',').pop()}"></i><i style="background:${t.floor.split(',').pop()}"></i></div>`;
+    const sw=`<div class="swatch"><i style="background:${t.wall}"></i><i style="background:${t.floor}"></i></div>`;
     return row(sw,t.name,'',{own:cur,html:cur?'<button class="btn done">適用中</button>':`<button class="btn" onclick="setTheme('${k}')">変更</button>`}); }).join('');
 }
 function setTheme(k){ gameState.currentTheme=k; save(); applyTheme(k); updateUI(); toast('🎨 テイストを変更しました！'); }
@@ -373,13 +420,58 @@ function importSave(){
     try{ const p=JSON.parse(decodeURIComponent(escape(atob(c)))); if(!p||typeof p!=='object') throw 0;
       localStorage.setItem('rareEarthGameState',JSON.stringify(p)); gameState=p;
       Object.keys(defaults).forEach(k=>{ if(gameState[k]===undefined) gameState[k]=defaults[k]; });
-      applyTheme(gameState.currentTheme); updateBgmSource(); updateUI(); toast('✨ 復元しました！');
+      applyTheme(gameState.currentTheme); updateBgmSource(); ensureCharas(); syncCrafted(); updateUI(); toast('✨ 復元しました！');
     }catch(e){ toast('⚠️ 無効なセーブコードです'); } });
+}
+
+/* ═════════ やり直し(undo/redo)・リセット ═════════ */
+let past=[], future=[];
+const cur=()=>JSON.stringify(gameState.placedItems);
+function hist(s){ past.push(s||cur()); if(past.length>50) past.shift(); future=[]; histBtns(); }
+function histBtns(){ $('undoBtn').disabled=!past.length; $('redoBtn').disabled=!future.length; }
+function restore(s){ gameState.placedItems=JSON.parse(s); save(); updateUI(); histBtns(); }
+function undo(){ if(!past.length) return; future.push(cur()); restore(past.pop()); }
+function redo(){ if(!future.length) return; past.push(cur()); restore(future.pop()); }
+function resetRoom(){
+  askModal('お部屋のリセット','本当にリセットしてよいですか？\n置いた家具・製品・キャラをすべて片付けます。','はい',()=>{ hist(); gameState.placedItems=[]; save(); updateUI(); toast('🧹 リセットしました'); },'いいえ');
+}
+
+/* ═════════════════════════════════════════════════════════════
+   ★ キャラクター（17種）★  画像名 ＝ CHARA_PREFIX + キー + '.png'  例: chara0_Y.png
+   ファイル名の付け方が違うときは CHARA_PREFIX と下のキーを書き換えてください
+   CHARA_SIZE : お部屋に置いたときの最初の大きさ(横幅の%)
+   ═════════════════════════════════════════════════════════════ */
+const CHARA_PREFIX='chara0_', CHARA_SIZE=20;
+const CHARAS={ Sc:{name:'スカンジウム'}, Y:{name:'イットリウム'}, La:{name:'ランタン'}, Ce:{name:'セリウム'}, Pr:{name:'プラセオジム'}, Nd:{name:'ネオジム'},
+  Pm:{name:'プロメチウム'}, Sm:{name:'サマリウム'}, Eu:{name:'ユウロピウム'}, Gd:{name:'ガドリニウム'}, Tb:{name:'テルビウム'}, Dy:{name:'ジスプロシウム'},
+  Ho:{name:'ホルミウム'}, Er:{name:'エルビウム'}, Tm:{name:'ツリウム'}, Yb:{name:'イッテルビウム'}, Lu:{name:'ルテチウム'} };
+/* 登場数：Lv1-2=1体 / Lv3=2 / Lv5=3 / Lv8=4 / 以降Lv3ごとに+1（最大17） */
+function charaCount(lv){ return Math.min(17, lv<3?1:lv<5?2:lv<8?3:4+Math.floor((lv-8)/3)); }
+function nextCharaText(){
+  const n=charaCount(gameState.level); if(n>=17) return '🎉 全キャラクターが揃いました！';
+  let lv=gameState.level+1; while(charaCount(lv)<=n) lv++; return `🔒 次のキャラクターは Lv.${lv} で登場！`;
+}
+/* 工場で作ったことのある製品を記録（在庫が0になっても「配置」に残る） */
+function syncCrafted(){
+  if(!gameState.crafted) gameState.crafted={}; let ch=false; const p=gameState.products||{};
+  recipes.forEach(r=>{ if(p[r.id]>0&&!gameState.crafted[r.id]){ gameState.crafted[r.id]=true; ch=true; } });
+  if(ch) save();
+}
+function ensureCharas(){
+  const ids=Object.keys(CHARAS), want=charaCount(gameState.level||1);
+  if(!Array.isArray(gameState.charaOwned)) gameState.charaOwned=[];
+  let added=0;
+  while(gameState.charaOwned.length<want){
+    const rest=ids.filter(i=>!gameState.charaOwned.includes(i)); if(!rest.length) break;
+    const id=rest[Math.floor(Math.random()*rest.length)]; gameState.charaOwned.push(id);
+    gameState.placedItems.push({type:'chara',id,dir:0,s:1,x:25+Math.random()*50,y:90}); added++;
+  }
+  if(added){ save(); setTimeout(()=>toast('🎉 新しい仲間がお部屋に来たよ！'),600); }
 }
 
 window.addEventListener('load',()=>{
   buildControls(); switchTab('shop'); changeDirection(0);
-  updateBgmSource(); updateBgmUI(); applyTheme(gameState.currentTheme); updateUI();
+  updateBgmSource(); updateBgmUI(); applyTheme(gameState.currentTheme); ensureCharas(); syncCrafted(); updateUI(); histBtns();
   if(!isMuted) bgm.play().catch(()=>['click','touchstart'].forEach(e=>document.addEventListener(e,unlock)));
 });
 </script>
