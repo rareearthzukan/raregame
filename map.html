@@ -2,254 +2,298 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#16213e">
+  <meta name="format-detection" content="telephone=no">
   <title>レアアース・クラフト - マップ選択</title>
   <style>
-    /* ─── スクロールバーのおしゃれカスタマイズ ─── */
-    ::-webkit-scrollbar { width: 4px; height: 4px; }
-    ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); border-radius: 10px; }
-    ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #00fff5, #3b82f6); border-radius: 10px; }
-
-    body { 
-      background-color: #1a1a2e; 
-      color: #fff; 
-      font-family: sans-serif; 
-      display: flex; 
-      justify-content: center; 
-      align-items: flex-start; 
-      min-height: 100vh; 
-      min-height: 100dvh; 
-      margin: 0; 
+    /* ═══ ベース：文字サイズを全体的に少し大きく調整 ═══ */
+    :root { --maxw: 720px; }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html {
+      height: 100%;
+      font-size: clamp(15px, min(calc(13px + 1.2vw), 3.4vh), 23px);
+      -webkit-text-size-adjust: 100%; text-size-adjust: 100%;
       touch-action: manipulation;
-      -webkit-user-select: none;
-      user-select: none;
-      overflow: hidden;
+    }
+    body {
+      margin: 0; height: 100%; overflow: hidden; overscroll-behavior: none;
+      background: #0b1224; color: #fff; touch-action: manipulation;
+      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", Meiryo, sans-serif;
+      -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
     }
 
-    .phone { 
-      width: 100vw; 
-      max-width: 480px; 
-      height: 100vh;
-      height: 100dvh;
-      background: #0f3460; 
-      border: none; 
-      display: flex; 
-      flex-direction: column; 
-      justify-content: space-between;
-      box-sizing: border-box; 
-    }
-    @media (min-width: 481px) {
-      body { align-items: center; }
-      .phone {
-        height: auto;
-        max-height: 92vh;
-        border: 4px solid #16213e;
-        border-radius: 24px;
-        box-shadow: 0 0 20px rgba(0,0,0,0.5);
-      }
-    }
+    /* ─── スクロールバー ─── */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); border-radius: 10px; }
+    ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #00fff5, #3b82f6); border-radius: 10px; box-shadow: 0 0 6px rgba(0, 255, 245, 0.5); }
+    ::-webkit-scrollbar-thumb:hover { background: #ffde59; }
 
-    .header { background: #16213e; padding: 5px 10px; display: flex; justify-content: space-between; align-items: center; font-size: 11px; font-weight: bold; border-bottom: 2px solid #e94560; flex-shrink: 0; }
-    
+    .phone {
+      position: fixed; top: 0; bottom: 0; left: 0; right: 0;
+      width: 100%; max-width: var(--maxw); margin: 0 auto;
+      background: #0f3460; display: flex; flex-direction: column; overflow: hidden;
+      padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px);
+      box-shadow: 0 0 0 1px #16213e, 0 0 40px rgba(0,0,0,.6);
+    }
+    @media (orientation: landscape) and (min-width: 700px) { :root { --maxw: 1200px; } }
+
+    .header {
+      background: #16213e; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
+      padding: calc(.5rem + env(safe-area-inset-top, 0px)) .8rem .6rem;
+      font-size: 1rem; font-weight: bold; border-bottom: 2px solid #e94560;
+    }
     .bgm-btn {
       background: rgba(0, 0, 0, 0.4); border: 1px solid #00fff5; color: #00fff5;
-      border-radius: 12px; padding: 2px 6px; font-size: 10px; cursor: pointer;
-      display: flex; align-items: center; gap: 3px;
+      border-radius: 1rem; padding: .3rem .8rem; min-height: 2.2rem; font-size: .85rem; cursor: pointer;
+      display: flex; align-items: center; gap: .3rem; transition: all 0.2s; touch-action: manipulation;
     }
     .bgm-btn.muted { border-color: #e94560; color: #e94560; background: rgba(233, 69, 96, 0.2); }
 
     /* 工程ナビゲーションバー */
     .koutei-bar {
       background: rgba(15, 23, 42, 0.9); border-bottom: 1px solid #00fff5;
-      padding: 3px 4px; display: flex; justify-content: space-around; align-items: center; flex-shrink: 0;
+      padding: .5rem .3rem; display: flex; justify-content: space-around; align-items: center; flex-shrink: 0;
     }
-    .koutei-wrapper { display: flex; flex-direction: column; align-items: center; gap: 1px; }
+    .koutei-wrapper { display: flex; flex-direction: column; align-items: center; gap: .2rem; }
     .koutei-item {
-      width: 28px; height: 28px; background: #000; border: 2px solid transparent;
-      border-radius: 5px; overflow: hidden; display: flex; align-items: center; justify-content: center;
+      width: 2.9rem; height: 2.9rem; background: #000; border: 2px solid transparent;
+      border-radius: .5rem; overflow: hidden; display: flex; align-items: center; justify-content: center;
     }
-    .koutei-item.active { border-color: #00fff5; box-shadow: 0 0 6px rgba(0, 255, 245, 0.8); animation: kouteiGlow 1.2s infinite alternate; }
+    .koutei-item.active { border-color: #00fff5; box-shadow: 0 0 10px rgba(0, 255, 245, 0.8); animation: kouteiGlow 1.2s infinite alternate; }
     @keyframes kouteiGlow {
-      from { border-color: #00fff5; box-shadow: 0 0 3px rgba(0,255,245,0.4); }
-      to { border-color: #ffde59; box-shadow: 0 0 8px rgba(255,222,89,0.9); }
+      from { border-color: #00fff5; box-shadow: 0 0 4px rgba(0,255,245,0.4); }
+      to { border-color: #ffde59; box-shadow: 0 0 12px rgba(255,222,89,0.9); }
     }
     .koutei-item img { width: 100%; height: 100%; object-fit: cover; }
-    .koutei-label { font-size: 6px; color: #94a3b8; font-weight: bold; text-align: center; white-space: nowrap; }
+    .koutei-label { font-size: .75rem; color: #94a3b8; font-weight: bold; text-align: center; white-space: nowrap; }
     .koutei-wrapper:has(.koutei-item.active) .koutei-label { color: #00fff5; }
 
-    /* コンテンツエリア：全体をコンパクトにまとめて隙間をなくす */
-    .content { 
-      padding: 4px 8px; 
-      display: flex; 
-      flex-direction: column; 
-      gap: 4px; 
-      box-sizing: border-box; 
+    /* ═══ コンテンツ ═══ */
+    .content {
+      flex: 1; min-height: 0; padding: .7rem .8rem; display: flex; flex-direction: column; gap: .7rem;
+      overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
     }
-    
     .chara-guide {
-      display: flex; align-items: center; gap: 6px; background: rgba(22,33,62,0.9);
-      border: 1px solid #00fff5; border-radius: 6px; padding: 3px 6px; flex-shrink: 0;
+      display: flex; align-items: center; gap: .7rem; background: rgba(22,33,62,0.9);
+      border: 1px solid #00fff5; border-radius: .8rem; padding: .6rem .8rem; flex-shrink: 0;
     }
-    .chara-icon { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #00fff5; object-fit: cover; flex-shrink: 0; background: #16213e; }
+    .chara-icon { width: 3.6rem; height: 3.6rem; border-radius: 50%; border: 2px solid #00fff5; object-fit: cover; flex-shrink: 0; background: #16213e; }
     .speech-bubble {
-      position: relative; background: #f8f9fa; border: 1px solid #00fff5; border-radius: 5px;
-      padding: 3px 6px; font-size: 9.5px; color: #1a1a2e; font-weight: bold; flex: 1; line-height: 1.15;
+      position: relative; background: #f8f9fa; border: 1px solid #00fff5; border-radius: .7rem;
+      padding: .5rem .8rem; font-size: .9rem; color: #1a1a2e; font-weight: bold; flex: 1; line-height: 1.4;
     }
     .speech-bubble::after {
-      content: ''; position: absolute; left: -5px; top: 50%; transform: translateY(-50%);
-      border-width: 3px 5px 3px 0; border-style: solid; border-color: transparent #f8f9fa transparent; display: block;
+      content: ''; position: absolute; left: -8px; top: 50%; transform: translateY(-50%);
+      border-width: 6px 8px 6px 0; border-style: solid; border-color: transparent #f8f9fa transparent; display: block;
     }
 
-    /* 世界地図ボックス（少し高さを調整） */
-    .map-box { 
-      width: 100%; height: 115px; background: url('world_map_bg.jpeg') center/cover no-repeat; 
-      border: 2px solid #00fff5; border-radius: 6px; position: relative; overflow: hidden; flex-shrink: 0;
+    /* 🗺️ 世界地図エリア：アスペクト比を少し広げ、ピンや文字を大きく見やすく */
+    .map-box {
+      width: 100%; aspect-ratio: 16 / 9; background: url('world_map_bg.jpeg') center/cover no-repeat;
+      border: 2.5px solid #00fff5; border-radius: .8rem; position: relative; overflow: hidden; flex-shrink: 0;
+      animation: mapBoxGlow 1.8s infinite alternate;
+    }
+    @keyframes mapBoxGlow {
+      0% { border-color: #00fff5; box-shadow: 0 0 4px rgba(0,255,245,0.4), inset 0 0 4px rgba(0,255,245,0.2); }
+      100% { border-color: #ffde59; box-shadow: 0 0 14px rgba(255,222,89,0.9), inset 0 0 8px rgba(255,222,89,0.4); }
     }
 
-    .spot { 
-      position: absolute; background: #16213e; border: 1px solid #00fff5; color: #fff; 
-      padding: 1px 3px; border-radius: 3px; font-size: 7.5px; cursor: pointer; transform: translate(-50%,-50%); 
-      display: flex; align-items: center; gap: 2px; white-space: nowrap; z-index: 10; 
+    .spot {
+      position: absolute; background: #16213e; border: 1.5px solid #00fff5; color: #fff;
+      padding: .35rem .6rem; min-height: 2rem; border-radius: .6rem; font-size: .82rem; font-weight: bold;
+      cursor: pointer; transform: translate(-50%,-50%); display: flex; align-items: center; gap: .3rem;
+      white-space: nowrap; z-index: 10; transition: transform 0.2s; touch-action: manipulation;
     }
-    .spot.locked { border-color: #e94560; opacity: 0.85; background: #2a1b2e; }
-    .spot img { width: 9px; height: 6px; object-fit: cover; border-radius: 1px; }
-    
-    .card { background: rgba(22,33,62,0.9); border: 1px solid #00fff5; border-radius: 6px; padding: 4px 8px; font-size: 9.5px; flex-shrink: 0; }
-    
-    .map-title { font-weight: bold; color: #00fff5; margin-bottom: 1px; font-size: 10.5px; }
-    .spot-country { font-size: 8.5px; color: #8a8a8a; display: block; }
-    .spot-title { font-size: 10.5px; color: #ffde59; font-weight: bold; display: block; }
+    @media (hover: hover) { .spot:hover { transform: translate(-50%,-50%) scale(1.1); } }
+    .spot:active { transform: translate(-50%,-50%) scale(1.08); }
+    .spot.locked { border-color: #e94560; opacity: 0.9; background: #2a1b2e; }
+    .spot img { width: 1.2rem; height: .9rem; object-fit: cover; border-radius: 1px; }
 
-    .btn { background: #00fff5; color: #0f3460; border: none; padding: 4px; font-weight: bold; border-radius: 6px; cursor: pointer; width: 100%; margin-top: 2px; font-size: 10px; }
+    .card { background: rgba(22,33,62,0.9); border: 1px solid #00fff5; border-radius: .8rem; padding: .7rem .9rem; font-size: .88rem; flex-shrink: 0; }
+    #map-card { padding: .7rem .9rem; }
+    .map-title {
+      font-weight: bold; color: #00fff5; margin-bottom: .5rem; font-size: 1.1rem;
+      animation: titleBlink 1.5s infinite alternate;
+    }
+    @keyframes titleBlink {
+      0% { color: #00fff5; text-shadow: 0 0 4px rgba(0,255,245,0.4); }
+      100% { color: #ffde59; text-shadow: 0 0 10px rgba(255,222,89,0.8), 0 0 20px rgba(255,222,89,0.4); }
+    }
 
-    /* 下部のエリア画像ボックス（復活させてコンパクトに配置） */
+    .spot-country { font-size: .82rem; color: #9aa3b2; font-weight: normal; display: block; }
+    .spot-title { font-size: 1.15rem; color: #ffde59; font-weight: bold; display: block; margin-top: .15rem; }
+    .spot-title.is-hint { font-size: 1rem; }
+    .spot-desc { font-size: .88rem; color: #dcdde1; margin: .4rem 0; line-height: 1.5; }
+    .spot-detail { font-size: .82rem; color: #a0a8b8; line-height: 1.5; }
+
+    .btn {
+      background: #00fff5; color: #0f3460; border: none; padding: .75rem; min-height: 3rem; font-weight: bold;
+      border-radius: .9rem; cursor: pointer; width: 100%; margin-top: .6rem; font-size: 1rem;
+      transition: background 0.2s; touch-action: manipulation; font-family: inherit;
+    }
+    .btn:active { transform: scale(0.98); }
+
+    /* 🖼️ 下部のエリア画像ボックス：高さを広げて迫力をアップ！ */
     .area-image-box {
-      width: 100%; height: 85px; background: rgba(15,23,42,0.8);
-      border: 1px solid #00fff5; border-radius: 6px; overflow: hidden; display: flex; justify-content: center; align-items: center; flex-shrink: 0;
+      width: 100%; aspect-ratio: 16 / 9; background: rgba(15,23,42,0.8);
+      border: 2px solid #00fff5; border-radius: .8rem; overflow: hidden; display: flex;
+      justify-content: center; align-items: center; flex-shrink: 0;
     }
     .area-image-box img { width: 100%; height: 100%; object-fit: cover; }
 
-    /* フッターナビゲーション：一番下に確実に収める */
-    .nav { 
-      height: 50px; background: #16213e; display: flex; justify-content: space-around; align-items: center; padding: 0 4px; flex-shrink: 0; border-top: 2px solid #1f293d; box-sizing: border-box;
+    /* 横長（タブレット横・PC） */
+    @media (orientation: landscape) and (min-width: 700px) {
+      .content {
+        display: grid; grid-template-columns: 1.3fr 1fr; grid-template-rows: auto auto 1fr;
+        grid-template-areas: "map guide" "map info" "map img"; align-content: start; align-items: start; gap: .8rem;
+      }
+      .chara-guide { grid-area: guide; }
+      #map-card { grid-area: map; }
+      #info-card { grid-area: info; }
+      .area-image-box { grid-area: img; }
+      .map-box { max-height: calc(100vh - 14rem); min-height: 16rem; }
     }
-    .nav-item { 
-      color: #a0aec0; cursor: pointer; text-align: center; background: rgba(255, 255, 255, 0.05); 
-      border: 1px solid rgba(0, 255, 245, 0.2); border-radius: 6px; padding: 3px; font-size: 8.5px; font-weight: bold; flex: 1; margin: 0 2px;
+
+    /* ═══ 下部フッター ═══ */
+    .nav {
+      flex-shrink: 0; position: relative; z-index: 50; background: #16213e; border-top: 2px solid #1f293d;
+      display: flex; justify-content: space-around; align-items: stretch; gap: .3rem;
+      padding: .4rem .5rem calc(.4rem + env(safe-area-inset-bottom, 0px));
     }
-    .nav-item.active { color: #00fff5; background: rgba(0, 255, 245, 0.15); border-color: #00fff5; }
+    .nav-item {
+      color: #a0aec0; cursor: pointer; text-align: center; background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(0, 255, 245, 0.2); border-radius: .7rem; padding: .3rem .2rem;
+      min-height: 3.2rem; font-size: .78rem; font-weight: bold; flex: 1;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .15rem;
+      transition: all 0.2s; touch-action: manipulation;
+    }
+    .nav-ico { font-size: 1.25rem; line-height: 1; display: block; }
+    .nav-item:active { transform: scale(0.95); }
+    .nav-item.active { color: #00fff5; background: rgba(0, 255, 245, 0.15); border-color: #00fff5; box-shadow: 0 0 8px rgba(0, 255, 245, 0.3); }
 
     /* モーダル */
     .modal-overlay {
-      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(10, 15, 30, 0.85); display: flex; justify-content: center; align-items: center;
-      z-index: 100; backdrop-filter: blur(2px); box-sizing: border-box; padding: 16px;
+      z-index: 200; backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); padding: 1rem;
     }
     .modal-content {
-      background: #16213e; border: 2px solid #00fff5; border-radius: 14px; padding: 12px;
-      width: 100%; max-width: 250px; text-align: center; box-shadow: 0 0 20px rgba(0, 255, 245, 0.3);
+      background: #16213e; border: 2px solid #00fff5; border-radius: 1rem; padding: 1.4rem 1.2rem;
+      width: 100%; max-width: 24rem; text-align: center; box-shadow: 0 0 20px rgba(0, 255, 245, 0.3);
+      animation: popup 0.3s ease-out;
     }
+    .modal-icon { font-size: 2.2rem; margin-bottom: .3rem; }
+    .modal-title { font-size: 1.15rem; font-weight: bold; color: #ffde59; margin-bottom: .5rem; }
+    .modal-desc { font-size: .95rem; color: #f1f5f9; margin-bottom: 1rem; line-height: 1.6; white-space: pre-line; }
+    @keyframes popup { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
   </style>
 </head>
 <body>
   <audio id="bgm" src="BGM_map.ogg" loop preload="auto"></audio>
 
   <div class="phone">
-    <div>
-      <div class="header">
-        <span>💰 <span id="money">1,500</span> G</span>
-        <span>🌟 Lv.<span id="level">1</span></span>
-        <span>✈️ <span id="miles">500</span>m</span>
-        <button id="bgm-btn" class="bgm-btn" onclick="toggleBGM()">🎵 ON</button>
+    <div class="header">
+      <span>💰 <span id="money">1,500</span> G</span>
+      <span>🌟 Lv.<span id="level">1</span></span>
+      <span>✈️ <span id="miles">500</span>m</span>
+      <button id="bgm-btn" class="bgm-btn" onclick="toggleBGM()">🎵 ON</button>
+    </div>
+
+    <!-- 工程ナビゲーションバー -->
+    <div class="koutei-bar">
+      <div class="koutei-wrapper">
+        <div class="koutei-item active"><img src="koutei1.png" alt="採掘" onerror="this.style.display='none'"></div>
+        <div class="koutei-label">1.採掘</div>
+      </div>
+      <div class="koutei-wrapper">
+        <div class="koutei-item active"><img src="koutei2.png" alt="運搬" onerror="this.style.display='none'"></div>
+        <div class="koutei-label">2.運搬</div>
+      </div>
+      <div class="koutei-wrapper">
+        <div class="koutei-item"><img src="koutei3.png" alt="精製" onerror="this.style.display='none'"></div>
+        <div class="koutei-label">3.精製</div>
+      </div>
+      <div class="koutei-wrapper">
+        <div class="koutei-item"><img src="koutei4.png" alt="インゴット" onerror="this.style.display='none'"></div>
+        <div class="koutei-label">4.素材</div>
+      </div>
+      <div class="koutei-wrapper">
+        <div class="koutei-item"><img src="koutei5.png" alt="製造" onerror="this.style.display='none'"></div>
+        <div class="koutei-label">5.製造</div>
+      </div>
+      <div class="koutei-wrapper">
+        <div class="koutei-item"><img src="koutei6.png" alt="出荷" onerror="this.style.display='none'"></div>
+        <div class="koutei-label">6.出荷</div>
+      </div>
+    </div>
+
+    <div class="content">
+      
+      <div class="chara-guide">
+        <img src="navtb.png" alt="テルビウム" class="chara-icon" onerror="this.src='hata_cn.png'">
+        <div class="speech-bubble">
+          世界地図から採掘エリアを選んで出発しよう！レベルが上がると新しい鉱山が解放されるよ✨
+        </div>
       </div>
 
-      <!-- 工程ナビゲーションバー -->
-      <div class="koutei-bar">
-        <div class="koutei-wrapper">
-          <div class="koutei-item active"><img src="koutei1.png" alt="採掘" onerror="this.style.display='none'"></div>
-          <div class="koutei-label">1.採掘</div>
-        </div>
-        <div class="koutei-wrapper">
-          <div class="koutei-item active"><img src="koutei2.png" alt="運搬" onerror="this.style.display='none'"></div>
-          <div class="koutei-label">2.運搬</div>
-        </div>
-        <div class="koutei-wrapper">
-          <div class="koutei-item"><img src="koutei3.png" alt="精製" onerror="this.style.display='none'"></div>
-          <div class="koutei-label">3.精製</div>
-        </div>
-        <div class="koutei-wrapper">
-          <div class="koutei-item"><img src="koutei4.png" alt="インゴット" onerror="this.style.display='none'"></div>
-          <div class="koutei-label">4.素材</div>
-        </div>
-        <div class="koutei-wrapper">
-          <div class="koutei-item"><img src="koutei5.png" alt="製造" onerror="this.style.display='none'"></div>
-          <div class="koutei-label">5.製造</div>
-        </div>
-        <div class="koutei-wrapper">
-          <div class="koutei-item"><img src="koutei6.png" alt="出荷" onerror="this.style.display='none'"></div>
-          <div class="koutei-label">6.出荷</div>
+      <div class="card" id="map-card">
+        <div class="map-title">🗺️ 採掘エリアを選択してください</div>
+        <div class="map-box">
+          <!-- 正しい国旗画像＆位置に調整されたスポットピン -->
+          <div class="spot" id="spot-greenland" style="top: 22%; left: 32%;" onclick="selectSpot('greenland')"><img src="hata_greenisland.png" alt="GL">グリーンランド</div>
+          <div class="spot" id="spot-america" style="top: 36%; left: 18%;" onclick="selectSpot('america')"><img src="hata_us.png" alt="US">マウンテンパス</div>
+          <div class="spot" id="spot-baiyun" style="top: 32%; left: 63%;" onclick="selectSpot('baiyun')"><img src="hata_cn.png" alt="CN">白雲鄂博</div>
+          <div class="spot" id="spot-myanmar" style="top: 48%; left: 55%;" onclick="selectSpot('myanmar')"><img src="hata_mm.png" alt="MM">ミャンマー</div>
+          <div class="spot" id="spot-africa" style="top: 60%; left: 44%;" onclick="selectSpot('africa')"><img src="hata_af.png" alt="AF">アフリカ鉱床</div>
+          <div class="spot" id="spot-mount" style="top: 78%; left: 72%;" onclick="selectSpot('mount')"><img src="hata_au.png" alt="AU">マウントウェルド</div>
+          <div class="spot" id="spot-okinotori" style="top: 45%; left: 82%;" onclick="selectSpot('okinotori')"><img src="hata_jp.png" alt="JP">沖ノ鳥島</div>
+          <div class="spot" id="spot-tahiti" style="top: 75%; left: 22%;" onclick="selectSpot('tahiti')"><img src="hata_pf.png" alt="PF">南太平洋</div>
         </div>
       </div>
 
-      <div class="content">
-        <div class="chara-guide">
-          <img src="navtb.png" alt="テルビウム" class="chara-icon" onerror="this.src='hata_cn.png'">
-          <div class="speech-bubble">
-            世界地図から採掘エリアを選んで出発しよう！レベルが上がると新しい鉱山が解放されるよ✨
-          </div>
+      <div class="card" id="info-card">
+        <div id="spot-name">
+          <span class="spot-country" style="color:#00fff5;">📍 採掘エリアを選ぼう</span>
+          <span class="spot-title is-hint">上の世界地図からピンをタップしよう！</span>
         </div>
+        <div class="spot-desc" id="spot-desc">ピンを選ぶと、それぞれの土地の特徴が表示されます。</div>
+        <div class="spot-detail" id="spot-detail">（初期解放：中国・アメリカ）</div>
+        <button class="btn" id="action-btn" style="background: #00fff5; color: #0f3460;" onclick="goToMine()">🚜 このエリアの採掘へ移動！</button>
+      </div>
 
-        <div class="card" style="padding: 3px 6px;">
-          <div class="map-title">🗺️ 採掘エリアを選択してください</div>
-          <div class="map-box">
-            <div class="spot" id="spot-greenland" style="top: 22%; left: 32%;" onclick="selectSpot('greenland')"><img src="hata_greenisland.png" alt="GL">グリーンランド</div>
-            <div class="spot" id="spot-america" style="top: 36%; left: 18%;" onclick="selectSpot('america')"><img src="hata_us.png" alt="US">マウンテンパス</div>
-            <div class="spot" id="spot-baiyun" style="top: 32%; left: 63%;" onclick="selectSpot('baiyun')"><img src="hata_cn.png" alt="CN">白雲鄂博</div>
-            <div class="spot" id="spot-myanmar" style="top: 48%; left: 55%;" onclick="selectSpot('myanmar')"><img src="hata_mm.png" alt="MM">ミャンマー</div>
-            <div class="spot" id="spot-africa" style="top: 60%; left: 44%;" onclick="selectSpot('africa')"><img src="hata_af.png" alt="AF">アフリカ鉱床</div>
-            <div class="spot" id="spot-mount" style="top: 78%; left: 72%;" onclick="selectSpot('mount')"><img src="hata_au.png" alt="AU">マウントウェルド</div>
-            <div class="spot" id="spot-okinotori" style="top: 45%; left: 82%;" onclick="selectSpot('okinotori')"><img src="hata_jp.png" alt="JP">沖ノ鳥島</div>
-            <div class="spot" id="spot-tahiti" style="top: 75%; left: 22%;" onclick="selectSpot('tahiti')"><img src="hata_pf.png" alt="PF">南太平洋</div>
-          </div>
-        </div>
+      <div class="area-image-box">
+        <img id="area-img" src="world_map_bg.jpeg" alt="エリア画像" onerror="this.src='world_map_bg.jpeg'">
+      </div>
+    </div>
 
-        <div class="card" id="info-card" style="padding: 4px 6px;">
-          <div id="spot-name">
-            <span class="spot-country" style="color:#00fff5;">📍 採掘エリアを選ぼう</span>
-            <span class="spot-title" style="font-size:10px;">上の世界地図からピンをタップしよう！</span>
-          </div>
-          <div style="font-size:8.5px; color:#dcdde1; margin:1px 0;" id="spot-desc">ピンを選ぶと土地の特徴が表示されます。</div>
-          <button class="btn" id="action-btn" style="background: #00fff5; color: #0f3460;" onclick="goToMine()">🚜 このエリアの採掘へ移動！</button>
-        </div>
-
-        <!-- 下部のエリア画像を復活させ、高さをスリム化して綺麗に収める -->
-        <div class="area-image-box">
-          <img id="area-img" src="world_map_bg.jpeg" alt="エリア画像" onerror="this.src='world_map_bg.jpeg'">
-        </div>
+    <!-- モーダルポップアップ -->
+    <div id="customModal" class="modal-overlay" style="display: none;">
+      <div class="modal-content">
+        <div class="modal-icon">🔒</div>
+        <div id="modalTitle" class="modal-title">解放条件</div>
+        <div id="modalDesc" class="modal-desc">説明文</div>
+        <button class="btn" style="background: #00fff5; color: #0f3460; margin-top: 0;" onclick="closeModal()">閉じる</button>
       </div>
     </div>
 
     <!-- 統一フッターナビゲーション -->
     <div class="nav">
-      <div class="nav-item active" onclick="location.href='map.html'"><span style="font-size:11px; display:block;">🗺️</span>マップ</div>
-      <div class="nav-item" onclick="location.href='seisei.html'"><span style="font-size:11px; display:block;">🧪</span>精製</div>
-      <div class="nav-item" onclick="location.href='factory.html'"><span style="font-size:11px; display:block;">🏭</span>工場</div>
-      <div class="nav-item" onclick="location.href='zukan.html'"><span style="font-size:11px; display:block;">📖</span>図鑑</div>
-      <div class="nav-item" onclick="location.href='home.html'"><span style="font-size:11px; display:block;">🏠</span>ホーム</div>
-    </div>
-  </div>
-
-  <!-- モーダルポップアップ -->
-  <div id="customModal" class="modal-overlay" style="display: none;">
-    <div class="modal-content">
-      <div style="font-size: 20px; margin-bottom: 2px;">🔒</div>
-      <div id="modalTitle" style="font-size: 11px; font-weight: bold; color: #ffde59; margin-bottom: 2px;">解放条件</div>
-      <div id="modalDesc" style="font-size: 9.5px; color: #f1f5f9; margin-bottom: 6px; line-height: 1.2;">説明文</div>
-      <button class="btn" style="background: #00fff5; color: #0f3460; margin-top: 0;" onclick="closeModal()">閉じる</button>
+      <div class="nav-item active" onclick="location.href='map.html'"><span class="nav-ico">🗺️</span>マップ</div>
+      <div class="nav-item" onclick="location.href='seisei.html'"><span class="nav-ico">🧪</span>精製</div>
+      <div class="nav-item" onclick="location.href='factory.html'"><span class="nav-ico">🏭</span>工場</div>
+      <div class="nav-item" onclick="location.href='zukan.html'"><span class="nav-ico">📖</span>図鑑</div>
+      <div class="nav-item" onclick="location.href='home.html'"><span class="nav-ico">🏠</span>ホーム</div>
     </div>
   </div>
 
   <script>
+    ['gesturestart', 'gesturechange', 'gestureend'].forEach(ev =>
+      document.addEventListener(ev, e => e.preventDefault())
+    );
+    document.addEventListener('dblclick', e => e.preventDefault());
     let gameState = JSON.parse(localStorage.getItem('rareEarthGameState')) || { 
       money: 1500, level: 1, miles: 500, mudStock: 5, products: {}, homeFurnishings: [], placedItems: [] 
     };
@@ -363,15 +407,16 @@
         <span class="spot-title">${data.title}</span>
       `;
       document.getElementById('spot-desc').innerText = data.desc;
+      document.getElementById('spot-detail').innerText = `コスト: ${data.cost}G / 獲得マイル: +${data.milesGain}m / 主な元素: ${data.target}`;
       
       const btn = document.getElementById('action-btn');
       btn.style.background = data.btnColor;
       btn.style.color = '#0f3460';
+      btn.style.cursor = 'pointer';
       btn.disabled = false;
       btn.innerText = data.btnText;
 
-      const areaImg = document.getElementById('area-img');
-      if (areaImg) areaImg.src = data.img;
+      document.getElementById('area-img').src = data.img;
     }
 
     function goToMine() {
