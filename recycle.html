@@ -37,12 +37,44 @@
     .game-area {
       flex: 1;
       height: 380px;
-      background: rgba(15,23,42,0.9);
+      /* リサイクル工場の壁（鉄板パネル） */
+      background:
+        linear-gradient(180deg, rgba(0,0,0,.45) 0, transparent 25%, transparent 70%, rgba(0,0,0,.35) 100%),
+        repeating-linear-gradient(90deg, rgba(255,255,255,.06) 0 2px, transparent 2px 64px),
+        repeating-linear-gradient(0deg, rgba(255,255,255,.05) 0 2px, transparent 2px 64px),
+        #2c3e50;
       border: 2px solid #00fff5;
       border-radius: 12px;
       position: relative;
       overflow: hidden;
     }
+
+    /* 天井の注意ストライプ */
+    .game-area::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 8px; z-index: 1;
+      background: repeating-linear-gradient(45deg, #ffde59 0 8px, #222 8px 16px); }
+
+    /* ★ 落下判定ライン：このラインを越えたら「落下」 ★ */
+    .drop-line { position: absolute; left: 0; right: 0; bottom: 62px; height: 0; border-top: 2px dashed #ff4757;
+      box-shadow: 0 0 8px rgba(255,71,87,.8); z-index: 3; pointer-events: none; }
+    .drop-line::before { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 26px;
+      background: linear-gradient(180deg, transparent, rgba(255,71,87,.35)); }
+    .drop-line span { position: absolute; right: 4px; bottom: 3px; font-size: 9px; font-weight: bold; color: #ffb3ba; text-shadow: 0 1px 2px #000; }
+
+    /* 仕分けカゴ（ボタンのすぐ上） */
+    .bins { position: absolute; left: 0; right: 0; bottom: 0; height: 62px; display: grid; grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px; padding: 0 8px; background: linear-gradient(180deg, #18202a, #0d1117); z-index: 1; }
+    .bin { position: relative; align-self: end; height: 50px; border-radius: 4px 4px 8px 8px; border: 2px solid rgba(255,255,255,.35);
+      display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 18px; line-height: 1; color: #fff;
+      background: repeating-linear-gradient(90deg, rgba(0,0,0,.18) 0 3px, transparent 3px 10px), var(--bin); }
+    .bin::before { content: ""; position: absolute; left: -3px; right: -3px; top: -5px; height: 7px; border-radius: 3px; background: rgba(255,255,255,.28); }
+    .bin small { font-size: 9px; font-weight: bold; margin-top: 3px; }
+    .bin-board { --bin: #1f8a70; } .bin-magnet { --bin: #c08a1d; } .bin-danger { --bin: #c0392b; }
+
+    /* モード告知バナー */
+    .banner { position: absolute; left: 50%; top: 38%; transform: translate(-50%, -50%); z-index: 5; font-weight: bold; font-size: 13px;
+      text-align: center; padding: 8px 12px; border-radius: 10px; background: rgba(0,0,0,.78); border: 2px solid #ffde59; color: #ffde59;
+      opacity: 0; pointer-events: none; transition: opacity .4s; line-height: 1.6; white-space: nowrap; }
+    .banner.show { opacity: 1; }
 
     /* 落ちてくるアイテム */
     .falling-item {
@@ -209,7 +241,15 @@
       </div>
 
       <!-- 落下ゲームのステージ -->
-      <div class="game-area" id="gameArea"></div>
+      <div class="game-area" id="gameArea">
+        <div class="drop-line" id="dropLine"><span>⚠ 落下ライン</span></div>
+        <div class="bins">
+          <div class="bin bin-board">📱<small>基板</small></div>
+          <div class="bin bin-magnet">🧲<small>磁石</small></div>
+          <div class="bin bin-danger">⚡<small>電池</small></div>
+        </div>
+        <div class="banner" id="banner"></div>
+      </div>
 
       <!-- キャッチボタン -->
       <div class="controls">
@@ -229,7 +269,7 @@
         <div style="font-size: 11px; color: #dcdde1; text-align: left; line-height: 1.4; margin-bottom: 12px; background: rgba(15,23,42,0.8); padding: 8px; border-radius: 6px;">
           上から落ちてくるパーツを種類ごとに仕分けよう！<br>
           📱<b>基板</b> / 🧲<b>磁石</b> / ⚡<b>バッテリー</b>のボタンで受け止めろ。<br>
-          ※バッテリーの取り逃がしや間違いは<b>ペナルティ（減点）</b>になるぞ！後半はヒントが消えるので注意！
+          ※バッテリーの取り逃がしや間違いは<b>ペナルティ（減点）</b>になるぞ！後半はヒントが消えるので注意！<br>赤い<b>落下ライン</b>を越えたら落下！ノーミスなら<b>コンプリート +300G</b>。たまに報酬2倍の<b>高難度モード</b>が出るぞ！
         </div>
         <button class="btn-back" style="background: #00fff5; color: #0f3460; font-size: 12px; padding: 10px;" onclick="startMainGame()">
           🚀 スタート！
@@ -256,6 +296,9 @@
             <span>⚡ ペナルティ:</span>
             <span style="color:#ff4757;"><span id="countPenalty">0</span>回 (<span id="earnPenalty">0</span>G)</span>
           </div>
+          <div class="result-row"><span>🏅 コンプリート:</span><span style="color:#ffde59;" id="completeText">ー</span></div>
+          <div class="result-row"><span>✨ 報酬倍率:</span><span style="color:#ff9f43;" id="multText">×1</span></div>
+          <div class="result-row"><span>⭐ 経験値:</span><span style="color:#a29bfe;" id="expText">+0 EXP</span></div>
           <div style="border-top: 1px dashed #00fff5; margin-top: 2px; padding-top: 4px; font-weight: bold; display: flex; justify-content: space-between;">
             <span>💰 最終売却益:</span>
             <span style="color:#55ff55;" id="totalMoney">+0 G</span>
@@ -339,6 +382,58 @@
       { type: 'danger', icon: '⚡', name: '発熱バッテリー', badge: '⚡' }
     ];
 
+    /* ═════════ ★ ゲームバランス設定（数字を変えるだけ）★ ═════════ */
+    const CHALLENGE_RATE = 0.2;   // 高難度モードの発生率（20%）
+    const NEWKIT_LEVEL   = 15;    // 新リサイクルキットが出始めるレベル
+    const NEWKIT_RATE    = 0.5;   // 新キットの発生率（50%）
+    const COMPLETE_BONUS = 300;   // コンプリート報酬(G)
+    const COMPLETE_MIN   = 10;    // コンプリート判定に必要な最低正解数
+    const EXP_BASE       = 20;    // 通常の獲得経験値
+    const EXP_HARD       = 100;   // 高難度モードで加算される経験値
+
+    /* ★ 新リサイクルキット（Lv.15〜）★ 初期アイテムと重ならないもの */
+    const newItemList = [
+      { type: 'board',  icon: '⌚', name: 'スマートウォッチ', badge: '📱' },
+      { type: 'board',  icon: '📺', name: '薄型テレビ',       badge: '📱' },
+      { type: 'board',  icon: '🖨️', name: 'プリンター',       badge: '📱' },
+      { type: 'board',  icon: '📡', name: 'Wi-Fiルーター',    badge: '📱' },
+      { type: 'board',  icon: '🔑', name: 'スマートキー',     badge: '📱' },
+      { type: 'magnet', icon: '🎧', name: 'ヘッドホン',       badge: '🧲' },
+      { type: 'magnet', icon: '🪥', name: '電動歯ブラシ',     badge: '🧲' },
+      { type: 'magnet', icon: '🚁', name: 'ドローン',         badge: '🧲' },
+      { type: 'magnet', icon: '🛴', name: '電動スクーター',   badge: '🧲' },
+      { type: 'magnet', icon: '🎤', name: 'マイク',           badge: '🧲' },
+      { type: 'danger', icon: '🔌', name: 'モバイルバッテリー', badge: '⚡' },
+      { type: 'danger', icon: '🚲', name: '電動自転車電池',   badge: '⚡' },
+      { type: 'danger', icon: '💨', name: '電子タバコ',       badge: '⚡' },
+      { type: 'danger', icon: '🔦', name: '充電式ライト',     badge: '⚡' },
+      { type: 'danger', icon: '📻', name: '充電ラジオ',       badge: '⚡' }
+    ];
+    let currentList = itemList, challenge = false, newKit = false, correctCount = 0, missCount = 0, fallSpeed = 3;
+    const dropLine = document.getElementById('dropLine');
+    const rewardMult = () => (challenge ? 2 : 1) * (newKit ? 3 : 1);   // お金：高難度×2、新キット×3、両方×6
+    const expMult = () => newKit ? (challenge ? 6 : 3) : 1;            // 経験値：新キット×3、両方×6
+
+    function setIndicator() {
+      const el = document.getElementById('modeIndicator'), parts = [];
+      if (newKit) parts.push('🆕新キット');
+      if (challenge) parts.push('🔥高難度');
+      el.innerText = parts.length ? `${parts.join(' ')} 報酬×${rewardMult()}` : (isHardMode ? '🔥 ヒント消滅！記憶で勝負！' : '💡 ヒント表示中');
+      el.className = 'mode-indicator' + (challenge || isHardMode ? ' hard' : '');
+    }
+    function showBanner() {
+      if (!challenge && !newKit) return;
+      const b = document.getElementById('banner');
+      b.innerHTML = (newKit ? '🆕 新リサイクルキット！<br>' : '') + (challenge ? '🔥 高難度モード！高速・ヒントなし<br>' : '') + `報酬 ×${rewardMult()}`;
+      b.classList.add('show'); setTimeout(() => b.classList.remove('show'), 2600);
+    }
+    function calcLevel(add) {   // 経験値を足したあとのレベル（map.htmlと同じ：必要経験値＝レベル×100）
+      const gs = JSON.parse(localStorage.getItem('rareEarthGameState')) || {};
+      let lv = gs.level || 1, ex = (gs.exp || 0) + add, up = false;
+      while (ex >= lv * 100) { ex -= lv * 100; lv++; up = true; }
+      return { level: lv, exp: ex, up };
+    }
+
     // ページ読み込み時の処理
     window.onload = function() {
       updateBgmUI();
@@ -361,6 +456,13 @@
       collectedMagnet = 0;
       penaltyCount = 0;
       isHardMode = false;
+      correctCount = 0; missCount = 0;
+      const lv = (JSON.parse(localStorage.getItem('rareEarthGameState')) || {}).level || 1;
+      challenge = Math.random() < CHALLENGE_RATE;
+      newKit = lv >= NEWKIT_LEVEL && Math.random() < NEWKIT_RATE;
+      fallSpeed = challenge ? 4.8 : 3;
+      currentList = newKit ? newItemList : itemList;
+      setIndicator(); showBanner();
       document.getElementById('score').innerText = score;
       document.getElementById('time').innerText = timeLeft;
 
@@ -374,9 +476,7 @@
 
         if (timeLeft <= 15 && !isHardMode) {
           isHardMode = true;
-          const indicator = document.getElementById('modeIndicator');
-          indicator.innerText = '🔥 ヒント消滅！記憶で勝負！';
-          indicator.className = 'mode-indicator hard';
+          setIndicator();
 
           document.querySelectorAll('.type-badge').forEach(badge => badge.remove());
         }
@@ -386,7 +486,7 @@
         }
       }, 1000);
 
-      spawnerInterval = setInterval(spawnItem, 1300);
+      spawnerInterval = setInterval(spawnItem, challenge ? 1050 : 1300);
       gameInterval = setInterval(updateItems, 30);
     }
 
@@ -402,7 +502,12 @@
       const earnBoard = collectedBoard * priceBoard;
       const earnMagnet = collectedMagnet * priceMagnet;
       const totalPenalty = penaltyCount * penaltyCost;
-      const totalEarn = Math.max(0, (earnBoard + earnMagnet) - totalPenalty);
+      const complete = missCount === 0 && correctCount >= COMPLETE_MIN;   // ノーミス＝コンプリート
+      const bonus = complete ? COMPLETE_BONUS : 0;
+      const mult = rewardMult();
+      const totalEarn = Math.max(0, earnBoard + earnMagnet - totalPenalty + bonus) * mult;
+      const earnedExp = (EXP_BASE + (challenge ? EXP_HARD : 0)) * expMult();
+      const lvInfo = calcLevel(earnedExp);
 
       document.getElementById('countBoard').innerText = collectedBoard;
       document.getElementById('earnBoard').innerText = earnBoard;
@@ -412,26 +517,31 @@
       document.getElementById('earnPenalty').innerText = totalPenalty;
       document.getElementById('totalMoney').innerText = `+${totalEarn.toLocaleString()} G`;
 
+      document.getElementById('completeText').innerText = complete ? `+${COMPLETE_BONUS}G` : 'ー';
+      document.getElementById('multText').innerText = `×${mult}` + (newKit ? ' 🆕' : '') + (challenge ? ' 🔥' : '');
+      document.getElementById('expText').innerText = `+${earnedExp} EXP` + (lvInfo.up ? ` 🆙Lv.${lvInfo.level}!` : '');
+      window.earnedExp = earnedExp;
       window.earnedMoney = totalEarn;
       document.getElementById('resultModal').style.display = 'flex';
     }
 
     function saveAndReturn() {
       let gameState = JSON.parse(localStorage.getItem('rareEarthGameState')) || { money: 1500, level: 1, mudStock: 5 };
-      gameState.money += (window.earnedMoney || 0);
+      gameState.money = (gameState.money || 0) + (window.earnedMoney || 0);
+      const lv = calcLevel(window.earnedExp || 0); gameState.level = lv.level; gameState.exp = lv.exp;
       localStorage.setItem('rareEarthGameState', JSON.stringify(gameState));
       location.href = 'map.html';
     }
 
     function spawnItem() {
       const gameArea = document.getElementById('gameArea');
-      const randomItem = itemList[Math.floor(Math.random() * itemList.length)];
+      const randomItem = currentList[Math.floor(Math.random() * currentList.length)];
       
       const itemEl = document.createElement('div');
       itemEl.className = 'falling-item';
       
       let badgeHTML = '';
-      if (!isHardMode) {
+      if (!isHardMode && !challenge) {
         const badgeClass = randomItem.type === 'danger' ? 'type-badge danger-badge' : 'type-badge';
         badgeHTML = `<div class="${badgeClass}">${randomItem.badge}</div>`;
       }
@@ -458,13 +568,14 @@
     function updateItems() {
       for (let i = activeItems.length - 1; i >= 0; i--) {
         let item = activeItems[i];
-        item.y += 3;
+        item.y += fallSpeed;
         item.element.style.top = item.y + 'px';
 
-        if (item.y > 330) {
+        if (item.y + item.element.offsetHeight > dropLine.offsetTop) {   // 落下ラインを越えた
           document.getElementById('seRakka').currentTime = 0;
           document.getElementById('seRakka').play().catch(e => console.log(e));
 
+          missCount++;
           if (item.type === 'danger') {
             penaltyCount++;
           }
@@ -485,6 +596,7 @@
         document.getElementById('seSeikai').play().catch(e => console.log(e));
 
         score++;
+        correctCount++;
         if (actionType === 'board') collectedBoard++;
         if (actionType === 'magnet') collectedMagnet++;
 
@@ -496,12 +608,19 @@
 
         score = Math.max(0, score - 1);
         penaltyCount++;
+        missCount++;
         document.getElementById('score').innerText = score;
         targetItem.element.style.borderColor = '#ff4757';
       }
 
-      targetItem.element.remove();
+      // 選んだカゴへ吸い込まれる演出
+      const el = targetItem.element;
       activeItems.shift();
+      el.style.transition = 'left .25s, top .25s, opacity .25s';
+      el.style.left = ({ board: 16.7, magnet: 50, danger: 83.3 })[actionType] + '%';
+      el.style.top = (dropLine.offsetTop - 30) + 'px';
+      el.style.opacity = '0';
+      setTimeout(() => el.remove(), 260);
     }
   </script>
 </body>
