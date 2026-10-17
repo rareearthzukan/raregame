@@ -27,10 +27,10 @@
       overflow: hidden;
     }
 
-    /* スマホ・タブレット対応：画面いっぱいに広げつつ最大幅を制限 */
+/* スマホ・タブレット対応：100dvhを使ってブラウザのバーによるはみ出しを防ぐ */
     .phone { 
       width: 100vw; 
-      height: 100vh; 
+      height: 100dvh; /* dvhを使うことでスマホの上下バーを考慮した高さになります */
       max-width: 480px; 
       max-height: 900px; 
       background: #0f3460; 
