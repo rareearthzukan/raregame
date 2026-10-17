@@ -7,15 +7,15 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#16213e">
   <meta name="format-detection" content="telephone=no">
-  <title>レアアース・クラフト - マップ選択</title>
+  <title>レアアース・クラフト - M - マップ選択</title>
   <style>
     :root { --maxw: 720px; }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     
-    /* ═══ ベース：文字・要素サイズを全体的に大きくダイナミックに！ ═══ */
+    /* 全体は丁度よかったベストなサイズ感をベースにする */
     html {
       height: 100%;
-      font-size: clamp(16px, min(calc(14px + 1.4vw), 3.8vh), 24px);
+      font-size: clamp(14px, min(calc(12px + 1.1vw), 3.2vh), 21px);
       -webkit-text-size-adjust: 100%; text-size-adjust: 100%;
       touch-action: manipulation;
     }
@@ -41,28 +41,28 @@
     }
     @media (orientation: landscape) and (min-width: 700px) { :root { --maxw: 1200px; } }
 
-    /* ═══ ヘッダー（文字とボタンを拡大） ═══ */
+    /* ═══ ヘッダー：パラメータが収まるように文字をコンパクトに維持 ═══ */
     .header {
       background: #16213e; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
-      padding: calc(.6rem + env(safe-area-inset-top, 0px)) .8rem .6rem;
-      font-size: 1.05rem; font-weight: bold; border-bottom: 2px solid #e94560;
+      padding: calc(.4rem + env(safe-area-inset-top, 0px)) .6rem .4rem;
+      font-size: 0.78rem; font-weight: bold; border-bottom: 2px solid #e94560;
     }
     .bgm-btn {
-      background: rgba(0, 0, 0, 0.4); border: 1.5px solid #00fff5; color: #00fff5;
-      border-radius: 1rem; padding: .35rem .8rem; min-height: 2.2rem; font-size: .9rem; cursor: pointer;
-      display: flex; align-items: center; gap: .3rem; transition: all 0.2s; touch-action: manipulation; font-weight: bold;
+      background: rgba(0, 0, 0, 0.4); border: 1px solid #00fff5; color: #00fff5;
+      border-radius: 1rem; padding: .25rem .6rem; min-height: 1.8rem; font-size: .75rem; cursor: pointer;
+      display: flex; align-items: center; gap: .2rem; transition: all 0.2s; touch-action: manipulation;
     }
     .bgm-btn.muted { border-color: #e94560; color: #e94560; background: rgba(233, 69, 96, 0.2); }
 
-    /* ═══ 工程ナビゲーションバー（アイコンと文字を拡大） ═══ */
+    /* 工程ナビゲーションバー（ベストな大きさ） */
     .koutei-bar {
-      background: rgba(15, 23, 42, 0.9); border-bottom: 1.5px solid #00fff5;
-      padding: .5rem .3rem; display: flex; justify-content: space-around; align-items: center; flex-shrink: 0;
+      background: rgba(15, 23, 42, 0.9); border-bottom: 1px solid #00fff5;
+      padding: .4rem .25rem; display: flex; justify-content: space-around; align-items: center; flex-shrink: 0;
     }
-    .koutei-wrapper { display: flex; flex-direction: column; align-items: center; gap: .2rem; }
+    .koutei-wrapper { display: flex; flex-direction: column; align-items: center; gap: .15rem; }
     .koutei-item {
-      width: 3.2rem; height: 3.2rem; background: #000; border: 2px solid transparent;
-      border-radius: .5rem; overflow: hidden; display: flex; align-items: center; justify-content: center;
+      width: 2.6rem; height: 2.6rem; background: #000; border: 2px solid transparent;
+      border-radius: .4rem; overflow: hidden; display: flex; align-items: center; justify-content: center;
     }
     .koutei-item.active { border-color: #00fff5; box-shadow: 0 0 10px rgba(0, 255, 245, 0.8); animation: kouteiGlow 1.2s infinite alternate; }
     @keyframes kouteiGlow {
@@ -70,22 +70,22 @@
       to { border-color: #ffde59; box-shadow: 0 0 12px rgba(255,222,89,0.9); }
     }
     .koutei-item img { width: 100%; height: 100%; object-fit: cover; }
-    .koutei-label { font-size: .8rem; color: #94a3b8; font-weight: bold; text-align: center; white-space: nowrap; }
+    .koutei-label { font-size: .68rem; color: #94a3b8; font-weight: bold; text-align: center; white-space: nowrap; }
     .koutei-wrapper:has(.koutei-item.active) .koutei-label { color: #00fff5; }
 
     /* ═══ コンテンツ ═══ */
     .content {
-      flex: 1; min-height: 0; padding: .7rem .8rem; display: flex; flex-direction: column; gap: .75rem;
+      flex: 1; min-height: 0; padding: .6rem .7rem; display: flex; flex-direction: column; gap: .6rem;
       overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
     }
     .chara-guide {
-      display: flex; align-items: center; gap: .7rem; background: rgba(22,33,62,0.9);
-      border: 1.5px solid #00fff5; border-radius: .8rem; padding: .65rem .8rem; flex-shrink: 0;
+      display: flex; align-items: center; gap: .6rem; background: rgba(22,33,62,0.9);
+      border: 1px solid #00fff5; border-radius: .7rem; padding: .5rem .6rem; flex-shrink: 0;
     }
-    .chara-icon { width: 3.8rem; height: 3.8rem; border-radius: 50%; border: 2px solid #00fff5; object-fit: cover; flex-shrink: 0; background: #16213e; }
+    .chara-icon { width: 3.2rem; height: 3.2rem; border-radius: 50%; border: 2px solid #00fff5; object-fit: cover; flex-shrink: 0; background: #16213e; }
     .speech-bubble {
-      position: relative; background: #f8f9fa; border: 1.5px solid #00fff5; border-radius: .7rem;
-      padding: .55rem .75rem; font-size: .92rem; color: #1a1a2e; font-weight: bold; flex: 1; line-height: 1.45;
+      position: relative; background: #f8f9fa; border: 1px solid #00fff5; border-radius: .6rem;
+      padding: .45rem .65rem; font-size: .82rem; color: #1a1a2e; font-weight: bold; flex: 1; line-height: 1.45;
     }
     .speech-bubble::after {
       content: ''; position: absolute; left: -8px; top: 50%; transform: translateY(-50%);
@@ -94,7 +94,7 @@
 
     .map-box {
       width: 100%; aspect-ratio: 16 / 10; background: url('world_map_bg.jpeg') center/cover no-repeat;
-      border: 2.5px solid #00fff5; border-radius: .8rem; position: relative; overflow: hidden; flex-shrink: 0;
+      border: 2.5px solid #00fff5; border-radius: .7rem; position: relative; overflow: hidden; flex-shrink: 0;
       animation: mapBoxGlow 1.8s infinite alternate;
     }
     @keyframes mapBoxGlow {
@@ -102,22 +102,22 @@
       100% { border-color: #ffde59; box-shadow: 0 0 14px rgba(255,222,89,0.9), inset 0 0 8px rgba(255,222,89,0.4); }
     }
 
-    /* ═══ スポットピン（位置を右へ15%正しく修正＆文字大きく） ═══ */
+    /* ═══ スポットピン：重ならないようコンパクトサイズ ＆ 正しい位置に修正 ═══ */
     .spot {
       position: absolute; background: #16213e; border: 1.5px solid #00fff5; color: #fff;
-      padding: .35rem .6rem; min-height: 1.9rem; border-radius: .6rem; font-size: .8rem; font-weight: bold;
-      cursor: pointer; transform: translate(-50%, -50%); display: flex; align-items: center; gap: .3rem;
+      padding: .2rem .4rem; min-height: 1.5rem; border-radius: .4rem; font-size: 0.65rem; font-weight: bold;
+      cursor: pointer; transform: translate(-50%, -50%); display: flex; align-items: center; gap: .2rem;
       white-space: nowrap; z-index: 10; transition: transform 0.2s; touch-action: manipulation;
     }
     @media (hover: hover) { .spot:hover { transform: translate(-50%, -50%) scale(1.1); } }
     .spot:active { transform: translate(-50%, -50%) scale(1.08); }
     .spot.locked { border-color: #e94560; opacity: 0.9; background: #2a1b2e; }
-    .spot img { width: 1.2rem; height: .85rem; object-fit: cover; border-radius: 1px; }
+    .spot img { width: 0.9rem; height: .65rem; object-fit: cover; border-radius: 1px; }
 
-    .card { background: rgba(22,33,62,0.9); border: 1.5px solid #00fff5; border-radius: .8rem; padding: .75rem .85rem; font-size: .9rem; flex-shrink: 0; }
-    #map-card { padding: .75rem .85rem; }
+    .card { background: rgba(22,33,62,0.9); border: 1px solid #00fff5; border-radius: .7rem; padding: .6rem .7rem; font-size: .8rem; flex-shrink: 0; }
+    #map-card { padding: .6rem .7rem; }
     .map-title {
-      font-weight: bold; color: #00fff5; margin-bottom: .5rem; font-size: 1.1rem;
+      font-weight: bold; color: #00fff5; margin-bottom: .45rem; font-size: 1rem;
       animation: titleBlink 1.5s infinite alternate;
     }
     @keyframes titleBlink {
@@ -125,22 +125,22 @@
       100% { color: #ffde59; text-shadow: 0 0 10px rgba(255,222,89,0.8), 0 0 20px rgba(255,222,89,0.4); }
     }
 
-    .spot-country { font-size: .85rem; color: #9aa3b2; font-weight: normal; display: block; }
-    .spot-title { font-size: 1.2rem; color: #ffde59; font-weight: bold; display: block; margin-top: .15rem; }
-    .spot-title.is-hint { font-size: 1.05rem; }
-    .spot-desc { font-size: .9rem; color: #dcdde1; margin: .4rem 0; line-height: 1.5; }
-    .spot-detail { font-size: .85rem; color: #a0a8b8; line-height: 1.5; }
+    .spot-country { font-size: .75rem; color: #9aa3b2; font-weight: normal; display: block; }
+    .spot-title { font-size: 1.05rem; color: #ffde59; font-weight: bold; display: block; margin-top: .1rem; }
+    .spot-title.is-hint { font-size: .9rem; }
+    .spot-desc { font-size: .8rem; color: #dcdde1; margin: .3rem 0; line-height: 1.5; }
+    .spot-detail { font-size: .75rem; color: #a0a8b8; line-height: 1.5; }
 
     .btn {
-      background: #00fff5; color: #0f3460; border: none; padding: .8rem; min-height: 3.2rem; font-weight: bold;
-      border-radius: .9rem; cursor: pointer; width: 100%; margin-top: .6rem; font-size: 1.05rem;
+      background: #00fff5; color: #0f3460; border: none; padding: .7rem; min-height: 2.8rem; font-weight: bold;
+      border-radius: .8rem; cursor: pointer; width: 100%; margin-top: .5rem; font-size: .9rem;
       transition: background 0.2s; touch-action: manipulation; font-family: inherit;
     }
     .btn:active { transform: scale(0.98); }
 
     .area-image-box {
       width: 100%; aspect-ratio: 2 / 1; background: rgba(15,23,42,0.8);
-      border: 1.5px solid #00fff5; border-radius: .8rem; overflow: hidden; display: flex;
+      border: 1px solid #00fff5; border-radius: .7rem; overflow: hidden; display: flex;
       justify-content: center; align-items: center; flex-shrink: 0;
     }
     .area-image-box img { width: 100%; height: 100%; object-fit: cover; }
@@ -149,7 +149,7 @@
     @media (orientation: landscape) and (min-width: 700px) {
       .content {
         display: grid; grid-template-columns: 1.3fr 1fr; grid-template-rows: auto auto 1fr;
-        grid-template-areas: "map guide" "map info" "map img"; align-content: start; align-items: start; gap: .8rem;
+        grid-template-areas: "map guide" "map info" "map img"; align-content: start; align-items: start; gap: .7rem;
       }
       .chara-guide { grid-area: guide; }
       #map-card { grid-area: map; }
@@ -158,20 +158,20 @@
       .map-box { max-height: calc(100vh - 14rem); min-height: 14rem; }
     }
 
-    /* ═══ 下部フッター（アイコンと文字をしっかり拡大） ═══ */
+    /* ═══ 下部フッター（ベストな大きさ） ═══ */
     .nav {
       flex-shrink: 0; position: relative; z-index: 50; background: #16213e; border-top: 2px solid #1f293d;
       display: flex; justify-content: space-around; align-items: stretch; gap: .3rem;
-      padding: .45rem .5rem calc(.45rem + env(safe-area-inset-bottom, 0px));
+      padding: .4rem .5rem calc(.4rem + env(safe-area-inset-bottom, 0px));
     }
     .nav-item {
       color: #a0aec0; cursor: pointer; text-align: center; background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(0, 255, 245, 0.2); border-radius: .7rem; padding: .35rem .2rem;
-      min-height: 3.4rem; font-size: .82rem; font-weight: bold; flex: 1;
-      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .15rem;
+      border: 1px solid rgba(0, 255, 245, 0.2); border-radius: .7rem; padding: .3rem .2rem;
+      min-height: 3rem; font-size: .72rem; font-weight: bold; flex: 1;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .1rem;
       transition: all 0.2s; touch-action: manipulation;
     }
-    .nav-ico { font-size: 1.35rem; line-height: 1; display: block; }
+    .nav-ico { font-size: 1.15rem; line-height: 1; display: block; }
     .nav-item:active { transform: scale(0.95); }
     .nav-item.active { color: #00fff5; background: rgba(0, 255, 245, 0.15); border-color: #00fff5; box-shadow: 0 0 8px rgba(0, 255, 245, 0.3); }
 
@@ -182,13 +182,13 @@
       z-index: 200; backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); padding: 1rem;
     }
     .modal-content {
-      background: #16213e; border: 2px solid #00fff5; border-radius: 1rem; padding: 1.4rem 1.2rem;
+      background: #16213e; border: 2px solid #00fff5; border-radius: 1rem; padding: 1.2rem 1rem;
       width: 100%; max-width: 22rem; text-align: center; box-shadow: 0 0 20px rgba(0, 255, 245, 0.3);
       animation: popup 0.3s ease-out;
     }
-    .modal-icon { font-size: 2.2rem; margin-bottom: .3rem; }
-    .modal-title { font-size: 1.15rem; font-weight: bold; color: #ffde59; margin-bottom: .4rem; }
-    .modal-desc { font-size: .95rem; color: #f1f5f9; margin-bottom: .8rem; line-height: 1.55; white-space: pre-line; }
+    .modal-icon { font-size: 2rem; margin-bottom: .2rem; }
+    .modal-title { font-size: 1.05rem; font-weight: bold; color: #ffde59; margin-bottom: .4rem; }
+    .modal-desc { font-size: .88rem; color: #f1f5f9; margin-bottom: .8rem; line-height: 1.55; white-space: pre-line; }
     @keyframes popup { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
   </style>
 </head>
@@ -243,15 +243,15 @@
       <div class="card" id="map-card">
         <div class="map-title">🗺️ 採掘エリアを選択してください</div>
         <div class="map-box">
-          <!-- ピンの位置を右へ約15%移動し、世界地図にぴったり重なるよう再配置 -->
-          <div class="spot" id="spot-greenland" style="top: 22%; left: 45%;" onclick="selectSpot('greenland')"><img src="hata_greenisland.png" alt="GL">グリーンランド</div>
-          <div class="spot" id="spot-america" style="top: 36%; left: 30%;" onclick="selectSpot('america')"><img src="hata_us.png" alt="US">マウンテンパス</div>
-          <div class="spot" id="spot-baiyun" style="top: 32%; left: 75%;" onclick="selectSpot('baiyun')"><img src="hata_cn.png" alt="CN">白雲鄂博</div>
-          <div class="spot" id="spot-myanmar" style="top: 48%; left: 68%;" onclick="selectSpot('myanmar')"><img src="hata_mm.png" alt="MM">ミャンマー</div>
-          <div class="spot" id="spot-africa" style="top: 60%; left: 56%;" onclick="selectSpot('africa')"><img src="hata_af.png" alt="AF">アフリカ鉱床</div>
-          <div class="spot" id="spot-mount" style="top: 78%; left: 85%;" onclick="selectSpot('mount')"><img src="hata_au.png" alt="AU">マウントウェルド</div>
-          <div class="spot" id="spot-okinotori" style="top: 42%; left: 91%;" onclick="selectSpot('okinotori')"><img src="hata_jp.png" alt="JP">沖ノ鳥島</div>
-          <div class="spot" id="spot-tahiti" style="top: 75%; left: 35%;" onclick="selectSpot('tahiti')"><img src="hata_pf.png" alt="PF">南太平洋</div>
+          <!-- 各ピンの座標を地理的に正しい位置に再調整＆文字は小さめに維持 -->
+          <div class="spot" id="spot-greenland" style="top: 22%; left: 32%;" onclick="selectSpot('greenland')"><img src="hata_greenisland.png" alt="GL">グリーンランド</div>
+          <div class="spot" id="spot-america" style="top: 36%; left: 18%;" onclick="selectSpot('america')"><img src="hata_us.png" alt="US">マウンテンパス</div>
+          <div class="spot" id="spot-baiyun" style="top: 32%; left: 63%;" onclick="selectSpot('baiyun')"><img src="hata_cn.png" alt="CN">白雲鄂博</div>
+          <div class="spot" id="spot-myanmar" style="top: 48%; left: 55%;" onclick="selectSpot('myanmar')"><img src="hata_mm.png" alt="MM">ミャンマー</div>
+          <div class="spot" id="spot-africa" style="top: 60%; left: 44%;" onclick="selectSpot('africa')"><img src="hata_af.png" alt="AF">アフリカ鉱床</div>
+          <div class="spot" id="spot-mount" style="top: 78%; left: 72%;" onclick="selectSpot('mount')"><img src="hata_au.png" alt="AU">マウントウェルド</div>
+          <div class="spot" id="spot-okinotori" style="top: 45%; left: 82%;" onclick="selectSpot('okinotori')"><img src="hata_jp.png" alt="JP">沖ノ鳥島</div>
+          <div class="spot" id="spot-tahiti" style="top: 75%; left: 22%;" onclick="selectSpot('tahiti')"><img src="hata_pf.png" alt="PF">南太平洋</div>
         </div>
       </div>
 
