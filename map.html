@@ -9,7 +9,6 @@
   <meta name="format-detection" content="telephone=no">
   <title>レアアース・クラフト - マップ選択</title>
   <style>
-    /* ═══ ベース：文字サイズを全体的に少し大きく調整 ═══ */
     :root { --maxw: 720px; }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     html {
@@ -38,13 +37,20 @@
       padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px);
       box-shadow: 0 0 0 1px #16213e, 0 0 40px rgba(0,0,0,.6);
     }
-    @media (orientation: landscape) and (min-width: 700px) { :root { --maxw: 1200px; } }
+    /* 横長画面（タブレット横・PC）は広すぎないように最大幅を調整し、75%縮小の感覚に近づける */
+    @media (orientation: landscape) and (min-width: 700px) { :root { --maxw: 960px; } }
 
     .header {
       background: #16213e; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
       padding: calc(.5rem + env(safe-area-inset-top, 0px)) .8rem .6rem;
       font-size: 1rem; font-weight: bold; border-bottom: 2px solid #e94560;
     }
+    /* スマホ版のみヘッダーの文字を小さくして桁数が増えても安心な設計に */
+    @media (max-width: 480px) {
+      .header { font-size: 0.75rem; padding: 0.4rem 0.5rem; }
+      .bgm-btn { font-size: 0.7rem; padding: 0.2rem 0.5rem; min-height: 1.8rem; }
+    }
+
     .bgm-btn {
       background: rgba(0, 0, 0, 0.4); border: 1px solid #00fff5; color: #00fff5;
       border-radius: 1rem; padding: .3rem .8rem; min-height: 2.2rem; font-size: .85rem; cursor: pointer;
@@ -90,7 +96,6 @@
       border-width: 6px 8px 6px 0; border-style: solid; border-color: transparent #f8f9fa transparent; display: block;
     }
 
-    /* 🗺️ 世界地図エリア：アスペクト比を少し広げ、ピンや文字を大きく見やすく */
     .map-box {
       width: 100%; aspect-ratio: 16 / 9; background: url('world_map_bg.jpeg') center/cover no-repeat;
       border: 2.5px solid #00fff5; border-radius: .8rem; position: relative; overflow: hidden; flex-shrink: 0;
@@ -101,12 +106,18 @@
       100% { border-color: #ffde59; box-shadow: 0 0 14px rgba(255,222,89,0.9), inset 0 0 8px rgba(255,222,89,0.4); }
     }
 
+    /* エリア名スポットピン：スマホ版のみ文字サイズを小さくして重なりを防ぐ */
     .spot {
       position: absolute; background: #16213e; border: 1.5px solid #00fff5; color: #fff;
       padding: .35rem .6rem; min-height: 2rem; border-radius: .6rem; font-size: .82rem; font-weight: bold;
       cursor: pointer; transform: translate(-50%,-50%); display: flex; align-items: center; gap: .3rem;
       white-space: nowrap; z-index: 10; transition: transform 0.2s; touch-action: manipulation;
     }
+    @media (max-width: 480px) {
+      .spot { font-size: 0.65rem; padding: 0.2rem 0.35rem; min-height: 1.5rem; gap: 0.2rem; }
+      .spot img { width: 0.9rem; height: 0.65rem; }
+    }
+
     @media (hover: hover) { .spot:hover { transform: translate(-50%,-50%) scale(1.1); } }
     .spot:active { transform: translate(-50%,-50%) scale(1.08); }
     .spot.locked { border-color: #e94560; opacity: 0.9; background: #2a1b2e; }
@@ -136,7 +147,6 @@
     }
     .btn:active { transform: scale(0.98); }
 
-    /* 🖼️ 下部のエリア画像ボックス：高さを広げて迫力をアップ！ */
     .area-image-box {
       width: 100%; aspect-ratio: 16 / 9; background: rgba(15,23,42,0.8);
       border: 2px solid #00fff5; border-radius: .8rem; overflow: hidden; display: flex;
@@ -365,7 +375,7 @@
       'mount': { country: '🇦🇺 オーストラリア', title: 'マウント・ウェルド鉱山', desc: '高品質な磁石向け軽レアアース（ネオジム等）を産出する安定供給地。', cost: 50, milesGain: 120, minLv: 5, target: 'Nd, Sm, Pr', btnColor: '#55ff55', btnText: '🚜 このエリアの鉱山採掘へ移動！', img: 'area_image_mount.png', flag: 'hata_au.png' },
       'myanmar': { country: '🇲🇲 ミャンマー', title: 'イオン吸着鉱床', desc: 'EVや風力発電に不可欠な「重レアアース」が豊富にとれる粘土層鉱床。', cost: 100, milesGain: 200, minLv: 10, target: 'Dy, Tb, Y', btnColor: '#ff55ff', btnText: '🚜 このエリアの粘土層採掘へ移動！', img: 'area_image_myanmar.png', flag: 'hata_mm.png' },
       'africa': { country: '🌍 アフリカ新興国（マラウイ等）', title: 'アフリカ新興鉱床', desc: '脱・中国依存に向けて近年世界中から開発が進む注目のフロンティア。', cost: 150, milesGain: 250, minLv: 15, target: 'Lu, Yb, Sc', btnColor: '#ffbb55', btnText: '🚜 このエリアの開拓採掘へ移動！', img: 'area_image_africa.png', flag: 'hata_af.png' },
-      'tahiti': { country: '🇫🇷 南太平洋', title: 'マンガン団塊深海エリア', desc: '深海底に転がる金属塊。重レアアースやコバルトを含む高価なゾーン。', cost: 200, milesGain: 300, minLv: 20, target: 'Dy, Tb, Er, Yb', btnColor: '#2980b9', btnText: '🚢 このエリアの深海探査へ移動！', img: 'area_image_tahiti.png', flag: 'hata_pf.png' },
+      'tahiti': { country: '🇫🇷 南太平洋', title: 'マンガン団塊深海エリア', desc: '深海底に転がる金属塊。重レアアースやコバルトを含む高価なゾーン。', cost: 200, milesGain: 300, minLv: 20, target: 'Dy, Tb, Er, Yb', color: '#2980b9', btnText: '🚢 このエリアの深海探査へ移動！', img: 'area_image_tahiti.png', flag: 'hata_pf.png' },
       'greenland': { country: '🇬🇱 グリーンランド', title: 'クバネフエルド鉱床', desc: '氷河の下に眠る、世界最大級の未開発レアアース・ウラン複合鉱床。', cost: 300, milesGain: 400, minLv: 30, target: 'Gd, Ho, Er', btnColor: '#55ffff', btnText: '⛏️ 氷河エリアの採掘へ移動！', img: 'area_image_greenland.png', flag: 'hata_greenisland.png' },
       'okinotori': { country: '🇯🇵 日本（南鳥島・沖ノ鳥島）', title: 'EEZ海底泥エリア', desc: '日本の未来を担う！水深数千mの海底に眠る超高濃度レアアース泥。', cost: 500, milesGain: 800, minLv: 50, target: '全17元素（高純度）', btnColor: '#3498db', btnText: '🚢 このエリアの海中探査・採掘へ移動！', img: 'area_image_okinotori.png', flag: 'hata_jp.png' }
     };
@@ -410,7 +420,7 @@
       document.getElementById('spot-detail').innerText = `コスト: ${data.cost}G / 獲得マイル: +${data.milesGain}m / 主な元素: ${data.target}`;
       
       const btn = document.getElementById('action-btn');
-      btn.style.background = data.btnColor;
+      btn.style.background = data.btnColor || '#2980b9';
       btn.style.color = '#0f3460';
       btn.style.cursor = 'pointer';
       btn.disabled = false;
