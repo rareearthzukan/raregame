@@ -92,8 +92,9 @@
       border-width: 6px 8px 6px 0; border-style: solid; border-color: transparent #f8f9fa transparent; display: block;
     }
 
+/* ═══ 上の世界地図ボックス：下と同じ「contain」表示に統一 ═══ */
     .map-box {
-      width: 100%; aspect-ratio: 16 / 10; background: url('world_map_bg.jpeg') center/cover no-repeat;
+      width: 100%; aspect-ratio: 16 / 10; background: url('world_map_bg.jpeg') center / contain no-repeat #0b1224;
       border: 2.5px solid #00fff5; border-radius: .7rem; position: relative; overflow: hidden; flex-shrink: 0;
       animation: mapBoxGlow 1.8s infinite alternate;
     }
