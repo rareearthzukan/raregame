@@ -89,7 +89,7 @@ textarea{width:100%;height:5rem;font-size:.65rem;border:1px solid var(--line);bo
 #toast{position:fixed;left:50%;bottom:calc(5rem + env(safe-area-inset-bottom,0));transform:translate(-50%,1rem);background:#1e293b;color:#fff;border-radius:1.5rem;padding:.5rem 1rem;font-size:.75rem;font-weight:bold;z-index:300;opacity:0;pointer-events:none;transition:.3s;white-space:nowrap}
 #toast.show{opacity:1;transform:translate(-50%,0)}
 .overlay{position:fixed;inset:0;display:none;justify-content:center;align-items:center;background:rgba(10,15,30,.7);z-index:200;padding:1rem}
-.modal{background:var(--card);color:var(--text);border:2px solid var(--accent);border-radius:1rem;padding:1.1rem;width:100%;max-width:22rem;text-align:center}
+.modal{background:#1e293b;color:#fff;border:2px solid var(--accent);border-radius:1rem;padding:1.1rem;width:100%;max-width:22rem;text-align:center}
 .modal h3{margin:0 0 .4rem;font-size:1rem}.modal p{margin:0 0 .8rem;font-size:.85rem;line-height:1.5}
 .modal .row{display:flex;gap:.5rem}.modal .row .btn{flex:1}
 </style>
@@ -102,6 +102,7 @@ textarea{width:100%;height:5rem;font-size:.65rem;border:1px solid var(--line);bo
 <div class="phone" id="phone">
   <div class="header">
     <span>✈️ <span id="miles">0</span> マイル</span>
+    <span>💰 <span id="money">0</span> G</span>
     <span>🌟 Lv.<span id="level">1</span></span>
     <button id="bgm-btn" class="bgm-btn" onclick="toggleBGM()">🎵 ON</button>
   </div>
@@ -185,6 +186,37 @@ const furnitureMaster = {
 };
 /* ↑ ここまで。  ※ 'home_kagu5.png.png' は拡張子が二重でした。4と6は仮の名前なので実際のファイル名に直してください */
 
+/* ═════════════════════════════════════════════════════════════
+   ★ 追加アイテム（簡単登録）★  1行 = 1アイテム   [キー, 名前, 絵文字, 価格, 精製ボーナス%, 大きさ%, 足元の高さy%]
+   画像ファイル名は自動で  IMG_PREFIX + キー + .png  （例: home_kagu_bed.png）。無いときは絵文字で表示されます
+   ═════════════════════════════════════════════════════════════ */
+const IMG_PREFIX='home_kagu_';
+/* マイルで買うアイテム（20）: 価格はマイル */
+const MILE_ROWS=[
+  ['stool','スツール','🪑',120,0.1,10,88],['cushion','クッション','🟡',80,0.1,8,90],['flower_vase','花瓶','💐',100,0.1,7,70],
+  ['nightstand','ナイトテーブル','🛋️',150,0.1,12,86],['wall_clock','壁掛け時計','🕰️',150,0.2,9,38],['wall_art','壁掛けアート','🖼️',180,0.2,14,40],
+  ['curtain','カーテン','🪟',200,0.2,22,50],['teddy','テディベア','🧸',200,0.2,9,90],['rug','ラグマット','🟫',250,0.2,32,94],
+  ['floor_lamp','フロアライト','💡',300,0.3,9,86],['coffee_table','ローテーブル','🪵',350,0.3,22,90],['mirror','姿見','🪞',300,0.3,10,86],
+  ['fan','扇風機','🌀',350,0.4,10,86],['bookshelf','本棚','📚',500,0.5,16,86],['kotatsu','こたつ','🔥',600,0.5,26,92],
+  ['wardrobe','クローゼット','🚪',700,0.6,20,86],['bed','ベッド','🛏️',900,0.9,34,90],['aquarium','水槽','🐠',1200,1.0,20,84],
+  ['gaming_pc','ゲーミングPC','🖥️',1800,1.6,18,80],['piano','ピアノ','🎹',2000,1.5,30,88]
+];
+/* Gで買うアイテム（30）: 価格はG（10,000〜500,000）。精製ボーナスは低め */
+const GOLD_ROWS=[
+  ['bbq','BBQグリル','🍖',10000,0.1,14,88],['robo_cleaner','ロボット掃除機','🤖',12000,0.1,9,92],['chess_table','チェステーブル','♟️',15000,0.1,16,88],
+  ['trophy_case','トロフィーケース','🏆',18000,0.2,14,86],['espresso','エスプレッソマシン','☕',20000,0.1,10,76],['vinyl','レコードプレーヤー','💿',25000,0.2,14,80],
+  ['telescope','天体望遠鏡','🔭',30000,0.3,14,88],['art_statue','彫刻','🗿',40000,0.2,12,88],['antique_clock','アンティーク大時計','🕰️',45000,0.2,12,86],
+  ['smart_fridge','スマート冷蔵庫','🧊',55000,0.2,16,84],['massage_chair','マッサージチェア','💆',60000,0.2,18,88],['persian_rug','ペルシャ絨毯','🧶',65000,0.2,36,94],
+  ['wine_cellar','ワインセラー','🍷',70000,0.2,14,86],['sofa_lux','高級レザーソファ','🛋️',80000,0.4,36,92],['library','書斎の大書棚','📚',85000,0.3,32,86],
+  ['bed_king','キングサイズベッド','🛏️',90000,0.3,40,92],['aquarium_xl','大型水槽','🐟',100000,0.3,30,84],['chandelier','シャンデリア','🕯️',120000,0.3,22,40],
+  ['pool_table','ビリヤード台','🎱',130000,0.3,38,90],['fountain','庭の噴水','⛲',140000,0.3,26,86],['bar_counter','ホームバー','🍸',150000,0.3,36,88],
+  ['greenhouse','温室','🌱',160000,0.3,40,86],['kitchen_island','アイランドキッチン','🍳',180000,0.4,38,90],['fireplace','暖炉','🔥',200000,0.4,26,84],
+  ['golf_sim','ゴルフシミュレーター','⛳',220000,0.3,40,90],['home_theater','ホームシアター','🎬',250000,0.5,42,88],['sauna','ホームサウナ','🧖',300000,0.4,32,88],
+  ['jacuzzi','ジャグジー','🛁',350000,0.4,34,90],['grand_piano','グランドピアノ','🎹',500000,0.5,40,90],['rare_crystal','レアアース結晶ディスプレイ','💎',500000,0.5,16,80]
+];
+MILE_ROWS.forEach(r=>furnitureMaster[r[0]]={name:r[1],emoji:r[2],cost:r[3],bonus:r[4],size:r[5],x:50,y:r[6],img:IMG_PREFIX+r[0]+'.png'});
+GOLD_ROWS.forEach(r=>furnitureMaster[r[0]]={name:r[1],emoji:r[2],gold:r[3],cost:0,bonus:r[4],size:r[5],x:50,y:r[6],img:IMG_PREFIX+r[0]+'.png'});
+
 const recipes = [
   {id:'lighter',name:'ライター（石）',img:'seihin_raita.png',emoji:'🔥'},
   {id:'headphones',name:'高音質ヘッドホン',img:'seihin_hedohon.png',emoji:'🎧'},
@@ -211,7 +243,7 @@ const bgmMaster = {
    ═════════════════════════════════════════════════════════════ */
 const GARDEN_DEFAULT = `radial-gradient(ellipse 14% 6% at 20% 14%,#fff 60%,transparent 62%),radial-gradient(ellipse 18% 7% at 72% 22%,#fff 60%,transparent 62%),repeating-linear-gradient(90deg,#f5e9d3 0 1.4%,#e9d7b6 1.4% 1.8%) 0 52%/100% 12% no-repeat,linear-gradient(180deg,#7cc4ef 0%,#d8f0fb 52%,#7fcf6b 52%,#4aa84a 100%)`;
 const wallBg = (c,pat,wain,rail)=>`linear-gradient(180deg,transparent 74%,${rail} 74% 77%,${wain} 77%),${pat},${c}`;
-const planks = (a,b,seam)=>`repeating-linear-gradient(90deg,${seam} 0 .1rem,transparent .1rem 16%),linear-gradient(180deg,${a},${b})`;
+const planks = (a,b,seam)=>`repeating-linear-gradient(90deg,${seam} 0 .1rem,transparent .1rem 2rem),linear-gradient(180deg,${a},${b})`;
 const planksH=(a,b,seam)=>`repeating-linear-gradient(180deg,${seam} 0 .1rem,transparent .1rem 2rem),linear-gradient(180deg,${a},${b})`;
 const tiles  = (a,b)=>`conic-gradient(${a} 25%,${b} 0 50%,${a} 0 75%,${b} 0) 0 0/16% 38%`;
 const themesMaster = {
@@ -250,7 +282,7 @@ const DECOR={
   wood:{door:'#6b4328',door2:'#573520',knob:'#e0b44c'},
   pink:{door:'#ffffff',door2:'#fbd0da',knob:'#e0728f'},
   blue:{door:'#f4efe4',door2:'#cfe8e0',knob:'#3fa38e'},
-  cyber:{door:'#1c2548',door2:'#0f1630',knob:'#00fff5'},
+  cyber:{garden:'linear-gradient(180deg,#000 0%,#000 56%,#2b2b30 56%,#2b2b30 100%)',door:'#1c2548',door2:'#0f1630',knob:'#00fff5'},
   monotone:{door:'#2f2f33',door2:'#1f1f23',knob:'#d4d4d8'},
   candy:{door:'#6e4030',door2:'#5a3326',knob:'#ffd27a'},
   space:{win:false,door:'#2a3470',door2:'#1d2556',knob:'#e8ecff'},
@@ -316,7 +348,7 @@ function switchTab(t){
   ['shop','display','theme','music','save'].forEach(k=>{ $('L-'+k).classList.toggle('on',k===t); $('tab-'+k).classList.toggle('on',k===t); });
 }
 function updateUI(){
-  $('miles').innerText=(gameState.miles||0).toLocaleString(); $('level').innerText=gameState.level;
+  $('miles').innerText=(gameState.miles||0).toLocaleString(); $('level').innerText=gameState.level; $('money').innerText=(gameState.money||0).toLocaleString();
   let b=0; gameState.placedItems.forEach(i=>{ if(i.type==='furn'&&furnitureMaster[i.id]) b+=furnitureMaster[i.id].bonus; if(i.type==='prod') b+=.2; });
   $('bonus').innerText=b.toFixed(1); $('roomLevel').innerText=Math.floor(1+b/1.5);
   renderShop(); renderDisplay(); renderTheme(); renderMusic(); renderRoom();
@@ -368,17 +400,23 @@ function drag(el,it,idx,name,size){
 }
 
 function row(thumb,name,sub,btn){ return `<div class="item ${btn.own?'own':''}">${thumb}<div class="nm">${name}${sub?`<small>${sub}</small>`:''}</div>${btn.html}</div>`; }
+let shopMode='mile';
+function setShopMode(m){ shopMode=m; renderShop(); }
 function renderShop(){
-  $('L-shop').innerHTML=Object.keys(furnitureMaster).map(id=>{
+  const L=$('L-shop'), top=L.scrollTop;
+  const bar=`<div style="display:flex;gap:.3rem;flex-shrink:0"><button class="tab ${shopMode==='mile'?'on':''}" onclick="setShopMode('mile')">✈️ マイルで買う</button><button class="tab ${shopMode==='gold'?'on':''}" onclick="setShopMode('gold')">💰 Gで買う</button></div>`;
+  L.innerHTML=bar+Object.keys(furnitureMaster).filter(id=>!!furnitureMaster[id].gold===(shopMode==='gold')).map(id=>{
     const f=furnitureMaster[id], own=gameState.homeFurnishings.includes(id);
-    return row('',f.name,`${f.cost}マイル ／ +${f.bonus}%`,
-      {own,html:own?'<button class="btn done">所持済</button>':`<button class="btn" onclick="buy('${id}')">購入</button>`});
+    const price=f.gold?`${f.gold.toLocaleString()}G`:`${f.cost}マイル`;
+    return row('',f.name,`${price} ／ +${f.bonus}%`,{own,html:own?'<button class="btn done">所持済</button>':`<button class="btn" onclick="buy('${id}')">購入</button>`});
   }).join('');
+  L.scrollTop=top;
 }
 function buy(id){
   const f=furnitureMaster[id];
-  if(gameState.miles<f.cost){ toast('⚠️ マイルが足りません！'); return; }
-  gameState.miles-=f.cost; gameState.homeFurnishings.push(id); save();
+  if(f.gold){ if((gameState.money||0)<f.gold){ toast('⚠️ ゴールドが足りません！'); return; } gameState.money-=f.gold; }
+  else { if(gameState.miles<f.cost){ toast('⚠️ マイルが足りません！'); return; } gameState.miles-=f.cost; }
+  gameState.homeFurnishings.push(id); save();
   $('se-unlock').currentTime=0; $('se-unlock').play().catch(()=>{}); toast(`🎉 『${f.name}』を購入！`); updateUI();
 }
 function renderDisplay(){
