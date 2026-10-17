@@ -37,15 +37,14 @@
       padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px);
       box-shadow: 0 0 0 1px #16213e, 0 0 40px rgba(0,0,0,.6);
     }
-    /* 横長画面（タブレット横・PC）は広すぎないように最大幅を調整し、75%縮小の感覚に近づける */
-    @media (orientation: landscape) and (min-width: 700px) { :root { --maxw: 960px; } }
+    /* 横長画面（タブレット横・PC）は広く使いつつ、75%縮小の感覚に合わせる */
+    @media (orientation: landscape) and (min-width: 700px) { :root { --maxw: 1024px; } }
 
     .header {
       background: #16213e; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
       padding: calc(.5rem + env(safe-area-inset-top, 0px)) .8rem .6rem;
       font-size: 1rem; font-weight: bold; border-bottom: 2px solid #e94560;
     }
-    /* スマホ版のみヘッダーの文字を小さくして桁数が増えても安心な設計に */
     @media (max-width: 480px) {
       .header { font-size: 0.75rem; padding: 0.4rem 0.5rem; }
       .bgm-btn { font-size: 0.7rem; padding: 0.2rem 0.5rem; min-height: 1.8rem; }
@@ -106,7 +105,6 @@
       100% { border-color: #ffde59; box-shadow: 0 0 14px rgba(255,222,89,0.9), inset 0 0 8px rgba(255,222,89,0.4); }
     }
 
-    /* エリア名スポットピン：スマホ版のみ文字サイズを小さくして重なりを防ぐ */
     .spot {
       position: absolute; background: #16213e; border: 1.5px solid #00fff5; color: #fff;
       padding: .35rem .6rem; min-height: 2rem; border-radius: .6rem; font-size: .82rem; font-weight: bold;
@@ -154,17 +152,24 @@
     }
     .area-image-box img { width: 100%; height: 100%; object-fit: cover; }
 
-    /* 横長（タブレット横・PC） */
+    /* ═══ 横長画面（PC・タブレット横）：左右2カラムできれいに収める ═══ */
     @media (orientation: landscape) and (min-width: 700px) {
       .content {
-        display: grid; grid-template-columns: 1.3fr 1fr; grid-template-rows: auto auto 1fr;
-        grid-template-areas: "map guide" "map info" "map img"; align-content: start; align-items: start; gap: .8rem;
+        display: grid;
+        grid-template-columns: 1.2fr 1fr;
+        grid-template-rows: auto auto auto auto;
+        grid-template-areas:
+          "guide info"
+          "map   info"
+          "map   img"
+          "map   .";
+        gap: .7rem;
+        align-content: start;
       }
       .chara-guide { grid-area: guide; }
-      #map-card { grid-area: map; }
-      #info-card { grid-area: info; }
+      #map-card    { grid-area: map; }
+      #info-card   { grid-area: info; }
       .area-image-box { grid-area: img; }
-      .map-box { max-height: calc(100vh - 14rem); min-height: 16rem; }
     }
 
     /* ═══ 下部フッター ═══ */
@@ -252,7 +257,6 @@
       <div class="card" id="map-card">
         <div class="map-title">🗺️ 採掘エリアを選択してください</div>
         <div class="map-box">
-          <!-- 正しい国旗画像＆位置に調整されたスポットピン -->
           <div class="spot" id="spot-greenland" style="top: 22%; left: 32%;" onclick="selectSpot('greenland')"><img src="hata_greenisland.png" alt="GL">グリーンランド</div>
           <div class="spot" id="spot-america" style="top: 36%; left: 18%;" onclick="selectSpot('america')"><img src="hata_us.png" alt="US">マウンテンパス</div>
           <div class="spot" id="spot-baiyun" style="top: 32%; left: 63%;" onclick="selectSpot('baiyun')"><img src="hata_cn.png" alt="CN">白雲鄂博</div>
@@ -375,7 +379,7 @@
       'mount': { country: '🇦🇺 オーストラリア', title: 'マウント・ウェルド鉱山', desc: '高品質な磁石向け軽レアアース（ネオジム等）を産出する安定供給地。', cost: 50, milesGain: 120, minLv: 5, target: 'Nd, Sm, Pr', btnColor: '#55ff55', btnText: '🚜 このエリアの鉱山採掘へ移動！', img: 'area_image_mount.png', flag: 'hata_au.png' },
       'myanmar': { country: '🇲🇲 ミャンマー', title: 'イオン吸着鉱床', desc: 'EVや風力発電に不可欠な「重レアアース」が豊富にとれる粘土層鉱床。', cost: 100, milesGain: 200, minLv: 10, target: 'Dy, Tb, Y', btnColor: '#ff55ff', btnText: '🚜 このエリアの粘土層採掘へ移動！', img: 'area_image_myanmar.png', flag: 'hata_mm.png' },
       'africa': { country: '🌍 アフリカ新興国（マラウイ等）', title: 'アフリカ新興鉱床', desc: '脱・中国依存に向けて近年世界中から開発が進む注目のフロンティア。', cost: 150, milesGain: 250, minLv: 15, target: 'Lu, Yb, Sc', btnColor: '#ffbb55', btnText: '🚜 このエリアの開拓採掘へ移動！', img: 'area_image_africa.png', flag: 'hata_af.png' },
-      'tahiti': { country: '🇫🇷 南太平洋', title: 'マンガン団塊深海エリア', desc: '深海底に転がる金属塊。重レアアースやコバルトを含む高価なゾーン。', cost: 200, milesGain: 300, minLv: 20, target: 'Dy, Tb, Er, Yb', color: '#2980b9', btnText: '🚢 このエリアの深海探査へ移動！', img: 'area_image_tahiti.png', flag: 'hata_pf.png' },
+      'tahiti': { country: '🇫🇷 南太平洋', title: 'マンガン団塊深海エリア', desc: '深海底に転がる金属塊。重レアアースやコバルトを含む高価なゾーン。', cost: 200, milesGain: 300, minLv: 20, target: 'Dy, Tb, Er, Yb', btnColor: '#2980b9', btnText: '🚢 このエリアの深海探査へ移動！', img: 'area_image_tahiti.png', flag: 'hata_pf.png' },
       'greenland': { country: '🇬🇱 グリーンランド', title: 'クバネフエルド鉱床', desc: '氷河の下に眠る、世界最大級の未開発レアアース・ウラン複合鉱床。', cost: 300, milesGain: 400, minLv: 30, target: 'Gd, Ho, Er', btnColor: '#55ffff', btnText: '⛏️ 氷河エリアの採掘へ移動！', img: 'area_image_greenland.png', flag: 'hata_greenisland.png' },
       'okinotori': { country: '🇯🇵 日本（南鳥島・沖ノ鳥島）', title: 'EEZ海底泥エリア', desc: '日本の未来を担う！水深数千mの海底に眠る超高濃度レアアース泥。', cost: 500, milesGain: 800, minLv: 50, target: '全17元素（高純度）', btnColor: '#3498db', btnText: '🚢 このエリアの海中探査・採掘へ移動！', img: 'area_image_okinotori.png', flag: 'hata_jp.png' }
     };
@@ -420,7 +424,7 @@
       document.getElementById('spot-detail').innerText = `コスト: ${data.cost}G / 獲得マイル: +${data.milesGain}m / 主な元素: ${data.target}`;
       
       const btn = document.getElementById('action-btn');
-      btn.style.background = data.btnColor || '#2980b9';
+      btn.style.background = data.btnColor;
       btn.style.color = '#0f3460';
       btn.style.cursor = 'pointer';
       btn.disabled = false;
