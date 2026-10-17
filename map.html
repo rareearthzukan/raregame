@@ -138,13 +138,18 @@
       transition: background 0.2s; touch-action: manipulation; font-family: inherit;
     }
     .btn:active { transform: scale(0.98); }
+    /* エリア未選択のときは押せない見た目 */
+    .btn:disabled { background: #2b3350 !important; color: #7b859c !important; border: 1px dashed #4a5578; cursor: not-allowed; opacity: .85; }
+    .btn:disabled:active { transform: none; }
 
     .area-image-box {
       width: 100%; aspect-ratio: 2 / 1; background: rgba(15,23,42,0.8);
       border: 1px solid #00fff5; border-radius: .7rem; overflow: hidden; display: flex;
       justify-content: center; align-items: center; flex-shrink: 0;
     }
-    .area-image-box img { width: 100%; height: 100%; object-fit: cover; }
+    .area-image-box img { width: 100%; height: 100%; object-fit: cover; transition: filter .4s; }
+    /* エリア未選択のあいだは下の地図を暗くして「まだ何も選ばれていない」ことを示す */
+    .area-image-box img.dim { filter: brightness(.35) saturate(.6); }
 
     /* 横長（タブレット横・PC）：左右2カラム */
     @media (orientation: landscape) and (min-width: 700px) {
@@ -156,7 +161,6 @@
       #map-card { grid-area: map; }
       #info-card { grid-area: info; }
       .area-image-box { grid-area: img; }
-      .map-box { max-height: calc(100vh - 14rem); min-height: 14rem; }
     }
 
     /* ═══ 下部フッター（ベストな大きさ） ═══ */
@@ -236,7 +240,7 @@
       
       <div class="chara-guide">
         <img src="navtb.png" alt="テルビウム" class="chara-icon" onerror="this.src='hata_cn.png'">
-        <div class="speech-bubble">
+        <div class="speech-bubble" id="guide-text">
           世界地図から気になるエリアをポチッと選んでね！どんなレアアースが眠っているかワクワクしちゃうね✨
         </div>
       </div>
@@ -263,11 +267,11 @@
         </div>
         <div class="spot-desc" id="spot-desc">ピンを選ぶと、それぞれの土地の特徴が表示されます。</div>
         <div class="spot-detail" id="spot-detail">（初期解放：中国・アメリカ）</div>
-        <button class="btn" id="action-btn" style="background: #00fff5; color: #0f3460;" onclick="goToMine()">🚜 このエリアの採掘へ移動！</button>
+        <button class="btn" id="action-btn" style="background: #00fff5; color: #0f3460;" onclick="goToMine()" disabled>👆 先に地図でエリアを選んでね</button>
       </div>
 
       <div class="area-image-box">
-        <img id="area-img" src="world_map_bg.jpeg" alt="エリア画像" onerror="this.src='world_map_bg.jpeg'">
+        <img id="area-img" class="dim" src="world_map_bg.jpeg" alt="エリア画像" onerror="this.src='world_map_bg.jpeg'">
       </div>
     </div>
 
@@ -301,7 +305,7 @@
     };
     if (gameState.miles === undefined) gameState.miles = 500;
 
-    let selectedSpotId = 'baiyun';
+    let selectedSpotId = null;   // 未選択のあいだは移動ボタンを無効にする
 
     function showModal(title, desc) {
       document.getElementById('modalTitle').innerText = title;
@@ -359,7 +363,27 @@
       }
       initMapLocks();
       updateHeader();
+      fitMapBox();
+      if ((gameState.level || 1) >= 3) {
+        document.getElementById('guide-text').innerText = 'このゲームは基本的に自動保存されるけれど、心配な時は念のためホーム🏠からデータセーブをしておいてね！';
+      }
     });
+
+    // 地図ボックスの縦横比を画像に合わせて上下の隙間をなくし、ピンの位置も画像に対して同じ場所に補正する
+    function fitMapBox() {
+      const box = document.querySelector('.map-box'), im = new Image();
+      im.onload = () => {
+        const ratio = im.naturalWidth / im.naturalHeight, frac = 1.6 / ratio; // 旧ボックス(16:10)に対する画像の高さの割合
+        if (!(frac < 1)) return;
+        box.style.aspectRatio = `${im.naturalWidth} / ${im.naturalHeight}`;
+        const gap = (1 - frac) / 2 * 100;
+        box.querySelectorAll('.spot').forEach(sp => {
+          if (!sp.dataset.top) sp.dataset.top = parseFloat(sp.style.top);
+          sp.style.top = ((sp.dataset.top - gap) / frac) + '%';
+        });
+      };
+      im.src = 'world_map_bg.jpeg';
+    }
 
     const spotsData = {
       'baiyun': { country: '🇨🇳 中国 内モンゴル自治区', title: '白雲鄂博（バイユンオボ鉱山）', desc: '世界最大の軽レアアース鉱山。ランタンやセリウムの生産拠点。', cost: 10, milesGain: 50, minLv: 1, target: 'La, Ce, Pr, Nd', btnColor: '#00fff5', btnText: '🚜 このエリアの陸上採掘へ移動！', img: 'area_image_cn.png', flag: 'hata_cn.png' },
@@ -419,6 +443,7 @@
       btn.innerText = data.btnText;
 
       document.getElementById('area-img').src = data.img;
+      document.getElementById('area-img').classList.remove('dim');
     }
 
     function goToMine() {
