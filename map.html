@@ -6,174 +6,153 @@
   <title>レアアース・クラフト - マップ選択</title>
   <style>
     /* ─── スクロールバーのおしゃれカスタマイズ ─── */
-    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
     ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); border-radius: 10px; }
-    ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #00fff5, #3b82f6); border-radius: 10px; box-shadow: 0 0 6px rgba(0, 255, 245, 0.5); }
-    ::-webkit-scrollbar-thumb:hover { background: #ffde59; }
+    ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #00fff5, #3b82f6); border-radius: 10px; }
 
-    /* 画面全体：スマホではスクロールを許可し、タブレット等では中央配置 */
+    /* 画面全体：スクロールを完全になくし、1画面に固定する */
     body { 
       background-color: #1a1a2e; 
       color: #fff; 
       font-family: sans-serif; 
       display: flex; 
       justify-content: center; 
-      align-items: flex-start; 
-      min-height: 100vh; 
+      align-items: center; 
+      height: 100vh; 
+      height: 100dvh; 
       margin: 0; 
       touch-action: manipulation;
       -webkit-user-select: none;
       user-select: none;
+      overflow: hidden;
     }
 
-    @media (min-width: 481px) {
-      body {
-        align-items: center;
-        overflow: hidden;
-        height: 100vh;
-      }
-    }
-
-    /* スマホでは画面いっぱいに広げ、縦スクロールで絶対にメニューが見えるようにする */
+    /* スマホの画面内にすべてを強制的に収めるコンテナ */
     .phone { 
       width: 100vw; 
-      min-height: 100vh; 
+      height: 100vh; 
+      height: 100dvh; 
       max-width: 480px; 
       background: #0f3460; 
       border: none; 
       border-radius: 0; 
       display: flex; 
       flex-direction: column; 
+      overflow: hidden; 
       position: relative; 
       box-sizing: border-box; 
     }
     @media (min-width: 481px) {
       .phone {
         height: 92vh;
-        min-height: auto;
+        max-height: 880px;
         border: 4px solid #16213e;
         border-radius: 24px;
-        overflow: hidden;
         box-shadow: 0 0 20px rgba(0,0,0,0.5);
       }
     }
 
-    .header { background: #16213e; padding: 8px 10px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: bold; border-bottom: 2px solid #e94560; flex-shrink: 0; }
+    .header { background: #16213e; padding: 6px 10px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: bold; border-bottom: 2px solid #e94560; flex-shrink: 0; }
     
     .bgm-btn {
       background: rgba(0, 0, 0, 0.4); border: 1px solid #00fff5; color: #00fff5;
-      border-radius: 12px; padding: 2px 8px; font-size: 12px; cursor: pointer;
-      display: flex; align-items: center; gap: 3px; transition: all 0.2s;
+      border-radius: 12px; padding: 2px 6px; font-size: 11px; cursor: pointer;
+      display: flex; align-items: center; gap: 3px;
     }
     .bgm-btn.muted { border-color: #e94560; color: #e94560; background: rgba(233, 69, 96, 0.2); }
 
     /* 工程ナビゲーションバー */
     .koutei-bar {
       background: rgba(15, 23, 42, 0.9); border-bottom: 1px solid #00fff5;
-      padding: 6px 4px; display: flex; justify-content: space-around; align-items: center; flex-shrink: 0;
+      padding: 4px; display: flex; justify-content: space-around; align-items: center; flex-shrink: 0;
     }
-    .koutei-wrapper { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+    .koutei-wrapper { display: flex; flex-direction: column; align-items: center; gap: 1px; }
     .koutei-item {
-      width: 36px; height: 36px; background: #000; border: 2px solid transparent;
+      width: 32px; height: 32px; background: #000; border: 2px solid transparent;
       border-radius: 6px; overflow: hidden; display: flex; align-items: center; justify-content: center;
     }
-    .koutei-item.active { border-color: #00fff5; box-shadow: 0 0 10px rgba(0, 255, 245, 0.8); animation: kouteiGlow 1.2s infinite alternate; }
+    .koutei-item.active { border-color: #00fff5; box-shadow: 0 0 8px rgba(0, 255, 245, 0.8); animation: kouteiGlow 1.2s infinite alternate; }
     @keyframes kouteiGlow {
       from { border-color: #00fff5; box-shadow: 0 0 4px rgba(0,255,245,0.4); }
-      to { border-color: #ffde59; box-shadow: 0 0 12px rgba(255,222,89,0.9); }
+      to { border-color: #ffde59; box-shadow: 0 0 10px rgba(255,222,89,0.9); }
     }
     .koutei-item img { width: 100%; height: 100%; object-fit: cover; }
-    .koutei-label { font-size: 8px; color: #94a3b8; font-weight: bold; text-align: center; white-space: nowrap; }
+    .koutei-label { font-size: 7px; color: #94a3b8; font-weight: bold; text-align: center; white-space: nowrap; }
     .koutei-wrapper:has(.koutei-item.active) .koutei-label { color: #00fff5; }
 
-    .content { flex: 1; padding: 8px 10px; display: flex; flex-direction: column; gap: 8px; box-sizing: border-box; }
-    @media (min-width: 481px) {
-      .content { overflow-y: auto; }
+    /* コンテンツエリア：余分な隙間を完全に排除し、パーツを綺麗に収める */
+    .content { 
+      flex: 1; 
+      padding: 4px 8px; 
+      display: flex; 
+      flex-direction: column; 
+      gap: 4px; 
+      overflow: hidden; 
+      box-sizing: border-box; 
     }
     
     .chara-guide {
-      display: flex; align-items: center; gap: 8px; background: rgba(22,33,62,0.9);
-      border: 1px solid #00fff5; border-radius: 10px; padding: 6px 8px; flex-shrink: 0;
+      display: flex; align-items: center; gap: 6px; background: rgba(22,33,62,0.9);
+      border: 1px solid #00fff5; border-radius: 8px; padding: 4px 6px; flex-shrink: 0;
     }
-    .chara-icon { width: 40px; height: 40px; border-radius: 50%; border: 2px solid #00fff5; object-fit: cover; flex-shrink: 0; background: #16213e; }
+    .chara-icon { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #00fff5; object-fit: cover; flex-shrink: 0; background: #16213e; }
     .speech-bubble {
-      position: relative; background: #f8f9fa; border: 1px solid #00fff5; border-radius: 8px;
-      padding: 5px 8px; font-size: 11px; color: #1a1a2e; font-weight: bold; flex: 1; line-height: 1.3;
+      position: relative; background: #f8f9fa; border: 1px solid #00fff5; border-radius: 6px;
+      padding: 4px 6px; font-size: 10px; color: #1a1a2e; font-weight: bold; flex: 1; line-height: 1.2;
     }
     .speech-bubble::after {
-      content: ''; position: absolute; left: -8px; top: 50%; transform: translateY(-50%);
-      border-width: 5px 8px 5px 0; border-style: solid; border-color: transparent #f8f9fa transparent; display: block;
+      content: ''; position: absolute; left: -6px; top: 50%; transform: translateY(-50%);
+      border-width: 4px 6px 4px 0; border-style: solid; border-color: transparent #f8f9fa transparent; display: block;
     }
 
-    /* 地図ボックスは元の綺麗な高さ(140px)に復旧 */
+    /* 世界地図ボックス */
     .map-box { 
       width: 100%; height: 140px; background: url('world_map_bg.jpeg') center/cover no-repeat; 
-      border: 2.5px solid #00fff5; border-radius: 10px; position: relative; overflow: hidden; flex-shrink: 0;
-      animation: mapBoxGlow 1.8s infinite alternate;
-    }
-    @keyframes mapBoxGlow {
-      0% { border-color: #00fff5; box-shadow: 0 0 4px rgba(0,255,245,0.4), inset 0 0 4px rgba(0,255,245,0.2); }
-      100% { border-color: #ffde59; box-shadow: 0 0 14px rgba(255,222,89,0.9), inset 0 0 8px rgba(255,222,89,0.4); }
+      border: 2px solid #00fff5; border-radius: 8px; position: relative; overflow: hidden; flex-shrink: 0;
     }
 
     .spot { 
-      position: absolute; background: #16213e; border: 1.5px solid #00fff5; color: #fff; 
-      padding: 2px 5px; border-radius: 6px; font-size: 9px; cursor: pointer; transform: translate(-50%,-50%); 
-      display: flex; align-items: center; gap: 3px; white-space: nowrap; z-index: 10; 
-      transition: transform 0.2s;
+      position: absolute; background: #16213e; border: 1px solid #00fff5; color: #fff; 
+      padding: 1px 4px; border-radius: 4px; font-size: 8px; cursor: pointer; transform: translate(-50%,-50%); 
+      display: flex; align-items: center; gap: 2px; white-space: nowrap; z-index: 10; 
     }
-    .spot:hover { transform: translate(-50%,-50%) scale(1.1); }
     .spot.locked { border-color: #e94560; opacity: 0.85; background: #2a1b2e; }
-    .spot img { width: 12px; height: 9px; object-fit: cover; border-radius: 1px; }
+    .spot img { width: 10px; height: 7px; object-fit: cover; border-radius: 1px; }
     
-    .card { background: rgba(22,33,62,0.9); border: 1px solid #00fff5; border-radius: 10px; padding: 6px 8px; font-size: 11px; flex-shrink: 0; }
+    .card { background: rgba(22,33,62,0.9); border: 1px solid #00fff5; border-radius: 8px; padding: 4px 8px; font-size: 10px; flex-shrink: 0; }
     
-    .map-title {
-      font-weight: bold; color: #00fff5; margin-bottom: 4px; font-size: 14px;
-      animation: titleBlink 1.5s infinite alternate;
-    }
-    @keyframes titleBlink {
-      0% { color: #00fff5; text-shadow: 0 0 4px rgba(0,255,245,0.4); }
-      100% { color: #ffde59; text-shadow: 0 0 10px rgba(255,222,89,0.8), 0 0 20px rgba(255,222,89,0.4); }
-    }
+    .map-title { font-weight: bold; color: #00fff5; margin-bottom: 2px; font-size: 11px; }
+    .spot-country { font-size: 9px; color: #8a8a8a; display: block; }
+    .spot-title { font-size: 11px; color: #ffde59; font-weight: bold; display: block; }
 
-    .spot-country { font-size: 10px; color: #8a8a8a; font-weight: normal; display: block; }
-    .spot-title { font-size: 14px; color: #ffde59; font-weight: bold; display: block; margin-top: 1px; }
-
-    .btn { background: #00fff5; color: #0f3460; border: none; padding: 6px; font-weight: bold; border-radius: 12px; cursor: pointer; width: 100%; margin-top: 3px; font-size: 11px; transition: background 0.2s; }
-    .btn:active { transform: scale(0.98); }
+    .btn { background: #00fff5; color: #0f3460; border: none; padding: 5px; font-weight: bold; border-radius: 8px; cursor: pointer; width: 100%; margin-top: 2px; font-size: 10px; }
     
-    /* 下部のエリア画像ボックスも元の高さ(140px)に復旧 */
+    /* 赤く塗られていた下部のデッドスペースになるエリア画像は、スマホ画面では非表示にして隙間を完全に消す */
     .area-image-box {
-      width: 100%; height: 140px; background: rgba(15,23,42,0.8);
-      border: 1px solid #00fff5; border-radius: 10px; overflow: hidden; display: flex; justify-content: center; align-items: center; flex-shrink: 0;
+      display: none; 
     }
-    .area-image-box img { width: 100%; height: 100%; object-fit: cover; }
 
-    /* 統一されたフッターナビゲーション */
+    /* 統一フッターナビゲーション：これで確実に一番下に固定表示されます */
     .nav { 
-      height: 56px; background: #16213e; display: flex; justify-content: space-around; align-items: center; padding: 0 8px; flex-shrink: 0; border-top: 2px solid #1f293d; box-sizing: border-box;
-      margin-top: auto; /* スマホで一番下に綺麗に収める */
+      height: 52px; background: #16213e; display: flex; justify-content: space-around; align-items: center; padding: 0 4px; flex-shrink: 0; border-top: 2px solid #1f293d; box-sizing: border-box;
+      margin-top: auto;
     }
     .nav-item { 
       color: #a0aec0; cursor: pointer; text-align: center; background: rgba(255, 255, 255, 0.05); 
-      border: 1px solid rgba(0, 255, 245, 0.2); border-radius: 10px; padding: 4px 8px; font-size: 10px; font-weight: bold; flex: 1; margin: 0 3px; transition: all 0.2s;
+      border: 1px solid rgba(0, 255, 245, 0.2); border-radius: 8px; padding: 4px; font-size: 9px; font-weight: bold; flex: 1; margin: 0 2px;
     }
-    .nav-item:active { transform: scale(0.95); }
-    .nav-item.active { color: #00fff5; background: rgba(0, 255, 245, 0.15); border-color: #00fff5; box-shadow: 0 0 8px rgba(0, 255, 245, 0.3); }
+    .nav-item.active { color: #00fff5; background: rgba(0, 255, 245, 0.15); border-color: #00fff5; }
 
     /* モーダル */
     .modal-overlay {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(10, 15, 30, 0.85); display: flex; justify-content: center; align-items: center;
       z-index: 100; backdrop-filter: blur(2px); box-sizing: border-box; padding: 16px;
     }
     .modal-content {
-      background: #16213e; border: 2px solid #00fff5; border-radius: 16px; padding: 16px 12px;
-      width: 100%; max-width: 270px; text-align: center; box-shadow: 0 0 20px rgba(0, 255, 245, 0.3);
-      animation: popup 0.3s ease-out; box-sizing: border-box;
+      background: #16213e; border: 2px solid #00fff5; border-radius: 16px; padding: 14px;
+      width: 100%; max-width: 260px; text-align: center; box-shadow: 0 0 20px rgba(0, 255, 245, 0.3);
     }
-    @keyframes popup { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
   </style>
 </head>
 <body>
@@ -216,7 +195,6 @@
     </div>
 
     <div class="content">
-      
       <div class="chara-guide">
         <img src="navtb.png" alt="テルビウム" class="chara-icon" onerror="this.src='hata_cn.png'">
         <div class="speech-bubble">
@@ -224,10 +202,9 @@
         </div>
       </div>
 
-      <div class="card" style="padding: 6px 10px;">
+      <div class="card" style="padding: 4px 8px;">
         <div class="map-title">🗺️ 採掘エリアを選択してください</div>
         <div class="map-box">
-          <!-- スポットピン -->
           <div class="spot" id="spot-greenland" style="top: 22%; left: 32%;" onclick="selectSpot('greenland')"><img src="hata_greenisland.png" alt="GL">グリーンランド</div>
           <div class="spot" id="spot-america" style="top: 36%; left: 18%;" onclick="selectSpot('america')"><img src="hata_us.png" alt="US">マウンテンパス</div>
           <div class="spot" id="spot-baiyun" style="top: 32%; left: 63%;" onclick="selectSpot('baiyun')"><img src="hata_cn.png" alt="CN">白雲鄂博</div>
@@ -242,13 +219,13 @@
       <div class="card" id="info-card">
         <div id="spot-name">
           <span class="spot-country" style="color:#00fff5;">📍 採掘エリアを選ぼう</span>
-          <span class="spot-title" style="font-size:12px;">上の世界地図からピンをタップしよう！</span>
+          <span class="spot-title" style="font-size:10px;">上の世界地図からピンをタップしよう！</span>
         </div>
-        <div style="font-size:10px; color:#dcdde1; margin:2px 0;" id="spot-desc">ピンを選ぶと、それぞれの土地の特徴が表示されます。</div>
-        <div style="font-size:10px; color:#8a8a8a;" id="spot-detail">（初期解放：中国・アメリカ）</div>
+        <div style="font-size:9px; color:#dcdde1; margin:1px 0;" id="spot-desc">ピンを選ぶと土地の特徴が表示されます。</div>
         <button class="btn" id="action-btn" style="background: #00fff5; color: #0f3460;" onclick="goToMine()">🚜 このエリアの採掘へ移動！</button>
       </div>
 
+      <!-- デッドスペースの原因だった下部のエリア画像を非表示にして隙間を消去 -->
       <div class="area-image-box">
         <img id="area-img" src="world_map_bg.jpeg" alt="エリア画像" onerror="this.src='world_map_bg.jpeg'">
       </div>
@@ -257,20 +234,20 @@
     <!-- モーダルポップアップ -->
     <div id="customModal" class="modal-overlay" style="display: none;">
       <div class="modal-content">
-        <div style="font-size: 24px; margin-bottom: 2px;">🔒</div>
-        <div id="modalTitle" style="font-size: 13px; font-weight: bold; color: #ffde59; margin-bottom: 4px;">解放条件</div>
-        <div id="modalDesc" style="font-size: 11px; color: #f1f5f9; margin-bottom: 10px; line-height: 1.4;">説明文</div>
+        <div style="font-size: 22px; margin-bottom: 2px;">🔒</div>
+        <div id="modalTitle" style="font-size: 12px; font-weight: bold; color: #ffde59; margin-bottom: 2px;">解放条件</div>
+        <div id="modalDesc" style="font-size: 10px; color: #f1f5f9; margin-bottom: 8px; line-height: 1.3;">説明文</div>
         <button class="btn" style="background: #00fff5; color: #0f3460; margin-top: 0;" onclick="closeModal()">閉じる</button>
       </div>
     </div>
 
     <!-- 統一フッターナビゲーション -->
     <div class="nav">
-      <div class="nav-item active" onclick="location.href='map.html'"><span style="font-size:14px; display:block;">🗺️</span>マップ</div>
-      <div class="nav-item" onclick="location.href='seisei.html'"><span style="font-size:14px; display:block;">🧪</span>精製</div>
-      <div class="nav-item" onclick="location.href='factory.html'"><span style="font-size:14px; display:block;">🏭</span>工場</div>
-      <div class="nav-item" onclick="location.href='zukan.html'"><span style="font-size:14px; display:block;">📖</span>図鑑</div>
-      <div class="nav-item" onclick="location.href='home.html'"><span style="font-size:14px; display:block;">🏠</span>ホーム</div>
+      <div class="nav-item active" onclick="location.href='map.html'"><span style="font-size:12px; display:block;">🗺️</span>マップ</div>
+      <div class="nav-item" onclick="location.href='seisei.html'"><span style="font-size:12px; display:block;">🧪</span>精製</div>
+      <div class="nav-item" onclick="location.href='factory.html'"><span style="font-size:12px; display:block;">🏭</span>工場</div>
+      <div class="nav-item" onclick="location.href='zukan.html'"><span style="font-size:12px; display:block;">📖</span>図鑑</div>
+      <div class="nav-item" onclick="location.href='home.html'"><span style="font-size:12px; display:block;">🏠</span>ホーム</div>
     </div>
   </div>
 
@@ -347,7 +324,7 @@
       'myanmar': { country: '🇲🇲 ミャンマー', title: 'イオン吸着鉱床', desc: 'EVや風力発電に不可欠な「重レアアース」が豊富にとれる粘土層鉱床。', cost: 100, milesGain: 200, minLv: 10, target: 'Dy, Tb, Y', btnColor: '#ff55ff', btnText: '🚜 このエリアの粘土層採掘へ移動！', img: 'area_image_myanmar.png', flag: 'hata_mm.png' },
       'africa': { country: '🌍 アフリカ新興国（マラウイ等）', title: 'アフリカ新興鉱床', desc: '脱・中国依存に向けて近年世界中から開発が進む注目のフロンティア。', cost: 150, milesGain: 250, minLv: 15, target: 'Lu, Yb, Sc', btnColor: '#ffbb55', btnText: '🚜 このエリアの開拓採掘へ移動！', img: 'area_image_africa.png', flag: 'hata_af.png' },
       'tahiti': { country: '🇫🇷 南太平洋', title: 'マンガン団塊深海エリア', desc: '深海底に転がる金属塊。重レアアースやコバルトを含む高価なゾーン。', cost: 200, milesGain: 300, minLv: 20, target: 'Dy, Tb, Er, Yb', btnColor: '#2980b9', btnText: '🚢 このエリアの深海探査へ移動！', img: 'area_image_tahiti.png', flag: 'hata_pf.png' },
-      'greenland': { country: '🇬🇱 グリーンランド', title: 'クバネフエルド鉱床', dp: '氷河の下に眠る、世界最大級の未開発レアアース・ウラン複合鉱床。', cost: 300, milesGain: 400, minLv: 30, target: 'Gd, Ho, Er', btnColor: '#55ffff', btnText: '⛏️ 氷河エリアの採掘へ移動！', img: 'area_image_greenland.png', flag: 'hata_greenisland.png' },
+      'greenland': { country: '🇬🇱 グリーンランド', title: 'クバネフエルド鉱床', desc: '氷河の下に眠る、世界最大級の未開発レアアース・ウラン複合鉱床。', cost: 300, milesGain: 400, minLv: 30, target: 'Gd, Ho, Er', btnColor: '#55ffff', btnText: '⛏️ 氷河エリアの採掘へ移動！', img: 'area_image_greenland.png', flag: 'hata_greenisland.png' },
       'okinotori': { country: '🇯🇵 日本（南鳥島・沖ノ鳥島）', title: 'EEZ海底泥エリア', desc: '日本の未来を担う！水深数千mの海底に眠る超高濃度レアアース泥。', cost: 500, milesGain: 800, minLv: 50, target: '全17元素（高純度）', btnColor: '#3498db', btnText: '🚢 このエリアの海中探査・採掘へ移動！', img: 'area_image_okinotori.png', flag: 'hata_jp.png' }
     };
 
@@ -388,16 +365,15 @@
         <span class="spot-title">${data.title}</span>
       `;
       document.getElementById('spot-desc').innerText = data.desc;
-      document.getElementById('spot-detail').innerText = `コスト: ${data.cost}G / 獲得マイル: +${data.milesGain}m / 主な元素: ${data.target}`;
       
       const btn = document.getElementById('action-btn');
       btn.style.background = data.btnColor;
       btn.style.color = '#0f3460';
-      btn.style.cursor = 'pointer';
       btn.disabled = false;
       btn.innerText = data.btnText;
 
-      document.getElementById('area-img').src = data.img;
+      const areaImg = document.getElementById('area-img');
+      if (areaImg) areaImg.src = data.img;
     }
 
     function goToMine() {
