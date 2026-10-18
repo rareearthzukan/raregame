@@ -5,8 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>エルビウムの美肌ブロック崩し</title>
   <style>
-    body { background-color: #1a1a2e; color: #fff; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; height: 100dvh; margin: 0; overflow: hidden; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; touch-action: manipulation; overscroll-behavior: none; }
-    .phone { flex-shrink: 0; }
+    body { background-color: #1a1a2e; color: #fff; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; user-select: none; -webkit-user-select: none; touch-action: none; }
     .phone { width: 360px; height: 740px; background: #0f3460; border: 4px solid #16213e; border-radius: 24px; display: flex; flex-direction: column; overflow: hidden; position: relative; box-sizing: border-box; }
 
     /* ヘッダー */
@@ -39,7 +38,7 @@
         #2c3e50;
       border: 2px solid #00fff5; border-radius: 12px; overflow: hidden;
     }
-    #gameCanvas { display: block; border: 2px solid rgba(0,255,245,.55); border-radius: 8px; position: relative; z-index: 2; }
+    #gameCanvas { display: block; border: 2px solid rgba(0,255,245,.55); border-radius: 8px; position: relative; z-index: 2; touch-action: none; cursor: pointer; }
 
     .game-desc-tip {
       font-size: 9.5px;
@@ -111,7 +110,7 @@
         <div class="stat-col">
           <div class="score-line">SCORE <b id="score">0</b></div>
           <div class="sub-line">❤️ レーザー残弾: <b id="lives">3</b></div>
-          <div class="mode-indicator" id="modeIndicator">✨ 発射ボタンを押してスタート！</div>
+          <div class="mode-indicator" id="modeIndicator">✨ 画面をスワイプしてスタート！</div>
         </div>
       </div>
 
@@ -121,7 +120,7 @@
       </div>
 
       <div class="game-desc-tip">
-        👆 画面スワイプで移動・タップで発射／🦴骨はそのまま！
+        👆 パドルの下あたりを指でスワイプして操作してね！
       </div>
 
       <div class="controls">
@@ -142,8 +141,8 @@
 
         <div class="tutor-slide active" data-slide="0">
           <div class="tutor-desc">
-            <b>1. レーザーを発射！</b><br>
-            「🚀 発射！」ボタンやスペースキーでエルビウムYAGレーザーを飛ばし、パドルで落とさず打ち返そう！
+            <b>1. パドルを指でスワイプ！</b><br>
+            キャンバス下部（パドルの下あたり）を指でスワイプしてパドルを動かし、エルビウムYAGレーザーを打ち返そう！
           </div>
         </div>
         <div class="tutor-slide" data-slide="1">
@@ -228,10 +227,11 @@
     let state = 'tutorial';
     let score = 0, lives = 3, claimed = false, result = null;
     let currentDiff = 'normal';
-    let speedBoostCounter = 0; // パドルとのラリー（バウンド）回数カウンター
+    let speedBoostCounter = 0; 
 
-    const paddle = { x: W / 2 - 35, y: H - 22, w: 70, h: 11, dx: 6 };
-    let laser = { x: W / 2, y: H - 38, baseVx: 3, baseVy: -4.5, vx: 3, vy: -4.5, radius: 7, active: false };
+    // パドルの位置を少し上に配置（H - 50）し、下に指を置くスペースを確保
+    const paddle = { x: W / 2 - 35, y: H - 50, w: 70, h: 11, dx: 6 };
+    let laser = { x: W / 2, y: H - 62, baseVx: 3, baseVy: -4.5, vx: 3, vy: -4.5, radius: 7, active: false };
 
     let blocks = [];
 
@@ -347,83 +347,58 @@
     function updateHUD() {
       $('score').textContent = score.toLocaleString();$('lives').textContent = lives;
       const diffName = currentDiff === 'normal' ? 'ノーマル' : currentDiff === 'hard' ? 'ハード(加速有)' : 'ベリーハード(骨配置)';
-      $('modeIndicator').textContent = laser.active ? `✨ ${diffName}ステージ` : `🚀 「発射！」ボタンでスタート`;
+      $('modeIndicator').textContent = laser.active ? `✨ ${diffName}ステージ` : `🚀 画面をスワイプしてスタート`;
     }
 
     let leftPressed = false, rightPressed = false;
+    let isDragging = false;
 
     const fireAction = () => {
       if (!laser.active && state === 'play') laser.active = true;
     };
 
-    // ボタン（押しっぱなしのまま指が外れても止まるように cancel/leave も対応）
-    const bindHold = (id, setter) => {
-      const el = $(id);
-      el.addEventListener('pointerdown', () => setter(true));
-      ['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => el.addEventListener(ev, () => setter(false)));
-    };
-    bindHold('btnL', v => leftPressed = v);
-    bindHold('btnR', v => rightPressed = v);
-    $('btnFire').addEventListener('click', fireAction);
-
-    // ===== スワイプ操作 =====
-    // 相対ドラッグ方式：指を置いた位置に瞬間移動せず、指の「動いた量」だけパドルが動く。
-    // さらに1フレームあたりの最大移動量(SWIPE_MAX_SPEED)を設けて、キー操作と近い難易度に保つ。
-    const SWIPE_GAIN = 1.0;        // 指の移動量に対する感度（1.0 = 指と同じ距離）
-    const SWIPE_MAX_SPEED = 8;     // パドル最大速度 px/frame（キー操作は6）
-    const TAP_MAX_MOVE = 10;       // この距離(px)未満＆短時間ならタップ扱い → 発射
-    const TAP_MAX_TIME = 300;      // ms
-    let swipeTargetX = null;       // パドル目標位置（ゲーム座標）
-    let touchId = null, lastClientX = 0, downX = 0, downY = 0, downT = 0, moved = 0;
-
-    const gameArea = $('gameArea');
-    gameArea.style.touchAction = 'none';
-
-    gameArea.addEventListener('pointerdown', e => {
-      if (state !== 'play' || touchId !== null) return;
-      touchId = e.pointerId;
-      lastClientX = downX = e.clientX; downY = e.clientY;
-      downT = performance.now(); moved = 0;
-      swipeTargetX = paddle.x;
-      try { gameArea.setPointerCapture(e.pointerId); } catch (_) {}
-      e.preventDefault();
+    // タッチ＆マウススワイプ操作（パドルの下あたりをタッチ・ドラッグして操作）
+    canvas.addEventListener('pointerdown', (e) => {
+      if (state !== 'play') return;
+      isDragging = true;
+      updatePaddleByTouch(e);
+      fireAction();
+      try { canvas.setPointerCapture(e.pointerId); } catch(err) {}
     });
-    gameArea.addEventListener('pointermove', e => {
-      if (e.pointerId !== touchId || state !== 'play') return;
+
+    canvas.addEventListener('pointermove', (e) => {
+      if (!isDragging || state !== 'play') return;
+      updatePaddleByTouch(e);
+    });
+
+    canvas.addEventListener('pointerup', (e) => {
+      isDragging = false;
+      try { canvas.releasePointerCapture(e.pointerId); } catch(err) {}
+    });
+
+    canvas.addEventListener('pointercancel', () => {
+      isDragging = false;
+    });
+
+    function updatePaddleByTouch(e) {
       const rect = canvas.getBoundingClientRect();
-      const scale = rect.width / W;                       // 画面スケールを補正
-      const dx = (e.clientX - lastClientX) / scale * SWIPE_GAIN;
-      lastClientX = e.clientX;
-      moved += Math.abs(dx);
-      if (swipeTargetX === null) swipeTargetX = paddle.x;
-      swipeTargetX = Math.max(0, Math.min(W - paddle.w, swipeTargetX + dx));
-      e.preventDefault();
-    });
-    const endSwipe = e => {
-      if (e.pointerId !== touchId) return;
-      const isTap = e.type === 'pointerup' && moved < TAP_MAX_MOVE && (performance.now() - downT) < TAP_MAX_TIME;
-      touchId = null; swipeTargetX = null;
-      if (isTap) fireAction();                            // タップで発射
-    };
-    gameArea.addEventListener('pointerup', endSwipe);
-    gameArea.addEventListener('pointercancel', endSwipe);
-
-    // 画面サイズに合わせて全体を拡大縮小（スマホ・タブレット対応）
-    const phoneEl = document.querySelector('.phone');
-    function fitScreen() {
-      const s = Math.min(window.innerWidth / 368, window.innerHeight / 748, 1.6);
-      phoneEl.style.transform = `scale(${s})`;
-      phoneEl.style.transformOrigin = 'center center';
+      const scaleX = canvas.width / rect.width;
+      const touchX = (e.clientX - rect.left) * scaleX;
+      
+      // 指の位置にパドルの中心を合わせる
+      paddle.x = touchX - paddle.w / 2;
+      if (paddle.x < 0) paddle.x = 0;
+      if (paddle.x > W - paddle.w) paddle.x = W - paddle.w;
     }
-    window.addEventListener('resize', fitScreen);
-    window.addEventListener('orientationchange', fitScreen);
-    fitScreen();
+
+    $('btnL').addEventListener('pointerdown', () => leftPressed = true);
+    $('btnL').addEventListener('pointerup', () => leftPressed = false);$('btnR').addEventListener('pointerdown', () => rightPressed = true);
+    $('btnR').addEventListener('pointerup', () => rightPressed = false);$('btnFire').addEventListener('click', fireAction);
 
     $('pause-btn').addEventListener('click', () => {
       if (state === 'play') { state = 'pause'; $('pauseModal').style.display = 'flex'; }
     });
-    $('resumeBtn').addEventListener('click', () => {$('pauseModal').style.display = 'none'; state = 'play';
-    });
+    $('resumeBtn').addEventListener('click', () => {$('pauseModal').style.display = 'none'; state = 'play'; });
 
     document.addEventListener('keydown', e => {
       if (state !== 'play') return;
@@ -442,12 +417,6 @@
       if (leftPressed) paddle.x = Math.max(0, paddle.x - paddle.dx);
       if (rightPressed) paddle.x = Math.min(W - paddle.w, paddle.x + paddle.dx);
 
-      // スワイプ：目標位置へ最大速度つきで追従（瞬間移動を防ぐ）
-      if (swipeTargetX !== null) {
-        const diff = swipeTargetX - paddle.x;
-        paddle.x += Math.max(-SWIPE_MAX_SPEED, Math.min(SWIPE_MAX_SPEED, diff));
-      }
-
       blocks.forEach(b => { if (b.hitFlash > 0) b.hitFlash--; });
 
       if (!laser.active) {
@@ -455,7 +424,6 @@
         return;
       }
 
-      // サブステップ（トンネリング対策）
       const steps = Math.ceil(Math.max(Math.abs(laser.vx), Math.abs(laser.vy)) / 3);
       const stepVx = laser.vx / steps;
       const stepVy = laser.vy / steps;
@@ -464,12 +432,10 @@
         laser.x += stepVx;
         laser.y += stepVy;
 
-        // 壁との反射（ここではスピードは戻らない）
         if (laser.x - laser.radius < 0) { laser.x = laser.radius; laser.vx *= -1; break; }
         if (laser.x + laser.radius > W) { laser.x = W - laser.radius; laser.vx *= -1; break; }
         if (laser.y - laser.radius < 0) { laser.y = laser.radius; laser.vy *= -1; break; }
 
-        // パドルとの衝突（ここで初めてラリー回数をカウントし、3回に達するとスピードが戻る）
         if (
           laser.y + laser.radius >= paddle.y &&
           laser.y - laser.radius <= paddle.y + paddle.h &&
@@ -481,11 +447,9 @@
           const currentSpeed = Math.hypot(laser.vx, laser.vy);
           const angle = hitPos * 1.1;
 
-          // スピードアップ中の場合、パドルで打ち返すたびにラリー回数を減らす
           if (speedBoostCounter > 0) {
             speedBoostCounter--;
             if (speedBoostCounter === 0) {
-              // 3回ラリー達成で元のスピードに戻す
               const baseSpeed = Math.hypot(laser.baseVx, laser.baseVy);
               laser.vx = baseSpeed * Math.sin(angle);
               laser.vy = -Math.abs(baseSpeed * Math.cos(angle));
@@ -502,7 +466,6 @@
           break;
         }
 
-        // ブロックとの衝突判定
         let collided = false;
         blocks.forEach(b => {
           if (!collided && b.status === 1) {
@@ -546,11 +509,10 @@
                 score += 50;
                 updateHUD();
 
-                // 加速ブロックに当たった場合（スピードが1.4倍になり、3回ラリーが必要になる）
                 if (b.type === 'speedup' && speedBoostCounter === 0) {
                   laser.vx *= 1.4;
                   laser.vy *= 1.4;
-                  speedBoostCounter = 3; // パドルで3回打ち返す必要が生じる
+                  speedBoostCounter = 3; 
                   showBanner('⚡ スピードアップ！パドルで3回打ち返そう');
                 }
 
