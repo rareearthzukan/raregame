@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ホルミウム・ビリヤード：レーザー・バンクショット</title>
+  <style>
+    body { background-color: #1a1a2e; color: #fff; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; user-select: none; -webkit-user-select: none; }
+    .phone { width: 360px; height: 740px; background: #0f3460; border: 4px solid #16213e; border-radius: 24px; display: flex; flex-direction: column; overflow: hidden; position: relative; box-sizing: border-box; }
+    .header { background: #16213e; padding: 8px 10px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: bold; border-bottom: 2px solid #e94560; flex-shrink: 0; gap: 6px; }
+    .bgm-btn { background: rgba(0,0,0,.4); border: 1px solid #00fff5; color: #00fff5; border-radius: 12px; padding: 2px 8px; font-size: 12px; cursor: pointer; transition: all .2s; }
+    .bgm-btn.muted { border-color: #e94560; color: #e94560; background: rgba(233,69,96,.2); }
+    .content { flex: 1; padding: 6px 10px 8px; display: flex; flex-direction: column; gap: 5px; position: relative; overflow: hidden; box-sizing: border-box; }
+
+    /* ステータス */
+    .status-panel { display: flex; align-items: center; gap: 8px; background: rgba(22,33,62,.85); border: 1px solid #00fff5; padding: 4px 8px; border-radius: 8px; font-size: 11px; flex-shrink: 0; }
+    .avatar { width: 46px; height: 46px; border-radius: 50%; border: 2px solid #00fff5; background: rgba(15,23,42,.85); overflow: hidden; flex-shrink: 0; transition: transform .15s, border-color .2s, box-shadow .2s; }
+    .avatar.foe { border-color: #ff758c; }
+    .avatar.shake { animation: shake .4s; }
+    .avatar.glow { box-shadow: 0 0 12px #ffb347; border-color: #ffb347; }
+    .avatar img { width: 100%; height: 100%; object-fit: contain; display: block; }
+    .stat-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; text-align: center; }
+    .stat-title { font-size: 12px; font-weight: bold; color: #ffeb3b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .stat-line { font-size: 10px; color: #dcdde1; white-space: nowrap; }
+    .stat-line b { color: #00fff5; }
+    .dots { letter-spacing: 2px; color: #ffb347; font-size: 12px; }
+    .hp { color: #ff758c; letter-spacing: 1px; }
+
+    /* 台 */
+    .game-area { position: relative; flex: none; display: flex; justify-content: center; align-items: center; background: #1b2438; border: 2px solid #00fff5; border-radius: 12px; overflow: hidden; padding: 2px 0; }
+    #cv { display: block; touch-action: none; border-radius: 10px; cursor: crosshair; }
+    .speech { position: absolute; left: 50%; top: 8px; transform: translateX(-50%); z-index: 6; background: #fff; color: #16213e; font-size: 11px; font-weight: bold; padding: 4px 10px; border-radius: 12px; border: 2px solid #ffb347; opacity: 0; pointer-events: none; transition: opacity .2s; white-space: nowrap; max-width: 95%; overflow: hidden; text-overflow: ellipsis; }
+    .speech.show { opacity: 1; }
+    .banner { position: absolute; left: 50%; top: 40%; transform: translate(-50%,-50%) scale(.85); z-index: 6; font-weight: bold; font-size: 14px; text-align: center; padding: 8px 14px; border-radius: 10px; background: rgba(0,0,0,.8); border: 2px solid #ffde59; color: #ffde59; opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s; line-height: 1.6; white-space: nowrap; }
+    .banner.show { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+    .banner.bad { border-color: #ff4757; color: #ff9aa5; }
+
+    /* 操作 */
+    .power-row { display: flex; align-items: center; gap: 8px; background: rgba(22,33,62,.85); border: 1px solid #00fff5; border-radius: 8px; padding: 3px 10px; flex-shrink: 0; font-size: 11px; }
+    .power-row b { color: #ffb347; min-width: 34px; text-align: right; }
+    input[type=range] { -webkit-appearance: none; appearance: none; flex: 1; height: 8px; border-radius: 6px; background: linear-gradient(90deg, #00fff5, #ffb347, #ff4757); outline: none; }
+    input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%; background: #fff; border: 3px solid #ffb347; box-shadow: 0 0 8px #ffb347; cursor: pointer; }
+    input[type=range]::-moz-range-thumb { width: 18px; height: 18px; border-radius: 50%; background: #fff; border: 3px solid #ffb347; cursor: pointer; }
+    .controls { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1.7fr; gap: 5px; flex-shrink: 0; }
+    .ctrl-btn { background: #16213e; border: 2px solid #00fff5; color: #fff; padding: 5px 1px; border-radius: 10px; font-size: 15px; font-weight: bold; cursor: pointer; text-align: center; transition: background .1s; touch-action: none; line-height: 1.15; }
+    .ctrl-btn small { display: block; font-size: 9px; }
+    .ctrl-btn:active { background: #00fff5; color: #0f3460; }
+    .ctrl-btn.shot { border-color: #ffb347; color: #ffb347; background: rgba(255,179,71,.12); font-size: 16px; }
+    .ctrl-btn.shot:active { background: #ffb347; color: #3a1f00; }
+    .ctrl-btn:disabled { opacity: .4; }
+    .nav-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; flex-shrink: 0; }
+    .btn-back { background: #e94560; color: #fff; border: none; padding: 7px; font-weight: bold; border-radius: 8px; cursor: pointer; width: 100%; font-size: 11px; box-sizing: border-box; }
+    .btn-back.sel { background: #16213e; color: #00fff5; border: 1px solid #00fff5; }
+
+    @keyframes shake { 0%,100% { transform: translateX(0); } 20% { transform: translateX(-4px) rotate(-4deg); } 60% { transform: translateX(4px) rotate(4deg); } }
+    @keyframes popup { 0% { transform: scale(.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+    /* モーダル */
+    .modal-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(10,15,30,.93); display: flex; justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(2px); box-sizing: border-box; padding: 12px; }
+    .modal-content { background: #16213e; border: 2px solid #00fff5; border-radius: 16px; padding: 14px; width: 100%; max-width: 316px; text-align: center; box-shadow: 0 0 20px rgba(0,255,245,.3); animation: popup .3s ease-out; box-sizing: border-box; max-height: 100%; overflow-y: auto; }
+    .modal-avatar { width: 64px; height: 64px; object-fit: contain; border-radius: 50%; border: 2px solid #ffb347; background: rgba(15,23,42,.85); margin: 0 auto; display: block; }
+    .btn-main { background: #00fff5; color: #0f3460; font-size: 12px; padding: 10px; }
+    .btn-sub { background: #16213e; color: #00fff5; border: 1px solid #00fff5; font-size: 11px; padding: 8px; margin-top: 6px; }
+    .result-breakdown { background: rgba(15,23,42,.8); border: 1px solid #00fff5; border-radius: 8px; padding: 8px; margin: 8px 0; font-size: 11px; text-align: left; display: flex; flex-direction: column; gap: 4px; }
+    .result-row { display: flex; justify-content: space-between; gap: 8px; }
+    .stars { font-size: 26px; letter-spacing: 4px; color: #ffde59; text-shadow: 0 0 10px #ffb347; margin: 2px 0; }
+    .stars .off { color: rgba(255,255,255,.2); text-shadow: none; }
+
+    /* チュートリアル */
+    .tutor-head { font-size: 13px; font-weight: bold; color: #ffeb3b; margin-bottom: 8px; }
+    .tutor-canvas { display: block; margin: 0 auto 8px; width: 250px; height: 120px; border: 2px solid #ffb347; border-radius: 12px; background: #0a1a35; box-shadow: 0 0 14px rgba(255,179,71,.35); }
+    .tutor-title { font-size: 13px; font-weight: bold; color: #00fff5; margin-bottom: 4px; }
+    .tutor-desc { font-size: 11px; color: #f1f5f9; line-height: 1.55; text-align: left; background: rgba(0,0,0,.3); padding: 8px 10px; border-radius: 8px; min-height: 92px; margin-bottom: 8px; box-sizing: border-box; }
+    .tutor-dots { display: flex; justify-content: center; gap: 6px; margin-bottom: 10px; }
+    .tutor-dots span { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,.25); }
+    .tutor-dots span.on { background: #ffb347; box-shadow: 0 0 6px #ffb347; }
+    .tutor-btns { display: flex; gap: 8px; }
+    .tutor-btns .btn-back { flex: 1 1 0; width: auto; min-width: 0; margin: 0; padding: 10px 4px; white-space: nowrap; font-size: 12px; }
+    .skip-link { background: none; border: none; color: #94a3b8; font-size: 10px; margin-top: 8px; cursor: pointer; text-decoration: underline; }
+
+    /* ステージ選択 */
+    .sel-card { background: rgba(15,23,42,.8); border: 1px solid rgba(0,255,245,.5); border-radius: 10px; padding: 8px; margin-bottom: 8px; text-align: left; }
+    .sel-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+    .sel-head img { width: 40px; height: 40px; object-fit: contain; border-radius: 50%; border: 2px solid #ff758c; background: #190c2e; flex-shrink: 0; }
+    .sel-name { font-size: 12px; font-weight: bold; color: #ffeb3b; }
+    .sel-desc { font-size: 9px; color: #b8c2d6; line-height: 1.35; }
+    .sel-stages { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
+    .st-btn { background: #16213e; border: 2px solid #00fff5; color: #fff; border-radius: 8px; padding: 5px 0; font-size: 12px; font-weight: bold; cursor: pointer; line-height: 1.25; }
+    .st-btn small { display: block; font-size: 10px; color: #ffde59; letter-spacing: 1px; }
+    .st-btn.boss { border-color: #ff758c; }
+    .st-btn.lock { opacity: .35; cursor: default; border-color: #555; }
+    .st-btn:not(.lock):active { background: #00fff5; color: #0f3460; }
+  </style>
+</head>
+<body>
+
+  <audio id="bgm" src="BGM_billiard.ogg" loop preload="auto"></audio>
+
+  <div class="phone">
+    <div class="header">
+      <span>🔴 ホルミウム・ビリヤード</span>
+      <button id="bgm-btn" class="bgm-btn">🎵 ON</button>
+    </div>
+
+    <div class="content">
+      <div class="status-panel">
+        <div class="avatar" id="avHo"><img id="imgHo" alt="Ho"></div>
+        <div class="stat-col">
+          <div class="stat-title" id="stTitle">-</div>
+          <div class="stat-line">残りショット <span class="dots" id="stShots"></span></div>
+          <div class="stat-line">相手のHP <span class="hp" id="stHp"></span></div>
+        </div>
+        <div class="avatar foe" id="avFoe"><img id="imgFoe" alt="foe"></div>
+      </div>
+
+      <div class="game-area" id="gameArea">
+        <canvas id="cv"></canvas>
+        <div class="speech" id="speech"></div>
+        <div class="banner" id="banner"></div>
+      </div>
+
+      <div class="power-row">
+        <span>🔋 パワー</span>
+        <input type="range" id="power" min="5" max="100" value="60">
+        <b id="powerVal">60%</b>
+      </div>
+
+      <div class="controls">
+        <button class="ctrl-btn" id="btnL">◀<small>微調整</small></button>
+        <button class="ctrl-btn" id="btnR">▶<small>微調整</small></button>
+        <button class="ctrl-btn" id="btnHint">💡<small>ヒント</small></button>
+        <button class="ctrl-btn" id="btnRetry">↺<small>やり直し</small></button>
+        <button class="ctrl-btn shot" id="btnShot">🔴 うつ！</button>
+      </div>
+
+      <div class="nav-row">
+        <button class="btn-back sel" id="btnSelect">📋 ステージ選択</button>
+        <button class="btn-back" onclick="location.href='map.html'">🗺️ マップに戻る</button>
+      </div>
+    </div>
+
+    <!-- チュートリアル -->
+    <div id="tutorialModal" class="modal-overlay">
+      <div class="modal-content">
+        <div class="tutor-head">📖 あそびかた</div>
+        <canvas id="tutorCanvas" class="tutor-canvas"></canvas>
+        <div class="tutor-title" id="tutorTitle"></div>
+        <div class="tutor-desc" id="tutorDesc"></div>
+        <div class="tutor-dots" id="tutorDots"></div>
+        <div class="tutor-btns">
+          <button class="btn-back btn-sub" id="tutorPrevBtn" style="visibility:hidden;">◀ もどる</button>
+          <button class="btn-back btn-main" id="tutorNextBtn">つぎへ ▶</button>
+        </div>
+        <button class="skip-link" id="tutorSkip">スキップ</button>
+      </div>
+    </div>
+
+    <!-- ステージ選択 -->
+    <div id="selectModal" class="modal-overlay" style="display:none;">
+      <div class="modal-content">
+        <div class="tutor-head">🩺 病気をレーザーで退治しよう</div>
+        <div id="selectList"></div>
+        <button class="btn-back btn-sub" id="selHelp">📖 あそびかたを見る</button>
+        <button class="btn-back btn-sub" id="selClose" style="display:none;">とじる</button>
+        <button class="btn-back btn-sub" onclick="location.href='map.html'">🗺️ マップに戻る</button>
+      </div>
+    </div>
+
+    <!-- 結果 -->
+    <div id="resultModal" class="modal-overlay" style="display:none;">
+      <div class="modal-content">
+        <img id="resAvatar" class="modal-avatar" alt="">
+        <div id="resTitle" style="font-size:15px;font-weight:bold;color:#00fff5;margin:6px 0 2px;"></div>
+        <div class="stars" id="resStars"></div>
+        <div id="resMsg" style="font-size:11px;color:#dcdde1;line-height:1.5;"></div>
+        <div class="result-breakdown" id="resBox"></div>
+        <button class="btn-back btn-main" id="resMain"></button>
+        <button class="btn-back btn-sub" id="resSub"></button>
+        <button class="btn-back btn-sub" id="resSel">📋 ステージ選択</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+/* ホルミウム・ビリヤード 物理コア（ブラウザ／Node共通）
+   ・クッションは「完全ミラー」：入射角＝反射角（速度は落ちない）
+   ・玉どうしは等質量の弾性衝突
+   ・摩擦は一定の減速。固定タイムステップなので、同じ入力なら必ず同じ結果になる */
+const Core = (function () {
+  const R = 10, W = 272, H = 412;            // 玉の半径 / プレイフィールドの幅・高さ
+  const DT = 1 / 240, DECEL = 130, STOP_V = 6, E_BALL = 0.98;
+  const VMIN = 180, VSPAN = 460;             // パワー0〜1 → 初速
+  const POCKETS = [
+    { x: 0, y: 0, r: 17 }, { x: W, y: 0, r: 17 }, { x: 0, y: H, r: 17 }, { x: W, y: H, r: 17 },
+    { x: 0, y: H / 2, r: 15 }, { x: W, y: H / 2, r: 15 }
+  ];
+  const speedOf = p => VMIN + VSPAN * p;
+  const reachOf = p => { const v = speedOf(p); return v * v / (2 * DECEL); };   // 転がる距離
+
+  function clone(balls) {
+    return balls.map(b => ({ id: b.id, kind: b.kind, num: b.num, x: b.x, y: b.y, vx: b.vx || 0, vy: b.vy || 0, alive: b.alive !== false }));
+  }
+
+  function newRes(ev) { return { pocketed: [], scratch: false, foul: false, cueWallPre: 0, wallHits: {}, firstHit: -1, steps: 0, ev: ev || null }; }
+
+  function step(bs, res) {
+    const n = bs.length, ev = res.ev;
+    for (let i = 0; i < n; i++) {
+      const b = bs[i];
+      if (!b.alive || (b.vx === 0 && b.vy === 0)) continue;
+      b.x += b.vx * DT; b.y += b.vy * DT;
+      let hit = false;
+      if (b.x < R) { b.x = 2 * R - b.x; b.vx = -b.vx; hit = true; } else if (b.x > W - R) { b.x = 2 * (W - R) - b.x; b.vx = -b.vx; hit = true; }
+      if (b.y < R) { b.y = 2 * R - b.y; b.vy = -b.vy; hit = true; } else if (b.y > H - R) { b.y = 2 * (H - R) - b.y; b.vy = -b.vy; hit = true; }
+      if (hit) {
+        if (b.kind === 'cue') { if (res.firstHit < 0) res.cueWallPre++; } else res.wallHits[b.id] = (res.wallHits[b.id] || 0) + 1;
+        if (ev) ev.push({ t: 'wall', x: b.x, y: b.y, s: Math.hypot(b.vx, b.vy) });
+      }
+    }
+    for (let i = 0; i < n; i++) {
+      const a = bs[i]; if (!a.alive) continue;
+      for (let j = i + 1; j < n; j++) {
+        const c = bs[j]; if (!c.alive) continue;
+        const dx = c.x - a.x, dy = c.y - a.y, d2 = dx * dx + dy * dy;
+        if (d2 < 4 * R * R && d2 > 1e-9) {
+          const d = Math.sqrt(d2), nx = dx / d, ny = dy / d;
+          const vn = (a.vx - c.vx) * nx + (a.vy - c.vy) * ny;
+          if (vn > 0) {
+            const imp = (1 + E_BALL) * 0.5 * vn;
+            a.vx -= imp * nx; a.vy -= imp * ny; c.vx += imp * nx; c.vy += imp * ny;
+            if (res.firstHit < 0 && (a.kind === 'cue' || c.kind === 'cue')) res.firstHit = a.kind === 'cue' ? c.id : a.id;
+            if (ev) ev.push({ t: 'hit', x: (a.x + c.x) / 2, y: (a.y + c.y) / 2, s: vn });
+          }
+          const ov = 2 * R - d;
+          a.x -= nx * ov / 2; a.y -= ny * ov / 2; c.x += nx * ov / 2; c.y += ny * ov / 2;
+        }
+      }
+    }
+    for (let i = 0; i < n; i++) {
+      const b = bs[i]; if (!b.alive) continue;
+      for (let k = 0; k < POCKETS.length; k++) {
+        const p = POCKETS[k], dx = b.x - p.x, dy = b.y - p.y;
+        if (dx * dx + dy * dy < p.r * p.r) {
+          b.alive = false; b.vx = 0; b.vy = 0; res.pocketed.push(b.id);
+          if (b.kind === 'cue') res.scratch = true; else if (b.kind === 'block') res.foul = true;
+          if (ev) ev.push({ t: 'pocket', x: p.x, y: p.y, id: b.id, kind: b.kind, bx: b.x, by: b.y });
+          break;
+        }
+      }
+      if (!b.alive) continue;
+      if (b.vx !== 0 || b.vy !== 0) {
+        const s = Math.hypot(b.vx, b.vy), ns = s - DECEL * DT;
+        if (ns <= STOP_V) { b.vx = 0; b.vy = 0; } else { const k = ns / s; b.vx *= k; b.vy *= k; }
+      }
+    }
+    res.steps++;
+  }
+  const moving = bs => bs.some(b => b.alive && (b.vx !== 0 || b.vy !== 0));
+
+  function launch(bs, angle, power) {
+    const cue = bs.find(b => b.kind === 'cue'), v = speedOf(power);
+    cue.vx = Math.cos(angle) * v; cue.vy = Math.sin(angle) * v;
+  }
+  function run(balls, angle, power) {
+    const bs = clone(balls), res = newRes(null);
+    launch(bs, angle, power);
+    let n = 0;
+    while (n < 7000 && moving(bs)) { step(bs, res); n++; }
+    res.balls = bs;
+    return res;
+  }
+
+  /* レーザー誘導線：中心の軌道を幾何で追う（完全ミラー反射）。*/
+  function traceRay(px, py, dx, dy, others, maxBounce) {
+    const segs = [], bounces = []; let hit = null, pocket = null, end = null;
+    for (let k = 0; k <= maxBounce; k++) {
+      let tw = Infinity, axis = null;
+      if (dx > 1e-9) { const t = (W - R - px) / dx; if (t < tw) { tw = t; axis = 'x'; } } else if (dx < -1e-9) { const t = (R - px) / dx; if (t < tw) { tw = t; axis = 'x'; } }
+      if (dy > 1e-9) { const t = (H - R - py) / dy; if (t < tw) { tw = t; axis = 'y'; } } else if (dy < -1e-9) { const t = (R - py) / dy; if (t < tw) { tw = t; axis = 'y'; } }
+      if (tw < 0) tw = 0;
+      let tb = Infinity, hb = null;
+      for (const o of others) {
+        const fx = px - o.x, fy = py - o.y, bq = fx * dx + fy * dy, cq = fx * fx + fy * fy - 4 * R * R, disc = bq * bq - cq;
+        if (disc >= 0) { const t = -bq - Math.sqrt(disc); if (t > 1e-6 && t < tb) { tb = t; hb = o; } }
+      }
+      let tp = Infinity, hp = null;
+      for (let q = 0; q < POCKETS.length; q++) {
+        const pk = POCKETS[q], fx = px - pk.x, fy = py - pk.y, bq = fx * dx + fy * dy, cq = fx * fx + fy * fy - pk.r * pk.r, disc = bq * bq - cq;
+        if (disc >= 0) { let t = -bq - Math.sqrt(disc); if (t < 0) t = 0; if (bq < 0 || cq < 0) { if (t < tp) { tp = t; hp = pk; } } }
+      }
+      const t = Math.min(tw, tb, tp), nx = px + dx * t, ny = py + dy * t;
+      segs.push({ x1: px, y1: py, x2: nx, y2: ny });
+      if (tp <= tb && tp <= tw) { pocket = { x: hp.x, y: hp.y }; break; }
+      if (tb < tw) { hit = { ball: hb, gx: nx, gy: ny }; break; }
+      if (k === maxBounce) { end = { x: nx, y: ny }; break; }
+      const theta = axis === 'x' ? Math.atan2(Math.abs(dy), Math.abs(dx)) : Math.atan2(Math.abs(dx), Math.abs(dy));
+      bounces.push({ x: nx, y: ny, axis, theta: theta * 180 / Math.PI, dx, dy });
+      if (axis === 'x') dx = -dx; else dy = -dy;
+      px = nx; py = ny;
+    }
+    return { segs, bounces, hit, pocket, end };
+  }
+  function trace(balls, angle, maxBounce) {
+    const cue = balls.find(b => b.kind === 'cue' && b.alive !== false);
+    const others = balls.filter(b => b !== cue && b.alive !== false);
+    const tr = traceRay(cue.x, cue.y, Math.cos(angle), Math.sin(angle), others, maxBounce);
+    if (tr.hit) {   // 的球が飛ぶ方向（接触点の中心線）と、的球の予想軌道
+      const o = tr.hit.ball, ddx = o.x - tr.hit.gx, ddy = o.y - tr.hit.gy, d = Math.hypot(ddx, ddy) || 1;
+      const ox = ddx / d, oy = ddy / d;
+      const rest = others.filter(b => b !== o);
+      tr.obj = { dx: ox, dy: oy, path: traceRay(o.x, o.y, ox, oy, rest, 2) };
+      // 手球はこの接線方向へそれる
+      const cdx = Math.cos(angle), cdy = Math.sin(angle), dot = cdx * ox + cdy * oy;
+      const tx = cdx - dot * ox, ty = cdy - dot * oy, tl = Math.hypot(tx, ty);
+      tr.cueDef = tl > 1e-3 ? { dx: tx / tl, dy: ty / tl, k: tl } : null;
+    }
+    return tr;
+  }
+
+  /* ソルバー：入るショットを探す。強健性（少しずれても入る）も確認できる */
+  const okShot = (res) => res.pocketed.length > 0 && !res.scratch && !res.foul && res.balls.some(b => b.kind === 'target' && !b.alive);
+  const pocketedTargets = (res) => res.balls.filter(b => b.kind === 'target' && !b.alive).map(b => b.id).sort().join(',');
+  function robust(balls, a, p, key) {
+    for (const da of [-0.3, 0, 0.3]) for (const dp of [-0.04, 0, 0.04]) {
+      const r = run(balls, a + da * Math.PI / 180, Math.min(1, Math.max(0.05, p + dp)));
+      if (!okShot(r) || pocketedTargets(r) !== key) return false;
+    }
+    return true;
+  }
+  function bounceOf(res) {
+    let t = 0; res.balls.forEach(b => { if (b.kind === 'target' && !b.alive) t = Math.max(t, res.wallHits[b.id] || 0); });
+    return res.cueWallPre + t;
+  }
+  function findShots(balls, opt) {
+    opt = opt || {};
+    const step = opt.angleStep || 1, powers = opt.powers || [0.3, 0.45, 0.6, 0.75, 0.9, 1], maxB = opt.maxBounce == null ? 3 : opt.maxBounce, want = opt.want || 1;
+    const raw = [];
+    for (let deg = 0; deg < 360; deg += step) {
+      const a = deg * Math.PI / 180, tr = trace(balls, a, maxB);
+      if (!tr.hit || tr.hit.ball.kind !== 'target') continue;
+      for (const p of powers) {
+        const r = run(balls, a, p);
+        if (okShot(r)) raw.push({ a, p, bounce: bounceOf(res2(r)), key: pocketedTargets(r), n: r.balls.filter(b => b.kind === 'target' && !b.alive).length, res: r });
+      }
+    }
+    raw.sort((x, y) => x.bounce - y.bounce || y.n - x.n);
+    const out = [];
+    for (const s of raw) {
+      if (opt.skipRobust || robust(balls, s.a, s.p, s.key)) { out.push(s); if (out.length >= want) break; }
+    }
+    return { best: out, rawCount: raw.length };
+  }
+  function res2(r) { return r; }
+
+  return { R, W, H, DT, POCKETS, speedOf, reachOf, clone, newRes, step, moving, launch, run, trace, traceRay, findShots, robust, okShot, bounceOf };
+})();
+
+
+  </script>
+  <script>
+const STAGES = [{"id": 0, "d": 0, "n": 0, "limit": 3, "par": 1, "plan": [{"a": 0.6981, "p": 0.45, "bounce": 0}], "balls": [{"id": 0, "kind": "cue", "num": 0, "x": 68.6, "y": 332.6}, {"id": 1, "kind": "target", "num": 1, "x": 113.4, "y": 360.2}]}, {"id": 1, "d": 0, "n": 1, "limit": 3, "par": 1, "plan": [{"a": 1.5882, "p": 0.3, "bounce": 1}], "balls": [{"id": 0, "kind": "cue", "num": 0, "x": 195.2, "y": 299.6}, {"id": 1, "kind": "target", "num": 1, "x": 199.6, "y": 385.7}]}, {"id": 2, "d": 0, "n": 2, "limit": 4, "par": 2, "plan": [{"a": 2.5482, "p": 0.3, "bounce": 0}, {"a": 3.1241, "p": 0.75, "bounce": 0}], "balls": [{"id": 0, "kind": "cue", "num": 0, "x": 234.3, "y": 76}, {"id": 1, "kind": "target", "num": 1, "x": 141.1, "y": 136.3}, {"id": 2, "kind": "target", "num": 2, "x": 38.8, "y": 149.6}]}, {"id": 3, "d": 0, "n": 3, "limit": 5, "par": 3, "plan": [{"a": 0.192, "p": 0.3, "bounce": 0}, {"a": 2.0769, "p": 0.3, "bounce": 0}, {"a": 2.1817, "p": 0.3, "bounce": 0}], "balls": [{"id": 0, "kind": "cue", "num": 0, "x": 142.6, "y": 114}, {"id": 1, "kind": "target", "num": 1, "x": 132.8, "y": 174.2}, {"id": 2, "kind": "target", "num": 2, "x": 217.2, "y": 142.3}, {"id": 3, "kind": "target", "num": 3, "x": 160.4, "y": 72.8}]}, {"id": 4, "d": 1, "n": 0, "limit": 3, "par": 1, "plan": [{"a": 5.9341, "p": 0.75, "bounce": 1}], "balls": [{"id": 0, "kind": "cue", "num": 0, "x": 77.5, "y": 372.3}, {"id": 1, "kind": "target", "num": 1, "x": 74.2, "y": 233.5}, {"id": 10, "kind": "block", "num": 8, "x": 34.7, "y": 376.3}]}, {"id": 5, "d": 1, "n": 1, "limit": 3, "par": 1, "plan": [{"a": 2.81, "p": 1, "bounce": 2}], "balls": [{"id": 0, "kind": "cue", "num": 0, "x": 151.4, "y": 212.6}, {"id": 1, "kind": "target", "num": 1, "x": 29.5, "y": 246.9}, {"id": 10, "kind": "block", "num": 8, "x": 113, "y": 268.3}]}, {"id": 6, "d": 1, "n": 2, "limit": 4, "par": 2, "plan": [{"a": 0.3491, "p": 1, "bounce": 1}, {"a": 2.1817, "p": 0.75, "bounce": 0}], "balls": [{"id": 0, "kind": "cue", "num": 0, "x": 39, "y": 58.9}, {"id": 1, "kind": "target", "num": 1, "x": 112, "y": 230.9}, {"id": 2, "kind": "target", "num": 2, "x": 112.9, "y": 190.8}, {"id": 10, "kind": "block", "num": 8, "x": 141.9, "y": 366.2}]}, {"id": 7, "d": 1, "n": 3, "limit": 5, "par": 3, "plan": [{"a": 0.4712, "p": 0.3, "bounce": 1}, {"a": 2.7576, "p": 0.6, "bounce": 0}, {"a": 4.6949, "p": 0.9, "bounce": 0}], "balls": [{"id": 0, "kind": "cue", "num": 0, "x": 204.7, "y": 127.8}, {"id": 1, "kind": "target", "num": 1, "x": 83.9, "y": 335.3}, {"id": 2, "kind": "target", "num": 2, "x": 178.9, "y": 191}, {"id": 3, "kind": "target", "num": 3, "x": 135.4, "y": 237.8}, {"id": 10, "kind": "block", "num": 8, "x": 106.7, "y": 77}]}, {"id": 8, "d": 2, "n": 0, "limit": 3, "par": 1, "plan": [{"a": 3.9881, "p": 0.9, "bounce": 2}], "balls": [{"id": 0, "kind": "cue", "num": 0, "x": 44.4, "y": 111.6}, {"id": 1, "kind": "target", "num": 1, "x": 125, "y": 74.2}, {"id": 10, "kind": "block", "num": 8, "x": 82.5, "y": 109.2}, {"id": 11, "kind": "block", "num": 8, "x": 30.3, "y": 347.8}]}, {"id": 9, "d": 2, "n": 1, "limit": 3, "par": 1, "plan": [{"a": 5.4192, "p": 1, "bounce": 4}], "balls": [{"id": 0, "kind": "cue", "num": 0, "x": 164.6, "y": 298.4}, {"id": 1, "kind": "target", "num": 1, "x": 73.6, "y": 61}, {"id": 10, "kind": "block", "num": 8, "x": 40.8, "y": 305}, {"id": 11, "kind": "block", "num": 8, "x": 144.8, "y": 128}]}, {"id": 10, "d": 2, "n": 2, "limit": 4, "par": 2, "plan": [{"a": 6.0214, "p": 0.3, "bounce": 0}, {"a": 4.0317, "p": 0.9, "bounce": 2}], "balls": [{"id": 0, "kind": "cue", "num": 0, "x": 44.8, "y": 266.9}, {"id": 1, "kind": "target", "num": 1, "x": 178.5, "y": 231.8}, {"id": 2, "kind": "target", "num": 2, "x": 181.7, "y": 168.6}, {"id": 10, "kind": "block", "num": 8, "x": 212.7, "y": 106.4}, {"id": 11, "kind": "block", "num": 8, "x": 39.8, "y": 173.5}]}, {"id": 11, "d": 2, "n": 3, "limit": 5, "par": 3, "plan": [{"a": 4.9044, "p": 0.3, "bounce": 0}, {"a": 4.3459, "p": 0.45, "bounce": 0}, {"a": 1.5184, "p": 0.6, "bounce": 0}], "balls": [{"id": 0, "kind": "cue", "num": 0, "x": 151.3, "y": 190.3}, {"id": 1, "kind": "target", "num": 1, "x": 175.7, "y": 114.2}, {"id": 2, "kind": "target", "num": 2, "x": 212.9, "y": 243.3}, {"id": 3, "kind": "target", "num": 3, "x": 78.7, "y": 45.4}, {"id": 10, "kind": "block", "num": 8, "x": 135.9, "y": 374.1}, {"id": 11, "kind": "block", "num": 8, "x": 112.3, "y": 203.2}]}];
+  </script>
+  <script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const C = Core, R = C.R, W = C.W, H = C.H;
+  const OX = 24, OY = 24, CW = W + 48, CH = H + 48;
+  const DEG = Math.PI / 180;
+
+  /* ═════════ ★ 設定（病気キャラの名前・セリフはここを書き換え）★ ═════════ */
+  const DISEASES = [
+    { name: '尿路結石', kana: 'ケッセキ', desc: '尿の通り道にできる石。ホルミウムレーザーは結石を砕く治療に使われているよ。',
+      lines: { start: 'ここは通さないぞ！ガチガチだぞ！', hurt: 'ぐわっ、ヒビが入った…！', foul: 'ふふん、ミスしたな！', win: '砕け…たぁ…！', fail: 'ははは、また来い！' } },
+    { name: '前立腺肥大症', kana: 'ゼンリツセン', desc: '前立腺が大きくなる病気。ホルミウムレーザーで治療する方法があるよ。',
+      lines: { start: 'どーん！と居座るよ〜', hurt: 'ちょ、ちょっと小さくなった？', foul: 'そんな狙いじゃ当たらないよ〜', win: 'すっきり…しちゃった…', fail: 'まだまだ大きいままだよ〜' } },
+    { name: '尿管狭窄', kana: 'ニョウカン', desc: '尿の通り道がせまくなる病気。レーザーで切り開く治療に使われることがあるよ。',
+      lines: { start: 'ぎゅうぅっ…通さないぞ…', hurt: 'ゆるんだ…？', foul: 'せまい道は難しいだろう？', win: 'ひらけた…！', fail: 'ぎゅうぅっ…！' } }
+  ];
+  const HO_LINES = { start: 'いくよ、レーザー発射準備！', win: 'やったー！治療かんりょう！', miss: 'うーん、角度が違ったかな', foul: 'あっ、ファウル…！' };
+  const PER = 4;   // 1体あたりのステージ数
+
+  /* ═════════ キャラクター画像（ファイルが無ければコード描画で代用）═════════ */
+  function face(mood, ex) {   // 共通の目と口
+    const E = {
+      idle: '<path d="M33 45h12M55 45h12" stroke="#222" stroke-width="3" stroke-linecap="round"/><path d="M35 47q4 3 8 0M57 47q4 3 8 0" stroke="#222" stroke-width="2" fill="none"/>',
+      aim: '<path d="M33 46h12" stroke="#222" stroke-width="3" stroke-linecap="round"/><circle cx="61" cy="46" r="5" fill="#fff" stroke="#222" stroke-width="2.5"/><circle cx="62" cy="46" r="2" fill="#222"/>',
+      happy: '<path d="M33 48q6-8 12 0M55 48q6-8 12 0" stroke="#222" stroke-width="3" fill="none" stroke-linecap="round"/>',
+      sad: '<path d="M33 44l12 4M67 44l-12 4" stroke="#222" stroke-width="3" stroke-linecap="round"/><path d="M39 52q-2 6 0 9" stroke="#5ac8fa" stroke-width="3" fill="none" stroke-linecap="round"/>',
+      angry: '<path d="M32 42l13 5M68 42l-13 5" stroke="#222" stroke-width="3.5" stroke-linecap="round"/><circle cx="39" cy="50" r="2.6" fill="#222"/><circle cx="61" cy="50" r="2.6" fill="#222"/>',
+      hurt: '<path d="M34 43l10 8M44 43l-10 8M56 43l10 8M66 43l-10 8" stroke="#222" stroke-width="3" stroke-linecap="round"/>',
+      lose: '<path d="M33 48q6 6 12 0M55 48q6 6 12 0" stroke="#222" stroke-width="3" fill="none" stroke-linecap="round"/>'
+    }[mood] || '';
+    const M = {
+      idle: '<path d="M44 58q6 5 12 0" stroke="#222" stroke-width="2.5" fill="none" stroke-linecap="round"/>',
+      aim: '<path d="M45 59h10" stroke="#222" stroke-width="2.5" stroke-linecap="round"/>',
+      happy: '<path d="M40 56q10 12 20 0z" fill="#fff" stroke="#222" stroke-width="2.5" stroke-linejoin="round"/>',
+      sad: '<path d="M43 61q7-6 14 0" stroke="#222" stroke-width="2.5" fill="none" stroke-linecap="round"/>',
+      angry: '<path d="M41 62q9-9 18 0" stroke="#222" stroke-width="2.5" fill="none" stroke-linecap="round"/>',
+      hurt: '<ellipse cx="50" cy="61" rx="5" ry="4" fill="#222"/>',
+      lose: '<path d="M42 61q8 5 16 0" stroke="#222" stroke-width="2.5" fill="none" stroke-linecap="round"/>'
+    }[mood] || '';
+    return E + M;
+  }
+  function holmiumSVG(mood) {
+    const extra = mood === 'happy' ? '<path d="M14 20l3 7 7 3-7 3-3 7-3-7-7-3 7-3z" fill="#fff59d"/><path d="M84 30l2 5 5 2-5 2-2 5-2-5-5-2 5-2z" fill="#ffd27a"/>' : mood === 'aim' ? '<path d="M84 52h14" stroke="#ffb347" stroke-width="4" stroke-linecap="round"/><path d="M84 52h14" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>' : '';
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 110"><ellipse cx="50" cy="103" rx="30" ry="5" fill="rgba(0,0,0,.2)"/>'
+      + '<path d="M50 14C26 14 21 42 19 70C17 88 9 96 9 99C32 105 68 105 91 99C91 96 83 88 81 70C79 42 74 14 50 14Z" fill="#ffe0a8" stroke="#222" stroke-width="3.5" stroke-linejoin="round"/>'
+      + '<rect x="24" y="12" width="52" height="19" rx="9" fill="#ff9f2e" stroke="#333" stroke-width="3.5"/><path d="M32 17h12" stroke="#ffe3b0" stroke-width="3" stroke-linecap="round"/>'
+      + face(mood) + '<text x="50" y="86" text-anchor="middle" font-size="15" font-weight="bold" font-family="sans-serif" fill="#b8691a" stroke="#fff" stroke-width=".6">Ho</text>'
+      + '<ellipse cx="29" cy="56" rx="5" ry="3" fill="#ffb27a" opacity=".6"/><ellipse cx="71" cy="56" rx="5" ry="3" fill="#ffb27a" opacity=".6"/>' + extra + '</svg>';
+  }
+  function diseaseSVG(idx, mood) {
+    const m = mood === 'win' ? 'lose' : mood === 'start' ? 'angry' : mood === 'idle' ? 'angry' : mood;
+    let body;
+    if (idx === 0) body = '<path d="M50 12L68 20L84 38L88 62L78 86L56 98L30 94L14 74L12 48L26 24Z" fill="#a89f94" stroke="#222" stroke-width="3.5" stroke-linejoin="round"/><path d="M50 12L44 40L26 24M44 40L12 48M44 40L56 98M68 20L44 40M84 38L60 52L88 62M60 52L78 86" stroke="#6e655c" stroke-width="2" fill="none"/><path d="M30 30L44 22" stroke="#d9d2c8" stroke-width="3" stroke-linecap="round"/>';
+    else if (idx === 1) body = '<ellipse cx="50" cy="58" rx="40" ry="40" fill="#c98ad9" stroke="#222" stroke-width="3.5"/><path d="M50 20q-12 10 0 24q12-14 0-24z" fill="#a766ba" opacity=".7"/><ellipse cx="34" cy="34" rx="9" ry="5" fill="#f1d3f7" opacity=".7" transform="rotate(-30 34 34)"/><ellipse cx="22" cy="62" rx="6" ry="3" fill="#ff9fb3" opacity=".6"/><ellipse cx="78" cy="62" rx="6" ry="3" fill="#ff9fb3" opacity=".6"/>';
+    else body = '<path d="M30 10h40v26q-14 12 0 24q14 12 0 44H30q-14-32 0-44q14-12 0-24z" fill="#80d18c" stroke="#222" stroke-width="3.5" stroke-linejoin="round"/><rect x="22" y="56" width="56" height="9" rx="4" fill="#f25f5c" stroke="#222" stroke-width="2.5"/><path d="M36 18h10" stroke="#d3f5d8" stroke-width="3" stroke-linecap="round"/>';
+    const sweat = mood === 'hurt' ? '<path d="M80 28q5 8 0 12q-5-4 0-12z" fill="#7fd8ff" stroke="#222" stroke-width="1.5"/>' : '';
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 110"><ellipse cx="50" cy="104" rx="32" ry="5" fill="rgba(0,0,0,.2)"/>' + body + face(m) + sweat + '</svg>';
+  }
+  const svgURI = s => 'data:image/svg+xml;utf8,' + encodeURIComponent(s);
+  function setImg(img, kind, idx, mood) {
+    const file = kind === 'ho' ? 'ho_' + mood + '.png' : 'dis' + idx + '_' + (mood === 'start' ? 'idle' : mood === 'win' ? 'lose' : mood) + '.png';
+    img.onerror = () => { img.onerror = null; img.src = svgURI(kind === 'ho' ? holmiumSVG(mood) : diseaseSVG(idx, mood)); };
+    img.src = file;
+  }
+
+  /* ═════════ オーディオ ═════════ */
+  const bgm = $('bgm'), bgmBtn = $('bgm-btn');
+  bgm.volume = .3;
+  let isMuted = false; try { isMuted = localStorage.getItem('bgmMuted') === 'true'; } catch (e) {}
+  let actx = null;
+  function ac() { if (!actx) { try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } if (actx && actx.state === 'suspended') actx.resume(); return actx; }
+  function tone(f, d, type, vol, when, slide) {
+    if (isMuted) return; const a = ac(); if (!a) return;
+    const o = a.createOscillator(), g = a.createGain(), t0 = a.currentTime + (when || 0);
+    o.type = type || 'sine'; o.frequency.setValueAtTime(f, t0);
+    if (slide) o.frequency.exponentialRampToValueAtTime(Math.max(30, f + slide), t0 + d);
+    g.gain.setValueAtTime(vol || .1, t0); g.gain.exponentialRampToValueAtTime(.0001, t0 + d);
+    o.connect(g); g.connect(a.destination); o.start(t0); o.stop(t0 + d + .03);
+  }
+  let lastSfx = {};
+  function sfx(n, k) {
+    const now = performance.now(); if (lastSfx[n] && now - lastSfx[n] < 40) return; lastSfx[n] = now;
+    k = Math.min(1, (k || 300) / 500);
+    switch (n) {
+      case 'hit': tone(1200 + 400 * k, .05, 'square', .04 + .06 * k); tone(300, .08, 'sine', .08 * k + .03); break;
+      case 'wall': tone(150, .09, 'sine', .08 + .06 * k, 0, -60); break;
+      case 'pocket': tone(500, .22, 'triangle', .12, 0, -380); tone(900, .12, 'sine', .06, .05); break;
+      case 'shot': tone(220, .1, 'sawtooth', .1, 0, 700); tone(1500, .15, 'sine', .05, .02, -900); break;
+      case 'clear': [523, 659, 784, 1047, 1319].forEach((f, i) => tone(f, .24, 'triangle', .11, i * .09)); break;
+      case 'fail': [392, 330, 262, 196].forEach((f, i) => tone(f, .26, 'sawtooth', .07, i * .13)); break;
+      case 'foul': tone(180, .3, 'sawtooth', .09, 0, -80); break;
+      case 'click': tone(700, .05, 'square', .06); break;
+      case 'hint': tone(880, .1, 'sine', .08); tone(1320, .16, 'sine', .07, .09); break;
+    }
+  }
+  function updateBgmUI() { bgm.muted = isMuted; bgmBtn.textContent = isMuted ? '🔇 OFF' : '🎵 ON'; bgmBtn.classList.toggle('muted', isMuted); }
+  bgmBtn.addEventListener('click', e => { e.stopPropagation(); isMuted = !isMuted; try { localStorage.setItem('bgmMuted', isMuted); } catch (er) {} updateBgmUI(); if (!isMuted) bgm.play().catch(() => {}); else bgm.pause(); });
+  updateBgmUI();
+
+  /* ═════════ キャンバス ═════════ */
+  const DPR = Math.min(window.devicePixelRatio || 1, 2);
+  const cv = $('cv'), ctx = cv.getContext('2d');
+  cv.width = CW * DPR; cv.height = CH * DPR; cv.style.width = CW + 'px'; cv.style.height = CH + 'px'; ctx.scale(DPR, DPR);
+  const rr = (g, x, y, w, h, r) => { g.beginPath(); g.roundRect(x, y, w, h, r); };
+  const seeded = a => () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+
+  function hex2rgb(h) { const n = parseInt(h.slice(1), 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; }
+  function mix(h, to, a) { const c = hex2rgb(h); return 'rgb(' + c.map((v, i) => Math.round(v + (to[i] - v) * a)).join(',') + ')'; }
+  const lighten = (h, a) => mix(h, [255, 255, 255], a), darken = (h, a) => mix(h, [0, 0, 0], a);
+
+  /* ── 台（1回だけ描いて使い回す）── */
+  const tableCv = document.createElement('canvas');
+  function buildTable() {
+    const c = tableCv; c.width = CW * DPR; c.height = CH * DPR; const g = c.getContext('2d'); g.scale(DPR, DPR);
+    const rng = seeded(7);
+    // 木枠
+    let gr = g.createLinearGradient(0, 0, CW, CH); gr.addColorStop(0, '#9a6532'); gr.addColorStop(.5, '#6b3f1b'); gr.addColorStop(1, '#4a2a10');
+    g.fillStyle = gr; rr(g, 0, 0, CW, CH, 18); g.fill();
+    g.save(); rr(g, 0, 0, CW, CH, 18); g.clip();
+    for (let i = 0; i < 140; i++) { const y = rng() * CH, x = rng() * CW; g.strokeStyle = 'rgba(0,0,0,' + (.05 + rng() * .08) + ')'; g.lineWidth = .6 + rng(); g.beginPath(); g.moveTo(x, y); g.bezierCurveTo(x + 30, y + 3, x + 60, y - 3, x + 90 + rng() * 80, y + 2); g.stroke(); }
+    for (let i = 0; i < 90; i++) { const y = rng() * CH, x = rng() * CW; g.strokeStyle = 'rgba(255,220,170,' + (.04 + rng() * .05) + ')'; g.lineWidth = .8; g.beginPath(); g.moveTo(x, y); g.lineTo(x + 20 + rng() * 60, y + 1); g.stroke(); }
+    g.restore();
+    g.strokeStyle = 'rgba(255,225,180,.35)'; g.lineWidth = 1.5; rr(g, 1.5, 1.5, CW - 3, CH - 3, 17); g.stroke();
+    g.strokeStyle = 'rgba(0,0,0,.45)'; g.lineWidth = 2; rr(g, 12.5, 12.5, CW - 25, CH - 25, 8); g.stroke();
+    // クッション
+    gr = g.createLinearGradient(0, 14, 0, CH - 14); gr.addColorStop(0, '#0e7a62'); gr.addColorStop(1, '#075243');
+    g.fillStyle = gr; rr(g, 14, 14, CW - 28, CH - 28, 7); g.fill();
+    // フェルト
+    gr = g.createRadialGradient(CW / 2, CH / 2, 20, CW / 2, CH / 2, 280); gr.addColorStop(0, '#22a88a'); gr.addColorStop(.55, '#16866f'); gr.addColorStop(1, '#0c5a4c');
+    g.fillStyle = gr; g.fillRect(OX, OY, W, H);
+    for (let i = 0; i < 2600; i++) { g.fillStyle = rng() < .5 ? 'rgba(255,255,255,.035)' : 'rgba(0,0,0,.05)'; g.fillRect(OX + rng() * W, OY + rng() * H, 1 + rng() * 1.5, 1); }
+    // クッション際の影とハイライト
+    [[OX, OY, W, 12, 0, 1], [OX, OY + H - 12, W, 12, 1, 0], [OX, OY, 12, H, 0, 1, 1], [OX + W - 12, OY, 12, H, 1, 0, 1]].forEach(([x, y, w, h, a, b, v]) => {
+      const lg = v ? g.createLinearGradient(x, 0, x + w, 0) : g.createLinearGradient(0, y, 0, y + h);
+      lg.addColorStop(0, 'rgba(0,0,0,' + (.32 * (1 - a)) + ')'); lg.addColorStop(1, 'rgba(0,0,0,' + (.32 * (1 - b)) + ')'); g.fillStyle = lg; g.fillRect(x, y, w, h);
+    });
+    g.strokeStyle = 'rgba(190,255,235,.28)'; g.lineWidth = 1; g.strokeRect(OX + .5, OY + .5, W - 1, H - 1);
+    // スポット
+    g.fillStyle = 'rgba(0,0,0,.22)'; [[OX + W / 2, OY + H * .25], [OX + W / 2, OY + H * .75]].forEach(([x, y]) => { g.beginPath(); g.arc(x, y, 2.2, 0, 6.283); g.fill(); });
+    g.strokeStyle = 'rgba(255,255,255,.07)'; g.setLineDash([5, 5]); g.beginPath(); g.moveTo(OX + 4, OY + H * .75); g.lineTo(OX + W - 4, OY + H * .75); g.stroke(); g.setLineDash([]);
+    // ダイヤモンド
+    const dia = (x, y) => { g.save(); g.translate(x, y); g.rotate(Math.PI / 4); g.fillStyle = '#f7f0dc'; g.fillRect(-2.6, -2.6, 5.2, 5.2); g.strokeStyle = 'rgba(0,0,0,.4)'; g.lineWidth = .8; g.strokeRect(-2.6, -2.6, 5.2, 5.2); g.restore(); };
+    for (let i = 1; i < 8; i++) { if (i === 4) continue; dia(7, OY + i * H / 8); dia(CW - 7, OY + i * H / 8); }
+    for (let i = 1; i < 4; i++) { dia(OX + i * W / 4, 7); dia(OX + i * W / 4, CH - 7); }
+    // ポケット
+    const pocket = (x, y, r) => {
+      let pg = g.createRadialGradient(x, y, r * .2, x, y, r * 1.25); pg.addColorStop(0, '#000'); pg.addColorStop(.75, '#0a0a0c'); pg.addColorStop(1, 'rgba(0,0,0,0)');
+      g.fillStyle = pg; g.beginPath(); g.arc(x, y, r * 1.25, 0, 6.283); g.fill();
+      g.fillStyle = '#050506'; g.beginPath(); g.arc(x, y, r, 0, 6.283); g.fill();
+      g.strokeStyle = '#c9a14a'; g.lineWidth = 2.2; g.beginPath(); g.arc(x, y, r, 0, 6.283); g.stroke();
+      g.strokeStyle = 'rgba(255,240,190,.5)'; g.lineWidth = 1; g.beginPath(); g.arc(x, y, r - 1.6, Math.PI * 1.1, Math.PI * 1.6); g.stroke();
+    };
+    pocket(OX - 5, OY - 5, 19); pocket(OX + W + 5, OY - 5, 19); pocket(OX - 5, OY + H + 5, 19); pocket(OX + W + 5, OY + H + 5, 19);
+    pocket(OX - 9, OY + H / 2, 16); pocket(OX + W + 9, OY + H / 2, 16);
+  }
+
+  /* ── 玉 ── */
+  const BALL_COL = { 0: '#f4f1e8', 1: '#f2c311', 2: '#1f5fd1', 3: '#d62828', 4: '#6a2c91', 5: '#f27a1a', 6: '#1d8f4a', 7: '#8a2b2b', 8: '#17171a', 9: '#f2c311' };
+  function drawBall(g, b, t, alpha) {
+    const x = OX + b.x, y = OY + b.y, col = BALL_COL[b.num] || '#888';
+    g.save(); if (alpha != null) g.globalAlpha = alpha;
+    g.fillStyle = 'rgba(0,0,0,.38)'; g.beginPath(); g.ellipse(x + 2.5, y + 3.6, R * .98, R * .8, 0, 0, 6.283); g.fill();
+    const gr = g.createRadialGradient(x - R * .38, y - R * .42, R * .1, x, y, R * 1.05);
+    gr.addColorStop(0, lighten(col, .6)); gr.addColorStop(.42, col); gr.addColorStop(1, darken(col, .6));
+    g.fillStyle = gr; g.beginPath(); g.arc(x, y, R, 0, 6.283); g.fill();
+    if (b.num > 0) {
+      g.fillStyle = '#f7f4ea'; g.beginPath(); g.arc(x, y, R * .5, 0, 6.283); g.fill();
+      g.fillStyle = '#111'; g.font = 'bold ' + Math.round(R * .72) + 'px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(String(b.num), x, y + .6);
+    }
+    g.fillStyle = 'rgba(255,255,255,.75)'; g.beginPath(); g.ellipse(x - R * .36, y - R * .42, R * .3, R * .17, -.6, 0, 6.283); g.fill();
+    if (b.kind === 'block') { g.strokeStyle = 'rgba(255,71,87,' + (.55 + .35 * Math.sin(t * 6)) + ')'; g.lineWidth = 2; g.beginPath(); g.arc(x, y, R + 3, 0, 6.283); g.stroke(); }
+    if (b.kind === 'cue' && b.aimGlow) { g.strokeStyle = 'rgba(255,179,71,' + (.5 + .3 * Math.sin(t * 5)) + ')'; g.lineWidth = 2; g.beginPath(); g.arc(x, y, R + 3, 0, 6.283); g.stroke(); }
+    g.restore();
+  }
+
+  /* ── キュー ── */
+  function drawCue(g, cx, cy, ang, pull, alpha) {
+    g.save(); g.globalAlpha = alpha == null ? 1 : alpha; g.translate(cx, cy); g.rotate(ang);
+    const gap = R + 3 + pull, L = 270;
+    const seg = (xa, hwa, xb, hwb, stops) => {
+      const gr = g.createLinearGradient(0, -Math.max(hwa, hwb), 0, Math.max(hwa, hwb));
+      stops.forEach(([o, c]) => gr.addColorStop(o, c)); g.fillStyle = gr;
+      g.beginPath(); g.moveTo(-xa, -hwa); g.lineTo(-xb, -hwb); g.lineTo(-xb, hwb); g.lineTo(-xa, hwa); g.closePath(); g.fill();
+    };
+    g.save(); g.translate(3, 5); g.globalAlpha *= .28; g.fillStyle = '#000'; g.beginPath(); g.moveTo(-gap, -2.4); g.lineTo(-gap - L, -5.6); g.lineTo(-gap - L, 5.6); g.lineTo(-gap, 2.4); g.fill(); g.restore();
+    const hw = x => 2.4 + 3.2 * (x - gap) / L;
+    const a = gap, b = gap + 5, c = gap + 15, d = gap + L * .56, e = gap + L * .6, f = gap + L - 14, h = gap + L;
+    seg(a, hw(a), b, hw(b), [[0, '#79c8ff'], [1, '#2a7fc9']]);
+    seg(b, hw(b), c, hw(c), [[0, '#fbfbf5'], [.5, '#e2e2d6'], [1, '#b8b8ac']]);
+    seg(c, hw(c), d, hw(d), [[0, '#fff0c9'], [.45, '#e6c383'], [1, '#a9783a']]);
+    seg(d, hw(d), e, hw(e), [[0, '#e9b64a'], [1, '#a37314']]);
+    seg(e, hw(e), f, hw(f), [[0, '#6a3a1d'], [.45, '#3d1f0e'], [1, '#22110a']]);
+    seg(f, hw(f), h, hw(h), [[0, '#d9a441'], [.5, '#8a5f1a'], [1, '#4a3009']]);
+    g.strokeStyle = 'rgba(255,255,255,.35)'; g.lineWidth = .8; g.beginPath(); g.moveTo(-c, -hw(c) * .55); g.lineTo(-d, -hw(d) * .55); g.stroke();
+    g.fillStyle = '#ffb347'; [.72, .76].forEach(k => { const x = gap + L * k; g.fillRect(-x - 1.5, -hw(x), 3, hw(x) * 2); });
+    g.restore();
+  }
+
+  /* ── レーザー誘導線 ── */
+  function polyPath(g, segs, from, to) { g.beginPath(); segs.forEach((s, i) => { if (i === 0) g.moveTo(OX + s.x1, OY + s.y1); g.lineTo(OX + s.x2, OY + s.y2); }); }
+  function glowLine(g, pts, w, col, a) { g.strokeStyle = col.replace('A', a); g.lineWidth = w; g.lineCap = 'round'; g.lineJoin = 'round'; g.beginPath(); pts.forEach((p, i) => i ? g.lineTo(OX + p.x, OY + p.y) : g.moveTo(OX + p.x, OY + p.y)); g.stroke(); }
+  // 手球が実際に転がる距離まではくっきり、その先はうすく
+  function splitByReach(segs, reach) {
+    const solid = [], faint = []; let left = reach, started = false;
+    segs.forEach((s, i) => {
+      const len = Math.hypot(s.x2 - s.x1, s.y2 - s.y1);
+      if (left > 0) {
+        const k = Math.min(1, left / len), mx = s.x1 + (s.x2 - s.x1) * k, my = s.y1 + (s.y2 - s.y1) * k;
+        if (!solid.length || !started) solid.push({ x: s.x1, y: s.y1 }); solid.push({ x: mx, y: my }); started = true;
+        if (k < 1) { faint.push([{ x: mx, y: my }, { x: s.x2, y: s.y2 }]); } left -= len;
+      } else faint.push([{ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 }]);
+    });
+    return { solid, faint };
+  }
+  function drawGuide(g, t) {
+    const tr = S.trace; if (!tr) return;
+    const reach = C.reachOf(S.power);
+    // 全区間の点列
+    const full = []; tr.segs.forEach((s, i) => { if (!i) full.push({ x: s.x1, y: s.y1 }); full.push({ x: s.x2, y: s.y2 }); });
+    // 距離で分割
+    let left = reach, solid = [], faintPts = [];
+    for (let i = 0; i < full.length - 1; i++) {
+      const a = full[i], b = full[i + 1], len = Math.hypot(b.x - a.x, b.y - a.y);
+      if (left >= len) { if (!solid.length) solid.push(a); solid.push(b); left -= len; }
+      else {
+        const k = Math.max(0, left / len), m = { x: a.x + (b.x - a.x) * k, y: a.y + (b.y - a.y) * k };
+        if (!solid.length) solid.push(a); if (left > 0) solid.push(m);
+        faintPts.push([left > 0 ? m : a, b]); left = 0;
+        for (let j = i + 1; j < full.length - 1; j++) faintPts.push([full[j], full[j + 1]]);
+        break;
+      }
+    }
+    g.save();
+    // うすい（届かない）部分
+    g.setLineDash([4, 6]); g.strokeStyle = 'rgba(255,200,120,.35)'; g.lineWidth = 1.6;
+    faintPts.forEach(([a, b]) => { g.beginPath(); g.moveTo(OX + a.x, OY + a.y); g.lineTo(OX + b.x, OY + b.y); g.stroke(); });
+    g.setLineDash([]);
+    // レーザー本体
+    g.globalCompositeOperation = 'lighter';
+    if (solid.length > 1) {
+      glowLine(g, solid, 11, 'rgba(255,140,30,A)', .16); glowLine(g, solid, 6, 'rgba(255,170,60,A)', .38); glowLine(g, solid, 2.2, 'rgba(255,248,225,A)', .95);
+      // 光の粒が流れる
+      let total = 0; for (let i = 0; i < solid.length - 1; i++) total += Math.hypot(solid[i + 1].x - solid[i].x, solid[i + 1].y - solid[i].y);
+      for (let k = 0; k < 5; k++) {
+        let d = ((t * 160 + k * total / 5) % Math.max(total, 1)), p = null;
+        for (let i = 0; i < solid.length - 1; i++) { const l = Math.hypot(solid[i + 1].x - solid[i].x, solid[i + 1].y - solid[i].y); if (d <= l) { p = { x: solid[i].x + (solid[i + 1].x - solid[i].x) * d / l, y: solid[i].y + (solid[i + 1].y - solid[i].y) * d / l }; break; } d -= l; }
+        if (p) { g.fillStyle = 'rgba(255,255,255,.9)'; g.beginPath(); g.arc(OX + p.x, OY + p.y, 2.3, 0, 6.283); g.fill(); }
+      }
+    }
+    g.globalCompositeOperation = 'source-over';
+    // 反射点：法線と入射角・反射角
+    tr.bounces.forEach(b => {
+      const inx = b.axis === 'x' ? -Math.sign(b.dx) : 0, iny = b.axis === 'y' ? -Math.sign(b.dy) : 0, bx = OX + b.x, by = OY + b.y;
+      g.strokeStyle = 'rgba(255,255,255,.55)'; g.lineWidth = 1; g.setLineDash([3, 3]); g.beginPath(); g.moveTo(bx - inx * 4 + 0, by - iny * 4); g.lineTo(bx + inx * 26, by + iny * 26); g.stroke(); g.setLineDash([]);
+      g.fillStyle = '#fff'; g.beginPath(); g.arc(bx, by, 3, 0, 6.283); g.fill(); g.strokeStyle = '#ffb347'; g.lineWidth = 1.6; g.stroke();
+      const lx = bx + inx * 34 + (b.axis === 'y' ? 0 : 0), ly = by + iny * 34;
+      g.font = 'bold 10px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; const txt = 'θ=' + Math.round(b.theta) + '°';
+      g.lineWidth = 3; g.strokeStyle = 'rgba(10,15,30,.9)'; g.strokeText(txt, lx, ly); g.fillStyle = '#ffe9b8'; g.fillText(txt, lx, ly);
+    });
+    // 最初に当たる玉：ゴーストボールと的球の予想軌道
+    if (tr.hit) {
+      const gx = OX + tr.hit.gx, gy = OY + tr.hit.gy;
+      g.strokeStyle = 'rgba(255,255,255,.85)'; g.lineWidth = 1.5; g.setLineDash([3, 3]); g.beginPath(); g.arc(gx, gy, R, 0, 6.283); g.stroke(); g.setLineDash([]);
+      g.fillStyle = 'rgba(255,255,255,.12)'; g.beginPath(); g.arc(gx, gy, R, 0, 6.283); g.fill();
+      if (tr.cueDef) { g.strokeStyle = 'rgba(255,255,255,.55)'; g.lineWidth = 1.6; g.beginPath(); g.moveTo(gx, gy); g.lineTo(gx + tr.cueDef.dx * 30 * Math.min(1, tr.cueDef.k * 1.4), gy + tr.cueDef.dy * 30 * Math.min(1, tr.cueDef.k * 1.4)); g.stroke(); }
+      if (tr.obj) {
+        const pts = []; tr.obj.path.segs.forEach((s, i) => { if (!i) pts.push({ x: s.x1, y: s.y1 }); pts.push({ x: s.x2, y: s.y2 }); });
+        g.save(); g.setLineDash([7, 5]); g.lineDashOffset = -t * 20; g.strokeStyle = 'rgba(0,255,245,.9)'; g.lineWidth = 2.2; g.shadowColor = '#00fff5'; g.shadowBlur = 6; g.beginPath();
+        pts.forEach((p, i) => i ? g.lineTo(OX + p.x, OY + p.y) : g.moveTo(OX + p.x, OY + p.y)); g.stroke(); g.restore();
+        tr.obj.path.bounces.forEach(b => { g.fillStyle = '#00fff5'; g.beginPath(); g.arc(OX + b.x, OY + b.y, 2.6, 0, 6.283); g.fill(); });
+        if (tr.obj.path.pocket) {
+          const pk = tr.obj.path.pocket, pxx = OX + (pk.x < 1 ? -5 : pk.x > W - 1 ? W + 5 : pk.x), pyy = OY + (pk.y < 1 ? -5 : pk.y > H - 1 ? H + 5 : pk.y);
+          const k = .5 + .5 * Math.sin(t * 8); g.strokeStyle = 'rgba(120,255,170,' + (.5 + .5 * k) + ')'; g.lineWidth = 3; g.beginPath(); g.arc(pxx, pyy, 20 + k * 3, 0, 6.283); g.stroke();
+          g.font = 'bold 11px sans-serif'; g.textAlign = 'center'; g.lineWidth = 3; g.strokeStyle = 'rgba(10,15,30,.9)';
+          const ty = pyy < CH / 2 ? pyy + 32 : pyy - 30; g.strokeText('IN!', pxx, ty); g.fillStyle = '#9dffbd'; g.fillText('IN!', pxx, ty);
+        }
+      }
+    }
+    if (tr.pocket) { const pk = tr.pocket; g.strokeStyle = 'rgba(255,71,87,.9)'; g.lineWidth = 3; g.beginPath(); g.arc(OX + (pk.x < 1 ? -5 : pk.x > W - 1 ? W + 5 : pk.x), OY + (pk.y < 1 ? -5 : pk.y > H - 1 ? H + 5 : pk.y), 20, 0, 6.283); g.stroke(); }
+    g.restore();
+  }
+
+  /* ═════════ 状態 ═════════ */
+  const S = { mode: 'tutorial', stage: null, balls: [], snap: null, shotBalls: null, res: null, angle: -Math.PI / 2, power: .6, trace: null,
+    shotsUsed: 0, hints: 0, strikeT: 0, acc: 0, ff: false, pre: null, claimed: true, result: null, pull: 0 };
+  const parts = [], texts = [], rings = [];
+  let shakeT = 0, flashT = 0, moodTimer = 0, lastAim = null;
+  const cueBall = () => S.balls.find(b => b.kind === 'cue');
+  const targetsLeft = () => S.balls.filter(b => b.kind === 'target' && b.alive).length;
+
+  let progress = { stars: {}, seen: false };
+  try { const p = JSON.parse(localStorage.getItem('hoBilliardsProgress')); if (p) progress = { stars: p.stars || {}, seen: !!p.seen }; } catch (e) {}
+  const saveProgress = () => { try { localStorage.setItem('hoBilliardsProgress', JSON.stringify(progress)); } catch (e) {} };
+  const stageUnlocked = id => id === 0 || (progress.stars[id - 1] || 0) > 0;
+
+  /* ═════════ HUD・演出 ═════════ */
+  let bannerT, speechT;
+  function banner(html, ms, bad) { const b = $('banner'); b.innerHTML = html; b.classList.toggle('bad', !!bad); b.classList.add('show'); clearTimeout(bannerT); bannerT = setTimeout(() => b.classList.remove('show'), ms || 1200); }
+  function say(who, text, ms) { const s = $('speech'); s.textContent = who + '「' + text + '」'; s.classList.add('show'); clearTimeout(speechT); speechT = setTimeout(() => s.classList.remove('show'), ms || 1800); }
+  function setHoMood(m, hold) { setImg($('imgHo'), 'ho', 0, m); $('avHo').classList.toggle('glow', m === 'aim'); clearTimeout(moodTimer); if (hold) moodTimer = setTimeout(() => setHoMood(S.mode === 'aim' ? 'aim' : 'idle'), hold); }
+  function setFoeMood(m, hold) { if (!S.stage) return; setImg($('imgFoe'), 'dis', S.stage.d, m); if (m === 'hurt') { const a = $('avFoe'); a.classList.remove('shake'); void a.offsetWidth; a.classList.add('shake'); } if (hold) setTimeout(() => S.stage && setFoeMood('idle'), hold); }
+  function updateHUD() {
+    const st = S.stage; if (!st) return;
+    $('stTitle').textContent = DISEASES[st.d].name + '　STAGE ' + (st.n + 1) + (st.n === PER - 1 ? ' ★ボス' : '');
+    let dots = ''; for (let i = 0; i < st.limit; i++) dots += i < st.limit - S.shotsUsed ? '●' : '○'; $('stShots').textContent = dots;
+    const tl = targetsLeft(); let hp = ''; for (let i = 0; i < st.balls.filter(b => b.kind === 'target').length; i++) hp += i < tl ? '♥' : '♡'; $('stHp').textContent = hp;
+    $('powerVal').textContent = Math.round(S.power * 100) + '%';
+  }
+  const w2c = (x, y) => ({ x: OX + x, y: OY + y });
+  function burst(x, y, col, n, sp) { for (let i = 0; i < n; i++) { const a = Math.random() * 6.283, s = (sp || 120) * (.3 + Math.random()); parts.push({ x: OX + x, y: OY + y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, life: .5 + Math.random() * .4, max: .9, c: col, r: 1.5 + Math.random() * 2.2 }); } }
+  function floatText(x, y, text, col) { texts.push({ x: OX + x, y: OY + y, text, col, life: 1.1 }); }
+
+  /* ═════════ ステージ開始 ═════════ */
+  function startStage(id) {
+    const st = STAGES[id]; S.stage = st; S.balls = st.balls.map(b => ({ id: b.id, kind: b.kind, num: b.num, x: b.x, y: b.y, vx: 0, vy: 0, alive: true }));
+    S.shotsUsed = 0; S.hints = 0; S.claimed = true; S.result = null; S.snap = null;
+    parts.length = 0; texts.length = 0; rings.length = 0;
+    const cue = cueBall(), tg = S.balls.find(b => b.kind === 'target');
+    S.angle = Math.atan2(tg.y - cue.y, tg.x - cue.x); S.power = .6; $('power').value = 60;
+    ['selectModal', 'resultModal', 'tutorialModal'].forEach(i => $(i).style.display = 'none');
+    S.mode = 'aim'; updateTrace(); updateHUD(); updateButtons();
+    setHoMood('aim'); setFoeMood('start'); setTimeout(() => S.stage === st && setFoeMood('idle'), 1500);
+    say(DISEASES[st.d].kana, DISEASES[st.d].lines.start, 2200);
+    if (!bgm.paused || isMuted) {} else if (!isMuted) bgm.play().catch(() => {});
+  }
+  function updateTrace() { S.trace = S.mode === 'aim' || S.mode === 'strike' ? C.trace(S.balls, S.angle, 3) : null; }
+  function updateButtons() { const on = S.mode === 'aim'; ['btnShot', 'btnL', 'btnR', 'btnHint', 'btnRetry'].forEach(i => $(i).disabled = !on); $('power').disabled = !on; }
+
+  /* ═════════ ショット ═════════ */
+  function shoot() {
+    if (S.mode !== 'aim') return;
+    ac(); sfx('shot');
+    S.snap = C.clone(S.balls); S.pre = new Set(S.balls.filter(b => b.alive).map(b => b.id));
+    S.mode = 'strike'; S.strikeT = 0; S.pull = 8 + 40 * S.power; updateButtons(); setHoMood('idle');
+    lastAim = { a: S.angle, p: S.power };
+  }
+  function launchNow() {
+    S.shotBalls = C.clone(S.balls); S.res = C.newRes([]); C.launch(S.shotBalls, S.angle, S.power);
+    S.balls = S.shotBalls; S.trace = null; S.mode = 'roll'; S.acc = 0; flashT = .5; shakeT = .12;
+    burst(cueBall().x, cueBall().y, '#ffb347', 14, 150);
+  }
+  function stepRoll(dt) {
+    S.acc += dt * (S.ff ? 3 : 1); let n = 0;
+    while (S.acc >= C.DT && n < 60) { C.step(S.shotBalls, S.res); S.acc -= C.DT; n++; }
+    S.res.ev.splice(0).forEach(e => {
+      if (e.t === 'hit') { sfx('hit', e.s); burst(e.x, e.y, '#fff3d6', 5, 90); }
+      else if (e.t === 'wall') { sfx('wall', e.s); if (e.s > 120) burst(e.x, e.y, '#ffd9a0', 3, 60); }
+      else if (e.t === 'pocket') {
+        sfx('pocket'); const pk = { x: e.x < 1 ? -5 : e.x > W - 1 ? W + 5 : e.x, y: e.y < 1 ? -5 : e.y > H - 1 ? H + 5 : e.y };
+        rings.push({ x: OX + pk.x, y: OY + pk.y, r: 8, life: .6 }); burst(pk.x, pk.y, e.kind === 'target' ? '#9dffbd' : '#ff6b7a', 22, 190);
+        floatText(pk.x, pk.y + (pk.y < H / 2 ? 30 : -30), e.kind === 'target' ? 'HIT!' : e.kind === 'cue' ? '手球が…' : 'NG!', e.kind === 'target' ? '#9dffbd' : '#ff8a96');
+        if (e.kind === 'target') { setFoeMood('hurt', 900); } shakeT = .2;
+      }
+    });
+    const cue = S.shotBalls.find(b => b.kind === 'cue');
+    if (cue.alive && (cue.vx || cue.vy) && Math.random() < .6) parts.push({ x: OX + cue.x, y: OY + cue.y, vx: (Math.random() - .5) * 20, vy: (Math.random() - .5) * 20, life: .45, max: .45, c: '#ffb347', r: 2.2 });
+    if (!C.moving(S.shotBalls)) finishShot();
+  }
+  function finishShot() {
+    const res = S.res, st = S.stage, D = DISEASES[st.d]; S.shotsUsed++;
+    const got = S.shotBalls.filter(b => b.kind === 'target' && !b.alive && S.pre.has(b.id)).length;
+    if (res.scratch || res.foul) {
+      S.balls = C.clone(S.snap); sfx('foul');
+      banner(res.foul ? '⚠ ブロッカー(黒玉)が落ちた！<br>配置にもどします' : '⚠ 手球が落ちた！<br>配置にもどします', 1700, true);
+      setHoMood('sad', 1600); say(D.kana, D.lines.foul, 1800);
+    } else {
+      S.balls = S.shotBalls.map(b => ({ ...b, vx: 0, vy: 0 }));
+      if (got) { say('ホルミウム', targetsLeft() ? 'ナイスヒット！' : HO_LINES.win, 1500); setHoMood('happy', 1400); say(D.kana, D.lines.hurt, 1800); }
+      else { say('ホルミウム', HO_LINES.miss, 1600); setHoMood('sad', 1200); }
+    }
+    S.res = null;
+    if (!res.scratch && !res.foul && targetsLeft() === 0) return finishStage(true);
+    if (S.shotsUsed >= st.limit) return finishStage(false);
+    S.mode = 'aim'; const cue = cueBall(), tgs = S.balls.filter(b => b.kind === 'target' && b.alive);
+    if (lastAim && !(res.scratch || res.foul)) { const tg = tgs.reduce((m, b) => !m || Math.hypot(b.x - cue.x, b.y - cue.y) < Math.hypot(m.x - cue.x, m.y - cue.y) ? b : m, null); S.angle = Math.atan2(tg.y - cue.y, tg.x - cue.x); }
+    updateTrace(); updateHUD(); updateButtons(); setTimeout(() => { if (S.mode === 'aim') setHoMood('aim'); }, 1500);
+  }
+
+  /* ═════════ クリア／失敗・報酬 ═════════ */
+  function finishStage(win) {
+    S.mode = 'result'; updateHUD(); updateButtons(); S.trace = null;
+    const st = S.stage, D = DISEASES[st.d], par = st.par;
+    if (win) {
+      let stars = S.shotsUsed <= par ? 3 : S.shotsUsed <= par + 1 ? 2 : 1; if (S.hints > 0) stars = Math.min(stars, 2);
+      const best = progress.stars[st.id] || 0, first = best === 0;
+      const money = (first ? 200 + 120 * st.d + 60 * st.n : 0) + 80 * Math.max(0, stars - best);
+      const ho = first ? 1 + (st.n === PER - 1 ? 1 : 0) : 0, exp = first ? 20 + 10 * st.d + (st.n === PER - 1 ? 30 : 0) : 0;
+      S.result = { win, stars, money, ho, exp, first, best }; S.claimed = false;
+      sfx('clear'); setFoeMood('win'); setHoMood('happy'); say(D.kana, D.lines.win, 2200);
+      setTimeout(() => showResult(), 900);
+    } else {
+      S.result = { win, stars: 0, money: 0, ho: 0, exp: 0 }; sfx('fail'); setFoeMood('idle'); setHoMood('sad'); say(D.kana, D.lines.fail, 2200);
+      setTimeout(() => showResult(), 900);
+    }
+  }
+  function calcLevel(add) { let gs = {}; try { gs = JSON.parse(localStorage.getItem('rareEarthGameState')) || {}; } catch (e) {} let lv = gs.level || 1, ex = (gs.exp || 0) + add, up = false; while (ex >= lv * 100) { ex -= lv * 100; lv++; up = true; } return { level: lv, exp: ex, up }; }
+  function claim() {
+    if (S.claimed || !S.result || !S.result.win) return; S.claimed = true; const r = S.result, st = S.stage;
+    let gs = {}; try { gs = JSON.parse(localStorage.getItem('rareEarthGameState')) || {}; } catch (e) {}
+    if (gs.money == null) gs.money = 1500; if (gs.level == null) { gs.level = 1; gs.mudStock = gs.mudStock == null ? 5 : gs.mudStock; }
+    gs.money += r.money; gs.elements = gs.elements || {}; gs.elements.Ho = (gs.elements.Ho || 0) + r.ho;
+    const lv = calcLevel(r.exp); gs.level = lv.level; gs.exp = lv.exp;
+    try { localStorage.setItem('rareEarthGameState', JSON.stringify(gs)); } catch (e) {}
+    progress.stars[st.id] = Math.max(progress.stars[st.id] || 0, r.stars); saveProgress();
+  }
+  function showResult() {
+    const r = S.result, st = S.stage, D = DISEASES[st.d]; if (!r) return;
+    const m = $('resultModal'); m.style.display = 'flex';
+    setImg($('resAvatar'), 'ho', 0, r.win ? 'happy' : 'sad');
+    $('resTitle').textContent = r.win ? '✨ ' + D.name + 'を治療完了！' : '💦 あと一歩…！';
+    $('resStars').innerHTML = r.win ? [1, 2, 3].map(i => '<span class="' + (i <= r.stars ? '' : 'off') + '">★</span>').join('') : '';
+    $('resMsg').textContent = r.win ? (r.stars === 3 ? 'パーフェクト！最少のショット数でクリア！' : r.stars === 2 ? 'いい腕前！あと少しで★3だよ' : 'クリア！ショット数を減らせば★が増えるよ') : 'ショットを使い切ったよ。配置をよく見て、反射の角度を考えてみよう。';
+    const hasNext = st.id < STAGES.length - 1;
+    $('resBox').innerHTML = r.win ? '<div class="result-row"><span>🎯 使ったショット:</span><span style="color:#00fff5;">' + S.shotsUsed + ' / ' + st.limit + '（目安 ' + st.par + '）</span></div>'
+      + '<div class="result-row"><span>💡 ヒント:</span><span style="color:#ffde59;">' + S.hints + ' 回</span></div>'
+      + '<div class="result-row"><span>🧪 ホルミウム(Ho):</span><span style="color:#ffb347;">+' + r.ho + ' 個</span></div>'
+      + '<div class="result-row"><span>⭐ 経験値:</span><span style="color:#a29bfe;">+' + r.exp + ' EXP</span></div>'
+      + '<div style="border-top:1px dashed #00fff5;margin-top:2px;padding-top:4px;font-weight:bold;display:flex;justify-content:space-between;"><span>💰 獲得賞金:</span><span style="color:#55ff55;">+' + r.money + ' G</span></div>'
+      + (r.first ? '' : '<div style="font-size:10px;color:#94a3b8;">※ 2回目以降は★が増えたぶんだけ賞金がもらえます</div>')
+      : '<div class="result-row"><span>🎯 使ったショット:</span><span style="color:#ff8a96;">' + S.shotsUsed + ' / ' + st.limit + '</span></div>';
+    $('resMain').textContent = r.win ? (hasNext ? '▶ つぎのステージへ' : '🏁 ぜんぶクリア！ステージ選択へ') : '🔄 もう一度ちょうせん';
+    $('resSub').textContent = r.win ? '🔄 もう一度あそぶ' : '💡 ヒントを見てやり直す';
+    $('resMain').onclick = () => { sfx('click'); claim(); if (r.win) { hasNext ? startStage(st.id + 1) : openSelect(); } else startStage(st.id); };
+    $('resSub').onclick = () => { sfx('click'); claim(); startStage(st.id); };
+    $('resSel').onclick = () => { sfx('click'); claim(); $('resultModal').style.display = 'none'; openSelect(); };
+  }
+
+  /* ═════════ ステージ選択 ═════════ */
+  function openSelect() {
+    S.mode = S.stage && S.mode === 'aim' ? 'select' : S.mode === 'tutorial' ? 'select' : 'select';
+    const list = $('selectList'); list.innerHTML = '';
+    DISEASES.forEach((D, di) => {
+      const card = document.createElement('div'); card.className = 'sel-card';
+      card.innerHTML = '<div class="sel-head"><img data-d="' + di + '" alt=""><div><div class="sel-name">' + D.name + '（' + D.kana + '）</div><div class="sel-desc">' + D.desc + '</div></div></div><div class="sel-stages"></div>';
+      const box = card.querySelector('.sel-stages');
+      for (let n = 0; n < PER; n++) {
+        const id = di * PER + n, ok = stageUnlocked(id), s = progress.stars[id] || 0, b = document.createElement('button');
+        b.className = 'st-btn' + (n === PER - 1 ? ' boss' : '') + (ok ? '' : ' lock');
+        b.innerHTML = (ok ? (n === PER - 1 ? 'BOSS' : (n + 1)) : '🔒') + '<small>' + (ok ? '★'.repeat(s) + '☆'.repeat(3 - s) : '---') + '</small>';
+        if (ok) b.onclick = () => { sfx('click'); startStage(id); };
+        box.appendChild(b);
+      }
+      list.appendChild(card); setImg(card.querySelector('img'), 'dis', di, 'idle');
+    });
+    $('selClose').style.display = S.stage ? 'block' : 'none';
+    $('selectModal').style.display = 'flex'; updateButtons();
+  }
+  $('btnSelect').addEventListener('click', () => { if (S.mode === 'roll' || S.mode === 'strike') return; sfx('click'); S.backMode = S.mode; openSelect(); });
+  $('selClose').addEventListener('click', () => { $('selectModal').style.display = 'none'; S.mode = S.result && !S.claimed ? 'result' : 'aim'; if (S.mode === 'result') showResult(); updateTrace(); updateButtons(); });
+  $('selHelp').addEventListener('click', () => { sfx('click'); openTutorial(true); });
+
+  /* ═════════ チュートリアル ═════════ */
+  const TUTOR = [
+    { t: '① 台を見て、狙いを決めよう', d: '台をドラッグ（なぞる）と、手球からレーザーの狙い線がのびるよ。◀▶ボタンで0.2°ずつ細かく調整できる。ゴールは、色つきの玉を全部ポケットに落とすこと！' },
+    { t: '② レーザーは鏡のように反射する', d: 'クッションは「ミラー」。入射角と反射角はいつも同じだから、θ(シータ)の数字を見れば、バンクショットの行き先が正確にわかるよ。' },
+    { t: '③ ゴーストボールで的球を狙う', d: '狙い線の先の白い輪が「ゴーストボール」。ここに手球が来ると、的球が水色の点線の向きに飛ぶよ。点線がポケットに入って「IN!」と出たら成功コース！' },
+    { t: '④ パワーで届く距離が変わる', d: '「パワー」を上げるほどレーザーが遠くまで届く。くっきり光る部分までが手球の届く距離で、うすい点線の先には届かないよ。' },
+    { t: '⑤ 落としちゃダメな玉とショット数', d: '🔴黒い玉(ブロッカー)や手球をポケットに落とすとファウル！配置はもどるけど、ショットは1回ぶん減るよ。ショット数にも限りがあるから注意。' },
+    { t: '⑥ ヒントと★', d: '少ないショット数でクリアするほど★がふえて、ごほうびもアップ！困ったら💡ヒントで解き方を教えてもらえる（その場合★は最大2）。やり直しは何度でもOK！' }
+  ];
+  let tutorIdx = 0, tutorOpen = true, tutorFromSel = false;
+  $('tutorDots').innerHTML = TUTOR.map(() => '<span></span>').join('');
+  function showTutorSlide(i) {
+    tutorIdx = i; $('tutorTitle').textContent = TUTOR[i].t; $('tutorDesc').textContent = TUTOR[i].d;
+    [...$('tutorDots').children].forEach((d, k) => d.classList.toggle('on', k === i));
+    $('tutorPrevBtn').style.visibility = i > 0 ? 'visible' : 'hidden';
+    $('tutorNextBtn').textContent = i === TUTOR.length - 1 ? (tutorFromSel ? 'とじる' : 'OK！あそぶ') : 'つぎへ ▶';
+  }
+  function openTutorial(fromSel) { tutorFromSel = fromSel; tutorOpen = true; $('tutorSkip').textContent = fromSel ? 'とじる' : 'スキップ'; $('tutorialModal').style.display = 'flex'; showTutorSlide(0); }
+  function closeTutorial() {
+    tutorOpen = false; $('tutorialModal').style.display = 'none'; progress.seen = true; saveProgress();
+    if (!tutorFromSel) { const first = [...Array(STAGES.length).keys()].find(i => stageUnlocked(i) && !(progress.stars[i] > 0)); if (!S.stage) startStage(first == null ? 0 : first); else { S.mode = 'aim'; } }
+  }
+  $('tutorNextBtn').addEventListener('click', () => { sfx('click'); tutorIdx < TUTOR.length - 1 ? showTutorSlide(tutorIdx + 1) : closeTutorial(); });
+  $('tutorPrevBtn').addEventListener('click', () => { sfx('click'); if (tutorIdx > 0) showTutorSlide(tutorIdx - 1); });
+  $('tutorSkip').addEventListener('click', () => { sfx('click'); closeTutorial(); });
+
+  const tc = $('tutorCanvas'), tg = tc.getContext('2d'); tc.width = 250 * DPR; tc.height = 120 * DPR; tg.scale(DPR, DPR);
+  function tlabel(txt, x, y, col, size) { tg.save(); tg.font = 'bold ' + (size || 10) + 'px sans-serif'; tg.textAlign = 'center'; tg.textBaseline = 'middle'; tg.lineWidth = 3; tg.strokeStyle = 'rgba(10,15,30,.95)'; tg.strokeText(txt, x, y); tg.fillStyle = col || '#ffe9b8'; tg.fillText(txt, x, y); tg.restore(); }
+  function tball(x, y, num, r) { const col = BALL_COL[num]; const gr = tg.createRadialGradient(x - r * .35, y - r * .4, 1, x, y, r * 1.05); gr.addColorStop(0, lighten(col, .6)); gr.addColorStop(.45, col); gr.addColorStop(1, darken(col, .6)); tg.fillStyle = gr; tg.beginPath(); tg.arc(x, y, r, 0, 6.283); tg.fill(); if (num) { tg.fillStyle = '#f7f4ea'; tg.beginPath(); tg.arc(x, y, r * .5, 0, 6.283); tg.fill(); tg.fillStyle = '#111'; tg.font = 'bold ' + Math.round(r * .75) + 'px sans-serif'; tg.textAlign = 'center'; tg.textBaseline = 'middle'; tg.fillText(num, x, y + .5); } }
+  function tlaser(pts, k) { tg.save(); tg.globalCompositeOperation = 'lighter'; tg.lineCap = 'round'; tg.lineJoin = 'round'; [[8, .18, '255,140,30'], [4, .4, '255,170,60'], [1.8, .95, '255,248,225']].forEach(([w, a, c]) => { tg.strokeStyle = 'rgba(' + c + ',' + a * k + ')'; tg.lineWidth = w; tg.beginPath(); pts.forEach((p, i) => i ? tg.lineTo(p[0], p[1]) : tg.moveTo(p[0], p[1])); tg.stroke(); }); tg.restore(); }
+  function ttable() {
+    tg.clearRect(0, 0, 250, 120); tg.fillStyle = '#6b3f1b'; tg.fillRect(0, 0, 250, 120);
+    const gr = tg.createRadialGradient(125, 60, 10, 125, 60, 140); gr.addColorStop(0, '#22a88a'); gr.addColorStop(1, '#0e6a58'); tg.fillStyle = gr; tg.fillRect(8, 8, 234, 104);
+    tg.strokeStyle = 'rgba(190,255,235,.3)'; tg.strokeRect(8.5, 8.5, 233, 103);
+    [[8, 8], [242, 8], [8, 112], [242, 112]].forEach(([x, y]) => { tg.fillStyle = '#050506'; tg.beginPath(); tg.arc(x, y, 8, 0, 6.283); tg.fill(); tg.strokeStyle = '#c9a14a'; tg.lineWidth = 1.5; tg.stroke(); });
+  }
+  function partial(pts, f) { // 折れ線を割合fぶんだけ返す
+    let tot = 0; const L = []; for (let i = 0; i < pts.length - 1; i++) { const l = Math.hypot(pts[i + 1][0] - pts[i][0], pts[i + 1][1] - pts[i][1]); L.push(l); tot += l; }
+    let want = tot * f; const out = [pts[0]]; for (let i = 0; i < L.length; i++) { if (want >= L[i]) { out.push(pts[i + 1]); want -= L[i]; } else { out.push([pts[i][0] + (pts[i + 1][0] - pts[i][0]) * want / L[i], pts[i][1] + (pts[i + 1][1] - pts[i][1]) * want / L[i]]); break; } } return out;
+  }
+  function drawTutor(t) {
+    ttable(); const p = (t % 4) / 4, i = tutorIdx;
+    if (i === 0) {
+      const ang = Math.sin(t * 1.6) * .25 - .55, cx0 = 48, cy0 = 92, tx = 150, ty = 40;
+      const end = [cx0 + Math.cos(ang) * 150, cy0 + Math.sin(ang) * 150]; tball(tx, ty, 1, 9); tball(cx0, cy0, 0, 9);
+      tlaser([[cx0, cy0], [Math.min(end[0], 238), Math.max(end[1], 12)]], 1);
+      const fx = Math.min(end[0], 238), fy = Math.max(end[1], 12); tg.font = '16px sans-serif'; tg.fillStyle = '#fff'; tg.fillText('👆', fx + 4, fy + 12); tlabel('ドラッグで向きを決める', 125, 106, '#00fff5');
+    } else if (i === 1) {
+      const B = [226, 46], A = [52, 98], O = [86, 10], f = Math.min(1, p * 1.6);
+      tg.setLineDash([3, 3]); tg.strokeStyle = 'rgba(255,255,255,.6)'; tg.lineWidth = 1; tg.beginPath(); tg.moveTo(B[0] + 12, B[1]); tg.lineTo(B[0] - 38, B[1]); tg.stroke(); tg.setLineDash([]);
+      tlaser(partial([A, B, O], f), 1); tball(A[0], A[1], 0, 9);
+      tg.fillStyle = '#fff'; tg.beginPath(); tg.arc(B[0], B[1], 3, 0, 6.283); tg.fill();
+      if (f > .55) { tlabel('入射角 θ', B[0] - 52, B[1] + 20, '#ffe9b8'); } if (f > .9) { tlabel('反射角 θ', B[0] - 52, B[1] - 20, '#ffe9b8'); tlabel('θ ＝ θ', 125, 106, '#9dffbd', 12); }
+    } else if (i === 2) {
+      const T0 = [150, 52], pk = [236, 12], dx = pk[0] - T0[0], dy = pk[1] - T0[1], l = Math.hypot(dx, dy), ux = dx / l, uy = dy / l;
+      const G = [T0[0] - ux * 18, T0[1] - uy * 18], C0 = [46, 94], f = Math.min(1, p * 1.5);
+      tball(T0[0], T0[1], 1, 9); tball(C0[0], C0[1], 0, 9);
+      tlaser(partial([C0, G], f), 1);
+      tg.setLineDash([3, 3]); tg.strokeStyle = 'rgba(255,255,255,.85)'; tg.lineWidth = 1.3; tg.beginPath(); tg.arc(G[0], G[1], 9, 0, 6.283); tg.stroke(); tg.setLineDash([]);
+      tg.setLineDash([6, 4]); tg.lineDashOffset = -t * 16; tg.strokeStyle = 'rgba(0,255,245,.95)'; tg.lineWidth = 2; tg.beginPath(); tg.moveTo(T0[0], T0[1]); tg.lineTo(pk[0] - 6, pk[1] + 3); tg.stroke(); tg.setLineDash([]); tg.lineDashOffset = 0;
+      tlabel('IN!', pk[0] - 22, pk[1] + 22, '#9dffbd', 11); tlabel('ゴーストボール', G[0] - 8, G[1] + 20, '#fff', 9);
+    } else if (i === 3) {
+      const reach = 70 + 120 * (.5 + .5 * Math.sin(t * 1.5)), C0 = [26, 70];
+      tball(C0[0], C0[1], 0, 9); tlaser([C0, [C0[0] + reach, C0[1]]], 1);
+      tg.setLineDash([4, 6]); tg.strokeStyle = 'rgba(255,200,120,.4)'; tg.lineWidth = 1.5; tg.beginPath(); tg.moveTo(C0[0] + reach, C0[1]); tg.lineTo(238, C0[1]); tg.stroke(); tg.setLineDash([]);
+      tball(196, 70, 2, 9); tlabel(reach > 160 ? 'パワー大：とどく！' : 'パワー小：とどかない', 125, 100, reach > 160 ? '#9dffbd' : '#ff9aa5', 11);
+    } else if (i === 4) {
+      tball(70, 48, 8, 10); tg.strokeStyle = 'rgba(255,71,87,.9)'; tg.lineWidth = 2.4; tg.beginPath(); tg.moveTo(58, 36); tg.lineTo(82, 60); tg.moveTo(82, 36); tg.lineTo(58, 60); tg.stroke();
+      tball(150, 48, 0, 10); tg.beginPath(); tg.moveTo(138, 36); tg.lineTo(162, 60); tg.moveTo(162, 36); tg.lineTo(138, 60); tg.stroke();
+      tlabel('黒い玉', 70, 78, '#ffe9b8'); tlabel('手球', 150, 78, '#ffe9b8'); tlabel('落とすとファウル', 125, 100, '#ff9aa5', 11);
+      tg.font = '15px sans-serif'; tg.textAlign = 'center'; tg.fillStyle = '#ffb347'; const dots = Math.floor(t * .8) % 4; tg.fillText('●'.repeat(3 - Math.min(dots, 3)) + '○'.repeat(Math.min(dots, 3)), 214, 40);
+    } else {
+      tg.font = '26px sans-serif'; tg.textAlign = 'center'; tg.fillStyle = '#ffde59'; const n = 1 + Math.floor(t * .9) % 3; tg.fillText('★'.repeat(n) + '☆'.repeat(3 - n), 125, 40);
+      tlabel('少ないショット数ほど★アップ！', 125, 70, '#9dffbd', 11); tlabel('💡 ヒント：解き方をおしえるよ（★は最大2）', 125, 94, '#ffe9b8', 9);
+    }
+  }
+
+  /* ═════════ 入力 ═════════ */
+  let dragging = false;
+  function aimFromEvent(e) {
+    if (S.mode !== 'aim') return; const r = cv.getBoundingClientRect(), px = (e.clientX - r.left) * (CW / r.width) - OX, py = (e.clientY - r.top) * (CH / r.height) - OY, c = cueBall();
+    if (Math.hypot(px - c.x, py - c.y) < 4) return; S.angle = Math.atan2(py - c.y, px - c.x); updateTrace();
+  }
+  cv.addEventListener('pointerdown', e => { e.preventDefault(); ac(); if (S.mode === 'roll') { S.ff = true; return; } dragging = true; try { cv.setPointerCapture(e.pointerId); } catch (er) {} aimFromEvent(e); });
+  cv.addEventListener('pointermove', e => { if (dragging) aimFromEvent(e); });
+  ['pointerup', 'pointercancel'].forEach(ev => cv.addEventListener(ev, () => { dragging = false; S.ff = false; }));
+  function bindHold(el, fn) {
+    let t1, t2; const stop = () => { clearTimeout(t1); clearInterval(t2); };
+    el.addEventListener('pointerdown', e => { e.preventDefault(); ac(); fn(); t1 = setTimeout(() => { t2 = setInterval(fn, 70); }, 300); });
+    ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => el.addEventListener(ev, stop));
+  }
+  const nudge = d => { if (S.mode !== 'aim') return; S.angle += d * .2 * DEG; updateTrace(); };
+  bindHold($('btnL'), () => nudge(-1)); bindHold($('btnR'), () => nudge(1));
+  $('power').addEventListener('input', () => { S.power = $('power').value / 100; updateHUD(); });
+  $('btnShot').addEventListener('click', shoot);
+  $('btnRetry').addEventListener('click', () => { if (S.mode === 'aim' && S.stage) { sfx('click'); startStage(S.stage.id); } });
+  $('btnHint').addEventListener('click', () => {
+    if (S.mode !== 'aim') return; if (S.hints >= 3) { say('ホルミウム', 'ヒントは1ステージ3回までだよ', 1800); return; }
+    banner('💡 解き方を考え中…', 800); setTimeout(() => {
+      const f = C.findShots(S.balls, { angleStep: 1, want: 1 });
+      if (f.best.length) { const b = f.best[0]; S.angle = b.a; S.power = b.p; $('power').value = Math.round(b.p * 100); S.hints++; sfx('hint'); updateTrace(); updateHUD(); say('ホルミウム', 'この狙いで入りそう！「うつ」を押してね', 2400); }
+      else say('ホルミウム', 'うーん…この配置は「やり直し」が早いかも', 2400);
+    }, 40);
+  });
+  document.addEventListener('keydown', e => {
+    if (S.mode !== 'aim') return;
+    if (e.key === 'ArrowLeft') { nudge(-1); e.preventDefault(); } else if (e.key === 'ArrowRight') { nudge(1); e.preventDefault(); }
+    else if (e.key === 'ArrowUp') { S.power = Math.min(1, S.power + .05); $('power').value = Math.round(S.power * 100); updateHUD(); e.preventDefault(); }
+    else if (e.key === 'ArrowDown') { S.power = Math.max(.05, S.power - .05); $('power').value = Math.round(S.power * 100); updateHUD(); e.preventDefault(); }
+    else if (e.key === ' ' || e.key === 'Enter') { shoot(); e.preventDefault(); }
+  });
+
+  /* ═════════ メインループ ═════════ */
+  let last = 0;
+  function frame(ts) {
+    const t = ts / 1000, dt = Math.min(.05, (t - last) || .016); last = t;
+    if (S.mode === 'strike') { S.strikeT += dt; if (S.strikeT >= .17) launchNow(); }
+    else if (S.mode === 'roll') stepRoll(dt);
+    render(t, dt);
+    if (tutorOpen) drawTutor(t);
+    requestAnimationFrame(frame);
+  }
+  function render(t, dt) {
+    const g = ctx; g.clearRect(0, 0, CW, CH); g.drawImage(tableCv, 0, 0, CW, CH);
+    const sx = shakeT > 0 ? (Math.random() - .5) * shakeT * 30 : 0, sy = shakeT > 0 ? (Math.random() - .5) * shakeT * 30 : 0; if (shakeT > 0) shakeT = Math.max(0, shakeT - dt);
+    g.save(); g.translate(sx, sy);
+    if (S.mode === 'aim' && S.trace) drawGuide(g, t);
+    S.balls.forEach(b => { if (b.alive) { if (b.kind === 'cue') b.aimGlow = S.mode === 'aim'; drawBall(g, b, t); } });
+    if ((S.mode === 'aim' || S.mode === 'strike') && cueBall()) {
+      const c = cueBall(); let pull = 8 + 40 * S.power;
+      if (S.mode === 'strike') { const k = Math.min(1, S.strikeT / .17); pull = pull * (1 - k * k) - 5 * k; }
+      drawCue(g, OX + c.x, OY + c.y, S.angle, pull, 1);
+    }
+    // 演出
+    g.save(); g.globalCompositeOperation = 'lighter';
+    for (let i = parts.length - 1; i >= 0; i--) { const p = parts[i]; p.life -= dt; if (p.life <= 0) { parts.splice(i, 1); continue; } p.x += p.vx * dt; p.y += p.vy * dt; p.vx *= .94; p.vy *= .94; g.globalAlpha = p.life / p.max; g.fillStyle = p.c; g.beginPath(); g.arc(p.x, p.y, p.r, 0, 6.283); g.fill(); }
+    for (let i = rings.length - 1; i >= 0; i--) { const r = rings[i]; r.life -= dt; if (r.life <= 0) { rings.splice(i, 1); continue; } r.r += 140 * dt; g.globalAlpha = r.life / .6; g.strokeStyle = '#ffe9b8'; g.lineWidth = 3; g.beginPath(); g.arc(r.x, r.y, r.r, 0, 6.283); g.stroke(); }
+    g.restore(); g.globalAlpha = 1;
+    g.textAlign = 'center'; g.textBaseline = 'middle';
+    for (let i = texts.length - 1; i >= 0; i--) { const f = texts[i]; f.life -= dt; if (f.life <= 0) { texts.splice(i, 1); continue; } f.y -= 22 * dt; g.globalAlpha = Math.min(1, f.life * 2); g.font = 'bold 14px sans-serif'; g.lineWidth = 3; g.strokeStyle = 'rgba(10,15,30,.9)'; g.strokeText(f.text, f.x, f.y); g.fillStyle = f.col; g.fillText(f.text, f.x, f.y); }
+    g.globalAlpha = 1; g.restore();
+    if (flashT > 0) { g.fillStyle = 'rgba(255,200,120,' + flashT * .4 + ')'; g.fillRect(0, 0, CW, CH); flashT = Math.max(0, flashT - dt * 2); }
+  }
+
+  /* ═════════ デバッグ用フック（#debug のときだけ）═════════ */
+  if (location.hash === '#debug') window.__ho = { S, start: startStage, aim: (a, p) => { S.angle = a; S.power = p; $('power').value = Math.round(p * 100); updateTrace(); updateHUD(); }, shoot, stages: STAGES, progress };
+
+  /* ═════════ 初期化 ═════════ */
+  buildTable(); setHoMood('idle');
+  S.balls = []; updateButtons();
+  showTutorSlide(0);
+  if (progress.seen) { tutorOpen = false; $('tutorialModal').style.display = 'none'; openSelect(); }
+  requestAnimationFrame(frame);
+})();
+  </script>
+</body>
+</html>
