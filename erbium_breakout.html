@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>エルビウムの美肌ブロック崩し</title>
+  <style>
+    body { background-color: #1a1a2e; color: #fff; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; user-select: none; -webkit-user-select: none; }
+    .phone { width: 360px; height: 740px; background: #0f3460; border: 4px solid #16213e; border-radius: 24px; display: flex; flex-direction: column; overflow: hidden; position: relative; box-sizing: border-box; }
+
+    /* ヘッダー */
+    .header { background: #16213e; padding: 8px 10px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: bold; border-bottom: 2px solid #e94560; flex-shrink: 0; }
+    .header-btns { display: flex; gap: 4px; align-items: center; }
+    .bgm-btn, .pause-btn { background: rgba(0,0,0,.4); border: 1px solid #00fff5; color: #00fff5; border-radius: 12px; padding: 2px 8px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 3px; transition: all .2s; }
+    .bgm-btn.muted { border-color: #e94560; color: #e94560; background: rgba(233,69,96,.2); }
+    .pause-btn { border-color: #ffde59; color: #ffde59; background: rgba(255,222,89,.15); }
+
+    .content { flex: 1; padding: 6px 10px; display: flex; flex-direction: column; gap: 4px; position: relative; overflow: hidden; box-sizing: border-box; }
+
+    /* ステータスパネル */
+    .status-panel { display: flex; align-items: center; gap: 8px; background: rgba(22,33,62,.8); border: 1px solid #00fff5; padding: 4px 8px; border-radius: 8px; font-size: 11px; flex-shrink: 0; }
+    .avatar-wrap { width: 44px; height: 44px; border-radius: 50%; border: 2px solid #ff758c; background: rgba(15,23,42,.85); overflow: hidden; flex-shrink: 0; }
+    .avatar-wrap img { width: 100%; height: 100%; object-fit: contain; display: block; }
+    .stat-col { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+    .score-line { font-size: 11px; color: #dcdde1; }
+    .score-line b { font-size: 17px; color: #00fff5; letter-spacing: 1px; }
+    .sub-line { font-size: 10px; color: #dcdde1; }
+    .sub-line b { color: #ffde59; }
+    .mode-indicator { font-size: 10px; color: #ff758c; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* ゲームエリア */
+    .game-area {
+      position: relative; flex: none; display: flex; justify-content: center; align-items: center; padding: 2px 0;
+      background:
+        linear-gradient(180deg, rgba(0,0,0,.45) 0, transparent 25%, transparent 70%, rgba(0,0,0,.35) 100%),
+        repeating-linear-gradient(90deg, rgba(255,255,255,.06) 0 2px, transparent 2px 64px),
+        repeating-linear-gradient(0deg, rgba(255,255,255,.05) 0 2px, transparent 2px 64px),
+        #2c3e50;
+      border: 2px solid #00fff5; border-radius: 12px; overflow: hidden;
+    }
+    #gameCanvas { display: block; border: 2px solid rgba(0,255,245,.55); border-radius: 8px; position: relative; z-index: 2; }
+
+    .game-desc-tip {
+      font-size: 9.5px;
+      color: #93c5fd;
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(0, 255, 245, 0.3);
+      padding: 3px 6px;
+      border-radius: 6px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .banner { position: absolute; left: 50%; top: 36%; transform: translate(-50%, -50%) scale(.85); z-index: 6; font-weight: bold; font-size: 14px; text-align: center; padding: 8px 14px; border-radius: 10px; background: rgba(0,0,0,.78); border: 2px solid #ffde59; color: #ffde59; opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s; white-space: nowrap; }
+    .banner.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+
+    /* 操作ボタン */
+    .controls { display: flex; gap: 6px; flex-shrink: 0; }
+    .ctrl-btn { flex: 1; background: #16213e; border: 2px solid #00fff5; color: #fff; padding: 8px 4px; border-radius: 10px; font-size: 12px; font-weight: bold; cursor: pointer; text-align: center; touch-action: none; }
+    .ctrl-btn:active { background: #00fff5; color: #0f3460; }
+    .ctrl-fire { background: linear-gradient(135deg, #ff758c, #ff7eb3); border-color: #ffde59; color: #fff; }
+    .ctrl-fire:active { background: #ffde59; color: #0f3460; }
+
+    .btn-back { background: #e94560; color: #fff; border: none; padding: 6px; font-weight: bold; border-radius: 8px; cursor: pointer; width: 100%; font-size: 11px; flex-shrink: 0; }
+
+    /* モーダル共通 */
+    .modal-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(10,15,30,.9); display: flex; justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(2px); box-sizing: border-box; padding: 12px; }
+    .modal-content { background: #16213e; border: 2px solid #00fff5; border-radius: 16px; padding: 14px; width: 100%; max-width: 300px; text-align: center; box-shadow: 0 0 20px rgba(0,255,245,.3); animation: popup .3s ease-out; box-sizing: border-box; max-height: 90vh; overflow-x: hidden; overflow-y: auto; }
+    @keyframes popup { 0% { transform: scale(.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+    
+    .modal-avatar { width: 64px; height: 64px; object-fit: contain; border-radius: 50%; border: 2px solid #ff758c; background: rgba(15,23,42,.85); margin: 0 auto; display: block; }
+    
+    .modal-game-title { font-size: 13px; font-weight: bold; color: #ff758c; margin-bottom: 6px; text-shadow: 0 0 8px rgba(255,117,140,0.5); }
+
+    .result-breakdown { background: rgba(15,23,42,.8); border: 1px solid #00fff5; border-radius: 8px; padding: 8px; margin: 6px 0; font-size: 11px; text-align: left; display: flex; flex-direction: column; gap: 4px; }
+    .result-row { display: flex; justify-content: space-between; }
+    .btn-main { background: #00fff5; color: #0f3460; font-size: 12px; padding: 9px; }
+    .btn-sub { background: #16213e; color: #00fff5; border: 1px solid #00fff5; font-size: 11px; padding: 7px; }
+
+    .diff-btn { width: 100%; padding: 9px; margin: 3px 0; border-radius: 8px; border: none; font-weight: bold; font-size: 11px; cursor: pointer; text-align: left; display: flex; justify-content: space-between; align-items: center; box-sizing: border-box; }
+    .diff-normal { background: #3b82f6; color: #fff; }
+    .diff-hard { background: #eab308; color: #fff; }
+    .diff-vhard { background: #e94560; color: #fff; }
+    .diff-locked { background: #334155; color: #94a3b8; cursor: not-allowed; }
+
+    .tutor-slide { display: none; flex-direction: column; align-items: center; text-align: left; width: 100%; box-sizing: border-box; }
+    .tutor-slide.active { display: flex; }
+    .tutor-desc { font-size: 11px; color: #f1f5f9; line-height: 1.5; background: rgba(0,0,0,0.3); padding: 8px 10px; border-radius: 8px; width: 100%; box-sizing: border-box; margin-bottom: 10px; }
+
+    .modal-btn-row { display: flex; gap: 6px; width: 100%; box-sizing: border-box; margin-top: 6px; }
+    .modal-btn-row .btn-back { flex: 1; }
+  </style>
+</head>
+<body>
+
+  <audio id="bgm" src="BGM_puzzle.ogg" loop preload="auto"></audio>
+
+  <div class="phone">
+    <div class="header">
+      <span>✨ 美肌ブロック崩し</span>
+      <div class="header-btns">
+        <button id="pause-btn" class="pause-btn" style="display:none;">⏸️ 休憩</button>
+        <button id="bgm-btn" class="bgm-btn">🎵 ON</button>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="status-panel">
+        <div class="avatar-wrap"><img id="avatar" src="chara0_Er.png" alt="Er" onerror="this.src='chara0_Y.png'"></div>
+        <div class="stat-col">
+          <div class="score-line">SCORE <b id="score">0</b></div>
+          <div class="sub-line">❤️ レーザー残弾: <b id="lives">3</b></div>
+          <div class="mode-indicator" id="modeIndicator">✨ 発射ボタンを押してスタート！</div>
+        </div>
+      </div>
+
+      <div class="game-area" id="gameArea">
+        <canvas id="gameCanvas" width="340" height="390"></canvas>
+        <div class="banner" id="banner"></div>
+      </div>
+
+      <div class="game-desc-tip">
+        🦴 骨は安全のためそのままに！原因ブロックは当てて数字を出して壊そう！
+      </div>
+
+      <div class="controls">
+        <button class="ctrl-btn" id="btnL">◀ 左</button>
+        <button class="ctrl-btn ctrl-fire" id="btnFire">🚀 発射！</button>
+        <button class="ctrl-btn" id="btnR">右 ▶</button>
+      </div>
+
+      <button class="btn-back" onclick="location.href='map.html'">🗺️ マップに戻る</button>
+    </div>
+
+    <!-- チュートリアルモーダル -->
+    <div id="tutorialModal" class="modal-overlay" style="display:flex;">
+      <div class="modal-content">
+        <div class="modal-game-title">エルビウムの美肌ブロック崩し</div>
+        <img src="chara0_Er.png" class="modal-avatar" alt="Er" onerror="this.src='chara0_Y.png'">
+        <div style="font-size:13px;font-weight:bold;color:#ffde59;margin:6px 0;">📖 遊び方</div>
+
+        <div class="tutor-slide active" data-slide="0">
+          <div class="tutor-desc">
+            <b>1. レーザーを発射！</b><br>
+            「🚀 発射！」ボタンやスペースキーでエルビウムYAGレーザーを飛ばし、パドルで落とさず打ち返そう！
+          </div>
+        </div>
+        <div class="tutor-slide" data-slide="1">
+          <div class="tutor-desc">
+            <b>2. 原因ブロックを倒そう！</b><br>
+            🌵最初は「原因」とだけ表示されているよ！<b>1回当てると数字（HP）が出現</b>し、当て続けると数字が減って壊せるよ！
+          </div>
+        </div>
+        <div class="tutor-slide" data-slide="2">
+          <div class="tutor-desc">
+            <b>3. 骨と特殊ギミック</b><br>
+            🦴「骨」は安全なガードなのでそのままでOK！ハード以上では⚡「加速ブロック」などでスピードが上がったら、<b>パドルと3回ラリー</b>して元に戻そう！
+          </div>
+        </div>
+
+        <div class="modal-btn-row">
+          <button class="btn-back btn-sub" id="tutorPrevBtn" style="display:none;">もどる</button>
+          <button class="btn-back btn-main" id="tutorNextBtn">次へ ➡</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 難易度選択モーダル -->
+    <div id="selectModal" class="modal-overlay" style="display:none;">
+      <div class="modal-content">
+        <div class="modal-game-title">エルビウムの美肌ブロック崩し</div>
+        <img src="chara0_Er.png" class="modal-avatar" alt="Er" onerror="this.src='chara0_Y.png'">
+        <div style="font-size:13px;font-weight:bold;color:#ffde59;margin:6px 0;">難易度を選択してね</div>
+        <div id="diffMenu" style="display:flex;flex-direction:column;gap:5px;margin-bottom:8px;width:100%;"></div>
+        <div style="font-size:10px;color:#94a3b8;line-height:1.4;">
+          現在のあなたのレベル: <b id="userLevelDisp" style="color:#00fff5;">1</b>
+        </div>
+      </div>
+    </div>
+
+    <!-- ポーズモーダル -->
+    <div id="pauseModal" class="modal-overlay" style="display:none;">
+      <div class="modal-content">
+        <div class="modal-game-title">エルビウムの美肌ブロック崩し</div>
+        <img src="chara0_Er.png" class="modal-avatar" alt="Pause" onerror="this.src='chara0_Y.png'">
+        <div style="font-size:14px;font-weight:bold;color:#ffde59;margin:8px 0;">⏸️ ゲーム一時停止中</div>
+        <div class="modal-btn-row" style="flex-direction:column;">
+          <button class="btn-back btn-main" id="resumeBtn">▶️ ゲームを続ける</button>
+          <button class="btn-back btn-sub" onclick="location.href='map.html'">🗺️ マップに戻る</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 結果リザルトモーダル -->
+    <div id="resultModal" class="modal-overlay" style="display:none;">
+      <div class="modal-content">
+        <div class="modal-game-title">エルビウムの美肌ブロック崩し</div>
+        <img id="resultAvatar" src="chara0_Er.png" class="modal-avatar" alt="Er" onerror="this.src='chara0_Y.png'">
+        <div id="resultTitle" style="font-size:14px;font-weight:bold;color:#00fff5;margin:4px 0;">クリア！</div>
+        <div class="result-breakdown">
+          <div class="result-row"><span>💧 スコア:</span><span style="color:#00fff5;" id="rScore">0</span></div>
+          <div class="result-row"><span>🏅 難易度:</span><span style="color:#ffde59;" id="rDiff">ノーマル</span></div>
+          <div class="result-row"><span>⭐ 獲得EXP:</span><span style="color:#a29bfe;" id="rExp">+0 EXP</span></div>
+          <div style="border-top:1px dashed #00fff5;margin-top:2px;padding-top:4px;font-weight:bold;display:flex;justify-content:space-between;">
+            <span>💰 獲得賞金:</span><span style="color:#55ff55;" id="rMoney">+0 G</span>
+          </div>
+        </div>
+        <div class="modal-btn-row" style="flex-direction:column;">
+          <button class="btn-back btn-main" id="claimBtn">💰 報酬を受け取ってマップへ</button>
+          <button class="btn-back btn-sub" id="retryBtn">🔄 もう一度挑戦</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  (() => {
+    const $ = id => document.getElementById(id);
+
+    const canvas = $('gameCanvas'), ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+
+    const gs = JSON.parse(localStorage.getItem('rareEarthGameState')) || { level: 1, money: 1500 };
+    const userLevel = gs.level || 1;
+    $('userLevelDisp').textContent = userLevel;
+
+    let state = 'tutorial';
+    let score = 0, lives = 3, claimed = false, result = null;
+    let currentDiff = 'normal';
+    let speedBoostCounter = 0; // パドルとのラリー（バウンド）回数カウンター
+
+    const paddle = { x: W / 2 - 35, y: H - 22, w: 70, h: 11, dx: 6 };
+    let laser = { x: W / 2, y: H - 38, baseVx: 3, baseVy: -4.5, vx: 3, vy: -4.5, radius: 7, active: false };
+
+    let blocks = [];
+
+    let tutorIdx = 0;
+    const tutorSlides = document.querySelectorAll('.tutor-slide');
+    $('tutorNextBtn').addEventListener('click', () => {
+      if (tutorIdx < tutorSlides.length - 1) {
+        tutorIdx++;
+        tutorSlides.forEach((s, i) => s.classList.toggle('active', i === tutorIdx));
+        $('tutorPrevBtn').style.display = 'block';
+        if (tutorIdx === tutorSlides.length - 1) {
+          $('tutorNextBtn').textContent = 'OK！難易度を選ぶ';
+        }
+      } else {
+        $('tutorialModal').style.display = 'none';
+        buildDiffMenu();
+        $('selectModal').style.display = 'flex';
+      }
+    });
+    $('tutorPrevBtn').addEventListener('click', () => {
+      if (tutorIdx > 0) {
+        tutorIdx--;
+        tutorSlides.forEach((s, i) => s.classList.toggle('active', i === tutorIdx));
+        if (tutorIdx === 0) $('tutorPrevBtn').style.display = 'none';$('tutorNextBtn').textContent = '次へ ➡';
+      }
+    });
+
+    function buildDiffMenu() {
+      const menu = $('diffMenu');
+      menu.innerHTML = '';
+
+      const unlNormal = userLevel >= 17;
+      const btnN = document.createElement('button');
+      btnN.className = 'diff-btn ' + (unlNormal ? 'diff-normal' : 'diff-locked');
+      btnN.innerHTML = `<span>✨ ノーマルステージ<br><small>全消しEXP: 500</small></span><span>${unlNormal ? '▶ 挑戦' : 'Lv.17〜'}</span>`;
+      if (unlNormal) btnN.onclick = () => selectStage('normal');
+      menu.appendChild(btnN);
+
+      const unlHard = userLevel >= 22;
+      const btnH = document.createElement('button');
+      btnH.className = 'diff-btn ' + (unlHard ? 'diff-hard' : 'diff-locked');
+      btnH.innerHTML = `<span>⚡ ハード (特殊ギミック)<br><small>全消しEXP: 2,000</small></span><span>${unlHard ? '▶ 挑戦' : 'Lv.22〜'}</span>`;
+      if (unlHard) btnH.onclick = () => selectStage('hard');
+      menu.appendChild(btnH);
+
+      const unlVHard = userLevel >= 27;
+      const btnV = document.createElement('button');
+      btnV.className = 'diff-btn ' + (unlVHard ? 'diff-vhard' : 'diff-locked');
+      btnV.innerHTML = `<span>🔥 ベリーハード (骨配置)<br><small>全消しEXP: 10,000</small></span><span>${unlVHard ? '▶ 挑戦' : 'Lv.27〜'}</span>`;
+      if (unlVHard) btnV.onclick = () => selectStage('vhard');
+      menu.appendChild(btnV);
+    }
+
+    function selectStage(diff) {
+      currentDiff = diff;
+      $('selectModal').style.display = 'none';
+      startGame();
+    }
+
+    function initBlocks() {
+      blocks = [];
+      const rows = 5, cols = 7;
+      const bWidth = 44, bHeight = 20, padding = 4, offsetTop = 25, offsetLeft = 13;
+
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          let hp = 1, type = 'water';
+
+          if (currentDiff === 'normal') {
+            if (r === 0) { hp = 3; type = 'boss'; }
+            else if (r === 1) { hp = 2; type = 'dry'; }
+          } else if (currentDiff === 'hard') {
+            if (r === 0) { hp = 3; type = 'boss'; }
+            else if ((r === 2 || r === 3) && (c === 1 || c === 5)) { hp = 2; type = 'speedup'; }
+            else if (r === 1) { hp = 2; type = 'dry'; }
+          } else if (currentDiff === 'vhard') {
+            if (r === 0 && (c === 0 || c === 6)) { type = 'bone'; hp = 999; }
+            else if (r === 0) { hp = 4; type = 'boss'; }
+            else if (r === 2 && (c === 2 || c === 4)) { type = 'bone'; hp = 999; }
+            else if (r === 1) { hp = 3; type = 'boss'; }
+            else if ((r === 3) && (c % 2 === 1)) { hp = 2; type = 'speedup'; }
+          }
+
+          blocks.push({
+            x: offsetLeft + c * (bWidth + padding),
+            y: offsetTop + r * (bHeight + padding),
+            w: bWidth, h: bHeight,
+            hp: hp, maxHp: hp, type: type, status: 1, hitFlash: 0
+          });
+        }
+      }
+    }
+
+    function startGame() {
+      score = 0; lives = 3; claimed = false; speedBoostCounter = 0;
+      paddle.x = W / 2 - 35;
+      resetLaser();
+      initBlocks();
+      $('pause-btn').style.display = 'flex';$('resultModal').style.display = 'none';
+      state = 'play';
+      updateHUD();
+    }
+
+    function resetLaser() {
+      laser.x = paddle.x + paddle.w / 2;
+      laser.y = paddle.y - 12;
+      laser.vx = laser.baseVx;
+      laser.vy = laser.baseVy;
+      laser.active = false;
+      speedBoostCounter = 0;
+    }
+
+    function updateHUD() {
+      $('score').textContent = score.toLocaleString();$('lives').textContent = lives;
+      const diffName = currentDiff === 'normal' ? 'ノーマル' : currentDiff === 'hard' ? 'ハード(加速有)' : 'ベリーハード(骨配置)';
+      $('modeIndicator').textContent = laser.active ? `✨ ${diffName}ステージ` : `🚀 「発射！」ボタンでスタート`;
+    }
+
+    let leftPressed = false, rightPressed = false;
+
+    const fireAction = () => {
+      if (!laser.active && state === 'play') laser.active = true;
+    };
+
+    $('btnL').addEventListener('pointerdown', () => leftPressed = true);
+    $('btnL').addEventListener('pointerup', () => leftPressed = false);$('btnR').addEventListener('pointerdown', () => rightPressed = true);
+    $('btnR').addEventListener('pointerup', () => rightPressed = false);$('btnFire').addEventListener('click', fireAction);
+
+    $('pause-btn').addEventListener('click', () => {
+      if (state === 'play') { state = 'pause'; $('pauseModal').style.display = 'flex'; }
+    });
+    $('resumeBtn').addEventListener('click', () => {$('pauseModal').style.display = 'none'; state = 'play';
+    });
+
+    document.addEventListener('keydown', e => {
+      if (state !== 'play') return;
+      if (e.key === 'ArrowLeft' || e.key === '4' || e.code === 'Numpad4') leftPressed = true;
+      if (e.key === 'ArrowRight' || e.key === '6' || e.code === 'Numpad6') rightPressed = true;
+      if (e.key === ' ' || e.key === '8' || e.key === '5' || e.key === '0' || e.code === 'Numpad8' || e.code === 'Numpad5' || e.code === 'Numpad0') fireAction();
+    });
+    document.addEventListener('keyup', e => {
+      if (e.key === 'ArrowLeft' || e.key === '4' || e.code === 'Numpad4') leftPressed = false;
+      if (e.key === 'ArrowRight' || e.key === '6' || e.code === 'Numpad6') rightPressed = false;
+    });
+
+    function update() {
+      if (state !== 'play') return;
+
+      if (leftPressed) paddle.x = Math.max(0, paddle.x - paddle.dx);
+      if (rightPressed) paddle.x = Math.min(W - paddle.w, paddle.x + paddle.dx);
+
+      blocks.forEach(b => { if (b.hitFlash > 0) b.hitFlash--; });
+
+      if (!laser.active) {
+        laser.x = paddle.x + paddle.w / 2;
+        return;
+      }
+
+      // サブステップ（トンネリング対策）
+      const steps = Math.ceil(Math.max(Math.abs(laser.vx), Math.abs(laser.vy)) / 3);
+      const stepVx = laser.vx / steps;
+      const stepVy = laser.vy / steps;
+
+      for (let s = 0; s < steps; s++) {
+        laser.x += stepVx;
+        laser.y += stepVy;
+
+        // 壁との反射（ここではスピードは戻らない）
+        if (laser.x - laser.radius < 0) { laser.x = laser.radius; laser.vx *= -1; break; }
+        if (laser.x + laser.radius > W) { laser.x = W - laser.radius; laser.vx *= -1; break; }
+        if (laser.y - laser.radius < 0) { laser.y = laser.radius; laser.vy *= -1; break; }
+
+        // パドルとの衝突（ここで初めてラリー回数をカウントし、3回に達するとスピードが戻る）
+        if (
+          laser.y + laser.radius >= paddle.y &&
+          laser.y - laser.radius <= paddle.y + paddle.h &&
+          laser.x >= paddle.x && laser.x <= paddle.x + paddle.w &&
+          laser.vy > 0
+        ) {
+          laser.y = paddle.y - laser.radius;
+          const hitPos = (laser.x - (paddle.x + paddle.w / 2)) / (paddle.w / 2);
+          const currentSpeed = Math.hypot(laser.vx, laser.vy);
+          const angle = hitPos * 1.1;
+
+          // スピードアップ中の場合、パドルで打ち返すたびにラリー回数を減らす
+          if (speedBoostCounter > 0) {
+            speedBoostCounter--;
+            if (speedBoostCounter === 0) {
+              // 3回ラリー達成で元のスピードに戻す
+              const baseSpeed = Math.hypot(laser.baseVx, laser.baseVy);
+              laser.vx = baseSpeed * Math.sin(angle);
+              laser.vy = -Math.abs(baseSpeed * Math.cos(angle));
+              showBanner('✨ 3回ラリー達成！スピードが戻った');
+            } else {
+              laser.vx = currentSpeed * Math.sin(angle);
+              laser.vy = -Math.abs(currentSpeed * Math.cos(angle));
+              showBanner(`⚡ ラリー残りあと ${speedBoostCounter} 回！`);
+            }
+          } else {
+            laser.vx = currentSpeed * Math.sin(angle);
+            laser.vy = -Math.abs(currentSpeed * Math.cos(angle));
+          }
+          break;
+        }
+
+        // ブロックとの衝突判定
+        let collided = false;
+        blocks.forEach(b => {
+          if (!collided && b.status === 1) {
+            if (
+              laser.x + laser.radius > b.x &&
+              laser.x - laser.radius < b.x + b.w &&
+              laser.y + laser.radius > b.y &&
+              laser.y - laser.radius < b.y + b.h
+            ) {
+              collided = true;
+
+              const prevX = laser.x - stepVx;
+              const prevY = laser.y - stepVy;
+
+              const overlapLeft = (prevX + laser.radius) <= b.x;
+              const overlapRight = (prevX - laser.radius) >= (b.x + b.w);
+              const overlapTop = (prevY + laser.radius) <= b.y;
+              const overlapBottom = (prevY - laser.radius) >= (b.y + b.h);
+
+              if (overlapTop) {
+                laser.y = b.y - laser.radius;
+                laser.vy *= -1;
+              } else if (overlapBottom) {
+                laser.y = b.y + b.h + laser.radius;
+                laser.vy *= -1;
+              } else if (overlapLeft) {
+                laser.x = b.x - laser.radius;
+                laser.vx *= -1;
+              } else if (overlapRight) {
+                laser.x = b.x + b.w + laser.radius;
+                laser.vx *= -1;
+              } else {
+                laser.vy *= -1;
+              }
+
+              if (b.type === 'bone') {
+                b.hitFlash = 6;
+              } else {
+                b.hp--;
+                b.hitFlash = 8;
+                score += 50;
+                updateHUD();
+
+                // 加速ブロックに当たった場合（スピードが1.4倍になり、3回ラリーが必要になる）
+                if (b.type === 'speedup' && speedBoostCounter === 0) {
+                  laser.vx *= 1.4;
+                  laser.vy *= 1.4;
+                  speedBoostCounter = 3; // パドルで3回打ち返す必要が生じる
+                  showBanner('⚡ スピードアップ！パドルで3回打ち返そう');
+                }
+
+                if (b.hp <= 0) {
+                  b.status = 0;
+                  score += (b.type === 'boss' ? 500 : 150);
+                  updateHUD();
+                }
+              }
+            }
+          }
+        });
+        if (collided) break;
+      }
+
+      if (laser.y > H) {
+        lives--;
+        updateHUD();
+        if (lives <= 0) endGame(false);
+        else resetLaser();
+      }
+
+      let breakableCount = 0;
+      blocks.forEach(b => {
+        if (b.status === 1 && b.type !== 'bone') breakableCount++;
+      });
+      if (breakableCount === 0) endGame(true);
+    }
+
+    function showBanner(text) {
+      const b = $('banner'); b.textContent = text; b.classList.add('show');
+      setTimeout(() => b.classList.remove('show'), 1500);
+    }
+
+    function render() {
+      ctx.clearRect(0, 0, W, H);
+
+      ctx.fillStyle = '#00fff5';
+      ctx.beginPath();
+      ctx.roundRect(paddle.x, paddle.y, paddle.w, paddle.h, 6);
+      ctx.fill();
+
+      ctx.fillStyle = speedBoostCounter > 0 ? '#ffde59' : '#ff758c';
+      ctx.shadowColor = speedBoostCounter > 0 ? '#ffde59' : '#ff4d8d';
+      ctx.shadowBlur = 10;
+      ctx.beginPath();
+      ctx.arc(laser.x, laser.y, laser.radius, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+
+      blocks.forEach(b => {
+        if (b.status === 1) {
+          ctx.save();
+          if (b.type === 'bone') {
+            ctx.fillStyle = '#cbd5e1'; ctx.strokeStyle = '#94a3b8';
+          } else if (b.type === 'speedup') {
+            ctx.fillStyle = '#eab308'; ctx.strokeStyle = '#fef08a';
+          } else if (b.type === 'boss') {
+            ctx.fillStyle = '#e94560'; ctx.strokeStyle = '#fff';
+          } else {
+            ctx.fillStyle = '#00fff5'; ctx.strokeStyle = '#1b8cff';
+          }
+
+          if (b.hitFlash > 0 && b.hitFlash % 2 === 0) {
+            ctx.fillStyle = '#ffffff';
+          }
+
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.roundRect(b.x, b.y, b.w, b.h, 4);
+          ctx.fill();
+          ctx.stroke();
+
+          ctx.fillStyle = b.type === 'bone' ? '#1e293b' : '#fff';
+          ctx.font = 'bold 10px sans-serif';
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          let label = '💧';
+          if (b.type === 'bone') label = '🦴骨';
+          else if (b.type === 'speedup') label = '⚡加速';
+          else if (b.type === 'boss') {
+            label = (b.hp === b.maxHp) ? '🌵原因' : '🌵' + b.hp;
+          }
+          else if (b.hp > 1) label = 'HP' + b.hp;
+          ctx.fillText(label, b.x + b.w / 2, b.y + b.h / 2);
+          ctx.restore();
+        }
+      });
+    }
+
+    function loop() {
+      update();
+      render();
+      requestAnimationFrame(loop);
+    }
+
+    function endGame(isClear) {
+      state = isClear ? 'clear' : 'over';
+      $('pause-btn').style.display = 'none';
+
+      let expReward = 500;
+      let moneyReward = 500;
+      let diffLabel = 'ノーマル';
+
+      if (currentDiff === 'hard') {
+        expReward = 2000; moneyReward = 1500; diffLabel = 'ハード';
+      } else if (currentDiff === 'vhard') {
+        expReward = 10000; moneyReward = 5000; diffLabel = 'ベリーハード';
+      }
+
+      const finalExp = isClear ? expReward : 0;
+      const finalMoney = isClear ? moneyReward : 100;
+
+      result = { money: finalMoney, exp: finalExp, diffStr: diffLabel };
+
+      $('resultTitle').textContent = isClear ? '✨ 美肌スキンクリア！' : '💦 レーザーエネルギー切れ…';
+      $('rScore').textContent = score.toLocaleString() + ' 点';
+      $('rDiff').textContent = diffLabel;
+      $('rExp').textContent = '+' + finalExp.toLocaleString() + ' EXP';$('rMoney').textContent = '+' + finalMoney.toLocaleString() + ' G';
+
+      setTimeout(() => { $('resultModal').style.display = 'flex'; }, 400);
+    }
+
+    function claim() {
+      if (claimed || !result) return; claimed = true;
+      const gs = JSON.parse(localStorage.getItem('rareEarthGameState')) || { level: 1, money: 1500 };
+      gs.money = (gs.money || 0) + result.money;
+      
+      let lv = gs.level || 1, ex = (gs.exp || 0) + result.exp;
+      while (ex >= lv * 100) { ex -= lv * 100; lv++; }
+      gs.level = lv; gs.exp = ex;
+      localStorage.setItem('rareEarthGameState', JSON.stringify(gs));
+    }
+
+    $('claimBtn').addEventListener('click', () => { claim(); location.href = 'map.html'; });$('retryBtn').addEventListener('click', () => { claim(); $('resultModal').style.display = 'none'; buildDiffMenu();$('selectModal').style.display = 'flex'; });
+
+    loop();
+  })();
+  </script>
+</body>
+</html>

@@ -651,13 +651,54 @@
         if (roll < 0.10) {
           showHighLowMinigame(targetKey);
         } else {
-          executeNormalRefine(targetKey, 1);
-          
-          if (targetKey === 'Ho' && Math.random() < 0.08) {
-            setTimeout(showHoBilliardsModal, 500);
+          // プレイヤーがレベル15以上で、エルビウムが出て、ハイアンドローが発生しないとき
+          if ((gameState.level || 1) >= 15 && targetKey === 'Er' && Math.random() < 0.12) {
+            showErBreakoutModal();
+          } else {
+            executeNormalRefine(targetKey, 1);
+            
+            if (targetKey === 'Ho' && Math.random() < 0.08) {
+              setTimeout(showHoBilliardsModal, 500);
+            }
           }
         }
       }
+    }
+
+    function showErBreakoutModal() {
+      const modal = document.getElementById('minigameModal');
+      const content = document.getElementById('modal-content-inner');
+      const erData = elementsMaster['Er'];
+
+      content.innerHTML = `
+        <div style="font-size: 1.1rem; font-weight: bold; color: #ffde59; margin-bottom: 0.4rem;">✨ エルビウムの美肌ブロック崩し発生！</div>
+        
+        <div style="background: #ffffff; border: 2px solid #ffde59; border-radius: 0.5rem; padding: 0.4rem; margin-bottom: 0.5rem; text-align: center;">
+          <img src="${erData.img}" style="width: 5rem; height: 5rem; object-fit: contain;" alt="${erData.name}" onerror="this.src='chara0_Er.png'">
+        </div>
+
+        <div style="font-size: 0.8rem; color: #f1f5f9; background: rgba(15,23,42,0.8); border: 1px solid #00fff5; border-radius: 0.5rem; padding: 0.5rem; margin-bottom: 0.7rem; text-align: left; line-height: 1.4; font-weight: bold;">
+          「光ファイバーアンプで通信を遠くまで届けるわ！特別に美肌ブロック崩しで遊んでいかない？」
+        </div>
+
+        <div style="font-size: 0.75rem; color: #dcdde1; margin-bottom: 0.7rem; line-height: 1.4;">
+          エルビウムの美肌ブロック崩しに挑戦して報酬を手に入れよう！
+        </div>
+
+        <div style="display: flex; gap: 0.5rem;">
+          <button class="btn" style="margin-top:0; background:#333; color:#aaa;" onclick="closeMinigameModal()">あとで</button>
+          <button class="btn" style="margin-top:0; background:#00fff5; color:#0f3460;" onclick="startErBreakout()">🎮 チャレンジする！</button>
+        </div>
+      `;
+      modal.style.display = 'flex';
+    }
+
+    function startErBreakout() {
+      const se = document.getElementById('se-gogogo');
+      if (se) { se.currentTime = 0; se.play().catch(e => {}); }
+      setTimeout(() => {
+        location.href = 'erbium_breakout.html';
+      }, 200);
     }
 
     function showHoBilliardsModal() {
@@ -1073,4 +1114,3 @@
   </script>
 </body>
 </html>
-```[cite: 6]
