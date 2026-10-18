@@ -647,11 +647,12 @@
       if (Math.random() < 0.03) {
         showHinanModal();
       } else {
-        const roll = Math.random();
-        if (roll < 0.10) {
+        // 通常のハイ＆ロー判定 (10%)
+        if (Math.random() < 0.10) {
           showHighLowMinigame(targetKey);
         } else {
-          // プレイヤーがレベル15以上で、エルビウムが出て、ハイアンドローが発生しないとき
+          // ハイ＆ローが発生しなかった場合
+          // レベル15以上かつエルビウム(Er)が出たとき、12%の確率で美肌ブロック崩しが発生
           if ((gameState.level || 1) >= 15 && targetKey === 'Er' && Math.random() < 0.12) {
             showErBreakoutModal();
           } else {
