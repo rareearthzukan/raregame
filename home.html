@@ -286,10 +286,8 @@ function unlock(){ bgm.play().then(()=>['click','touchstart'].forEach(e=>documen
 let curTheme=null;
 function scene(){
   const t=curTheme||themesMaster.natural;
-  $('win').style.display=(dir===2&&t.win!==false)?'block':'none';
-  $('door').style.display=(t.door&&dir===(t.doorDir===undefined?1:t.doorDir))?'block':'none';
-  $('phone').style.setProperty('--floor',((dir===1||dir===3)&&t.floorH)?t.floorH:t.floor);
-  $('stage').classList.toggle('flat',!!t.flat);
+  $('win').style.display=(dir===2&&t.win!==false)?'block':'none';$('door').style.display=(t.door&&dir===(t.doorDir===undefined?1:t.doorDir))?'block':'none';
+  $('phone').style.setProperty('--floor',((dir===1\vert{}\vert{}dir===3)&&t.floorH)?t.floorH:t.floor);$('stage').classList.toggle('flat',!!t.flat);
 }
 function applyTheme(k){
   const t=themesMaster[k]||themesMaster.natural, s=$('phone').style;
@@ -303,7 +301,7 @@ function toast(m){ const t=$('toast'); t.innerText=m; t.classList.add('show'); s
 function askModal(title,desc,ok,fn,no){
   $('mTitle').innerText=title; $('mDesc').innerHTML=desc;
   $('mRows').innerHTML=`<button class="btn" style="background:#94a3b8;color:#fff" onclick="closeModal()">${no||'キャンセル'}</button><button class="btn" id="mOk" style="background:#ef4444;color:#fff">${ok}</button>`;
-  $('mOk').onclick=()=>{closeModal();fn&&fn();};$('modal').style.display='flex';
+  $('mOk'].onclick=()=>{closeModal();fn&&fn();};$('modal').style.display='flex';
 }
 function closeModal(){ $('modal').style.display='none'; }
 
@@ -332,7 +330,6 @@ function updateUI(){
 
 /* ═════════════════════════════════════════════════════════════
    ★ キャラクター17名定義・パラメータ・お仕事システム ★
-   性格傾向に基づき：掘削(mine) / 精製(refine) / 製造(prod) の得意分野を設定
    ═════════════════════════════════════════════════════════════ */
 const CHARA_PREFIX='chara0_', CHARA_SIZE=20;
 const CHARAS={
@@ -349,7 +346,7 @@ const CHARAS={
   Tb:{name:'テルビウム',     type:'mine',   mH:1.5, mQ:19, rH:2.9, rQ:6,  pH:3.7, pQ:2, desc:'活動的で、スピーディーな資源回収をお約束！'},
   Dy:{name:'ジスプロシウム', type:'prod',   mH:2.0, mQ:14, rH:2.4, rQ:8,  pH:2.5, pQ:3, desc:'ハイテク製品の製造に不可欠な高性能ワーカー。'},
   Ho:{name:'ホルミウム',     type:'refine', mH:2.5, mQ:11, rH:2.0, rQ:8,  pH:3.6, pQ:2, desc:'音楽や美を愛し、丁寧な精製で高い成果を上げる。'},
-  Er:{name:'エルビウム',     type:'refine', mH:2.3, mQ:13, rH:1.7, rQ:10, pH:3.4, pQ:2, desc:'最高峰の精製スペシャリスト。'},
+  Er:{name:'エルビウム',     type:'refine', mH:2.3, mQ:13, rH:1.7, rQ:10, pH:3.4, pQ:2, desc:'光ファイバーアンプの通信の要石。美肌ブロック崩しでもおなじみ！'},
   Tm:{name:'ツリウム',       type:'mine',   mH:1.7, mQ:16, rH:2.7, rQ:7,  pH:3.8, pQ:2, desc:'真面目にコツコツと掘削作業をこなす頑張り屋。'},
   Yb:{name:'イッテルビウム', type:'refine', mH:2.4, mQ:12, rH:2.2, rQ:8,  pH:3.5, pQ:2, desc:'落ち着いた雰囲気で確実に精製をこなす。'},
   Lu:{name:'ルテチウム',     type:'prod',   mH:2.1, mQ:13, rH:2.5, rQ:7,  pH:2.7, pQ:3, desc:'最後を飾るシャープな切れ味で製品製造をサポート。'}
@@ -371,9 +368,7 @@ function ensureCharas(){
   const ids=Object.keys(CHARAS), want=charaCount(gameState.level||1);
   if(!Array.isArray(gameState.charaOwned)) gameState.charaOwned=[];
   
-  // エルビウム(Er)が前半7名（または所持数が7未満の段階）に必ず入るようにする制御
   if(!gameState.charaOwned.includes('Er') && want >= 1 && gameState.charaOwned.length < 7) {
-    // まだ7人未満の枠でエルビウムが居なければ優先的に追加する確率を高める
     if(Math.random() < 0.5 || want >= 7) {
       gameState.charaOwned.push('Er');
     }
@@ -382,7 +377,6 @@ function ensureCharas(){
   let added=0;
   while(gameState.charaOwned.length<want){
     const rest=ids.filter(i=>!gameState.charaOwned.includes(i)); if(!rest.length) break;
-    // まだEr未所持ならrestからErを選びやすくする
     let id;
     if(!gameState.charaOwned.includes('Er') && rest.includes('Er') && gameState.charaOwned.length < 7) {
       id = 'Er';
@@ -394,17 +388,79 @@ function ensureCharas(){
   }
   if(added){ save(); setTimeout(()=>toast('🎉 新しい仲間がお部屋に来たよ！'),600); }
 
-  // Lv.6到達時の挨拶＆チュートリアルチェック
   if(gameState.level >= 6 && !gameState.tutorialShown6) {
     gameState.tutorialShown6 = true;
     save();
     setTimeout(() => {
       askModal('🏠 イットリウム＆初期メンバーからの声かけ！',
-        `「プレイヤーさん、Lv.6おめでとう！私たち、お部屋や庭に配置して話しかけてくれたら、いつでも<b>『掘削』『精製』『製品製造』</b>のお手伝いをするよ！<br><br>` +
-        `お仕事をお願いすると、決まった時間働いてたくさんの資源や製品を持ち帰ってくれるんだ（たまに<b>大生産フィーバー</b>ですごい量が取れることも…!?）。さっそくお部屋のキャラをタップして仕事を頼んでみてね！」`,
+        `「プレイヤーさん、Lv.6おめでとう！私たち、お部屋や庭に配置して話しかけてくれたら、いつでも<b>『お仕事』</b>をお願いしたり、<b>『お話』</b>したりできるよ！」`,
         'わかった！', null, '');
     }, 1000);
   }
+}
+
+/* ═════════ メインメニュー（お仕事 or お話する の選択） ═════════ */
+function openCharaMenu(id){
+  const c = CHARAS[id];
+  const html = `
+    <div style="font-size:0.85rem; text-align:center">
+      <p style="margin:0 0 10px; color:#cbd5e1">${c.name}に何をしてもらう？</p>
+      <div style="display:flex; gap:8px; flex-direction:column">
+        <button class="btn" style="background:#3b82f6; font-size:0.9rem; padding:10px" onclick="openCharaTaskModal('${id}')">🛠️ お仕事を頼む</button>
+        <button class="btn" style="background:#ec4899; font-size:0.9rem; padding:10px" onclick="openCharaTalkModal('${id}')">💬 お話する</button>
+      </div>
+    </div>
+  `;
+  askModal(`🧑 ${c.name}とどうする？`, html, 'とじる', null, '');
+  document.querySelector('#modal .row').innerHTML = `<button class="btn" style="background:#94a3b8;color:#fff;width:100%" onclick="closeModal()">もどる</button>`;
+}
+
+/* ═════════ お話するメニュー（キャラクター別の話題選択） ═════════ */
+function openCharaTalkModal(id){
+  const c = CHARAS[id];
+  
+  if(id === 'Er'){
+    // エルビウム専用の話題選択
+    const html = `
+      <div style="font-size:0.85rem; text-align:center">
+        <p style="margin:0 0 10px; color:#cbd5e1">エルビウムと何について話す？</p>
+        <div style="display:flex; gap:8px; flex-direction:column">
+          <button class="btn" style="background:#8b5cf6; font-size:0.85rem; padding:8px" onclick="talkAboutEr()">📖 エルビウムについて教えて</button>
+          <button class="btn" style="background:#f59e0b; font-size:0.85rem; padding:8px" onclick="startErBreakoutGame()">🎮 「ブロック崩し」ゲームをする</button>
+        </div>
+      </div>
+    `;
+    askModal(`💬 ${c.name}とお話する`, html, 'もどる', ()=>openCharaMenu(id), '');
+  } else {
+    // 他のキャラクター用のデフォルトお話
+    const html = `
+      <div style="font-size:0.85rem; text-align:center">
+        <p style="margin:0 0 10px; color:#cbd5e1">「今日もレアアースの採掘や精製、がんばろうね！」</p>
+      </div>
+    `;
+    askModal(`💬 ${c.name}とお話する`, html, 'もどる', ()=>openCharaMenu(id), '');
+  }
+}
+
+/* エルビウムについて教えて（口語口調） */
+function talkAboutEr(){
+  const desc = `「私、エルビウムはね、<b>光ファイバー内の情報を守り蘇らせる、通信の要石</b>なんだよ！ピンクの彩りや医療レーザーでもすごく活躍しているの。<br><br>` +
+               `<b>✨ 主な活躍の場：</b><br>` +
+               `• 光ファイバー<br>` +
+               `• 通信技術<br>` +
+               `• ガラス着色 などなど！<br><br>` +
+               `これからも私たちの力であなたのクラフトをいっぱい支えるからね♪」`;
+  askModal(`📖 エルビウムについて`, desc, 'もどる', ()=>openCharaTalkModal('Er'), '');
+}
+
+/* ブロック崩しゲームをする */
+function startErBreakoutGame(){
+  closeModal();
+  const se = $('se-gogogo');
+  if(se){ se.currentTime=0; se.play().catch(e=>{}); }
+  setTimeout(()=>{
+    location.href = 'erbium_breakout.html';
+  }, 200);
 }
 
 /* ═════════ お仕事依頼モーダル ═════════ */
@@ -414,23 +470,20 @@ function openCharaTaskModal(id){
   const now = Date.now();
 
   if(task && task.endTime > now){
-    // 労働中の場合
     const leftMin = Math.ceil((task.endTime - now)/60000);
     askModal(`⏳ ${c.name}はお仕事中です`,
       `<div style="text-align:center"><p>${c.desc}</p>` +
       `<p style="color:#00fff5; font-weight:bold">現在のお仕事: ${task.type==='mine'?'⛏️ 掘削':task.type==='refine'?'🧪 精製':'🏭 製品製造'}</p>` +
       `<p>残り時間: 約 <b>${leftMin}分</b></p></div>`,
-      '閉じる', null, '');
+      'もどる', ()=>openCharaMenu(id), '');
     return;
   }
 
   if(task && task.endTime <= now && !task.claimed){
-    // 報酬受取可能状態
     claimTaskReward(id);
     return;
   }
 
-  // 新規お仕事選択モーダル
   const canProd = gameState.level >= 12;
   const html = `
     <div style="font-size:0.8rem">
@@ -441,7 +494,7 @@ function openCharaTaskModal(id){
         • 精製: ${c.rH}時間で <b>${c.rQ}個</b> のレアアース精製<br>
         • 製造(Lv.12~): ${c.pH}時間で <b>${c.pQ}個</b> の製品制作 ${canProd?'':'<span style="color:#f87171">(🔒Lv12未開放)</span>'}
       </div>
-      <p style="text-align:center; font-weight:bold; color:#ffde59; margin:4px 0">どのお仕事をお願いする？（10%で大生産フィーバー！）</p>
+      <p style="text-align:center; font-weight:bold; color:#ffde59; margin:4px 0">どのお仕事をお願いする？</p>
       <div style="display:flex; gap:4px; flex-direction:column">
         <button class="btn" style="background:#3b82f6" onclick="startCharaTask('${id}','mine')">⛏️ 掘削を頼む (${c.mH}時間 / ${c.mQ}個)</button>
         <button class="btn" style="background:#10b981" onclick="startCharaTask('${id}','refine')">🧪 精製を頼む (${c.rH}時間 / ${c.rQ}個)</button>
@@ -449,15 +502,12 @@ function openCharaTaskModal(id){
       </div>
     </div>
   `;
-  askModal(`🧑 ${c.name}にお仕事をお願いする`, html, 'やめる', null, '');
-  // キャンセルボタン等を非表示にして独自ボタンにするため modal row を書き換え
-  document.querySelector('#modal .row').innerHTML = `<button class="btn" style="background:#94a3b8;color:#fff;width:100%" onclick="closeModal()">閉じる</button>`;
+  askModal(`🧑 ${c.name}にお仕事をお願いする`, html, 'もどる', ()=>openCharaMenu(id), '');
 }
 
 function startCharaTask(id, type){
   const c = CHARAS[id];
   let hours = type==='mine'? c.mH : type==='refine'? c.rH : c.pH;
-  // テストや快適なプレイのため、テスト用に時間を短縮したい場合はここを調整可能（現在リアルタイム設定）
   const durationMs = hours * 3600 * 1000; 
 
   gameState.charaTasks[id] = {
@@ -475,11 +525,10 @@ function startCharaTask(id, type){
 
 function checkTaskCompletions(){
   const now = Date.now();
-  let updated = false;
   for(let id in gameState.charaTasks){
     const task = gameState.charaTasks[id];
     if(task && task.endTime <= now && !task.claimed){
-      // 自動受取または通知可能
+      // 完了状態
     }
   }
 }
@@ -489,7 +538,6 @@ function claimTaskReward(id){
   const task = gameState.charaTasks[id];
   if(!task) return;
 
-  // 10%の確率で大生産フィーバー (1.5倍〜2倍)
   const isFever = Math.random() < 0.10;
   const mult = isFever ? (1.5 + Math.random()*0.5) : 1.0;
 
@@ -499,10 +547,8 @@ function claimTaskReward(id){
   if(task.type === 'mine'){
     gameState.mudStock = (gameState.mudStock || 0) + finalQ;
   } else if(task.type === 'refine'){
-    // レアアース元素ストックへ加算（簡易的にmoneyかランダム元素、今回はmoneyまたは共通レアアース加算として泥から精製品に）
     gameState.money = (gameState.money || 0) + finalQ * 250; 
   } else {
-    // 製品製造
     const rId = recipes[Math.floor(Math.random()*recipes.length)].id;
     gameState.products[rId] = (gameState.products[rId] || 0) + finalQ;
   }
@@ -514,7 +560,7 @@ function claimTaskReward(id){
   if(isFever){
     askModal(`🔥 大成功！大生産フィーバー発生！！`,
       `<div style="text-align:center"><p style="font-size:2rem">🎉✨</p>` +
-      `<p><b>${c.name}</b> の作業が大フィーバー！通常より大量の成果物を持ち帰りました！</p>` +
+      `<p><b>${c.name}</b> の作業が大フィーバー！大量の成果物を持ち帰りました！</p>` +
       `<p style="color:#ffde59; font-size:1.1rem; font-weight:bold">+ ${finalQ} 獲得！</p></div>`,
       'やったね！', null, '');
   } else {
@@ -522,7 +568,6 @@ function claimTaskReward(id){
   }
   updateUI();
 }
-
 
 /* renderRoom内でのキャラオブジェクト描画拡張 */
 function renderRoom(){
@@ -541,12 +586,11 @@ function renderRoom(){
     im.onerror=()=>{ im.remove(); el.innerHTML=`<div class="ph">${emoji||'📦'}<small>${name}</small></div>`; };
     el.appendChild(im);
 
-    // キャラクターの場合、作業状態や完了アイコンをバッジ表示
     if(isChara){
       const task = gameState.charaTasks[charaId];
       const now = Date.now();
-      let badgeText = '💬 お仕事';
-      let badgeBg = '#3b82f6';
+      let badgeText = '💬 メニュー';
+      let badgeBg = '#ec4899';
       if(task){
         if(task.endTime <= now){ badgeText = '✨ 完了！'; badgeBg = '#f59e0b'; }
         else { badgeText = '⏳ 作業中'; badgeBg = '#64748b'; }
@@ -581,9 +625,8 @@ function drag(el,it,idx,name,size,isChara,charaId){
   const up=e=>{
     if(!P.delete(e.pointerId)||P.size>0) return;
     if(moved){ if(cur()!==pre){ hist(pre); save(); } return; }
-    // タップされた場合：キャラクターなら仕事モーダル、家具等なら片付け確認
     if(isChara){
-      openCharaTaskModal(charaId);
+      openCharaMenu(charaId);
     } else {
       askModal('レイアウト変更',`「${name}」をお部屋から片付けますか？`,'片付ける',()=>{ hist(); gameState.placedItems.splice(idx,1); save(); updateUI(); toast('📦 片付けました'); });
     }
