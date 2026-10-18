@@ -55,6 +55,7 @@ body{margin:0;height:100%;overflow:hidden;overscroll-behavior:none;background:#0
 .obj .ph{display:flex;flex-direction:column;align-items:center;font-size:7cqw;line-height:1.1;text-align:center;filter:drop-shadow(0 .2rem .3rem rgba(0,0,0,.3))}
 .obj .ph small{font-size:.55rem;background:rgba(0,0,0,.55);color:#fff;border-radius:.4rem;padding:0 .3rem}
 
+/* キャラクター専用バッジ（お仕事アイコン） */
 .chara-badge{position:absolute;top:-10px;right:-10px;background:#10b981;color:#fff;font-size:.55rem;padding:2px 5px;border-radius:10px;font-weight:bold;border:1px solid #fff;box-shadow:0 2px 4px rgba(0,0,0,.3)}
 
 .controls{position:absolute;top:.4rem;left:.4rem;right:.4rem;z-index:10;display:flex;justify-content:space-between;align-items:center;gap:.3rem;flex-wrap:wrap;
@@ -71,9 +72,8 @@ body{margin:0;height:100%;overflow:hidden;overscroll-behavior:none;background:#0
 .list.on{display:flex}
 .item{display:flex;align-items:center;gap:.5rem;border:1px solid var(--line);border-radius:.6rem;padding:.4rem .5rem;background:var(--item)}
 .item.own{opacity:.8}
-.item .nm{flex:1;font-weight:bold;font-size:.78rem;cursor:pointer}
+.item .nm{flex:1;font-weight:bold;font-size:.78rem}
 .item .nm small{display:block;font-weight:normal;font-size:.65rem;opacity:.7}
-.shop-thumb{width:2.2rem;height:2.2rem;border-radius:.4rem;border:1px solid var(--line);object-fit:contain;background:#fff;cursor:pointer;flex-shrink:0}
 .swatch{width:2.2rem;height:2.2rem;border-radius:.4rem;border:1px solid var(--line);flex-shrink:0;overflow:hidden;display:flex;flex-direction:column}
 .swatch i{flex:1.4}.swatch i+i{flex:1}
 .btn{background:var(--accent);color:var(--onaccent);border:none;border-radius:.6rem;min-height:2rem;padding:.3rem .8rem;font-size:.72rem;font-weight:bold;cursor:pointer;font-family:inherit}
@@ -286,8 +286,10 @@ function unlock(){ bgm.play().then(()=>['click','touchstart'].forEach(e=>documen
 let curTheme=null;
 function scene(){
   const t=curTheme||themesMaster.natural;
-  $('win').style.display=(dir===2&&t.win!==false)?'block':'none';$('door').style.display=(t.door&&dir===(t.doorDir===undefined?1:t.doorDir))?'block':'none';
-  $('phone').style.setProperty('--floor',((dir===1\vert{}\vert{}dir===3)&&t.floorH)?t.floorH:t.floor);$('stage').classList.toggle('flat',!!t.flat);
+  $('win').style.display=(dir===2&&t.win!==false)?'block':'none';
+  $('door').style.display=(t.door&&dir===(t.doorDir===undefined?1:t.doorDir))?'block':'none';
+  $('phone').style.setProperty('--floor',((dir===1||dir===3)&&t.floorH)?t.floorH:t.floor);
+  $('stage').classList.toggle('flat',!!t.flat);
 }
 function applyTheme(k){
   const t=themesMaster[k]||themesMaster.natural, s=$('phone').style;
@@ -330,6 +332,7 @@ function updateUI(){
 
 /* ═════════════════════════════════════════════════════════════
    ★ キャラクター17名定義・パラメータ・お仕事システム ★
+   性格傾向に基づき：掘削(mine) / 精製(refine) / 製造(prod) の得意分野を設定
    ═════════════════════════════════════════════════════════════ */
 const CHARA_PREFIX='chara0_', CHARA_SIZE=20;
 const CHARAS={
@@ -368,7 +371,9 @@ function ensureCharas(){
   const ids=Object.keys(CHARAS), want=charaCount(gameState.level||1);
   if(!Array.isArray(gameState.charaOwned)) gameState.charaOwned=[];
   
+  // エルビウム(Er)が前半7名（または所持数が7未満の段階）に必ず入るようにする制御
   if(!gameState.charaOwned.includes('Er') && want >= 1 && gameState.charaOwned.length < 7) {
+    // まだ7人未満の枠でエルビウムが居なければ優先的に追加する確率を高める
     if(Math.random() < 0.5 || want >= 7) {
       gameState.charaOwned.push('Er');
     }
@@ -377,6 +382,7 @@ function ensureCharas(){
   let added=0;
   while(gameState.charaOwned.length<want){
     const rest=ids.filter(i=>!gameState.charaOwned.includes(i)); if(!rest.length) break;
+    // まだEr未所持ならrestからErを選びやすくする
     let id;
     if(!gameState.charaOwned.includes('Er') && rest.includes('Er') && gameState.charaOwned.length < 7) {
       id = 'Er';
@@ -388,6 +394,7 @@ function ensureCharas(){
   }
   if(added){ save(); setTimeout(()=>toast('🎉 新しい仲間がお部屋に来たよ！'),600); }
 
+  // Lv.6到達時の挨拶＆チュートリアルチェック
   if(gameState.level >= 6 && !gameState.tutorialShown6) {
     gameState.tutorialShown6 = true;
     save();
@@ -400,26 +407,14 @@ function ensureCharas(){
   }
 }
 
-/* 家具の画像をポップアップで確認する関数 */
-function showItemPreview(name, img, costText) {
-  const html = `
-    <div style="text-align:center">
-      <img src="${img}" alt="${name}" style="max-width:120px; max-height:120px; object-fit:contain; background:#0b1224; border-radius:8px; padding:6px; border:1px solid var(--line); margin-bottom:8px;" onerror="this.style.display='none'">
-      <p style="margin:4px 0; font-size:0.9rem; font-weight:bold; color:var(--accent)">${name}</p>
-      <p style="margin:0; font-size:0.8rem; opacity:0.8">価格: ${costText}</p>
-    </div>
-  `;
-  askModal('🔍 家具のプレビュー', html, '閉じる', null, '');
-  document.querySelector('#modal .row').innerHTML = `<button class="btn" style="background:#94a3b8;color:#fff;width:100%" onclick="closeModal()">閉じる</button>`;
-}
-
-/* お仕事依頼モーダル */
+/* ═════════ お仕事依頼モーダル ═════════ */
 function openCharaTaskModal(id){
   const c = CHARAS[id];
   const task = gameState.charaTasks[id];
   const now = Date.now();
 
   if(task && task.endTime > now){
+    // 労働中の場合
     const leftMin = Math.ceil((task.endTime - now)/60000);
     askModal(`⏳ ${c.name}はお仕事中です`,
       `<div style="text-align:center"><p>${c.desc}</p>` +
@@ -430,10 +425,12 @@ function openCharaTaskModal(id){
   }
 
   if(task && task.endTime <= now && !task.claimed){
+    // 報酬受取可能状態
     claimTaskReward(id);
     return;
   }
 
+  // 新規お仕事選択モーダル
   const canProd = gameState.level >= 12;
   const html = `
     <div style="font-size:0.8rem">
@@ -453,12 +450,14 @@ function openCharaTaskModal(id){
     </div>
   `;
   askModal(`🧑 ${c.name}にお仕事をお願いする`, html, 'やめる', null, '');
+  // キャンセルボタン等を非表示にして独自ボタンにするため modal row を書き換え
   document.querySelector('#modal .row').innerHTML = `<button class="btn" style="background:#94a3b8;color:#fff;width:100%" onclick="closeModal()">閉じる</button>`;
 }
 
 function startCharaTask(id, type){
   const c = CHARAS[id];
   let hours = type==='mine'? c.mH : type==='refine'? c.rH : c.pH;
+  // テストや快適なプレイのため、テスト用に時間を短縮したい場合はここを調整可能（現在リアルタイム設定）
   const durationMs = hours * 3600 * 1000; 
 
   gameState.charaTasks[id] = {
@@ -474,13 +473,23 @@ function startCharaTask(id, type){
   updateUI();
 }
 
-function checkTaskCompletions(){}
+function checkTaskCompletions(){
+  const now = Date.now();
+  let updated = false;
+  for(let id in gameState.charaTasks){
+    const task = gameState.charaTasks[id];
+    if(task && task.endTime <= now && !task.claimed){
+      // 自動受取または通知可能
+    }
+  }
+}
 
 function claimTaskReward(id){
   const c = CHARAS[id];
   const task = gameState.charaTasks[id];
   if(!task) return;
 
+  // 10%の確率で大生産フィーバー (1.5倍〜2倍)
   const isFever = Math.random() < 0.10;
   const mult = isFever ? (1.5 + Math.random()*0.5) : 1.0;
 
@@ -490,8 +499,10 @@ function claimTaskReward(id){
   if(task.type === 'mine'){
     gameState.mudStock = (gameState.mudStock || 0) + finalQ;
   } else if(task.type === 'refine'){
+    // レアアース元素ストックへ加算（簡易的にmoneyかランダム元素、今回はmoneyまたは共通レアアース加算として泥から精製品に）
     gameState.money = (gameState.money || 0) + finalQ * 250; 
   } else {
+    // 製品製造
     const rId = recipes[Math.floor(Math.random()*recipes.length)].id;
     gameState.products[rId] = (gameState.products[rId] || 0) + finalQ;
   }
@@ -512,6 +523,8 @@ function claimTaskReward(id){
   updateUI();
 }
 
+
+/* renderRoom内でのキャラオブジェクト描画拡張 */
 function renderRoom(){
   const box=$('objs'); box.innerHTML='';
   gameState.placedItems.forEach((it,idx)=>{
@@ -528,6 +541,7 @@ function renderRoom(){
     im.onerror=()=>{ im.remove(); el.innerHTML=`<div class="ph">${emoji||'📦'}<small>${name}</small></div>`; };
     el.appendChild(im);
 
+    // キャラクターの場合、作業状態や完了アイコンをバッジ表示
     if(isChara){
       const task = gameState.charaTasks[charaId];
       const now = Date.now();
@@ -567,6 +581,7 @@ function drag(el,it,idx,name,size,isChara,charaId){
   const up=e=>{
     if(!P.delete(e.pointerId)||P.size>0) return;
     if(moved){ if(cur()!==pre){ hist(pre); save(); } return; }
+    // タップされた場合：キャラクターなら仕事モーダル、家具等なら片付け確認
     if(isChara){
       openCharaTaskModal(charaId);
     } else {
@@ -582,23 +597,16 @@ function drag(el,it,idx,name,size,isChara,charaId){
 function row(thumb,name,sub,btn){ return `<div class="item ${btn.own?'own':''}">${thumb}<div class="nm">${name}${sub?`<small>${sub}</small>`:''}</div>${btn.html}</div>`; }
 let shopMode='mile';
 function setShopMode(m){ shopMode=m; renderShop(); }
-
 function renderShop(){
   const L=$('L-shop'), top=L.scrollTop;
   const bar=`<div style="display:flex;gap:.3rem;flex-shrink:0"><button class="tab ${shopMode==='mile'?'on':''}" onclick="setShopMode('mile')">✈️ マイルで買う</button><button class="tab ${shopMode==='gold'?'on':''}" onclick="setShopMode('gold')">💰 Gで買う</button></div>`;
   L.innerHTML=bar+Object.keys(furnitureMaster).filter(id=>!!furnitureMaster[id].gold===(shopMode==='gold')).map(id=>{
     const f=furnitureMaster[id], own=gameState.homeFurnishings.includes(id);
     const price=f.gold?`${f.gold.toLocaleString()}G`:`${f.cost}マイル`;
-    
-    // サムネイル画像＋タップでプレビュー表示ができるように設定
-    const thumbHtml = `<img src="${IMG_DIR + f.img}" alt="${f.name}" class="shop-thumb" onclick="showItemPreview('${f.name}', '${IMG_DIR + f.img}', '${price}')" onerror="this.style.display='none'">`;
-    const nameHtml = `<div class="nm" onclick="showItemPreview('${f.name}', '${IMG_DIR + f.img}', '${price}')" style="cursor:pointer;" title="タップして画像を拡大">${f.name}<small>${price} ／ +${f.bonus}%</small></div>`;
-    
-    return `<div class="item ${own?'own':''}">${thumbHtml}${nameHtml}${own?'<button class="btn done">所持済</button>':`<button class="btn" onclick="buy('${id}')">購入</button>`}</div>`;
+    return row('',f.name,`${price} ／ +${f.bonus}%`,{own,html:own?'<button class="btn done">所持済</button>':`<button class="btn" onclick="buy('${id}')">購入</button>`});
   }).join('');
   L.scrollTop=top;
 }
-
 function buy(id){
   const f=furnitureMaster[id];
   if(f.gold){ if((gameState.money||0)<f.gold){ toast('⚠️ ゴールドが足りません！'); return; } gameState.money-=f.gold; }
@@ -606,25 +614,13 @@ function buy(id){
   gameState.homeFurnishings.push(id); save();
   $('se-unlock').currentTime=0; $('se-unlock').play().catch(()=>{}); toast(`🎉 『${f.name}』を購入！`); updateUI();
 }
-
 function renderDisplay(){
-  // 変更箇所：家具・製品を先にリストの上方に表示し、キャラクター（charaOwned）をその下（一番上以外）に配置
-  let h = '';
-
-  // 1. 家具リスト
-  h += gameState.homeFurnishings.map(id=>{ const f=furnitureMaster[id]; if(!f) return '';
+  let h=gameState.charaOwned.map(id=>{ const c=CHARAS[id]; return row('',`🧑 ${c.name}`,'',{html:`<button class="btn" style="background:#8b5cf6;color:#fff" onclick="place('chara','${id}')">配置</button>`}); }).join('')+gameState.homeFurnishings.map(id=>{ const f=furnitureMaster[id]; if(!f) return '';
     return row('',f.name,'',{html:`<button class="btn" onclick="place('furn','${id}')">配置</button>`}); }).join('');
-
-  // 2. クラフト製品リスト
   recipes.forEach(r=>{ const n=(gameState.products||{})[r.id]||0;
     if(gameState.crafted&&gameState.crafted[r.id]) h+=row('',r.name,n>0?`在庫:${n}`:'製造済み',{html:`<button class="btn" style="background:#eab308;color:#fff" onclick="place('prod','${r.id}')">配置</button>`}); });
-
-  // 3. キャラクター一覧（一番下へ移動）
-  h += gameState.charaOwned.map(id=>{ const c=CHARAS[id]; return row('',`🧑 ${c.name}`,'',{html:`<button class="btn" style="background:#8b5cf6;color:#fff" onclick="place('chara','${id}')">配置</button>`}); }).join('');
-
   $('L-display').innerHTML=h+`<div style="text-align:center;opacity:.7;padding:.5rem;font-size:.7rem">${nextCharaText()}</div>`;
 }
-
 function place(type,id){
   const f=furnitureMaster[id]; hist();
   gameState.placedItems.push({type,id,dir,s:1,x:(f?f.x:30+Math.random()*40),y:(f?f.y:(type==='chara'?90:80))});
@@ -679,4 +675,3 @@ window.addEventListener('load',()=>{
 </script>
 </body>
 </html>
-```[cite: 6]
