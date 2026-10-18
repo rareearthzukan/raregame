@@ -10,7 +10,6 @@
 <style>
 :root{--maxw:720px}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-/* ═══ map.html と同じレスポンシブ方式：rem基準＋画面いっぱい＋横長で2カラム ═══ */
 html{height:100%;font-size:clamp(14px,min(calc(12px + 1.1vw),3.2vh),21px);-webkit-text-size-adjust:100%;touch-action:manipulation}
 body{margin:0;height:100%;overflow:hidden;overscroll-behavior:none;background:#0b1224;color:var(--text,#1e293b);
   font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",Meiryo,sans-serif;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
@@ -35,12 +34,10 @@ body{margin:0;height:100%;overflow:hidden;overscroll-behavior:none;background:#0
 }
 .card{background:var(--card);border:1px solid var(--line);border-radius:.7rem;padding:.5rem .6rem;font-size:.8rem}
 
-/* ═══ お部屋ステージ：横幅に対する%で全て配置＝画面サイズが変わっても崩れない ═══ */
 .stage{position:relative;width:100%;aspect-ratio:4/3.2;overflow:hidden;border-radius:.8rem;flex-shrink:0;
   border:.18rem solid var(--line);box-shadow:inset 0 0 2.5rem rgba(0,0,0,.18);container-type:inline-size}
 .layer{position:absolute;inset:0}
 .wall{height:64%;background:var(--wall)}
-/* 窓からの光 */
 .wall::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 25% 20%,rgba(255,255,230,.35),transparent 55%)}
 .win{position:absolute;left:10%;top:16%;width:24%;height:36%;border:.28rem solid var(--base);border-radius:.3rem .3rem 0 0;z-index:1;
   background:linear-gradient(var(--base),var(--base)) 50% 0/.2rem 100% no-repeat,linear-gradient(var(--base),var(--base)) 0 50%/100% .2rem no-repeat,linear-gradient(180deg,#bfe3f7,#eaf7ff);
@@ -51,18 +48,22 @@ body{margin:0;height:100%;overflow:hidden;overscroll-behavior:none;background:#0
 .door{position:absolute;left:60%;bottom:0;width:19%;height:74%;background:var(--door);border:.25rem solid var(--base);border-bottom:0;border-radius:.3rem .3rem 0 0;box-shadow:inset 0 0 0 .35rem var(--door2),.2rem 0 .6rem rgba(0,0,0,.18);z-index:1;display:none}
 .door::after{content:"";position:absolute;right:10%;top:55%;width:.55rem;height:.55rem;border-radius:50%;background:var(--knob);box-shadow:0 .1rem .2rem rgba(0,0,0,.35)}
 .flat .wall::after{display:none}.flat .floor{box-shadow:none}
+
 .obj{position:absolute;transform:translate(-50%,-100%);touch-action:none;cursor:grab;z-index:5}
 .obj:active{cursor:grabbing;filter:brightness(1.05)}
 .obj img{width:100%;height:auto;display:block;pointer-events:none;filter:drop-shadow(0 .3rem .4rem rgba(0,0,0,.28))}
 .obj .ph{display:flex;flex-direction:column;align-items:center;font-size:7cqw;line-height:1.1;text-align:center;filter:drop-shadow(0 .2rem .3rem rgba(0,0,0,.3))}
 .obj .ph small{font-size:.55rem;background:rgba(0,0,0,.55);color:#fff;border-radius:.4rem;padding:0 .3rem}
+
+/* キャラクター専用バッジ（お仕事アイコン） */
+.chara-badge{position:absolute;top:-10px;right:-10px;background:#10b981;color:#fff;font-size:.55rem;padding:2px 5px;border-radius:10px;font-weight:bold;border:1px solid #fff;box-shadow:0 2px 4px rgba(0,0,0,.3)}
+
 .controls{position:absolute;top:.4rem;left:.4rem;right:.4rem;z-index:10;display:flex;justify-content:space-between;align-items:center;gap:.3rem;flex-wrap:wrap;
   background:var(--card);border:1px solid var(--line);border-radius:.6rem;padding:.25rem .4rem;opacity:.94}
-.controls b{font-size:.7rem}.dirs{margin-left:auto;display:flex;gap:.2rem}.dir:disabled{opacity:.35;cursor:default}
+.controls b{font-size:.7rem}.dirs{margin-left:auto;display:flex;gap:.2rem}
 .dir{background:transparent;border:1px solid var(--line);color:var(--text);border-radius:.4rem;min-width:1.7rem;min-height:1.6rem;font-size:.68rem;font-weight:bold;cursor:pointer;font-family:inherit}
 .dir.on{background:var(--accent);color:var(--onaccent);border-color:var(--accent)}
 
-/* ═══ メニュー ═══ */
 .menu{flex:1;display:flex;flex-direction:column;min-height:14rem}
 .tabs{display:flex;gap:.2rem;margin-bottom:.4rem}
 .tab{flex:1;min-height:2rem;background:transparent;border:1px solid var(--line);color:var(--text);border-radius:.5rem;font-size:.68rem;font-weight:bold;cursor:pointer;font-family:inherit;padding:0}
@@ -86,12 +87,14 @@ textarea{width:100%;height:5rem;font-size:.65rem;border:1px solid var(--line);bo
 .nav div{flex:1;min-height:3rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.1rem;border:1px solid var(--line);border-radius:.7rem;font-size:.72rem;font-weight:bold;cursor:pointer;opacity:.75}
 .nav div.on{opacity:1;color:var(--accent);border-color:var(--accent)}
 .nav span{font-size:1.15rem;line-height:1}
+
 #toast{position:fixed;left:50%;bottom:calc(5rem + env(safe-area-inset-bottom,0));transform:translate(-50%,1rem);background:#1e293b;color:#fff;border-radius:1.5rem;padding:.5rem 1rem;font-size:.75rem;font-weight:bold;z-index:300;opacity:0;pointer-events:none;transition:.3s;white-space:nowrap}
 #toast.show{opacity:1;transform:translate(-50%,0)}
+
 .overlay{position:fixed;inset:0;display:none;justify-content:center;align-items:center;background:rgba(10,15,30,.7);z-index:200;padding:1rem}
-.modal{background:#1e293b;color:#fff;border:2px solid var(--accent);border-radius:1rem;padding:1.1rem;width:100%;max-width:22rem;text-align:center}
-.modal h3{margin:0 0 .4rem;font-size:1rem}.modal p{margin:0 0 .8rem;font-size:.85rem;line-height:1.5}
-.modal .row{display:flex;gap:.5rem}.modal .row .btn{flex:1}
+.modal{background:#1e293b;color:#fff;border:2px solid var(--accent);border-radius:1rem;padding:1.1rem;width:100%;max-width:24rem;text-align:center}
+.modal h3{margin:0 0 .4rem;font-size:1rem}.modal p{margin:0 0 .8rem;font-size:.8rem;line-height:1.5;text-align:left}
+.modal .row{display:flex;gap:.5rem;margin-top:.8rem}.modal .row .btn{flex:1}
 </style>
 </head>
 <body>
@@ -155,25 +158,12 @@ textarea{width:100%;height:5rem;font-size:.65rem;border:1px solid var(--line);bo
 
 <div id="toast"></div>
 <div class="overlay" id="modal"><div class="modal"><h3 id="mTitle"></h3><p id="mDesc"></p>
-  <div class="row"><button class="btn" style="background:#94a3b8;color:#fff" id="mNo" onclick="closeModal()">キャンセル</button><button class="btn" id="mOk" style="background:#ef4444;color:#fff">OK</button></div></div></div>
+  <div class="row" id="mRows"><button class="btn" style="background:#94a3b8;color:#fff" onclick="closeModal()">キャンセル</button><button class="btn" id="mOk" style="background:#ef4444;color:#fff">OK</button></div></div></div>
 
 <script>
 ['gesturestart','gesturechange','gestureend'].forEach(e=>document.addEventListener(e,x=>x.preventDefault()));
 
-/* ═════════════════════════════════════════════════════════════
-   ★ 家具を追加する場所 ★   下の表に1行コピーして書き換えるだけ！
-   ─────────────────────────────────────────────────────────────
-   キー       : 'sofa_m' など。他と重ならない英数字（セーブデータに使われる）
-   name       : 表示名
-   cost       : 価格（マイル）
-   bonus      : 精製ボーナス（%）
-   img        : 画像ファイル名（index.htmlと同じフォルダ。拡張子まで正確に！）
-   size       : 画像の大きさ ＝ お部屋の横幅に対する％（例：30 なら横幅の30%）
-   x, y       : 配置したときの最初の位置 ＝ 横幅・高さに対する％
-                x=0 左端〜100 右端 / y=0 上端〜100 下端（y は家具の「足元」の位置）
-   emoji      : 画像が見つからないときに代わりに出す絵文字（任意）
-   ═════════════════════════════════════════════════════════════ */
-const IMG_DIR = '';   // 画像をフォルダにまとめたら 'images/' のように書く
+const IMG_DIR = '';
 const furnitureMaster = {
   'desk_l' : { name:'おしゃれなデスク',           cost:200,   bonus:0.3, img:'home_kagu0.png', size:28, x:30, y:88, emoji:'🗄️' },
   'sofa_m' : { name:'デザイナーズソファ',         cost:1000,  bonus:1.0, img:'home_kagu1.png', size:34, x:55, y:92, emoji:'🛋️' },
@@ -184,14 +174,8 @@ const furnitureMaster = {
   'kitchen': { name:'システムキッチン',           cost:10000, bonus:0.4, img:'home_kagu5.png', size:40, x:35, y:78, emoji:'🍳' },
   'tree_m' : { name:'庭木１',                     cost:400,   bonus:0.4, img:'home_kagu6.png', size:26, x:75, y:70, emoji:'🌳' }
 };
-/* ↑ ここまで。  ※ 'home_kagu5.png.png' は拡張子が二重でした。4と6は仮の名前なので実際のファイル名に直してください */
 
-/* ═════════════════════════════════════════════════════════════
-   ★ 追加アイテム（簡単登録）★  1行 = 1アイテム   [キー, 名前, 絵文字, 価格, 精製ボーナス%, 大きさ%, 足元の高さy%]
-   画像ファイル名は自動で  IMG_PREFIX + キー + .png  （例: home_kagu_bed.png）。無いときは絵文字で表示されます
-   ═════════════════════════════════════════════════════════════ */
 const IMG_PREFIX='home_kagu_';
-/* マイルで買うアイテム（20）: 価格はマイル */
 const MILE_ROWS=[
   ['stool','スツール','🪑',120,0.1,10,88],['cushion','クッション','🟡',80,0.1,8,90],['flower_vase','花瓶','💐',100,0.1,7,70],
   ['nightstand','ナイトテーブル','🛋️',150,0.1,12,86],['wall_clock','壁掛け時計','🕰️',150,0.2,9,38],['wall_art','壁掛けアート','🖼️',180,0.2,14,40],
@@ -201,7 +185,6 @@ const MILE_ROWS=[
   ['wardrobe','クローゼット','🚪',700,0.6,20,86],['bed','ベッド','🛏️',900,0.9,34,90],['aquarium','水槽','🐠',1200,1.0,20,84],
   ['gaming_pc','ゲーミングPC','🖥️',1800,1.6,18,80],['piano','ピアノ','🎹',2000,1.5,30,88]
 ];
-/* Gで買うアイテム（30）: 価格はG（10,000〜500,000）。精製ボーナスは低め */
 const GOLD_ROWS=[
   ['bbq','BBQグリル','🍖',10000,0.1,14,88],['robo_cleaner','ロボット掃除機','🤖',12000,0.1,9,92],['chess_table','チェステーブル','♟️',15000,0.1,16,88],
   ['trophy_case','トロフィーケース','🏆',18000,0.2,14,86],['espresso','エスプレッソマシン','☕',20000,0.1,10,76],['vinyl','レコードプレーヤー','💿',25000,0.2,14,80],
@@ -224,9 +207,8 @@ const recipes = [
   {id:'neodymium_magnet',name:'ネオジム磁石',img:'seihin_neojimu.png',emoji:'🧲'},
   {id:'pc',name:'次世代ノートパソコン',img:'seihin_pasokon.png',emoji:'💻'}
 ];
-const PROD_SIZE = 12; // 製品（小物）の大きさ(%)
+const PROD_SIZE = 12;
 
-/* ═════════ BGM ═════════ */
 const bgmMaster = {
   room:{name:'マイホーム基本BGM',file:'BGM_room.ogg'}, map:{name:'世界マップBGM',file:'BGM_map.ogg'},
   seisei:{name:'元素精製プラントBGM',file:'BGM_seisei.ogg'}, factory:{name:'製造工場BGM',file:'BGM_koujyo.ogg'},
@@ -234,13 +216,6 @@ const bgmMaster = {
   hinan:{name:'緊急避難訓練BGM',file:'BGM_hinan.ogg'}, karaoke:{name:'カラオケイベントBGM',file:'karaoke.ogg'}
 };
 
-/* ═════════════════════════════════════════════════════════════
-   ★ テイスト（お部屋の雰囲気）★  1つ足せば選択肢が増えます
-   壁紙(柄)・腰壁・巾木・フローリング・ラグまで重ねて「お部屋らしさ」を出しています
-   wall/wain/rail/pat : 壁色 / 腰壁(下半分)の色 / 腰壁の上の線 / 壁紙の柄
-   base : 巾木と窓枠の色    floor : 床   garden : お庭の背景(省略可)  floorH : 東西の床=横線(省略可)  flat:true : 影も付けない
-   bg/card/text/line/accent/item : 画面全体のUI色
-   ═════════════════════════════════════════════════════════════ */
 const GARDEN_DEFAULT = `radial-gradient(ellipse 14% 6% at 20% 14%,#fff 60%,transparent 62%),radial-gradient(ellipse 18% 7% at 72% 22%,#fff 60%,transparent 62%),repeating-linear-gradient(90deg,#f5e9d3 0 1.4%,#e9d7b6 1.4% 1.8%) 0 52%/100% 12% no-repeat,linear-gradient(180deg,#7cc4ef 0%,#d8f0fb 52%,#7fcf6b 52%,#4aa84a 100%)`;
 const wallBg = (c,pat,wain,rail)=>`linear-gradient(180deg,transparent 74%,${rail} 74% 77%,${wain} 77%),${pat},${c}`;
 const planks = (a,b,seam)=>`repeating-linear-gradient(90deg,${seam} 0 .1rem,transparent .1rem 2rem),linear-gradient(180deg,${a},${b})`;
@@ -274,9 +249,6 @@ const themesMaster = {
   plain:{name:'⬜ 無地（真っ白）', wall:'#ffffff', base:'#ffffff', floor:'#ffffff', garden:'#ffffff', flat:true,
     bg:'#f7f7f7', card:'#ffffff', text:'#333333', line:'#dddddd', accent:'#555555', item:'#fafafa', onaccent:'#ffffff'}
 };
-/* ═══ ★ 窓とドアの設定 ★ ═══
-   窓 : 南の壁だけに出ます。出したくないテイストは win:false
-   ドア: door(色・背景) door2(枠の内側) knob(取っ手)。出す壁は doorDir (0北 1東 2南 3西、省略=東)。ドアなしは書かない */
 const DECOR={
   natural:{door:'#c9a06b',door2:'#b78a52',knob:'#fff8e6'},
   wood:{door:'#6b4328',door2:'#573520',knob:'#e0b44c'},
@@ -293,9 +265,12 @@ Object.keys(DECOR).forEach(k=>Object.assign(themesMaster[k],DECOR[k]));
 const dirNames = ['北の壁','東の壁','南の壁','西の壁','🌿 お庭'];
 const dirLabels = ['北','東','南','西','🌿'];
 
-/* ═════════ 状態 ═════════ */
+/* ═════════ 状態管理 ═════════ */
 let gameState = JSON.parse(localStorage.getItem('rareEarthGameState')) || {};
-const defaults = {miles:500,level:1,products:{},homeFurnishings:[],placedItems:[],currentTheme:'natural',currentBgm:'room'};
+const defaults = {
+  miles:500, level:1, money:1500, mudStock:5, products:{}, homeFurnishings:[], placedItems:[],
+  currentTheme:'natural', currentBgm:'room', charaOwned:[], charaTasks:{}, tutorialShown6:false
+};
 Object.keys(defaults).forEach(k=>{ if(gameState[k]===undefined) gameState[k]=defaults[k]; });
 const save = ()=>localStorage.setItem('rareEarthGameState',JSON.stringify(gameState));
 const $ = id=>document.getElementById(id);
@@ -308,9 +283,7 @@ function updateBgmUI(){ bgm.muted=isMuted; bgmBtn.innerText=isMuted?'🔇 OFF':'
 function toggleBGM(){ isMuted=!isMuted; localStorage.setItem('bgmMutedHome',isMuted); updateBgmUI(); isMuted?bgm.pause():bgm.play().catch(()=>{}); }
 function unlock(){ bgm.play().then(()=>['click','touchstart'].forEach(e=>document.removeEventListener(e,unlock))).catch(()=>{}); }
 
-/* ═════════ テイスト適用 ═════════ */
 let curTheme=null;
-/* 方角とテイストに合わせて 窓・ドア・床の線の向き を切り替える */
 function scene(){
   const t=curTheme||themesMaster.natural;
   $('win').style.display=(dir===2&&t.win!==false)?'block':'none';
@@ -326,10 +299,12 @@ function applyTheme(k){
   curTheme=t; scene();
 }
 
-/* ═════════ 表示 ═════════ */
 function toast(m){ const t=$('toast'); t.innerText=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2000); }
-function askModal(title,desc,ok,fn,no){ $('mTitle').innerText=title; $('mDesc').innerText=desc; $('mOk').innerText=ok; $('mNo').innerText=no||'キャンセル';
-  $('mOk').onclick=()=>{closeModal();fn&&fn();}; $('modal').style.display='flex'; }
+function askModal(title,desc,ok,fn,no){
+  $('mTitle').innerText=title; $('mDesc').innerHTML=desc;
+  $('mRows').innerHTML=`<button class="btn" style="background:#94a3b8;color:#fff" onclick="closeModal()">${no||'キャンセル'}</button><button class="btn" id="mOk" style="background:#ef4444;color:#fff">${ok}</button>`;
+  $('mOk').onclick=()=>{closeModal();fn&&fn();};$('modal').style.display='flex';
+}
 function closeModal(){ $('modal').style.display='none'; }
 
 function buildControls(){
@@ -340,39 +315,254 @@ function buildControls(){
 function changeDirection(d){
   dir=d; $('dirTitle').innerText=dirNames[d];
   for(let i=0;i<5;i++) $('dir'+i).classList.toggle('on',i===d);
-  $('indoor').style.display=d===4?'none':'block'; $('garden').style.display=d===4?'block':'none'; scene();
+  $('indoor').style.display=d===4?'none':'block';$('garden').style.display=d===4?'block':'none'; scene();
   renderRoom();
 }
 function switchTab(t){
   tab=t;
-  ['shop','display','theme','music','save'].forEach(k=>{ $('L-'+k).classList.toggle('on',k===t); $('tab-'+k).classList.toggle('on',k===t); });
+  ['shop','display','theme','music','save'].forEach(k=>{ $('L-'+k).classList.toggle('on',k===t);$('tab-'+k).classList.toggle('on',k===t); });
 }
 function updateUI(){
+  checkTaskCompletions();
   $('miles').innerText=(gameState.miles||0).toLocaleString(); $('level').innerText=gameState.level; $('money').innerText=(gameState.money||0).toLocaleString();
   let b=0; gameState.placedItems.forEach(i=>{ if(i.type==='furn'&&furnitureMaster[i.id]) b+=furnitureMaster[i.id].bonus; if(i.type==='prod') b+=.2; });
-  $('bonus').innerText=b.toFixed(1); $('roomLevel').innerText=Math.floor(1+b/1.5);
+  $('bonus').innerText=b.toFixed(1);$('roomLevel').innerText=Math.floor(1+b/1.5);
   renderShop(); renderDisplay(); renderTheme(); renderMusic(); renderRoom();
 }
 
+/* ═════════════════════════════════════════════════════════════
+   ★ キャラクター17名定義・パラメータ・お仕事システム ★
+   性格傾向に基づき：掘削(mine) / 精製(refine) / 製造(prod) の得意分野を設定
+   ═════════════════════════════════════════════════════════════ */
+const CHARA_PREFIX='chara0_', CHARA_SIZE=20;
+const CHARAS={
+  Sc:{name:'スカンジウム', type:'prod',   mH:2.0, mQ:12, rH:2.5, rQ:6,  pH:3.0, pQ:2, desc:'バランス型。製品製造もそつなくこなす器用な子。'},
+  Y:{name:'イットリウム',   type:'mine',   mH:1.5, mQ:18, rH:3.0, rQ:6,  pH:4.0, pQ:2, desc:'好奇心旺盛で元気！掘削スピードに自信あり。'},
+  La:{name:'ランタン',       type:'refine', mH:2.5, mQ:12, rH:1.8, rQ:9,  pH:3.5, pQ:2, desc:'おっとり優しく、緻密な精製作業が得意。'},
+  Ce:{name:'セリウム',       type:'refine', mH:2.2, mQ:14, rH:2.0, rQ:8,  pH:3.5, pQ:2, desc:'リーダーシップがあり、安定した精製品質を生む。'},
+  Pr:{name:'プラセオジム',   type:'mine',   mH:1.6, mQ:17, rH:2.8, rQ:6,  pH:4.0, pQ:2, desc:'目立ちたがり屋でエネルギッシュに泥を掘り出す。'},
+  Nd:{name:'ネオジム',       type:'mine',   mH:1.4, mQ:20, rH:3.0, rQ:6,  pH:3.8, pQ:2, desc:'強力な磁力のように引き付ける力で大量掘削！'},
+  Pm:{name:'プロメチウム',   type:'refine', mH:2.6, mQ:10, rH:1.9, rQ:9,  pH:3.6, pQ:2, desc:'内向的で研究熱心。精製度を高めるのが得意。'},
+  Sm:{name:'サマリウム',     type:'refine', mH:2.4, mQ:12, rH:2.1, rQ:8,  pH:3.5, pQ:2, desc:'冷静沈着。ミスなく確実に精製を進める。'},
+  Eu:{name:'ユウロピウム',   type:'prod',   mH:2.2, mQ:13, rH:2.5, rQ:7,  pH:2.8, pQ:3, desc:'華やかな発光製品を作るのが得意なクリエイター。'},
+  Gd:{name:'ガドリニウム',   type:'mine',   mH:1.8, mQ:16, rH:2.6, rQ:7,  pH:3.6, pQ:2, desc:'どっしりとした安定感でコツコツ掘削する。'},
+  Tb:{name:'テルビウム',     type:'mine',   mH:1.5, mQ:19, rH:2.9, rQ:6,  pH:3.7, pQ:2, desc:'活動的で、スピーディーな資源回収をお約束！'},
+  Dy:{name:'ジスプロシウム', type:'prod',   mH:2.0, mQ:14, rH:2.4, rQ:8,  pH:2.5, pQ:3, desc:'ハイテク製品の製造に不可欠な高性能ワーカー。'},
+  Ho:{name:'ホルミウム',     type:'refine', mH:2.5, mQ:11, rH:2.0, rQ:8,  pH:3.6, pQ:2, desc:'音楽や美を愛し、丁寧な精製で高い成果を上げる。'},
+  Er:{name:'エルビウム',     type:'refine', mH:2.3, mQ:13, rH:1.7, rQ:10, pH:3.4, pQ:2, desc:'【重要】前半7名に必ず登場！最高峰の精製スペシャリスト。'},
+  Tm:{name:'ツリウム',       type:'mine',   mH:1.7, mQ:16, rH:2.7, rQ:7,  pH:3.8, pQ:2, desc:'真面目にコツコツと掘削作業をこなす頑張り屋。'},
+  Yb:{name:'イッテルビウム', type:'refine', mH:2.4, mQ:12, rH:2.2, rQ:8,  pH:3.5, pQ:2, desc:'落ち着いた雰囲気で確実に精製をこなす。'},
+  Lu:{name:'ルテチウム',     type:'prod',   mH:2.1, mQ:13, rH:2.5, rQ:7,  pH:2.7, pQ:3, desc:'最後を飾るシャープな切れ味で製品製造をサポート。'}
+};
 
+function charaCount(lv){ return Math.min(17, lv<3?1:lv<5?2:lv<8?3:4+Math.floor((lv-8)/3)); }
+function nextCharaText(){
+  const n=charaCount(gameState.level); if(n>=17) return '🎉 全キャラクターが揃いました！';
+  let lv=gameState.level+1; while(charaCount(lv)<=n) lv++; return `🔒 次のキャラクターは Lv.${lv} で登場！`;
+}
+
+function syncCrafted(){
+  if(!gameState.crafted) gameState.crafted={}; let ch=false; const p=gameState.products||{};
+  recipes.forEach(r=>{ if(p[r.id]>0&&!gameState.crafted[r.id]){ gameState.crafted[r.id]=true; ch=true; } });
+  if(ch) save();
+}
+
+function ensureCharas(){
+  const ids=Object.keys(CHARAS), want=charaCount(gameState.level||1);
+  if(!Array.isArray(gameState.charaOwned)) gameState.charaOwned=[];
+  
+  // エルビウム(Er)が前半7名（または所持数が7未満の段階）に必ず入るようにする制御
+  if(!gameState.charaOwned.includes('Er') && want >= 1 && gameState.charaOwned.length < 7) {
+    // まだ7人未満の枠でエルビウムが居なければ優先的に追加する確率を高める
+    if(Math.random() < 0.5 || want >= 7) {
+      gameState.charaOwned.push('Er');
+    }
+  }
+
+  let added=0;
+  while(gameState.charaOwned.length<want){
+    const rest=ids.filter(i=>!gameState.charaOwned.includes(i)); if(!rest.length) break;
+    // まだEr未所持ならrestからErを選びやすくする
+    let id;
+    if(!gameState.charaOwned.includes('Er') && rest.includes('Er') && gameState.charaOwned.length < 7) {
+      id = 'Er';
+    } else {
+      id = rest[Math.floor(Math.random()*rest.length)];
+    }
+    gameState.charaOwned.push(id);
+    gameState.placedItems.push({type:'chara',id,dir:0,s:1,x:25+Math.random()*50,y:90}); added++;
+  }
+  if(added){ save(); setTimeout(()=>toast('🎉 新しい仲間がお部屋に来たよ！'),600); }
+
+  // Lv.6到達時の挨拶＆チュートリアルチェック
+  if(gameState.level >= 6 && !gameState.tutorialShown6) {
+    gameState.tutorialShown6 = true;
+    save();
+    setTimeout(() => {
+      askModal('🏠 イットリウム＆初期メンバーからの声かけ！',
+        `「プレイヤーさん、Lv.6おめでとう！私たち、お部屋や庭に配置して話しかけてくれたら、いつでも<b>『掘削』『精製』『製品製造』</b>のお手伝いをするよ！<br><br>` +
+        `お仕事をお願いすると、決まった時間働いてたくさんの資源や製品を持ち帰ってくれるんだ（たまに<b>大生産フィーバー</b>ですごい量が取れることも…!?）。さっそくお部屋のキャラをタップして仕事を頼んでみてね！」`,
+        'わかった！', null, '');
+    }, 1000);
+  }
+}
+
+/* ═════════ お仕事依頼モーダル ═════════ */
+function openCharaTaskModal(id){
+  const c = CHARAS[id];
+  const task = gameState.charaTasks[id];
+  const now = Date.now();
+
+  if(task && task.endTime > now){
+    // 労働中の場合
+    const leftMin = Math.ceil((task.endTime - now)/60000);
+    askModal(`⏳ ${c.name}はお仕事中です`,
+      `<div style="text-align:center"><p>${c.desc}</p>` +
+      `<p style="color:#00fff5; font-weight:bold">現在のお仕事: ${task.type==='mine'?'⛏️ 掘削':task.type==='refine'?'🧪 精製':'🏭 製品製造'}</p>` +
+      `<p>残り時間: 約 <b>${leftMin}分</b></p></div>`,
+      '閉じる', null, '');
+    return;
+  }
+
+  if(task && task.endTime <= now && !task.claimed){
+    // 報酬受取可能状態
+    claimTaskReward(id);
+    return;
+  }
+
+  // 新規お仕事選択モーダル
+  const canProd = gameState.level >= 12;
+  const html = `
+    <div style="font-size:0.8rem">
+      <p style="margin:0 0 6px">${c.desc}</p>
+      <div style="background:rgba(0,0,0,0.3); padding:8px; border-radius:6px; margin-bottom:8px">
+        <b>【得意分野】</b> ${c.type==='mine'?'⛏️ 掘削特化':c.type==='refine'?'🧪 精製特化':'🏭 製造バランス型'}<br>
+        • 掘削: ${c.mH}時間で <b>${c.mQ}個</b> の泥収集<br>
+        • 精製: ${c.rH}時間で <b>${c.rQ}個</b> のレアアース精製<br>
+        • 製造(Lv.12~): ${c.pH}時間で <b>${c.pQ}個</b> の製品制作 ${canProd?'':'<span style="color:#f87171">(🔒Lv12未開放)</span>'}
+      </div>
+      <p style="text-align:center; font-weight:bold; color:#ffde59; margin:4px 0">どのお仕事をお願いする？（10%で大生産フィーバー！）</p>
+      <div style="display:flex; gap:4px; flex-direction:column">
+        <button class="btn" style="background:#3b82f6" onclick="startCharaTask('${id}','mine')">⛏️ 掘削を頼む (${c.mH}時間 / ${c.mQ}個)</button>
+        <button class="btn" style="background:#10b981" onclick="startCharaTask('${id}','refine')">🧪 精製を頼む (${c.rH}時間 / ${c.rQ}個)</button>
+        <button class="btn" style="background:${canProd?'#eab308':'#475569'}" ${canProd?'':'disabled'} onclick="startCharaTask('${id}','prod')">🏭 製品製造を頼む (${c.pH}時間 / ${c.pQ}個)</button>
+      </div>
+    </div>
+  `;
+  askModal(`🧑 ${c.name}にお仕事をお願いする`, html, 'やめる', null, '');
+  // キャンセルボタン等を非表示にして独自ボタンにするため modal row を書き換え
+  document.querySelector('#modal .row').innerHTML = `<button class="btn" style="background:#94a3b8;color:#fff;width:100%" onclick="closeModal()">閉じる</button>`;
+}
+
+function startCharaTask(id, type){
+  const c = CHARAS[id];
+  let hours = type==='mine'? c.mH : type==='refine'? c.rH : c.pH;
+  // テストや快適なプレイのため、テスト用に時間を短縮したい場合はここを調整可能（現在リアルタイム設定）
+  const durationMs = hours * 3600 * 1000; 
+
+  gameState.charaTasks[id] = {
+    type: type,
+    startTime: Date.now(),
+    endTime: Date.now() + durationMs,
+    claimed: false,
+    hours: hours
+  };
+  save();
+  closeModal();
+  toast(`✨ ${c.name}が ${type==='mine'?'掘削':type==='refine'?'精製':'製品製造'} に出発しました！`);
+  updateUI();
+}
+
+function checkTaskCompletions(){
+  const now = Date.now();
+  let updated = false;
+  for(let id in gameState.charaTasks){
+    const task = gameState.charaTasks[id];
+    if(task && task.endTime <= now && !task.claimed){
+      // 自動受取または通知可能
+    }
+  }
+}
+
+function claimTaskReward(id){
+  const c = CHARAS[id];
+  const task = gameState.charaTasks[id];
+  if(!task) return;
+
+  // 10%の確率で大生産フィーバー (1.5倍〜2倍)
+  const isFever = Math.random() < 0.10;
+  const mult = isFever ? (1.5 + Math.random()*0.5) : 1.0;
+
+  let baseQ = task.type==='mine'? c.mQ : task.type==='refine'? c.rQ : c.pQ;
+  let finalQ = Math.round(baseQ * mult);
+
+  if(task.type === 'mine'){
+    gameState.mudStock = (gameState.mudStock || 0) + finalQ;
+  } else if(task.type === 'refine'){
+    // レアアース元素ストックへ加算（簡易的にmoneyかランダム元素、今回はmoneyまたは共通レアアース加算として泥から精製品に）
+    gameState.money = (gameState.money || 0) + finalQ * 250; 
+  } else {
+    // 製品製造
+    const rId = recipes[Math.floor(Math.random()*recipes.length)].id;
+    gameState.products[rId] = (gameState.products[rId] || 0) + finalQ;
+  }
+
+  delete gameState.charaTasks[id];
+  save();
+  closeModal();
+
+  if(isFever){
+    askModal(`🔥 大成功！大生産フィーバー発生！！`,
+      `<div style="text-align:center"><p style="font-size:2rem">🎉✨</p>` +
+      `<p><b>${c.name}</b> の作業が大フィーバー！通常より大量の成果物を持ち帰りました！</p>` +
+      `<p style="color:#ffde59; font-size:1.1rem; font-weight:bold">+ ${finalQ} 獲得！</p></div>`,
+      'やったね！', null, '');
+  } else {
+    toast(`🎉 ${c.name}がお仕事を完了して帰ってきました！(+${finalQ})`);
+  }
+  updateUI();
+}
+
+
+/* renderRoom内でのキャラオブジェクト描画拡張 */
 function renderRoom(){
   const box=$('objs'); box.innerHTML='';
   gameState.placedItems.forEach((it,idx)=>{
     if(it.dir!==dir) return;
-    let name,src,emoji,size;
+    let name,src,emoji,size,isChara=false, charaId='';
     if(it.type==='furn'){ const f=furnitureMaster[it.id]; if(!f) return; name=f.name; src=f.img; emoji=f.emoji; size=f.size; }
-    else if(it.type==='chara'){ const c=CHARAS[it.id]; if(!c) return; name=c.name; src=CHARA_PREFIX+it.id+'.png'; emoji='🧪'; size=CHARA_SIZE; }
-    else { const r=recipes.find(r=>r.id===it.id)||{}; name=r.name||'製品'; src=r.img; emoji=r.emoji; size=PROD_SIZE; }
+    else if(it.type==='chara'){
+      const c=CHARAS[it.id]; if(!c) return; name=c.name; src=CHARA_PREFIX+it.id+'.png'; emoji='🧪'; size=CHARA_SIZE; isChara=true; charaId=it.id;
+    } else { const r=recipes.find(r=>r.id===it.id)||{}; name=r.name||'製品'; src=r.img; emoji=r.emoji; size=PROD_SIZE; }
     it.s=it.s||1;
     const el=document.createElement('div'); el.className='obj';
     el.style.cssText=`left:${it.x}%;top:${it.y}%;width:${size*it.s}%`;
     const im=document.createElement('img'); im.src=IMG_DIR+src; im.alt=name;
-    im.onerror=()=>{ im.remove(); el.innerHTML=`<div class="ph">${emoji||'📦'}<small>${name}</small></div>`; console.warn('画像が見つかりません:',IMG_DIR+src); };
-    el.appendChild(im); drag(el,it,idx,name,size); box.appendChild(el);
+    im.onerror=()=>{ im.remove(); el.innerHTML=`<div class="ph">${emoji||'📦'}<small>${name}</small></div>`; };
+    el.appendChild(im);
+
+    // キャラクターの場合、作業状態や完了アイコンをバッジ表示
+    if(isChara){
+      const task = gameState.charaTasks[charaId];
+      const now = Date.now();
+      let badgeText = '💬 お仕事';
+      let badgeBg = '#3b82f6';
+      if(task){
+        if(task.endTime <= now){ badgeText = '✨ 完了！'; badgeBg = '#f59e0b'; }
+        else { badgeText = '⏳ 作業中'; badgeBg = '#64748b'; }
+      }
+      const badge = document.createElement('div');
+      badge.className = 'chara-badge';
+      badge.style.background = badgeBg;
+      badge.innerText = badgeText;
+      el.appendChild(badge);
+    }
+
+    drag(el,it,idx,name,size,isChara,charaId); box.appendChild(el);
   });
 }
-/* ドラッグで移動 / 2本指ピンチ（PCはマウスホイール）で拡大縮小 / 動かさずタップで片付け */
-function drag(el,it,idx,name,size){
+
+function drag(el,it,idx,name,size,isChara,charaId){
   const P=new Map(); let moved=false,tot=0,pre='',d0=1,s0=1,wp='',wt;
   const dist=()=>{ const a=[...P.values()]; return Math.max(1,Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y)); };
   const setW=()=>{ el.style.width=size*it.s+'%'; };
@@ -391,7 +581,12 @@ function drag(el,it,idx,name,size){
   const up=e=>{
     if(!P.delete(e.pointerId)||P.size>0) return;
     if(moved){ if(cur()!==pre){ hist(pre); save(); } return; }
-    askModal('レイアウト変更',`「${name}」をお部屋から片付けますか？`,'片付ける',()=>{ hist(); gameState.placedItems.splice(idx,1); save(); updateUI(); toast('📦 片付けました'); });
+    // タップされた場合：キャラクターなら仕事モーダル、家具等なら片付け確認
+    if(isChara){
+      openCharaTaskModal(charaId);
+    } else {
+      askModal('レイアウト変更',`「${name}」をお部屋から片付けますか？`,'片付ける',()=>{ hist(); gameState.placedItems.splice(idx,1); save(); updateUI(); toast('📦 片付けました'); });
+    }
   };
   el.addEventListener('pointerup',up); el.addEventListener('pointercancel',up);
   el.addEventListener('wheel',e=>{ e.preventDefault(); if(!wp) wp=cur();
@@ -445,7 +640,6 @@ function renderMusic(){
 }
 function setBgm(k){ gameState.currentBgm=k; save(); updateBgmSource(); if(!isMuted) bgm.play().catch(()=>{}); updateUI(); toast(`🎶 「${bgmMaster[k].name}」に変更`); }
 
-/* ═════════ セーブコード ═════════ */
 function exportSave(){
   try{ const enc=btoa(unescape(encodeURIComponent(localStorage.getItem('rareEarthGameState')||JSON.stringify(gameState))));
     const ta=$('saveCode'); ta.value=enc; ta.select();
@@ -462,7 +656,6 @@ function importSave(){
     }catch(e){ toast('⚠️ 無効なセーブコードです'); } });
 }
 
-/* ═════════ やり直し(undo/redo)・リセット ═════════ */
 let past=[], future=[];
 const cur=()=>JSON.stringify(gameState.placedItems);
 function hist(s){ past.push(s||cur()); if(past.length>50) past.shift(); future=[]; histBtns(); }
@@ -472,39 +665,6 @@ function undo(){ if(!past.length) return; future.push(cur()); restore(past.pop()
 function redo(){ if(!future.length) return; past.push(cur()); restore(future.pop()); }
 function resetRoom(){
   askModal('お部屋のリセット','本当にリセットしてよいですか？\n置いた家具・製品・キャラをすべて片付けます。','はい',()=>{ hist(); gameState.placedItems=[]; save(); updateUI(); toast('🧹 リセットしました'); },'いいえ');
-}
-
-/* ═════════════════════════════════════════════════════════════
-   ★ キャラクター（17種）★  画像名 ＝ CHARA_PREFIX + キー + '.png'  例: chara0_Y.png
-   ファイル名の付け方が違うときは CHARA_PREFIX と下のキーを書き換えてください
-   CHARA_SIZE : お部屋に置いたときの最初の大きさ(横幅の%)
-   ═════════════════════════════════════════════════════════════ */
-const CHARA_PREFIX='chara0_', CHARA_SIZE=20;
-const CHARAS={ Sc:{name:'スカンジウム'}, Y:{name:'イットリウム'}, La:{name:'ランタン'}, Ce:{name:'セリウム'}, Pr:{name:'プラセオジム'}, Nd:{name:'ネオジム'},
-  Pm:{name:'プロメチウム'}, Sm:{name:'サマリウム'}, Eu:{name:'ユウロピウム'}, Gd:{name:'ガドリニウム'}, Tb:{name:'テルビウム'}, Dy:{name:'ジスプロシウム'},
-  Ho:{name:'ホルミウム'}, Er:{name:'エルビウム'}, Tm:{name:'ツリウム'}, Yb:{name:'イッテルビウム'}, Lu:{name:'ルテチウム'} };
-/* 登場数：Lv1-2=1体 / Lv3=2 / Lv5=3 / Lv8=4 / 以降Lv3ごとに+1（最大17） */
-function charaCount(lv){ return Math.min(17, lv<3?1:lv<5?2:lv<8?3:4+Math.floor((lv-8)/3)); }
-function nextCharaText(){
-  const n=charaCount(gameState.level); if(n>=17) return '🎉 全キャラクターが揃いました！';
-  let lv=gameState.level+1; while(charaCount(lv)<=n) lv++; return `🔒 次のキャラクターは Lv.${lv} で登場！`;
-}
-/* 工場で作ったことのある製品を記録（在庫が0になっても「配置」に残る） */
-function syncCrafted(){
-  if(!gameState.crafted) gameState.crafted={}; let ch=false; const p=gameState.products||{};
-  recipes.forEach(r=>{ if(p[r.id]>0&&!gameState.crafted[r.id]){ gameState.crafted[r.id]=true; ch=true; } });
-  if(ch) save();
-}
-function ensureCharas(){
-  const ids=Object.keys(CHARAS), want=charaCount(gameState.level||1);
-  if(!Array.isArray(gameState.charaOwned)) gameState.charaOwned=[];
-  let added=0;
-  while(gameState.charaOwned.length<want){
-    const rest=ids.filter(i=>!gameState.charaOwned.includes(i)); if(!rest.length) break;
-    const id=rest[Math.floor(Math.random()*rest.length)]; gameState.charaOwned.push(id);
-    gameState.placedItems.push({type:'chara',id,dir:0,s:1,x:25+Math.random()*50,y:90}); added++;
-  }
-  if(added){ save(); setTimeout(()=>toast('🎉 新しい仲間がお部屋に来たよ！'),600); }
 }
 
 window.addEventListener('load',()=>{
