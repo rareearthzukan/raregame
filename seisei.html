@@ -91,7 +91,7 @@
       display: flex; flex-direction: column; align-items: center; gap: .3rem; position: relative;
       box-shadow: inset 0 2px 6px rgba(0,0,0,0.1);
     }
-    .chara-img-wrap { position: relative; width: 100%; aspect-ratio: 4 / 3; max-height: 36vh; }
+    .chara-img-wrap { position: relative; width: 100%; aspect-ratio: 4 / 3; max-height: 36vh; flex-shrink: 0; }
     .chara-avatar-img {
       display: block; width: 100%; height: 100%; object-fit: contain; cursor: zoom-in;
       filter: drop-shadow(0 3px 5px rgba(0,0,0,0.15));
@@ -106,14 +106,18 @@
 
     .pop-anim { animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
     @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+    
+    /* 位置ブレ防止のための固定高・レイアウト調整 */
     .chara-name-tag {
-      font-size: .85rem; font-weight: bold; color: #0f3460; width: 100%; line-height: 1.35;
-      min-height: 2.7em; display: flex; align-items: center; justify-content: center;
+      font-size: .85rem; font-weight: bold; color: #0f3460; width: 100%;
+      height: 2.4em; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
     .speech-bubble {
       background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: .6rem; padding: .35rem .5rem; font-size: .78rem;
-      color: #1e293b; width: 100%; line-height: 1.4; font-weight: bold; min-height: 2.9em;
-      display: flex; align-items: center; justify-content: center;
+      color: #1e293b; width: 100%; height: 3.2em; font-weight: bold; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center; text-align: center;
+      overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
     }
 
     /* ボタン群 */
@@ -270,12 +274,14 @@
   <audio id="se-gogogo" src="gogogo.mp3" preload="auto"></audio>
   <audio id="se-type" src="SE_gacha.mp3" preload="auto"></audio>
   <audio id="se-seikai" src="mini_seikai.mp3" preload="auto"></audio>
+  <audio id="se-baikyaku" src="SE_baikyaku.mp3" preload="auto"></audio>
+  <audio id="se-hakusyu" src="SE_hakusyu.mp3" preload="auto"></audio>
 
   <div class="phone">
     <!-- ヘッダー -->
     <div class="header">
       <span>💰 <span id="money">1,500</span> G</span>
-      <span>🌟 Lv.<span id="level">1</span></span>
+      <span>🌟 Lv.<span id="level">1</span> (EXP: <span id="exp">0</span>)</span>
       <span>📦 掘削物: <span id="mud">5</span>個</span>
       <button id="bgm-btn" class="bgm-btn" onclick="toggleBGM()">🎵 ON</button>
     </div>
@@ -322,10 +328,10 @@
               <button type="button" class="zoom-btn" onclick="openViewer()" aria-label="画像を拡大表示">🔍</button>
             </div>
             <div class="chara-name-tag" id="chara-name">🏭 プラント待機中</div>
-            <div class="speech-bubble" id="chara-speech">精製ボタンを押すと、元素が抽出されます！</div>
+            <div class="speech-bubble" id="chara-speech">精製ボタンを押すと、元素が抽出されます</div>
           </div>
 
-          <button class="btn" onclick="refineElement()">✨ 精製する (コスト: 50G / 掘削物1個)</button>
+          <button class="btn" onclick="refineElement()"><span id="refineBtnText">✨ 精製する (コスト: 50G / 掘削物1個)</span></button>
         </div>
 
         <div class="card card-inv">
@@ -336,7 +342,7 @@
         <div class="tb-guide-card">
           <img src="navtb.png" alt="テルビウム" class="tb-avatar-circle" onerror="this.src='chara0_Tb.png'">
           <div class="tb-speech-bubble">
-            掘削物を精製して<span class="highlight-material">レアアースの素材</span>を作ったら、次はそれらを材料に<span class="highlight-product">工業製品</span>をつくってみよう！
+            掘削物を精製して<span class="highlight-material">レアアースの素材</span>を作ったら、次はそれらを材料に<span class="highlight-product">工業製品</span>をつくってみよう
           </div>
         </div>
 
@@ -354,7 +360,7 @@
         </div>
 
         <div id="messageBanner" class="message-banner">
-          各エリアのドアを開けて安全を確認しよう！
+          各エリアのドアを開けて安全を確認しよう
         </div>
 
         <div class="game-area" id="gameArea"></div>
@@ -400,9 +406,12 @@
     let gameState = savedData || {
       money: 1500,
       level: 1,
+      exp: 0,
       mudStock: 5,
       elements: {}
     };
+
+    if (gameState.exp === undefined) gameState.exp = 0;
 
     const bgm = document.getElementById('bgm');
     const bgmHinan = document.getElementById('bgm-hinan');
@@ -470,23 +479,23 @@
     });
 
     const elementsMaster = {
-      'Y':  { name: 'イットリウム', symbol: 'Y', img: 'chara0_Y.png', speech: '「赤色ディスプレイやセラミックで大活躍！」', type: 'heavy', atomicNumber: 39 },
-      'La': { name: 'ランタン', symbol: 'La', img: 'chara0_La.png', speech: '「カメラのレンズをピカピカにするよ！」', type: 'light', atomicNumber: 57 },
-      'Ce': { name: 'セリウム', symbol: 'Ce', img: 'chara0_Ce.png', speech: '「車の排ガスをキレイにするお仕事はお任せ！」', type: 'light', atomicNumber: 58 },
-      'Pr': { name: 'プラセオジム', symbol: 'Pr', img: 'chara0_Pr.png', speech: '「ヘッドホンで音楽を聴きながらマイペースに行くさ〜」', type: 'light', atomicNumber: 59 },
-      'Nd': { name: 'ネオジム', symbol: 'Nd', img: 'chara0_Nd.png', speech: '「ボクの強力な磁力、いろんな製品に役立ててよね！」', type: 'light', atomicNumber: 60 },
-      'Pm': { name: 'プロメチウム', symbol: 'Pm', img: 'chara0_Pm.png', speech: '「…ボクの貴重なエネルギー、大切に扱してね。」', type: 'heavy', atomicNumber: 61 },
-      'Sm': { name: 'サマリウム', symbol: 'Sm', img: 'chara0_Sm.png', speech: '「高温の熱さにも負けない磁石のガードを見せるよ！」', type: 'light', atomicNumber: 62 },
-      'Eu': { name: 'ユウロピウム', symbol: 'Eu', img: 'chara0_Eu.png', speech: '「真っ赤な蛍光体として鮮やかに照らし出すよ！」', type: 'heavy', atomicNumber: 63 },
-      'Gd': { name: 'ガドリニウム', symbol: 'Gd', img: 'chara0_Gd.png', speech: '「医療用MRIの造影剤や精密検査はお任せあれ。」', type: 'heavy', atomicNumber: 64 },
-      'Tb': { name: 'テルビウム', symbol: 'Tb', img: 'chara0_Tb.png', speech: '「鮮やかな緑の光を放つディスプレイの要さ！」', type: 'heavy', atomicNumber: 65 },
-      'Dy': { name: 'ジスプロシウム', symbol: 'Dy', img: 'chara0_Dy.png', speech: '「ハイブリッドカーのモーターを支えるタフなやつさ。」', type: 'heavy', atomicNumber: 66 },
-      'Ho': { name: 'ホルミウム', symbol: 'Ho', img: 'chara0_Ho.png', speech: '「正確無比な医療用レーザーをしっかりサポート！」', type: 'heavy', atomicNumber: 67 },
-      'Er': { name: 'エルビウム', symbol: 'Er', img: 'chara0_Er.png', speech: '「光ファイバーアンプで通信を遠くまで届けるわ！」', type: 'heavy', atomicNumber: 68 },
-      'Tm': { name: 'ツリウム', symbol: 'Tm', img: 'chara0_Tm.png', speech: '「持ち運べるポータブルX線源として活躍するよ。」', type: 'heavy', atomicNumber: 69 },
-      'Yb': { name: 'イッテルビウム', symbol: 'Yb', img: 'chara0_Yb.png', speech: '「超正確な原子時計で時を刻む最新科学の要さ！」', type: 'heavy', atomicNumber: 70 },
-      'Lu': { name: 'ルテチウム', symbol: 'Lu', img: 'chara0_Lu.png', speech: '「がん診断のPETスキャンで輝く最も重いレアアースよ。」', type: 'heavy', atomicNumber: 71 },
-      'Sc': { name: 'スカンジウム', symbol: 'Sc', img: 'chara0_Sc.png', speech: '「軽くて強い！航空宇宙や合金の未来を切り拓くよ！」', type: 'light', atomicNumber: 21 }
+      'Y':  { name: 'イットリウム', symbol: 'Y', img: 'chara0_Y.png', speech: '赤色ディスプレイやセラミックで大活躍しています', type: 'heavy', atomicNumber: 39 },
+      'La': { name: 'ランタン', symbol: 'La', img: 'chara0_La.png', speech: 'カメラのレンズをピカピカにするよ', type: 'light', atomicNumber: 57 },
+      'Ce': { name: 'セリウム', symbol: 'Ce', img: 'chara0_Ce.png', speech: '車の排ガスをキレイにするお仕事はお任せください', type: 'light', atomicNumber: 58 },
+      'Pr': { name: 'プラセオジム', symbol: 'Pr', img: 'chara0_Pr.png', speech: 'ヘッドホンで音楽を聴きながらマイペースに行きます', type: 'light', atomicNumber: 59 },
+      'Nd': { name: 'ネオジム', symbol: 'Nd', img: 'chara0_Nd.png', speech: 'この強力な磁力を、いろんな製品に役立ててね', type: 'light', atomicNumber: 60 },
+      'Pm': { name: 'プロメチウム', symbol: 'Pm', img: 'chara0_Pm.png', speech: '貴重なエネルギー、大切に扱ってください', type: 'heavy', atomicNumber: 61 },
+      'Sm': { name: 'サマリウム', symbol: 'Sm', img: 'chara0_Sm.png', speech: '高温の熱さにも負けない磁石のガードを見せるよ', type: 'light', atomicNumber: 62 },
+      'Eu': { name: 'ユウロピウム', symbol: 'Eu', img: 'chara0_Eu.png', speech: '真っ赤な蛍光体として鮮やかに照らし出します', type: 'heavy', atomicNumber: 63 },
+      'Gd': { name: 'ガドリニウム', symbol: 'Gd', img: 'chara0_Gd.png', speech: '医療用MRIの造影剤や精密検査はお任せあれ', type: 'heavy', atomicNumber: 64 },
+      'Tb': { name: 'テルビウム', symbol: 'Tb', img: 'chara0_Tb.png', speech: '鮮やかな緑の光を放つディスプレイの要さ', type: 'heavy', atomicNumber: 65 },
+      'Dy': { name: 'ジスプロシウム', symbol: 'Dy', img: 'chara0_Dy.png', speech: 'ハイブリッドカーのモーターを支えるタフなやつさ', type: 'heavy', atomicNumber: 66 },
+      'Ho': { name: 'ホルミウム', symbol: 'Ho', img: 'chara0_Ho.png', speech: '正確無比な医療用レーザーをしっかりサポートします', type: 'heavy', atomicNumber: 67 },
+      'Er': { name: 'エルビウム', symbol: 'Er', img: 'chara0_Er.png', speech: '光ファイバーアンプで通信を遠くまで届けます', type: 'heavy', atomicNumber: 68 },
+      'Tm': { name: 'ツリウム', symbol: 'Tm', img: 'chara0_Tm.png', speech: '持ち運べるポータブルX線源として活躍するよ', type: 'heavy', atomicNumber: 69 },
+      'Yb': { name: 'イッテルビウム', symbol: 'Yb', img: 'chara0_Yb.png', speech: '超正確な原子時計で時を刻む最新科学の要です', type: 'heavy', atomicNumber: 70 },
+      'Lu': { name: 'ルテチウム', symbol: 'Lu', img: 'chara0_Lu.png', speech: 'がん診断のPETスキャンで輝く最も重いレアアースよ', type: 'heavy', atomicNumber: 71 },
+      'Sc': { name: 'スカンジウム', symbol: 'Sc', img: 'chara0_Sc.png', speech: '軽くて強い、航空宇宙や合金の未来を切り拓くよ', type: 'light', atomicNumber: 21 }
     };
 
     const periodicTableAll = [
@@ -504,7 +513,17 @@
     function updateUI() {
       document.getElementById('money').innerText = gameState.money.toLocaleString();
       document.getElementById('level').innerText = gameState.level;
+      document.getElementById('exp').innerText = (gameState.exp || 0).toLocaleString();
       document.getElementById('mud').innerText = gameState.mudStock;
+
+      // 現在のレベルに応じた倍率を取得し、コストと獲得数を動的に反映
+      const mults = getLevelMultipliers(gameState.level || 1);
+      const btnTextEl = document.getElementById('refineBtnText');
+      if (btnTextEl) {
+        const costMoney = 50 * mults.itemMult;
+        const costMud = 1 * mults.itemMult;
+        btnTextEl.innerText = `✨ 精製する (コスト: ${costMoney}G / 掘削物${costMud}個)`;
+      }
 
       const invBox = document.getElementById('inventory-box');
       invBox.innerHTML = '';
@@ -520,7 +539,7 @@
         }
       }
       if (!hasItem) {
-        invBox.innerHTML = '<div style="grid-column: span 2; text-align: center; color: #8a8a8a; padding: 0.375rem 0;">まだ元素がありません。精製しよう！</div>';
+        invBox.innerHTML = '<div style="grid-column: span 2; text-align: center; color: #8a8a8a; padding: 0.375rem 0;">まだ元素がありません。精製しよう</div>';
       }
     }
 
@@ -537,16 +556,198 @@
       return pool[Math.floor(Math.random() * pool.length)];
     }
 
+    // レベルに応じた生産倍率とEXP倍率を計算する関数
+    // 実際に適用される倍率：支払い済み(実施済み)の節目のうち、
+    // 現在レベル以下のものの最大値を採用する（見送った節目の倍率は適用されない）
+    function getLevelMultipliers(lvl) {
+      const paid = gameState.paidMilestones || {};
+      let itemMult = 1;
+      let expMult = 1;
+      Object.keys(paid).forEach(k => {
+        const m = Number(k);
+        if (!paid[k] || m > lvl) return;
+        const r = getMilestoneMultipliers(m);
+        itemMult = Math.max(itemMult, r.itemMult);
+        expMult = Math.max(expMult, r.expMult);
+      });
+      return { itemMult, expMult };
+    }
+
+    // 節目レベルそのものの倍率テーブル（提案文の表示と、実施後の効果に使用）
+    function getMilestoneMultipliers(lvl) {
+      let itemMult = 1;
+      let expMult = 1;
+      const rem = lvl % 10;
+      if (lvl >= 10) {
+        if (rem === 0) {
+          // 下一桁0：アップグレード（元素数量が大幅アップ）
+          if (lvl === 10) itemMult = 2;
+          else if (lvl === 20) itemMult = 5;
+          else if (lvl === 30) itemMult = 10;
+          else if (lvl === 40) itemMult = 20;
+          else if (lvl === 50) itemMult = 40;
+          else itemMult = 40 + (lvl - 50) * 5;
+        } else if (rem === 5) {
+          // 下一桁5：メンテナンス（EXP獲得効率が大幅アップ）
+          if (lvl === 15) expMult = 3;
+          else if (lvl === 25) expMult = 7;
+          else if (lvl === 35) expMult = 12;
+          else if (lvl === 45) expMult = 20;
+          else expMult = 20 + (lvl - 45) * 5;
+          itemMult = Math.floor(lvl / 3);
+        }
+      }
+      return { itemMult, expMult };
+    }
+
+    // ═══ 設備投資（関門型）═══
+    // レベルが節目(10, 15, 20…)に達したら、その設備投資を実施するまで精製できない。
+    // 未実施の節目が複数ある場合は、低い順に1件ずつ提案する。
+    // 払えないときは、リサイクル工場で資金を稼ぐよう案内する。
+
+    // 節目1回あたりの費用
+    function getMilestoneCost(l) {
+      let c = l * 2500;
+      if (l % 10 === 0) c *= 1.5;
+      return Math.floor(c);
+    }
+
+    // 現在レベル以下で、まだ実施していない最も低い節目（なければ null）
+    function getNextUnpaidMilestone(lvl) {
+      const paid = gameState.paidMilestones || {};
+      for (let l = 10; l <= lvl; l += 5) {
+        if (!paid[l]) return l;
+      }
+      return null;
+    }
+
+    // 精製前のチェック：未実施の設備投資があれば提案を出して true を返す（精製は止まる）
+    function checkMilestoneEvent(lvl) {
+      const next = getNextUnpaidMilestone(lvl);
+      if (next === null) return false;
+      showMilestoneModal(next);
+      return true;
+    }
+
+    function showMilestoneModal(ms) {
+      const isUpgrade = (ms % 10 === 0);
+      const title = isUpgrade ? `施設レベル ${ms} アップグレード` : `施設レベル ${ms} 定期メンテナンス`;
+      const costG = getMilestoneCost(ms);
+      const mult = getMilestoneMultipliers(ms);
+      const canPay = gameState.money >= costG;
+
+      const effectText = isUpgrade
+        ? `プラントの大型アップグレードを行うことで、精製される元素の数量が【${mult.itemMult}倍】に増加します。`
+        : `オーバーホールを実施することで、獲得EXP効率が【${mult.expMult}倍】に向上します。`;
+      const intro = isUpgrade
+        ? `レベル${ms}に到達しましたね。`
+        : `レベル${ms}に伴う定期点検の時間です。`;
+      const needText = `この設備を整えるまで、精製を続けることはできません。`;
+      const costText = canPay
+        ? `費用として ${costG.toLocaleString()} G が必要です。実施しますか？`
+        : `費用として ${costG.toLocaleString()} G が必要ですが、資金が足りないようです。リサイクル工場で資金を稼いできてください。`;
+
+      const desc = `施設担当のイッテルビウムです。\n${intro}\n${effectText}\n${needText}\n${costText}`;
+
+      const buttons = canPay
+        ? `<button class="btn" style="margin-top:0; background:#333; color:#aaa;" onclick="closeMinigameModal()">あとで</button>
+           <button class="btn" style="margin-top:0; background:#00fff5; color:#0f3460;" onclick="executeMilestone(${ms})">🛠️ 実施する</button>`
+        : `<button class="btn" style="margin-top:0; background:#333; color:#aaa;" onclick="closeMinigameModal()">閉じる</button>
+           <button class="btn" style="margin-top:0; background:#00fff5; color:#0f3460;" onclick="goToRecycle()">♻️ 工場へ行く</button>`;
+
+      const modal = document.getElementById('minigameModal');
+      const content = document.getElementById('modal-content-inner');
+
+      content.innerHTML = `
+        <div style="font-size: 0.95rem; font-weight: bold; color: #ffde59; margin-bottom: 0.4rem;">⚙️ ${title}</div>
+
+        <div style="background: #ffffff; border: 2px solid #ffde59; border-radius: 0.5rem; padding: 0.4rem; margin-bottom: 0.5rem; text-align: center;">
+          <img src="chara0_Yb.png" style="width: 5rem; height: 5rem; object-fit: contain;" alt="イッテルビウム" onerror="this.src='chara0_Y.png'">
+        </div>
+
+        <div style="font-size: 0.8rem; color: #f1f5f9; background: rgba(15,23,42,0.8); border: 1px solid #00fff5; border-radius: 0.5rem; padding: 0.5rem; margin-bottom: 0.7rem; text-align: left; line-height: 1.4; font-weight: 500; white-space: pre-line;">
+          ${desc}
+        </div>
+
+        <div style="font-size: 0.75rem; color: #dcdde1; margin-bottom: 0.7rem;">
+          所持金: ${gameState.money.toLocaleString()} G / 必要費用: ${costG.toLocaleString()} G
+        </div>
+
+        <div style="display: flex; gap: 0.5rem;">
+          ${buttons}
+        </div>
+      `;
+      modal.style.display = 'flex';
+    }
+
+    function executeMilestone(ms) {
+      const costG = getMilestoneCost(ms);
+      if (gameState.money < costG) {
+        // 画面を開いたあとに資金が変わった場合の保険：提案を出し直す
+        showMilestoneModal(ms);
+        return;
+      }
+
+      // 費用支払い音 (SE_baikyaku.mp3)
+      const seBaikyaku = document.getElementById('se-baikyaku');
+      if (seBaikyaku) { seBaikyaku.currentTime = 0; seBaikyaku.play().catch(e => {}); }
+
+      gameState.money -= costG;
+      if (!gameState.paidMilestones) gameState.paidMilestones = {};
+      gameState.paidMilestones[ms] = true;
+
+      // 完了音 (SE_hakusyu.mp3)
+      setTimeout(() => {
+        const seHakusyu = document.getElementById('se-hakusyu');
+        if (seHakusyu) { seHakusyu.currentTime = 0; seHakusyu.play().catch(e => {}); }
+      }, 300);
+
+      const modal = document.getElementById('minigameModal');
+      const content = document.getElementById('modal-content-inner');
+      const isUpgrade = (ms % 10 === 0);
+      const mult = getMilestoneMultipliers(ms);
+      const hasNext = getNextUnpaidMilestone(gameState.level || 1) !== null;
+
+      content.innerHTML = `
+        <div style="font-size: 1.1rem; font-weight: bold; color: #ffde59; margin-bottom: 0.4rem;">✨ 処理が完了しました</div>
+        <div style="font-size: 0.82rem; color: #f1f5f9; margin-bottom: 0.8rem; line-height: 1.4;">
+          施設担当のイッテルビウムです。<br>
+          ${isUpgrade ? `アップグレードにより精製効率が ${mult.itemMult}倍 になりました` : `メンテナンスにより獲得EXP効率が ${mult.expMult}倍 に向上しました`}
+          ${hasNext ? '<br>続けて、次の設備のご相談があります。' : ''}
+        </div>
+        <button class="btn" style="margin-top:0; background:#00fff5; color:#0f3460;" onclick="afterMilestone()">${hasNext ? '次へ' : '確認'}</button>
+      `;
+      modal.style.display = 'flex';
+
+      localStorage.setItem('rareEarthGameState', JSON.stringify(gameState));
+      updateUI();
+    }
+
+    // 実施後の「確認／次へ」：未実施の節目が残っていれば続けて提案する
+    function afterMilestone() {
+      closeMinigameModal();
+      const next = getNextUnpaidMilestone(gameState.level || 1);
+      if (next !== null) showMilestoneModal(next);
+    }
+
     function executeNormalRefine(targetKey, multiplier = 1) {
       const picked = elementsMaster[targetKey];
-      gameState.elements[targetKey] += multiplier;
+      
+      // レベルごとの倍率適用
+      const mults = getLevelMultipliers(gameState.level || 1);
+      const finalCount = multiplier * mults.itemMult;
+      const baseExp = 150;
+      const finalExp = Math.floor(baseExp * mults.expMult);
+
+      gameState.elements[targetKey] = (gameState.elements[targetKey] || 0) + finalCount;
+      gameState.exp = (gameState.exp || 0) + finalExp;
 
       const imgEl = document.getElementById('chara-img');
       imgEl.src = picked.img;
       imgEl.alt = picked.name;
       
-      let multText = multiplier > 1 ? ` 【${multiplier}倍ボーナス達成！】` : multiplier === 0 ? ` 【ハズレ…0個】` : '';
-      document.getElementById('chara-name').innerText = `✨ ${picked.name} (${targetKey}) を ${multiplier}個 精製！${multText}`;
+      let multText = finalCount > 1 ? ` 【${finalCount}個獲得 (+${finalExp} EXP)】` : ` 【0個】`;
+      document.getElementById('chara-name').innerText = `✨ ${picked.name} (${targetKey}) を精製${multText}`;
       document.getElementById('chara-speech').innerText = picked.speech;
 
       imgEl.classList.remove('pop-anim');
@@ -561,7 +762,11 @@
       const modal = document.getElementById('minigameModal');
       const content = document.getElementById('modal-content-inner');
 
-      const isMudOnlyShortage = (gameState.mudStock <= 0 && gameState.money >= 50);
+      const mults = getLevelMultipliers(gameState.level || 1);
+      const requiredMoney = 50 * mults.itemMult;
+      const requiredMud = 1 * mults.itemMult;
+
+      const isMudOnlyShortage = (gameState.mudStock < requiredMud && gameState.money >= requiredMoney);
 
       let navImg = "navtb.png";
       let navName = "テルビウム";
@@ -572,17 +777,17 @@
       let actionBtnHTML = "";
 
       if (isMudOnlyShortage) {
-        titleText = "掘削物が足りません！";
-        bubbleText = "掘削物がなくなっちゃったね！資金はまだあるから、MAPに行って掘削物を掘ってこよう！";
+        titleText = "掘削物が足りません";
+        bubbleText = "掘削物が足りなくなっちゃったね。資金はまだあるから、MAPに行って掘削物を掘ってこよう！";
         descText = "マップ（採掘エリア）に戻って新しい掘削物を獲得してください。";
         actionBtnHTML = `<button class="btn" style="margin-top:0; background:#00fff5; color:#0f3460;" onclick="goToMap()">🗺️ MAPに戻る</button>`;
-      } else if (type === 'money' || gameState.money < 50) {
-        titleText = "資金が足りません！";
+      } else if (type === 'money' || gameState.money < requiredMoney) {
+        titleText = "資金が足りません";
         bubbleText = "精製資金が足りなくなっちゃったみたい…！リサイクル工場（都市鉱山）に行って資金を稼いでこよう！";
         descText = "リサイクル工場で不用品を分解・精製して資金を確保してください。";
         actionBtnHTML = `<button class="btn" style="margin-top:0; background:#00fff5; color:#0f3460;" onclick="goToRecycle()">♻️ 工場へ行く</button>`;
       } else {
-        titleText = "掘削物・資金が足りません！";
+        titleText = "掘削物・資金が足りません";
         bubbleText = "掘削物も資金も不足しているよ！まずはリサイクル工場かマップで準備を整えよう！";
         descText = "マップで掘削物を探すか、工場で資金を集めてください。";
         actionBtnHTML = `<button class="btn" style="margin-top:0; background:#00fff5; color:#0f3460;" onclick="goToRecycle()">♻️ 工場へ行く</button>`;
@@ -626,11 +831,20 @@
     }
 
     function refineElement() {
-      if (gameState.mudStock <= 0) {
+      // 設備投資（関門）：節目レベルの設備を実施するまで精製できない
+      if (checkMilestoneEvent(gameState.level || 1)) {
+        return;
+      }
+
+      const mults = getLevelMultipliers(gameState.level || 1);
+      const requiredMoney = 50 * mults.itemMult;
+      const requiredMud = 1 * mults.itemMult;
+
+      if (gameState.mudStock < requiredMud) {
         showShortageModal('mud');
         return;
       }
-      if (gameState.money < 50) {
+      if (gameState.money < requiredMoney) {
         showShortageModal('money');
         return;
       }
@@ -639,30 +853,31 @@
       const se = document.getElementById(soundId);
       if (se) { se.currentTime = 0; se.play().catch(e => {}); }
 
-      gameState.money -= 50;
-      gameState.mudStock--;
+      gameState.money -= requiredMoney;
+      gameState.mudStock -= requiredMud;
 
       const targetKey = getRandomElementKey();
 
-      if (Math.random() < 0.03) {
+      // 1. 避難訓練 (1.5% - 半減)
+      if (Math.random() < 0.015) {
+        executeNormalRefine(targetKey, 1);
         showHinanModal();
-      } else {
-        // 通常のハイ＆ロー判定 (10%)
-        if (Math.random() < 0.10) {
-          showHighLowMinigame(targetKey);
-        } else {
-          // ハイ＆ローが発生しなかった場合
-          // レベル15以上かつエルビウム(Er)が出たとき、12%の確率で美肌ブロック崩しが発生
-          if ((gameState.level || 1) >= 15 && targetKey === 'Er' && Math.random() < 0.12) {
-            showErBreakoutModal();
-          } else {
-            executeNormalRefine(targetKey, 1);
-            
-            if (targetKey === 'Ho' && Math.random() < 0.08) {
-              setTimeout(showHoBilliardsModal, 500);
-            }
-          }
-        }
+        return;
+      }
+
+      // 2. ハイ＆ロー (10%)
+      if (Math.random() < 0.10) {
+        showHighLowMinigame(targetKey);
+        return;
+      }
+
+      // 3. 通常精製
+      executeNormalRefine(targetKey, 1);
+
+      if (targetKey === 'Er' && (gameState.level || 1) >= 15 && Math.random() < 0.12) {
+        setTimeout(showErBreakoutModal, 300);
+      } else if (targetKey === 'Ho' && Math.random() < 0.08) {
+        setTimeout(showHoBilliardsModal, 500);
       }
     }
 
@@ -672,23 +887,19 @@
       const erData = elementsMaster['Er'];
 
       content.innerHTML = `
-        <div style="font-size: 1.1rem; font-weight: bold; color: #ffde59; margin-bottom: 0.4rem;">✨ エルビウムの美肌ブロック崩し発生！</div>
+        <div style="font-size: 1.1rem; font-weight: bold; color: #ffde59; margin-bottom: 0.4rem;">✨ エルビウムの美肌ブロック崩し発生</div>
         
         <div style="background: #ffffff; border: 2px solid #ffde59; border-radius: 0.5rem; padding: 0.4rem; margin-bottom: 0.5rem; text-align: center;">
           <img src="${erData.img}" style="width: 5rem; height: 5rem; object-fit: contain;" alt="${erData.name}" onerror="this.src='chara0_Er.png'">
         </div>
 
         <div style="font-size: 0.8rem; color: #f1f5f9; background: rgba(15,23,42,0.8); border: 1px solid #00fff5; border-radius: 0.5rem; padding: 0.5rem; margin-bottom: 0.7rem; text-align: left; line-height: 1.4; font-weight: bold;">
-          「光ファイバーアンプで通信を遠くまで届けるわ！特別に美肌ブロック崩しで遊んでいかない？」
-        </div>
-
-        <div style="font-size: 0.75rem; color: #dcdde1; margin-bottom: 0.7rem; line-height: 1.4;">
-          エルビウムの美肌ブロック崩しに挑戦して報酬を手に入れよう！
+          「光ファイバーアンプで通信を遠くまで届けるわ。特別に美肌ブロック崩しで遊んでいかない？」
         </div>
 
         <div style="display: flex; gap: 0.5rem;">
           <button class="btn" style="margin-top:0; background:#333; color:#aaa;" onclick="closeMinigameModal()">あとで</button>
-          <button class="btn" style="margin-top:0; background:#00fff5; color:#0f3460;" onclick="startErBreakout()">🎮 チャレンジする！</button>
+          <button class="btn" style="margin-top:0; background:#00fff5; color:#0f3460;" onclick="startErBreakout()">🎮 チャレンジする</button>
         </div>
       `;
       modal.style.display = 'flex';
@@ -697,9 +908,7 @@
     function startErBreakout() {
       const se = document.getElementById('se-gogogo');
       if (se) { se.currentTime = 0; se.play().catch(e => {}); }
-      setTimeout(() => {
-        location.href = 'erbium_breakout.html';
-      }, 200);
+      setTimeout(() => { location.href = 'erbium_breakout.html'; }, 200);
     }
 
     function showHoBilliardsModal() {
@@ -708,23 +917,19 @@
       const hoData = elementsMaster['Ho'];
 
       content.innerHTML = `
-        <div style="font-size: 1.1rem; font-weight: bold; color: #ffde59; margin-bottom: 0.4rem;">🎯 ホルミウム・ビリヤード発生！</div>
+        <div style="font-size: 1.1rem; font-weight: bold; color: #ffde59; margin-bottom: 0.4rem;">🎯 ホルミウム・ビリヤード発生</div>
         
         <div style="background: #ffffff; border: 2px solid #ffde59; border-radius: 0.5rem; padding: 0.4rem; margin-bottom: 0.5rem; text-align: center;">
           <img src="${hoData.img}" style="width: 5rem; height: 5rem; object-fit: contain;" alt="${hoData.name}" onerror="this.src='chara0_Ho.png'">
         </div>
 
         <div style="font-size: 0.8rem; color: #f1f5f9; background: rgba(15,23,42,0.8); border: 1px solid #00fff5; border-radius: 0.5rem; padding: 0.5rem; margin-bottom: 0.7rem; text-align: left; line-height: 1.4; font-weight: bold;">
-          「正確無比な医療用レーザーをしっかりサポート！よし、ビリヤードの腕前も披露しちゃうよ！」
-        </div>
-
-        <div style="font-size: 0.75rem; color: #dcdde1; margin-bottom: 0.7rem; line-height: 1.4;">
-          ホルミウムと一緒にレーザー・バンクショットで病気をやっつけに行こう！
+          「正確無比な医療用レーザーをしっかりサポートします。よし、ビリヤードの腕前も披露しちゃうよ」
         </div>
 
         <div style="display: flex; gap: 0.5rem;">
           <button class="btn" style="margin-top:0; background:#333; color:#aaa;" onclick="closeMinigameModal()">あとで</button>
-          <button class="btn" style="margin-top:0; background:#00fff5; color:#0f3460;" onclick="startHoBilliards()">🎮 チャレンジする！</button>
+          <button class="btn" style="margin-top:0; background:#00fff5; color:#0f3460;" onclick="startHoBilliards()">🎮 チャレンジする</button>
         </div>
       `;
       modal.style.display = 'flex';
@@ -733,9 +938,7 @@
     function startHoBilliards() {
       const se = document.getElementById('se-gogogo');
       if (se) { se.currentTime = 0; se.play().catch(e => {}); }
-      setTimeout(() => {
-        location.href = 'ho_billiards.html';
-      }, 200);
+      setTimeout(() => { location.href = 'ho_billiards.html'; }, 200);
     }
 
     function showHinanModal() {
@@ -747,7 +950,7 @@
         <div style="font-size: 1rem; font-weight: bold; color: #00fff5; margin: 0.3rem 0;">【緊急警報】セキュリティ訓練</div>
         
         <div style="font-size: 0.78rem; color: #dcdde1; text-align: left; line-height: 1.4; margin-bottom: 0.4rem; background: rgba(15,23,42,0.8); padding: 0.4rem; border-radius: 0.4rem;">
-          本日は、緊急避難訓練を実施します📢各エリアに点在しているスタッフのペアを確認し、全員の安全を確保してください！
+          本日は緊急避難訓練を実施します。各エリアに点在しているスタッフのペアを確認し、全員の安全を確保してください。
         </div>
 
         <div style="margin: 0.3rem 0; text-align: center;">
@@ -755,12 +958,12 @@
         </div>
 
         <button class="btn" style="background: #00fff5; color: #0f3460; font-size: 0.85rem; padding: 0.6rem; margin-top: 0.4rem;" onclick="startHinanMinigame()">
-          🚀 訓練を開始する！
+          🚀 訓練を開始する
         </button>
 
         <div style="margin-top: 0.5rem; text-align: center;">
           <span style="font-size: 0.72rem; color: #64748b; cursor: pointer; text-decoration: underline; opacity: 0.8; display: inline-block; padding: 0.4rem;" onclick="closeMinigameModal()">
-            …またの機会にしてください。
+            …またの機会にします
           </span>
         </div>
       `;
@@ -791,7 +994,7 @@
       document.getElementById('pairs').innerText = hinanMatchedPairs;
       document.getElementById('time').innerText = hinanSeconds;
       document.getElementById('miss').innerText = hinanMissCount;
-      document.getElementById('messageBanner').innerText = "各エリアのドアを開けて安全を確認しよう！";
+      document.getElementById('messageBanner').innerText = "各エリアのドアを開けて安全を確認しよう";
 
       if (hinanTimerInterval) clearInterval(hinanTimerInterval);
       hinanTimerInterval = setInterval(() => {
@@ -861,15 +1064,15 @@
         hinanIsLocked = false;
 
         const templates = [
-          `${charFullName}無事でーす！`,
-          `${charFullName}、ペア確認できました！`,
-          `${charFullName}いま～す`,
-          `${charFullName}無事です👍`
+          `${charFullName}無事です`,
+          `${charFullName}、ペア確認できました`,
+          `${charFullName}いまいます`,
+          `${charFullName}無事です`
         ];
         const randomMsg = templates[Math.floor(Math.random() * templates.length)];
 
         if (hinanMatchedPairs === 8) {
-          document.getElementById('messageBanner').innerText = "安全ヨシ！お疲れ様でした！";
+          document.getElementById('messageBanner').innerText = "安全ヨシ。お疲れ様でした";
           if (hinanTimerInterval) clearInterval(hinanTimerInterval);
           setTimeout(endHinanMinigame, 1500);
         } else {
@@ -908,7 +1111,7 @@
 
       content.innerHTML = `
         <div style="font-size: 1.8rem;">✨</div>
-        <div style="font-size: 1rem; font-weight: bold; color: #00fff5; margin: 0.3rem 0;">安全確認完了！</div>
+        <div style="font-size: 1rem; font-weight: bold; color: #00fff5; margin: 0.3rem 0;">安全確認完了</div>
         
         <div style="background: rgba(15,23,42,0.8); border: 1px solid #00fff5; border-radius: 0.5rem; padding: 0.5rem; margin: 0.5rem 0; font-size: 0.78rem; text-align: left; display: flex; flex-direction: column; gap: 0.3rem;">
           <div style="display: flex; justify-content: space-between;">
@@ -948,7 +1151,7 @@
       const content = document.getElementById('modal-content-inner');
 
       content.innerHTML = `
-        <div style="font-size: 1rem; font-weight: bold; color: #ffde59; margin-bottom: 0.4rem;">10倍チャンス・ハイ＆ロー！</div>
+        <div style="font-size: 1rem; font-weight: bold; color: #ffde59; margin-bottom: 0.4rem;">10倍チャンス・ハイ＆ロー</div>
         
         <div style="background: #ffffff; border: 2px solid #ffde59; border-radius: 0.5rem; padding: 0.4rem; margin-bottom: 0.5rem; text-align: center;">
           <img src="${baseElement.img}" style="width: 4.5rem; height: 4.5rem; object-fit: contain;" alt="${baseElement.name}" onerror="this.src='chara0_Y.png'">
@@ -956,8 +1159,8 @@
 
         <div style="font-size: 0.78rem; color: #dcdde1; margin-bottom: 0.5rem; line-height: 1.4;">
           次に出る元素は<strong>${baseElement.name}</strong>（原子番号：${baseElement.atomicNumber}）より、<br>
-          元素番号が<strong>【高い】</strong>か<strong>【低い】</strong>か、どっち❓❓❓<br><br>
-          <span style="color:#ff4757; font-weight:bold;">※外れたら入手数ゼロ個になります！</span>
+          元素番号が<strong>【高い】</strong>か<strong>【低い】</strong>か？<br><br>
+          <span style="color:#ff4757; font-weight:bold;">※外れたら入手数は0個になります</span>
         </div>
 
         <div style="display: flex; gap: 0.5rem; margin-top: 0.3rem;">
@@ -995,12 +1198,12 @@
 
       const content = document.getElementById('modal-content-inner');
       content.innerHTML = `
-        <div style="font-size: 1.6rem;">${isWin ? '🌟🌟🌟' : '💥'}</div>
+        <div style="font-size: 1.6rem;">${isWin ? '🌟' : '💥'}</div>
         <div style="font-size: 0.85rem; color: #00fff5; margin: 2px 0; font-weight: bold;">
-          ${secretName}が現れました！
+          ${secretName}が現れました
         </div>
         <div style="font-size: 0.9rem; font-weight: bold; color: ${isWin ? '#ffde59' : '#ff4757'}; margin: 2px 0; line-height: 1.3;">
-          ${isWin ? '大正解！10倍ＧＥＴです！' : '残念…負けてしまいました（汗）<br>今回は０個ＧＥＴです。'}
+          ${isWin ? '正解です。10倍獲得です' : '残念ながらハズレです。<br>今回は0個になります'}
         </div>
         
         <div style="display: flex; justify-content: center; align-items: center; gap: 0.6rem; margin: 0.5rem 0;">
