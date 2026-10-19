@@ -8,7 +8,7 @@
 <meta name="format-detection" content="telephone=no">
 <title>レアアース・クラフト - マイホーム</title>
 <style>
-:root{--maxw:720px}
+:root{--maxw:720px;--bg:#0f172a;--card:#1e293b;--text:#f8fafc;--line:#334155;--accent:#3b82f6;--item:#0f172a;--onaccent:#fff;--wall:#334155;--base:#000;--floor:#1e293b;--door:#64748b;--door2:#475569;--knob:#cbd5e1;--garden:transparent}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html{height:100%;font-size:clamp(14px,min(calc(12px + 1.1vw),3.2vh),21px);-webkit-text-size-adjust:100%;touch-action:manipulation}
 body{margin:0;height:100%;overflow:hidden;overscroll-behavior:none;background:#0b1224;color:var(--text,#1e293b);
@@ -29,7 +29,7 @@ body{margin:0;height:100%;overflow:hidden;overscroll-behavior:none;background:#0
 
 .content{flex:1;min-height:0;display:flex;flex-direction:column;gap:.6rem;padding:.6rem .7rem;overflow-y:auto;overscroll-behavior:contain}
 @media (orientation:landscape) and (min-width:700px){
-  .content{display:grid;grid-template-columns:1.3fr 1fr;align-items:stretch}
+  .content{display:grid;grid-template-columns:1.2fr 1fr;align-items:stretch}
   .menu{min-height:0}
 }
 .card{background:var(--card);border:1px solid var(--line);border-radius:.7rem;padding:.5rem .6rem;font-size:.8rem}
@@ -55,7 +55,6 @@ body{margin:0;height:100%;overflow:hidden;overscroll-behavior:none;background:#0
 .obj .ph{display:flex;flex-direction:column;align-items:center;font-size:7cqw;line-height:1.1;text-align:center;filter:drop-shadow(0 .2rem .3rem rgba(0,0,0,.3))}
 .obj .ph small{font-size:.55rem;background:rgba(0,0,0,.55);color:#fff;border-radius:.4rem;padding:0 .3rem}
 
-/* キャラクター専用バッジ（お仕事アイコン） */
 .chara-badge{position:absolute;top:-10px;right:-10px;background:#10b981;color:#fff;font-size:.55rem;padding:2px 5px;border-radius:10px;font-weight:bold;border:1px solid #fff;box-shadow:0 2px 4px rgba(0,0,0,.3)}
 
 .controls{position:absolute;top:.4rem;left:.4rem;right:.4rem;z-index:10;display:flex;justify-content:space-between;align-items:center;gap:.3rem;flex-wrap:wrap;
@@ -64,16 +63,22 @@ body{margin:0;height:100%;overflow:hidden;overscroll-behavior:none;background:#0
 .dir{background:transparent;border:1px solid var(--line);color:var(--text);border-radius:.4rem;min-width:1.7rem;min-height:1.6rem;font-size:.68rem;font-weight:bold;cursor:pointer;font-family:inherit}
 .dir.on{background:var(--accent);color:var(--onaccent);border-color:var(--accent)}
 
-.menu{flex:1;display:flex;flex-direction:column;min-height:14rem}
-.tabs{display:flex;gap:.2rem;margin-bottom:.4rem}
+.menu{flex:1;display:flex;flex-direction:column;min-height:16rem}
+.tabs{display:flex;gap:.2rem;margin-bottom:.4rem;flex-shrink:0}
 .tab{flex:1;min-height:2rem;background:transparent;border:1px solid var(--line);color:var(--text);border-radius:.5rem;font-size:.68rem;font-weight:bold;cursor:pointer;font-family:inherit;padding:0}
 .tab.on{background:var(--accent);color:var(--onaccent);border-color:var(--accent)}
-.list{flex:1;min-height:0;display:none;flex-direction:column;gap:.4rem;overflow-y:auto}
+.list{flex:1;min-height:12rem;display:none;flex-direction:column;gap:.4rem;overflow-y:auto}
 .list.on{display:flex}
-.item{display:flex;align-items:center;gap:.5rem;border:1px solid var(--line);border-radius:.6rem;padding:.4rem .5rem;background:var(--item)}
-.item.own{opacity:.8}
+
+.item{display:flex;align-items:center;gap:.5rem;border:1px solid var(--line);border-radius:.6rem;padding:.4rem .5rem;background:var(--item);cursor:pointer;transition:background .2s}
+.item:hover{background:rgba(59,130,246,0.1)}
+.item.own{opacity:.85}
+.item .thumb{width:2.2rem;height:2.2rem;border-radius:.4rem;border:1px solid var(--line);flex-shrink:0;overflow:hidden;background:#0b1224;display:flex;align-items:center;justify-content:center;position:relative}
+.item .thumb img{width:100%;height:100%;object-fit:contain;display:block}
+.item .thumb .emoji-ph{font-size:1.2rem;line-height:1;display:none}
 .item .nm{flex:1;font-weight:bold;font-size:.78rem}
 .item .nm small{display:block;font-weight:normal;font-size:.65rem;opacity:.7}
+
 .swatch{width:2.2rem;height:2.2rem;border-radius:.4rem;border:1px solid var(--line);flex-shrink:0;overflow:hidden;display:flex;flex-direction:column}
 .swatch i{flex:1.4}.swatch i+i{flex:1}
 .btn{background:var(--accent);color:var(--onaccent);border:none;border-radius:.6rem;min-height:2rem;padding:.3rem .8rem;font-size:.72rem;font-weight:bold;cursor:pointer;font-family:inherit}
@@ -92,7 +97,7 @@ textarea{width:100%;height:5rem;font-size:.65rem;border:1px solid var(--line);bo
 #toast.show{opacity:1;transform:translate(-50%,0)}
 
 .overlay{position:fixed;inset:0;display:none;justify-content:center;align-items:center;background:rgba(10,15,30,.7);z-index:200;padding:1rem}
-.modal{background:#1e293b;color:#fff;border:2px solid var(--accent);border-radius:1rem;padding:1.1rem;width:100%;max-width:24rem;text-align:center}
+.modal{background:#1e293b;color:#fff;border:2px solid var(--accent,#3b82f6);border-radius:1rem;padding:1.1rem;width:100%;max-width:24rem;text-align:center}
 .modal h3{margin:0 0 .4rem;font-size:1rem}.modal p{margin:0 0 .8rem;font-size:.8rem;line-height:1.5;text-align:left}
 .modal .row{display:flex;gap:.5rem;margin-top:.8rem}.modal .row .btn{flex:1}
 </style>
@@ -161,7 +166,7 @@ textarea{width:100%;height:5rem;font-size:.65rem;border:1px solid var(--line);bo
   <div class="row" id="mRows"><button class="btn" style="background:#94a3b8;color:#fff" onclick="closeModal()">キャンセル</button><button class="btn" id="mOk" style="background:#ef4444;color:#fff">OK</button></div></div></div>
 
 <script>
-['gesturestart','gesturechange','gestureend'].forEach(e=>document.addEventListener(e,x=>x.preventDefault()));
+try { ['gesturestart','gesturechange','gestureend'].forEach(e=>document.addEventListener(e,x=>x.preventDefault())); } catch(e){}
 
 const IMG_DIR = '';
 const furnitureMaster = {
@@ -210,7 +215,7 @@ const recipes = [
 const PROD_SIZE = 12;
 
 const bgmMaster = {
-  room:{name:'マイホーム基本BGM',file:'BGM_room.ogg'}, map:{name:'世界マップBGM',file:'BGM_map.ogg'},
+  room:{name:'マイホーム基本BGM',file:'BGM_home.ogg'}, map:{name:'世界マップBGM',file:'BGM_map.ogg'},
   seisei:{name:'元素精製プラントBGM',file:'BGM_seisei.ogg'}, factory:{name:'製造工場BGM',file:'BGM_koujyo.ogg'},
   mine:{name:'採掘場BGM (陸上)',file:'BGM_mine.ogg'}, siwake:{name:'リサイクル工場BGM',file:'BGM_siwake.ogg'},
   hinan:{name:'緊急避難訓練BGM',file:'BGM_hinan.ogg'}, karaoke:{name:'カラオケイベントBGM',file:'karaoke.ogg'}
@@ -221,6 +226,7 @@ const wallBg = (c,pat,wain,rail)=>`linear-gradient(180deg,transparent 74%,${rail
 const planks = (a,b,seam)=>`repeating-linear-gradient(90deg,${seam} 0 .1rem,transparent .1rem 2rem),linear-gradient(180deg,${a},${b})`;
 const planksH=(a,b,seam)=>`repeating-linear-gradient(180deg,${seam} 0 .1rem,transparent .1rem 2rem),linear-gradient(180deg,${a},${b})`;
 const tiles  = (a,b)=>`conic-gradient(${a} 25%,${b} 0 50%,${a} 0 75%,${b} 0) 0 0/16% 38%`;
+
 const themesMaster = {
   natural:{name:'🌿 ナチュラル（白木と生成り）', wall:wallBg('#f3ead9','repeating-linear-gradient(90deg,rgba(255,255,255,.45) 0 1.1rem,transparent 1.1rem 2.2rem)','#e4d3b4','#fffaf0'),
     base:'#fffaf0', floor:planks('#d9b382','#c4965f','rgba(90,55,20,.28)'), floorH:planksH('#d9b382','#c4965f','rgba(90,55,20,.28)'), bg:'#f6f1e7', card:'#fffdf8', text:'#4a3f33', line:'#e0d3bd', accent:'#6f9a6b', item:'#faf5ea', onaccent:'#fff'},
@@ -266,66 +272,104 @@ const dirNames = ['北の壁','東の壁','南の壁','西の壁','🌿 お庭']
 const dirLabels = ['北','東','南','西','🌿'];
 
 /* ═════════ 状態管理 ═════════ */
-let gameState = JSON.parse(localStorage.getItem('rareEarthGameState')) || {};
+let gameState = {};
+try {
+  gameState = JSON.parse(localStorage.getItem('rareEarthGameState')) || {};
+} catch(e) { gameState = {}; }
 const defaults = {
   miles:500, level:1, money:1500, mudStock:5, products:{}, homeFurnishings:[], placedItems:[],
   currentTheme:'natural', currentBgm:'room', charaOwned:[], charaTasks:{}, tutorialShown6:false
 };
 Object.keys(defaults).forEach(k=>{ if(gameState[k]===undefined) gameState[k]=defaults[k]; });
-const save = ()=>localStorage.setItem('rareEarthGameState',JSON.stringify(gameState));
+const save = ()=>{ try{ localStorage.setItem('rareEarthGameState',JSON.stringify(gameState)); }catch(e){} };
 const $ = id=>document.getElementById(id);
 let dir = 0, tab = 'shop';
 
-const bgm=$('bgm'), bgmBtn=$('bgm-btn'); bgm.volume=.3;
-let isMuted = localStorage.getItem('bgmMutedHome')==='true';
-function updateBgmSource(){ bgm.src=(bgmMaster[gameState.currentBgm]||bgmMaster.room).file; }
-function updateBgmUI(){ bgm.muted=isMuted; bgmBtn.innerText=isMuted?'🔇 OFF':'🎵 ON'; bgmBtn.className='bgm-btn'+(isMuted?' muted':''); }
-function toggleBGM(){ isMuted=!isMuted; localStorage.setItem('bgmMutedHome',isMuted); updateBgmUI(); isMuted?bgm.pause():bgm.play().catch(()=>{}); }
-function unlock(){ bgm.play().then(()=>['click','touchstart'].forEach(e=>document.removeEventListener(e,unlock))).catch(()=>{}); }
+const bgm=$('bgm'), bgmBtn=$('bgm-btn'); 
+if(bgm) bgm.volume=.3;
+let isMuted = false;
+try { isMuted = localStorage.getItem('bgmMutedHome')==='true'; } catch(e){}
+
+function updateBgmSource(){ try{ if(bgm) bgm.src=(bgmMaster[gameState.currentBgm]||bgmMaster.room).file; }catch(e){} }
+function updateBgmUI(){ if(!bgmBtn) return; bgmBtn.innerText=isMuted?'🔇 OFF':'🎵 ON'; bgmBtn.className='bgm-btn'+(isMuted?' muted':''); }
+function toggleBGM(){ 
+  isMuted=!isMuted; 
+  try{ localStorage.setItem('bgmMutedHome',isMuted); }catch(e){}
+  updateBgmUI(); 
+  if(bgm){ if(isMuted) bgm.pause(); else bgm.play().catch(()=>{}); }
+}
+function unlock(){ if(bgm) bgm.play().then(()=>['click','touchstart'].forEach(e=>document.removeEventListener(e,unlock))).catch(()=>{}); }
 
 let curTheme=null;
 function scene(){
-  const t=curTheme||themesMaster.natural;
-  $('win').style.display=(dir===2&&t.win!==false)?'block':'none';$('door').style.display=(t.door&&dir===(t.doorDir===undefined?1:t.doorDir))?'block':'none';
-  $('phone').style.setProperty('--floor',((dir===1\vert{}\vert{}dir===3)&&t.floorH)?t.floorH:t.floor);$('stage').classList.toggle('flat',!!t.flat);
+  try {
+    const t=curTheme||themesMaster.natural;
+    const winEl=$('win'), doorEl=$('door'), phoneEl=$('phone'), stageEl=$('stage');
+    if(winEl) winEl.style.display=(dir===2&&t.win!==false)?'block':'none';
+    if(doorEl) doorEl.style.display=(t.door&&dir===(t.doorDir===undefined?1:t.doorDir))?'block':'none';
+    if(phoneEl) phoneEl.style.setProperty('--floor',((dir===1||dir===3)&&t.floorH)?t.floorH:t.floor);
+    if(stageEl) stageEl.classList.toggle('flat',!!t.flat);
+  } catch(e){}
 }
 function applyTheme(k){
-  const t=themesMaster[k]||themesMaster.natural, s=$('phone').style;
-  ['wall','base','floor','bg','card','text','line','accent','item','onaccent'].forEach(p=>s.setProperty('--'+p,t[p]));
-  s.setProperty('--garden',t.garden||GARDEN_DEFAULT);
-  ['door','door2','knob'].forEach(p=>s.setProperty('--'+p,t[p]||'none'));
-  curTheme=t; scene();
+  try {
+    const t=themesMaster[k]||themesMaster.natural, pEl=$('phone');
+    if(!pEl) return;
+    const s=pEl.style;
+    ['wall','base','floor','bg','card','text','line','accent','item','onaccent'].forEach(p=>s.setProperty('--'+p,t[p]||''));
+    s.setProperty('--garden',t.garden||GARDEN_DEFAULT);
+    ['door','door2','knob'].forEach(p=>s.setProperty('--'+p,t[p]||'none'));
+    curTheme=t; scene();
+  } catch(e){}
 }
 
-function toast(m){ const t=$('toast'); t.innerText=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2000); }
+function toast(m){ const t=$('toast'); if(!t) return; t.innerText=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2000); }
 function askModal(title,desc,ok,fn,no){
-  $('mTitle').innerText=title; $('mDesc').innerHTML=desc;
-  $('mRows').innerHTML=`<button class="btn" style="background:#94a3b8;color:#fff" onclick="closeModal()">${no||'キャンセル'}</button><button class="btn" id="mOk" style="background:#ef4444;color:#fff">${ok}</button>`;
-  $('mOk'].onclick=()=>{closeModal();fn&&fn();};$('modal').style.display='flex';
+  try {
+    const mT=$('mTitle'), mD=$('mDesc'), mR=$('mRows'), mO=$('modal');
+    if(mT) mT.innerText=title; if(mD) mD.innerHTML=desc;
+    if(mR) mR.innerHTML=`<button class="btn" style="background:#94a3b8;color:#fff" onclick="closeModal()">${no||'キャンセル'}</button><button class="btn" id="mOk" style="background:#ef4444;color:#fff">${ok}</button>`;
+    const mOkBtn=$('mOk'); if(mOkBtn) mOkBtn.onclick=()=>{closeModal();fn&&fn();};
+    if(mO) mO.style.display='flex';
+  } catch(e){}
 }
-function closeModal(){ $('modal').style.display='none'; }
+function closeModal(){ const mO=$('modal'); if(mO) mO.style.display='none'; }
 
 function buildControls(){
-  $('dirBtns').innerHTML=dirLabels.map((l,i)=>`<button class="dir" id="dir${i}" onclick="changeDirection(${i})">${l}</button>`).join('');
-  const tabs={shop:'🛒ショップ',display:'📦配置',theme:'🎨テイスト',music:'🎵音楽',save:'💾セーブ'};
-  $('tabs').innerHTML=Object.keys(tabs).map(k=>`<button class="tab" id="tab-${k}" onclick="switchTab('${k}')">${tabs[k]}</button>`).join('');
+  try {
+    const db=$('dirBtns'); if(db) db.innerHTML=dirLabels.map((l,i)=>`<button class="dir" id="dir${i}" onclick="changeDirection(${i})">${l}</button>`).join('');
+    const tabs={shop:'🛒ショップ',display:'📦配置',theme:'🎨テイスト',music:'🎵音楽',save:'💾セーブ'};
+    const tb=$('tabs'); if(tb) tb.innerHTML=Object.keys(tabs).map(k=>`<button class="tab" id="tab-${k}" onclick="switchTab('${k}')">${tabs[k]}</button>`).join('');
+  } catch(e){}
 }
 function changeDirection(d){
-  dir=d; $('dirTitle').innerText=dirNames[d];
-  for(let i=0;i<5;i++) $('dir'+i).classList.toggle('on',i===d);
-  $('indoor').style.display=d===4?'none':'block';$('garden').style.display=d===4?'block':'none'; scene();
-  renderRoom();
+  dir=d; const dt=$('dirTitle'); if(dt) dt.innerText=dirNames[d];
+  for(let i=0;i<5;i++){ const dBtn=$('dir'+i); if(dBtn) dBtn.classList.toggle('on',i===d); }
+  const ind=$('indoor'), gar=$('garden');
+  if(ind) ind.style.display=d===4?'none':'block'; if(gar) gar.style.display=d===4?'block':'none';
+  scene(); renderRoom();
 }
 function switchTab(t){
   tab=t;
-  ['shop','display','theme','music','save'].forEach(k=>{ $('L-'+k).classList.toggle('on',k===t);$('tab-'+k).classList.toggle('on',k===t); });
+  ['shop','display','theme','music','save'].forEach(k=>{
+    const lk=$('L-'+k), tbk=$('tab-'+k);
+    if(lk) lk.classList.toggle('on',k===t);
+    if(tbk) tbk.classList.toggle('on',k===t);
+  });
 }
 function updateUI(){
-  checkTaskCompletions();
-  $('miles').innerText=(gameState.miles||0).toLocaleString(); $('level').innerText=gameState.level; $('money').innerText=(gameState.money||0).toLocaleString();
-  let b=0; gameState.placedItems.forEach(i=>{ if(i.type==='furn'&&furnitureMaster[i.id]) b+=furnitureMaster[i.id].bonus; if(i.type==='prod') b+=.2; });
-  $('bonus').innerText=b.toFixed(1);$('roomLevel').innerText=Math.floor(1+b/1.5);
-  renderShop(); renderDisplay(); renderTheme(); renderMusic(); renderRoom();
+  try {
+    checkTaskCompletions();
+    const mil=$('miles'), lev=$('money'), lvl=$('level'), rlvl=$('roomLevel'), bon=$('bonus');
+    if(mil) mil.innerText=(gameState.miles||0).toLocaleString();
+    if(lvl) lvl.innerText=gameState.level||1;
+    if(lev) lev.innerText=(gameState.money||0).toLocaleString();
+    let b=0;
+    (gameState.placedItems||[]).forEach(i=>{ if(i.type==='furn'&&furnitureMaster[i.id]) b+=furnitureMaster[i.id].bonus; if(i.type==='prod') b+=.2; });
+    if(bon) bon.innerText=b.toFixed(1);
+    if(rlvl) rlvl.innerText=Math.floor(1+b/1.5);
+    renderShop(); renderDisplay(); renderTheme(); renderMusic(); renderRoom();
+  } catch(e){}
 }
 
 /* ═════════════════════════════════════════════════════════════
@@ -346,7 +390,7 @@ const CHARAS={
   Tb:{name:'テルビウム',     type:'mine',   mH:1.5, mQ:19, rH:2.9, rQ:6,  pH:3.7, pQ:2, desc:'活動的で、スピーディーな資源回収をお約束！'},
   Dy:{name:'ジスプロシウム', type:'prod',   mH:2.0, mQ:14, rH:2.4, rQ:8,  pH:2.5, pQ:3, desc:'ハイテク製品の製造に不可欠な高性能ワーカー。'},
   Ho:{name:'ホルミウム',     type:'refine', mH:2.5, mQ:11, rH:2.0, rQ:8,  pH:3.6, pQ:2, desc:'音楽や美を愛し、丁寧な精製で高い成果を上げる。'},
-  Er:{name:'エルビウム',     type:'refine', mH:2.3, mQ:13, rH:1.7, rQ:10, pH:3.4, pQ:2, desc:'光ファイバーアンプの通信の要石。美肌ブロック崩しでもおなじみ！'},
+  Er:{name:'エルビウム',     type:'refine', mH:2.3, mQ:13, rH:1.7, rQ:10, pH:3.4, pQ:2, desc:'最高峰の精製スペシャリスト。光通信や美容レーザーでも大活躍！'},
   Tm:{name:'ツリウム',       type:'mine',   mH:1.7, mQ:16, rH:2.7, rQ:7,  pH:3.8, pQ:2, desc:'真面目にコツコツと掘削作業をこなす頑張り屋。'},
   Yb:{name:'イッテルビウム', type:'refine', mH:2.4, mQ:12, rH:2.2, rQ:8,  pH:3.5, pQ:2, desc:'落ち着いた雰囲気で確実に精製をこなす。'},
   Lu:{name:'ルテチウム',     type:'prod',   mH:2.1, mQ:13, rH:2.5, rQ:7,  pH:2.7, pQ:3, desc:'最後を飾るシャープな切れ味で製品製造をサポート。'}
@@ -354,8 +398,8 @@ const CHARAS={
 
 function charaCount(lv){ return Math.min(17, lv<3?1:lv<5?2:lv<8?3:4+Math.floor((lv-8)/3)); }
 function nextCharaText(){
-  const n=charaCount(gameState.level); if(n>=17) return '🎉 全キャラクターが揃いました！';
-  let lv=gameState.level+1; while(charaCount(lv)<=n) lv++; return `🔒 次のキャラクターは Lv.${lv} で登場！`;
+  const n=charaCount(gameState.level||1); if(n>=17) return '🎉 全キャラクターが揃いました！';
+  let lv=(gameState.level||1)+1; while(charaCount(lv)<=n) lv++; return `🔒 次のキャラクターは Lv.${lv} で登場！`;
 }
 
 function syncCrafted(){
@@ -365,109 +409,41 @@ function syncCrafted(){
 }
 
 function ensureCharas(){
-  const ids=Object.keys(CHARAS), want=charaCount(gameState.level||1);
-  if(!Array.isArray(gameState.charaOwned)) gameState.charaOwned=[];
-  
-  if(!gameState.charaOwned.includes('Er') && want >= 1 && gameState.charaOwned.length < 7) {
-    if(Math.random() < 0.5 || want >= 7) {
-      gameState.charaOwned.push('Er');
+  try {
+    const ids=Object.keys(CHARAS), want=charaCount(gameState.level||1);
+    if(!Array.isArray(gameState.charaOwned)) gameState.charaOwned=[];
+    if(!gameState.placedItems) gameState.placedItems=[];
+    
+    let added=0;
+    while(gameState.charaOwned.length<want){
+      const rest=ids.filter(i=>!gameState.charaOwned.includes(i)); if(!rest.length) break;
+      let id;
+      if(!gameState.charaOwned.includes('Er') && rest.includes('Er')) {
+        id = 'Er';
+      } else {
+        id = rest[Math.floor(Math.random()*rest.length)];
+      }
+      gameState.charaOwned.push(id);
+      gameState.placedItems.push({type:'chara',id,dir:0,s:1,x:25+Math.random()*50,y:90}); added++;
     }
-  }
+    if(added){ save(); setTimeout(()=>toast('🎉 新しい仲間がお部屋に来たよ！'),600); }
 
-  let added=0;
-  while(gameState.charaOwned.length<want){
-    const rest=ids.filter(i=>!gameState.charaOwned.includes(i)); if(!rest.length) break;
-    let id;
-    if(!gameState.charaOwned.includes('Er') && rest.includes('Er') && gameState.charaOwned.length < 7) {
-      id = 'Er';
-    } else {
-      id = rest[Math.floor(Math.random()*rest.length)];
+    if((gameState.level||1) >= 6 && !gameState.tutorialShown6) {
+      gameState.tutorialShown6 = true; save();
+      setTimeout(() => {
+        askModal('🏠 イットリウム＆初期メンバーからの声かけ！',
+          `「プレイヤーさん、Lv.6おめでとう！私のお部屋や庭に配置して話しかけてくれたら、いつでも<b>『お仕事』</b>や<b>『お話し』</b>ができるよ！」`,
+          'わかった！', null, '');
+      }, 1000);
     }
-    gameState.charaOwned.push(id);
-    gameState.placedItems.push({type:'chara',id,dir:0,s:1,x:25+Math.random()*50,y:90}); added++;
-  }
-  if(added){ save(); setTimeout(()=>toast('🎉 新しい仲間がお部屋に来たよ！'),600); }
-
-  if(gameState.level >= 6 && !gameState.tutorialShown6) {
-    gameState.tutorialShown6 = true;
-    save();
-    setTimeout(() => {
-      askModal('🏠 イットリウム＆初期メンバーからの声かけ！',
-        `「プレイヤーさん、Lv.6おめでとう！私たち、お部屋や庭に配置して話しかけてくれたら、いつでも<b>『お仕事』</b>をお願いしたり、<b>『お話』</b>したりできるよ！」`,
-        'わかった！', null, '');
-    }, 1000);
-  }
+  } catch(e){}
 }
 
-/* ═════════ メインメニュー（お仕事 or お話する の選択） ═════════ */
-function openCharaMenu(id){
-  const c = CHARAS[id];
-  const html = `
-    <div style="font-size:0.85rem; text-align:center">
-      <p style="margin:0 0 10px; color:#cbd5e1">${c.name}に何をしてもらう？</p>
-      <div style="display:flex; gap:8px; flex-direction:column">
-        <button class="btn" style="background:#3b82f6; font-size:0.9rem; padding:10px" onclick="openCharaTaskModal('${id}')">🛠️ お仕事を頼む</button>
-        <button class="btn" style="background:#ec4899; font-size:0.9rem; padding:10px" onclick="openCharaTalkModal('${id}')">💬 お話する</button>
-      </div>
-    </div>
-  `;
-  askModal(`🧑 ${c.name}とどうする？`, html, 'とじる', null, '');
-  document.querySelector('#modal .row').innerHTML = `<button class="btn" style="background:#94a3b8;color:#fff;width:100%" onclick="closeModal()">もどる</button>`;
-}
-
-/* ═════════ お話するメニュー（キャラクター別の話題選択） ═════════ */
-function openCharaTalkModal(id){
-  const c = CHARAS[id];
-  
-  if(id === 'Er'){
-    // エルビウム専用の話題選択
-    const html = `
-      <div style="font-size:0.85rem; text-align:center">
-        <p style="margin:0 0 10px; color:#cbd5e1">エルビウムと何について話す？</p>
-        <div style="display:flex; gap:8px; flex-direction:column">
-          <button class="btn" style="background:#8b5cf6; font-size:0.85rem; padding:8px" onclick="talkAboutEr()">📖 エルビウムについて教えて</button>
-          <button class="btn" style="background:#f59e0b; font-size:0.85rem; padding:8px" onclick="startErBreakoutGame()">🎮 「ブロック崩し」ゲームをする</button>
-        </div>
-      </div>
-    `;
-    askModal(`💬 ${c.name}とお話する`, html, 'もどる', ()=>openCharaMenu(id), '');
-  } else {
-    // 他のキャラクター用のデフォルトお話
-    const html = `
-      <div style="font-size:0.85rem; text-align:center">
-        <p style="margin:0 0 10px; color:#cbd5e1">「今日もレアアースの採掘や精製、がんばろうね！」</p>
-      </div>
-    `;
-    askModal(`💬 ${c.name}とお話する`, html, 'もどる', ()=>openCharaMenu(id), '');
-  }
-}
-
-/* エルビウムについて教えて（口語口調） */
-function talkAboutEr(){
-  const desc = `「私、エルビウムはね、<b>光ファイバー内の情報を守り蘇らせる、通信の要石</b>なんだよ！ピンクの彩りや医療レーザーでもすごく活躍しているの。<br><br>` +
-               `<b>✨ 主な活躍の場：</b><br>` +
-               `• 光ファイバー<br>` +
-               `• 通信技術<br>` +
-               `• ガラス着色 などなど！<br><br>` +
-               `これからも私たちの力であなたのクラフトをいっぱい支えるからね♪」`;
-  askModal(`📖 エルビウムについて`, desc, 'もどる', ()=>openCharaTalkModal('Er'), '');
-}
-
-/* ブロック崩しゲームをする */
-function startErBreakoutGame(){
-  closeModal();
-  const se = $('se-gogogo');
-  if(se){ se.currentTime=0; se.play().catch(e=>{}); }
-  setTimeout(()=>{
-    location.href = 'erbium_breakout.html';
-  }, 200);
-}
-
-/* ═════════ お仕事依頼モーダル ═════════ */
+/* ═════════ キャラクター対話・お仕事モーダル ═════════ */
 function openCharaTaskModal(id){
-  const c = CHARAS[id];
-  const task = gameState.charaTasks[id];
-  const now = Date.now();
+  const c = CHARAS[id]; if(!c) return;
+  if(!gameState.charaTasks) gameState.charaTasks={};
+  const task = gameState.charaTasks[id], now = Date.now();
 
   if(task && task.endTime > now){
     const leftMin = Math.ceil((task.endTime - now)/60000);
@@ -475,16 +451,13 @@ function openCharaTaskModal(id){
       `<div style="text-align:center"><p>${c.desc}</p>` +
       `<p style="color:#00fff5; font-weight:bold">現在のお仕事: ${task.type==='mine'?'⛏️ 掘削':task.type==='refine'?'🧪 精製':'🏭 製品製造'}</p>` +
       `<p>残り時間: 約 <b>${leftMin}分</b></p></div>`,
-      'もどる', ()=>openCharaMenu(id), '');
+      '閉じる', null, '');
     return;
   }
 
-  if(task && task.endTime <= now && !task.claimed){
-    claimTaskReward(id);
-    return;
-  }
+  if(task && task.endTime <= now && !task.claimed){ claimTaskReward(id); return; }
 
-  const canProd = gameState.level >= 12;
+  const canProd = (gameState.level||1) >= 12;
   const html = `
     <div style="font-size:0.8rem">
       <p style="margin:0 0 6px">${c.desc}</p>
@@ -494,73 +467,82 @@ function openCharaTaskModal(id){
         • 精製: ${c.rH}時間で <b>${c.rQ}個</b> のレアアース精製<br>
         • 製造(Lv.12~): ${c.pH}時間で <b>${c.pQ}個</b> の製品制作 ${canProd?'':'<span style="color:#f87171">(🔒Lv12未開放)</span>'}
       </div>
-      <p style="text-align:center; font-weight:bold; color:#ffde59; margin:4px 0">どのお仕事をお願いする？</p>
+      <p style="text-align:center; font-weight:bold; color:#ffde59; margin:4px 0">何をしましょうか？</p>
       <div style="display:flex; gap:4px; flex-direction:column">
+        <button class="btn" style="background:#8b5cf6; font-size:0.8rem; margin-bottom:4px" onclick="talkChara('${id}')">🗣️ お話する</button>
         <button class="btn" style="background:#3b82f6" onclick="startCharaTask('${id}','mine')">⛏️ 掘削を頼む (${c.mH}時間 / ${c.mQ}個)</button>
         <button class="btn" style="background:#10b981" onclick="startCharaTask('${id}','refine')">🧪 精製を頼む (${c.rH}時間 / ${c.rQ}個)</button>
         <button class="btn" style="background:${canProd?'#eab308':'#475569'}" ${canProd?'':'disabled'} onclick="startCharaTask('${id}','prod')">🏭 製品製造を頼む (${c.pH}時間 / ${c.pQ}個)</button>
       </div>
     </div>
   `;
-  askModal(`🧑 ${c.name}にお仕事をお願いする`, html, 'もどる', ()=>openCharaMenu(id), '');
+  askModal(`🧑 ${c.name}`, html, '閉じる', null, '');
+}
+
+/* キャラクター会話機能・エルビウム専用ブロック崩しリンク */
+function talkChara(id){
+  const c = CHARAS[id];
+  if(!c) return;
+
+  if(id === 'Er'){
+    const html = `
+      <div style="font-size:0.8rem; text-align:left; line-height:1.5">
+        <p>「ふふっ、私とお話ししたいの？光ファイバーで世界中の通信を増幅するのも得意だけど、私といえばやっぱり<b>美肌レーザー（エルビウムYAGレーザー）</b>や光の増幅技術ね！」</p>
+        <p>「それと…私のミニゲーム<b>『エルビウムの美肌ブロック崩し』</b>で遊んでいく？特殊なギミックや難易度挑戦も用意しているわよ！」</p>
+        <div style="display:flex; flex-direction:column; gap:6px; margin-top:10px">
+          <button class="btn" style="background:#ec4899; font-weight:bold; font-size:0.82rem" onclick="location.href='erbium_game.html'">🎮 美肌ブロック崩しを遊ぶ</button>
+          <button class="btn" style="background:#3b82f6" onclick="askModal('💡 エルビウム解説', 'エルビウム(Er)は、光ファイバー増幅器(EDFA)に欠かせない元素！波長1550nmの光を増幅して長距離通信を支えたり、皮膚の水分に吸収されやすいレーザーとして美容・皮膚科医療で広く使われているよ。', '戻る', ()=>talkChara('Er'), '')">📖 エルビウムについて詳しく知る</button>
+        </div>
+      </div>
+    `;
+    askModal(`✨ エルビウムとの会話`, html, '閉じる', null, '');
+  } else {
+    const html = `
+      <div style="font-size:0.82rem; text-align:center; padding:10px 0">
+        <p>「こんにちは！${c.name}だよ。いつでもお部屋で声をかけてね！一緒にお仕事がんばろう！」</p>
+      </div>
+    `;
+    askModal(`💬 ${c.name}`, html, '閉じる', null, '');
+  }
 }
 
 function startCharaTask(id, type){
-  const c = CHARAS[id];
+  const c = CHARAS[id]; if(!c) return;
   let hours = type==='mine'? c.mH : type==='refine'? c.rH : c.pH;
   const durationMs = hours * 3600 * 1000; 
-
-  gameState.charaTasks[id] = {
-    type: type,
-    startTime: Date.now(),
-    endTime: Date.now() + durationMs,
-    claimed: false,
-    hours: hours
-  };
-  save();
-  closeModal();
+  if(!gameState.charaTasks) gameState.charaTasks={};
+  gameState.charaTasks[id] = { type, startTime: Date.now(), endTime: Date.now() + durationMs, claimed: false, hours };
+  save(); closeModal();
   toast(`✨ ${c.name}が ${type==='mine'?'掘削':type==='refine'?'精製':'製品製造'} に出発しました！`);
   updateUI();
 }
 
-function checkTaskCompletions(){
-  const now = Date.now();
-  for(let id in gameState.charaTasks){
-    const task = gameState.charaTasks[id];
-    if(task && task.endTime <= now && !task.claimed){
-      // 完了状態
-    }
-  }
-}
+function checkTaskCompletions(){}
 
 function claimTaskReward(id){
-  const c = CHARAS[id];
-  const task = gameState.charaTasks[id];
-  if(!task) return;
+  const c = CHARAS[id]; if(!c || !gameState.charaTasks) return;
+  const task = gameState.charaTasks[id]; if(!task) return;
 
   const isFever = Math.random() < 0.10;
   const mult = isFever ? (1.5 + Math.random()*0.5) : 1.0;
-
   let baseQ = task.type==='mine'? c.mQ : task.type==='refine'? c.rQ : c.pQ;
   let finalQ = Math.round(baseQ * mult);
 
-  if(task.type === 'mine'){
-    gameState.mudStock = (gameState.mudStock || 0) + finalQ;
-  } else if(task.type === 'refine'){
-    gameState.money = (gameState.money || 0) + finalQ * 250; 
-  } else {
+  if(task.type === 'mine'){ gameState.mudStock = (gameState.mudStock || 0) + finalQ; }
+  else if(task.type === 'refine'){ gameState.money = (gameState.money || 0) + finalQ * 250; }
+  else {
     const rId = recipes[Math.floor(Math.random()*recipes.length)].id;
+    if(!gameState.products) gameState.products={};
     gameState.products[rId] = (gameState.products[rId] || 0) + finalQ;
   }
 
   delete gameState.charaTasks[id];
-  save();
-  closeModal();
+  save(); closeModal();
 
   if(isFever){
     askModal(`🔥 大成功！大生産フィーバー発生！！`,
       `<div style="text-align:center"><p style="font-size:2rem">🎉✨</p>` +
-      `<p><b>${c.name}</b> の作業が大フィーバー！大量の成果物を持ち帰りました！</p>` +
+      `<p><b>${c.name}</b> の作業が大フィーバー！通常より大量の成果物を持ち帰りました！</p>` +
       `<p style="color:#ffde59; font-size:1.1rem; font-weight:bold">+ ${finalQ} 獲得！</p></div>`,
       'やったね！', null, '');
   } else {
@@ -569,41 +551,39 @@ function claimTaskReward(id){
   updateUI();
 }
 
-/* renderRoom内でのキャラオブジェクト描画拡張 */
 function renderRoom(){
-  const box=$('objs'); box.innerHTML='';
-  gameState.placedItems.forEach((it,idx)=>{
-    if(it.dir!==dir) return;
-    let name,src,emoji,size,isChara=false, charaId='';
-    if(it.type==='furn'){ const f=furnitureMaster[it.id]; if(!f) return; name=f.name; src=f.img; emoji=f.emoji; size=f.size; }
-    else if(it.type==='chara'){
-      const c=CHARAS[it.id]; if(!c) return; name=c.name; src=CHARA_PREFIX+it.id+'.png'; emoji='🧪'; size=CHARA_SIZE; isChara=true; charaId=it.id;
-    } else { const r=recipes.find(r=>r.id===it.id)||{}; name=r.name||'製品'; src=r.img; emoji=r.emoji; size=PROD_SIZE; }
-    it.s=it.s||1;
-    const el=document.createElement('div'); el.className='obj';
-    el.style.cssText=`left:${it.x}%;top:${it.y}%;width:${size*it.s}%`;
-    const im=document.createElement('img'); im.src=IMG_DIR+src; im.alt=name;
-    im.onerror=()=>{ im.remove(); el.innerHTML=`<div class="ph">${emoji||'📦'}<small>${name}</small></div>`; };
-    el.appendChild(im);
+  try {
+    const box=$('objs'); if(!box) return; box.innerHTML='';
+    (gameState.placedItems||[]).forEach((it,idx)=>{
+      if(it.dir!==dir) return;
+      let name,src,emoji,size,isChara=false, charaId='';
+      if(it.type==='furn'){ const f=furnitureMaster[it.id]; if(!f) return; name=f.name; src=f.img; emoji=f.emoji; size=f.size; }
+      else if(it.type==='chara'){
+        const c=CHARAS[it.id]; if(!c) return; name=c.name; src=CHARA_PREFIX+it.id+'.png'; emoji='🧪'; size=CHARA_SIZE; isChara=true; charaId=it.id;
+      } else { const r=recipes.find(r=>r.id===it.id)||{}; name=r.name||'製品'; src=r.img; emoji=r.emoji; size=PROD_SIZE; }
+      it.s=it.s||1;
+      const el=document.createElement('div'); el.className='obj';
+      el.style.cssText=`left:${it.x}%;top:${it.y}%;width:${size*it.s}%`;
+      const im=document.createElement('img'); im.src=IMG_DIR+src; im.alt=name;
+      im.onerror=()=>{ im.remove(); el.innerHTML=`<div class="ph">${emoji||'📦'}<small>${name}</small></div>`; };
+      el.appendChild(im);
 
-    if(isChara){
-      const task = gameState.charaTasks[charaId];
-      const now = Date.now();
-      let badgeText = '💬 メニュー';
-      let badgeBg = '#ec4899';
-      if(task){
-        if(task.endTime <= now){ badgeText = '✨ 完了！'; badgeBg = '#f59e0b'; }
-        else { badgeText = '⏳ 作業中'; badgeBg = '#64748b'; }
+      if(isChara){
+        const task = gameState.charaTasks ? gameState.charaTasks[charaId] : null;
+        const now = Date.now();
+        let badgeText = '💬 お仕事', badgeBg = '#3b82f6';
+        if(task){
+          if(task.endTime <= now){ badgeText = '✨ 完了！'; badgeBg = '#f59e0b'; }
+          else { badgeText = '⏳ 作業中'; badgeBg = '#64748b'; }
+        }
+        const badge = document.createElement('div');
+        badge.className = 'chara-badge'; badge.style.background = badgeBg; badge.innerText = badgeText;
+        el.appendChild(badge);
       }
-      const badge = document.createElement('div');
-      badge.className = 'chara-badge';
-      badge.style.background = badgeBg;
-      badge.innerText = badgeText;
-      el.appendChild(badge);
-    }
 
-    drag(el,it,idx,name,size,isChara,charaId); box.appendChild(el);
-  });
+      drag(el,it,idx,name,size,isChara,charaId); box.appendChild(el);
+    });
+  } catch(e){}
 }
 
 function drag(el,it,idx,name,size,isChara,charaId){
@@ -618,18 +598,16 @@ function drag(el,it,idx,name,size,isChara,charaId){
     const dx=e.clientX-p.x, dy=e.clientY-p.y; p.x=e.clientX; p.y=e.clientY;
     if(P.size>=2){ it.s=clamp(s0*dist()/d0); setW(); return; }
     tot+=Math.abs(dx)+Math.abs(dy); if(tot>6) moved=true;
-    const r=$('stage').getBoundingClientRect();
+    const stageEl = $('stage'); if(!stageEl) return;
+    const r=stageEl.getBoundingClientRect();
     it.x=Math.max(0,Math.min(100,it.x+dx/r.width*100)); it.y=Math.max(10,Math.min(100,it.y+dy/r.height*100));
     el.style.left=it.x+'%'; el.style.top=it.y+'%';
   });
   const up=e=>{
     if(!P.delete(e.pointerId)||P.size>0) return;
     if(moved){ if(cur()!==pre){ hist(pre); save(); } return; }
-    if(isChara){
-      openCharaMenu(charaId);
-    } else {
-      askModal('レイアウト変更',`「${name}」をお部屋から片付けますか？`,'片付ける',()=>{ hist(); gameState.placedItems.splice(idx,1); save(); updateUI(); toast('📦 片付けました'); });
-    }
+    if(isChara){ openCharaTaskModal(charaId); }
+    else { askModal('レイアウト変更',`「${name}」をお部屋から片付けますか？`,'片付ける',()=>{ hist(); gameState.placedItems.splice(idx,1); save(); updateUI(); toast('📦 片付けました'); }); }
   };
   el.addEventListener('pointerup',up); el.addEventListener('pointercancel',up);
   el.addEventListener('wheel',e=>{ e.preventDefault(); if(!wp) wp=cur();
@@ -637,60 +615,133 @@ function drag(el,it,idx,name,size,isChara,charaId){
     clearTimeout(wt); wt=setTimeout(()=>{ if(cur()!==wp){ hist(wp); save(); } wp=''; },400); },{passive:false});
 }
 
-function row(thumb,name,sub,btn){ return `<div class="item ${btn.own?'own':''}">${thumb}<div class="nm">${name}${sub?`<small>${sub}</small>`:''}</div>${btn.html}</div>`; }
+/* 共通行テンプレート用ヘルパー関数 */
+function row(thumb, name, sub, btnObj){
+  const btnHtml = btnObj.html || '';
+  const ownClass = btnObj.own ? 'own' : '';
+  return `<div class="item ${ownClass}">${thumb}<div class="nm">${name}${sub?`<small>${sub}</small>`:''}</div>${btnHtml}</div>`;
+}
+
+function shopRow(id, f, own){
+  const price = f.gold ? `${f.gold.toLocaleString()}G` : `${f.cost}マイル`;
+  const thumbHtml = `
+    <div class="thumb">
+      <img src="${IMG_DIR}${f.img}" alt="${f.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+      <span class="emoji-ph">${f.emoji||'📦'}</span>
+    </div>`;
+  const btnHtml = own ? '<button class="btn done" onclick="event.stopPropagation()">所持済</button>' : `<button class="btn" onclick="event.stopPropagation(); buy('${id}')">購入</button>`;
+  return `<div class="item ${own?'own':''}" onclick="openPreview('${id}')">${thumbHtml}<div class="nm">${f.name}<small>${price} ／ ボーナス +${f.bonus}%</small></div>${btnHtml}</div>`;
+}
+
 let shopMode='mile';
 function setShopMode(m){ shopMode=m; renderShop(); }
 function renderShop(){
-  const L=$('L-shop'), top=L.scrollTop;
+  const L=$('L-shop'); if(!L) return;
+  const top=L.scrollTop;
   const bar=`<div style="display:flex;gap:.3rem;flex-shrink:0"><button class="tab ${shopMode==='mile'?'on':''}" onclick="setShopMode('mile')">✈️ マイルで買う</button><button class="tab ${shopMode==='gold'?'on':''}" onclick="setShopMode('gold')">💰 Gで買う</button></div>`;
-  L.innerHTML=bar+Object.keys(furnitureMaster).filter(id=>!!furnitureMaster[id].gold===(shopMode==='gold')).map(id=>{
-    const f=furnitureMaster[id], own=gameState.homeFurnishings.includes(id);
-    const price=f.gold?`${f.gold.toLocaleString()}G`:`${f.cost}マイル`;
-    return row('',f.name,`${price} ／ +${f.bonus}%`,{own,html:own?'<button class="btn done">所持済</button>':`<button class="btn" onclick="buy('${id}')">購入</button>`});
+  L.innerHTML = bar + Object.keys(furnitureMaster).filter(id=>!!furnitureMaster[id].gold===(shopMode==='gold')).map(id=>{
+    const f=furnitureMaster[id], own=(gameState.homeFurnishings||[]).includes(id);
+    return shopRow(id, f, own);
   }).join('');
   L.scrollTop=top;
 }
+
+/* ショップアイテムのタップ（拡大プレビューモーダル） */
+function openPreview(id){
+  const f = furnitureMaster[id]; if(!f) return;
+  const own = (gameState.homeFurnishings||[]).includes(id);
+  const price = f.gold ? `${f.gold.toLocaleString()} G` : `${f.cost} マイル`;
+  
+  const html = `
+    <div style="text-align:center">
+      <div style="width:7rem;height:7rem;margin:0 auto 0.6rem;background:#0b1224;border:2px solid var(--line);border-radius:.8rem;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden">
+        <img src="${IMG_DIR}${f.img}" alt="${f.name}" style="max-width:90%;max-height:90%;object-fit:contain" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+        <span style="font-size:3rem;display:none">${f.emoji||'📦'}</span>
+      </div>
+      <p style="font-size:0.85rem;margin:0 0 4px">価格: <b>${price}</b></p>
+      <p style="font-size:0.8rem;color:#38bdf8;margin:0 0 10px">居心地ボーナス: <b>+${f.bonus}%</b></p>
+      <p style="font-size:0.75rem;opacity:0.8;margin:0 0 10px">お部屋に配置すると居心地レベルが上がり、精製や報酬がアップします！</p>
+    </div>
+  `;
+
+  if(own){
+    askModal(`📦 ${f.name} (所持済み)`, html, '閉じる', null, '');
+  } else {
+    askModal(`🛒 ${f.name} の購入確認`, html, '購入する', ()=>{ buy(id); }, 'キャンセル');
+  }
+}
+
 function buy(id){
-  const f=furnitureMaster[id];
+  const f=furnitureMaster[id]; if(!f) return;
   if(f.gold){ if((gameState.money||0)<f.gold){ toast('⚠️ ゴールドが足りません！'); return; } gameState.money-=f.gold; }
-  else { if(gameState.miles<f.cost){ toast('⚠️ マイルが足りません！'); return; } gameState.miles-=f.cost; }
-  gameState.homeFurnishings.push(id); save();
-  $('se-unlock').currentTime=0; $('se-unlock').play().catch(()=>{}); toast(`🎉 『${f.name}』を購入！`); updateUI();
+  else { if((gameState.miles||0)<f.cost){ toast('⚠️ マイルが足りません！'); return; } gameState.miles-=f.cost; }
+  if(!gameState.homeFurnishings) gameState.homeFurnishings=[];
+  if(!gameState.homeFurnishings.includes(id)) gameState.homeFurnishings.push(id);
+  save();
+  const seU=$('se-unlock'); if(seU){ seU.currentTime=0; seU.play().catch(()=>{}); }
+  toast(`🎉 『${f.name}』を購入！`); updateUI();
 }
+
 function renderDisplay(){
-  let h=gameState.charaOwned.map(id=>{ const c=CHARAS[id]; return row('',`🧑 ${c.name}`,'',{html:`<button class="btn" style="background:#8b5cf6;color:#fff" onclick="place('chara','${id}')">配置</button>`}); }).join('')+gameState.homeFurnishings.map(id=>{ const f=furnitureMaster[id]; if(!f) return '';
-    return row('',f.name,'',{html:`<button class="btn" onclick="place('furn','${id}')">配置</button>`}); }).join('');
-  recipes.forEach(r=>{ const n=(gameState.products||{})[r.id]||0;
-    if(gameState.crafted&&gameState.crafted[r.id]) h+=row('',r.name,n>0?`在庫:${n}`:'製造済み',{html:`<button class="btn" style="background:#eab308;color:#fff" onclick="place('prod','${r.id}')">配置</button>`}); });
-  $('L-display').innerHTML=h+`<div style="text-align:center;opacity:.7;padding:.5rem;font-size:.7rem">${nextCharaText()}</div>`;
+  const L=$('L-display'); if(!L) return;
+  let h = '';
+  (gameState.charaOwned||[]).forEach(id=>{
+    const c = CHARAS[id]; if(!c) return;
+    const thumb = `<div class="thumb"><img src="${CHARA_PREFIX}${id}.png" alt="${c.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"><span class="emoji-ph">🧪</span></div>`;
+    h += row(thumb, `🧑 ${c.name}`, c.desc, {html:`<button class="btn" style="background:#8b5cf6;color:#fff" onclick="place('chara','${id}')">配置</button>`});
+  });
+
+  (gameState.homeFurnishings||[]).forEach(id=>{
+    const f = furnitureMaster[id]; if(!f) return;
+    const thumb = `<div class="thumb"><img src="${IMG_DIR}${f.img}" alt="${f.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"><span class="emoji-ph">${f.emoji||'📦'}</span></div>`;
+    h += row(thumb, f.name, `ボーナス +${f.bonus}%`, {html:`<button class="btn" onclick="place('furn','${id}')">配置</button>`});
+  });
+
+  recipes.forEach(r=>{
+    const n = (gameState.products||{})[r.id] || 0;
+    if(gameState.crafted && gameState.crafted[r.id]){
+      const thumb = `<div class="thumb"><img src="${IMG_DIR}${r.img}" alt="${r.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"><span class="emoji-ph">${r.emoji||'📦'}</span></div>`;
+      h += row(thumb, r.name, n>0 ? `在庫:${n}` : '製造済み', {html:`<button class="btn" style="background:#eab308;color:#fff" onclick="place('prod','${r.id}')">配置</button>`});
+    }
+  });
+
+  L.innerHTML = h + `<div style="text-align:center;opacity:.7;padding:.5rem;font-size:.7rem">${nextCharaText()}</div>`;
 }
+
 function place(type,id){
   const f=furnitureMaster[id]; hist();
+  if(!gameState.placedItems) gameState.placedItems=[];
   gameState.placedItems.push({type,id,dir,s:1,x:(f?f.x:30+Math.random()*40),y:(f?f.y:(type==='chara'?90:80))});
-  save(); $('se-gogogo').currentTime=0; $('se-gogogo').play().catch(()=>{}); toast('✨ 配置！ドラッグで移動・2本指で拡大縮小'); updateUI();
+  save(); const seG=$('se-gogogo'); if(seG){ seG.currentTime=0; seG.play().catch(()=>{}); }
+  toast('✨ 配置！ドラッグで移動・2本指で拡大縮小'); updateUI();
 }
+
 function renderTheme(){
-  if(gameState.level<3){ $('L-theme').innerHTML='<div style="text-align:center;opacity:.7;padding:1rem;font-size:.75rem">🔒 Lv.3 到達でテイスト変更が解放されます！</div>'; return; }
-  $('L-theme').innerHTML=Object.keys(themesMaster).map(k=>{ const t=themesMaster[k], cur=gameState.currentTheme===k;
+  const L=$('L-theme'); if(!L) return;
+  if((gameState.level||1)<3){ L.innerHTML='<div style="text-align:center;opacity:.7;padding:1rem;font-size:.75rem">🔒 Lv.3 到達でテイスト変更が解放されます！</div>'; return; }
+  L.innerHTML=Object.keys(themesMaster).map(k=>{ const t=themesMaster[k], cur=gameState.currentTheme===k;
     const sw=`<div class="swatch"><i style="background:${t.wall}"></i><i style="background:${t.floor}"></i></div>`;
     return row(sw,t.name,'',{own:cur,html:cur?'<button class="btn done">適用中</button>':`<button class="btn" onclick="setTheme('${k}')">変更</button>`}); }).join('');
 }
 function setTheme(k){ gameState.currentTheme=k; save(); applyTheme(k); updateUI(); toast('🎨 テイストを変更しました！'); }
+
 function renderMusic(){
-  if(gameState.level<5){ $('L-music').innerHTML='<div style="text-align:center;opacity:.7;padding:1rem;font-size:.75rem">🔒 Lv.5 到達でジュークボックスが解放されます！</div>'; return; }
-  $('L-music').innerHTML=Object.keys(bgmMaster).map(k=>{ const cur=gameState.currentBgm===k;
+  const L=$('L-music'); if(!L) return;
+  if((gameState.level||1)<5){ L.innerHTML='<div style="text-align:center;opacity:.7;padding:1rem;font-size:.75rem">🔒 Lv.5 到達でジュークボックスが解放されます！</div>'; return; }
+  L.innerHTML=Object.keys(bgmMaster).map(k=>{ const cur=gameState.currentBgm===k;
     return row('',`🎵 ${bgmMaster[k].name}`,'',{own:cur,html:cur?'<button class="btn done">再生中</button>':`<button class="btn" onclick="setBgm('${k}')">再生</button>`}); }).join('');
 }
-function setBgm(k){ gameState.currentBgm=k; save(); updateBgmSource(); if(!isMuted) bgm.play().catch(()=>{}); updateUI(); toast(`🎶 「${bgmMaster[k].name}」に変更`); }
+function setBgm(k){ gameState.currentBgm=k; save(); updateBgmSource(); if(!isMuted && bgm) bgm.play().catch(()=>{}); updateUI(); toast(`🎶 「${bgmMaster[k].name}」に変更`); }
 
 function exportSave(){
   try{ const enc=btoa(unescape(encodeURIComponent(localStorage.getItem('rareEarthGameState')||JSON.stringify(gameState))));
-    const ta=$('saveCode'); ta.value=enc; ta.select();
+    const ta=$('saveCode'); if(ta){ ta.value=enc; ta.select(); }
     navigator.clipboard.writeText(enc).then(()=>toast('📋 コピーしました！')).catch(()=>toast('📋 生成しました（手動でコピーしてね）'));
   }catch(e){ toast('⚠️ エクスポートに失敗しました'); }
 }
 function importSave(){
-  const c=$('saveCode').value.trim(); if(!c){ toast('⚠️ 復元コードを入力してください'); return; }
+  const ta=$('saveCode'), c=ta?ta.value.trim():'';
+  if(!c){ toast('⚠️ 復元コードを入力してください'); return; }
   askModal('セーブデータの復元','現在のデータが上書きされます。よろしいですか？','復元する',()=>{
     try{ const p=JSON.parse(decodeURIComponent(escape(atob(c)))); if(!p||typeof p!=='object') throw 0;
       localStorage.setItem('rareEarthGameState',JSON.stringify(p)); gameState=p;
@@ -700,9 +751,12 @@ function importSave(){
 }
 
 let past=[], future=[];
-const cur=()=>JSON.stringify(gameState.placedItems);
+const cur=()=>JSON.stringify(gameState.placedItems||[]);
 function hist(s){ past.push(s||cur()); if(past.length>50) past.shift(); future=[]; histBtns(); }
-function histBtns(){ $('undoBtn').disabled=!past.length; $('redoBtn').disabled=!future.length; }
+function histBtns(){
+  const uB=$('undoBtn'), rB=$('redoBtn');
+  if(uB) uB.disabled=!past.length; if(rB) rB.disabled=!future.length;
+}
 function restore(s){ gameState.placedItems=JSON.parse(s); save(); updateUI(); histBtns(); }
 function undo(){ if(!past.length) return; future.push(cur()); restore(past.pop()); }
 function redo(){ if(!future.length) return; past.push(cur()); restore(future.pop()); }
@@ -711,9 +765,11 @@ function resetRoom(){
 }
 
 window.addEventListener('load',()=>{
-  buildControls(); switchTab('shop'); changeDirection(0);
-  updateBgmSource(); updateBgmUI(); applyTheme(gameState.currentTheme); ensureCharas(); syncCrafted(); updateUI(); histBtns();
-  if(!isMuted) bgm.play().catch(()=>['click','touchstart'].forEach(e=>document.addEventListener(e,unlock)));
+  try {
+    buildControls(); switchTab('shop'); changeDirection(0);
+    updateBgmSource(); updateBgmUI(); applyTheme(gameState.currentTheme||'natural'); ensureCharas(); syncCrafted(); updateUI(); histBtns();
+    if(!isMuted && bgm) bgm.play().catch(()=>['click','touchstart'].forEach(e=>document.addEventListener(e,unlock)));
+  } catch(e){}
 });
 </script>
 </body>
