@@ -607,7 +607,8 @@
 
     // 節目1回あたりの費用
     function getMilestoneCost(l) {
-      let c = l * 2500;
+      if (l === 10) return 1500;
+      let c = l * 250;
       if (l % 10 === 0) c *= 1.5;
       return Math.floor(c);
     }
