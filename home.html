@@ -480,16 +480,17 @@ function openCharaTaskModal(id){
   askModal(`🧑 ${c.name}`, html, '閉じる', null, '');
 }
 
-/* キャラクター会話機能・エルビウム専用ブロック崩しリンク */
+/* キャラクター会話機能 */
 function talkChara(id){
   const c = CHARAS[id];
   if(!c) return;
 
   if(id === 'Er'){
+    // エルビウム（Er）のおしゃべり & ミニゲーム選択肢
     const html = `
       <div style="font-size:0.8rem; text-align:left; line-height:1.5">
-        <p>「ふふっ、私とお話ししたいの？光ファイバーで世界中の通信を増幅するのも得意だけど、私といえばやっぱり<b>美肌レーザー（エルビウムYAGレーザー）</b>や光の増幅技術ね！」</p>
-        <p>「それと…私のミニゲーム<b>『エルビウムの美肌ブロック崩し』</b>で遊んでいく？特殊なギミックや難易度挑戦も用意しているわよ！」</p>
+        <p>「フフ、私とお話ししたいの？光ファイバーで世界中の通信を増幅するのも得意だけど、私といえばやっぱり美肌レーザー（エルビウムYAGレーザー）や光の増幅技術ね！」</p>
+        <p>「私のミニゲーム<b>『美肌ブロック崩し』</b>で遊んでいく？」</p>
         <div style="display:flex; flex-direction:column; gap:6px; margin-top:10px">
           <button class="btn" style="background:#ec4899; font-weight:bold; font-size:0.82rem" onclick="location.href='erbium_breakout.html'">🎮 美肌ブロック崩しを遊ぶ</button>
           <button class="btn" style="background:#3b82f6" onclick="askModal('💡 エルビウム解説', 'エルビウム(Er)は、光ファイバー増幅器(EDFA)に欠かせない元素！波長1550nmの光を増幅して長距離通信を支えたり、皮膚の水分に吸収されやすいレーザーとして美容・皮膚科医療で広く使われているよ。', '戻る', ()=>talkChara('Er'), '')">📖 エルビウムについて詳しく知る</button>
@@ -497,7 +498,24 @@ function talkChara(id){
       </div>
     `;
     askModal(`✨ エルビウムとの会話`, html, '閉じる', null, '');
+
+  } else if(id === 'Ce'){
+    // ★ セリウム（Ce）のおしゃべり & カレイドスコープミニゲーム選択肢
+    const html = `
+      <div style="font-size:0.8rem; text-align:left; line-height:1.5">
+        <p>「こんにちは！セリウムだよ。<b>環境を守るお掃除職人</b>として、排ガスの浄化や液晶の研磨が得意なんだ！フットワークが軽くて、世界を美しく保つ情熱家だよ。」</p>
+        <p>「主な活躍の場は、<b>自動車触媒、液晶研磨材、ライター石</b>などなど！光やガラスを磨き上げるのも私の得意分野なんだ。」</p>
+        <p>「どう？私と一緒に、集めた宝石を使ってキラキラの万華鏡を作ってみない？」</p>
+        <div style="display:flex; flex-direction:column; gap:6px; margin-top:10px">
+          <button class="btn" style="background:#eab308; color:#000; font-weight:bold; font-size:0.82rem" onclick="location.href='kaleidoscope.html'">💎 セリウムのキラメキ万華鏡を遊ぶ</button>
+          <button class="btn" style="background:#3b82f6" onclick="askModal('💡 セリウム解説', 'セリウム(Ce)はレアアースの中で最も埋蔵量が多く、ガラスや宝石の鏡面仕上げ研磨剤（酸化セリウム）や、自動車の排ガスをクリーンにする触媒、ライターの火花を散らす石（ミッシュメタル）など、私たちの暮らしを足元から支える環境の守り手だよ！', '戻る', ()=>talkChara('Ce'), '')">📖 セリウムについて詳しく知る</button>
+        </div>
+      </div>
+    `;
+    askModal(`✨ セリウムとの会話`, html, '閉じる', null, '');
+
   } else {
+    // 他の全キャラクターの共通会話処理
     const html = `
       <div style="font-size:0.82rem; text-align:center; padding:10px 0">
         <p>「こんにちは！${c.name}だよ。いつでもお部屋で声をかけてね！一緒にお仕事がんばろう！」</p>
@@ -713,7 +731,7 @@ function place(type,id){
   const f=furnitureMaster[id]; hist();
   if(!gameState.placedItems) gameState.placedItems=[];
   gameState.placedItems.push({type,id,dir,s:1,x:(f?f.x:30+Math.random()*40),y:(f?f.y:(type==='chara'?90:80))});
-  save(); const seG=$('se-gogogo'); if(seG){ seG.currentTime=0; seG.play().catch(()=>{}); }
+  save(); const seG=$('nyu2'); if(seG){ seG.currentTime=0; seG.play().catch(()=>{}); }
   toast('✨ 配置！ドラッグで移動・2本指で拡大縮小'); updateUI();
 }
 

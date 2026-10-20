@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>セリウムのキラメキ万華鏡 〜Jewel Kaleidoscope〜</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        body {
+            background-color: #07090e;
+            color: #f0f6fc;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        .custom-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: #0d1117;
+            border-radius: 4px;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #30363d;
+            border-radius: 4px;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb:hover {
+            background: #484f58;
+        }
+
+        .glass-panel {
+            background: rgba(22, 27, 34, 0.88);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .kaleido-glow {
+            box-shadow: 0 0 35px rgba(121, 192, 255, 0.25), inset 0 0 25px rgba(0, 0, 0, 0.9);
+        }
+
+        @keyframes ceriumPulse {
+            0%, 100% { box-shadow: 0 0 15px rgba(227, 179, 65, 0.4), inset 0 0 20px rgba(227, 179, 65, 0.2); }
+            50% { box-shadow: 0 0 35px rgba(255, 220, 120, 0.8), inset 0 0 30px rgba(255, 200, 80, 0.4); }
+        }
+        .cerium-active {
+            animation: ceriumPulse 2.5s infinite ease-in-out;
+            border-color: #e3b341 !important;
+        }
+
+        /* Bounce effect for tutorial popup */
+        @keyframes modalSlideUp {
+            from { transform: translateY(20px) scale(0.95); opacity: 0; }
+            to { transform: translateY(0) scale(1); opacity: 1; }
+        }
+        .modal-anim {
+            animation: modalSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center min-h-screen pb-6">
+
+    <!-- Header with Small Ce Chara -->
+    <header class="w-full max-w-lg p-3 text-center glass-panel sticky top-0 z-20 border-b border-gray-800 shadow-lg flex items-center justify-between px-4">
+        <div class="text-left">
+            <h1 class="text-sm sm:text-base font-bold text-sky-400 tracking-wider flex items-center gap-1.5">
+                <span>💎</span> セリウムのキラメキ万華鏡
+            </h1>
+            <div class="flex gap-3 mt-0.5 text-[11px] text-gray-400">
+                <span>配置: <strong id="placedCount" class="text-amber-400">0</strong>/10個</span>
+                <span>セリウム磨き: <strong id="ceStatusText" class="text-gray-400">OFF</strong></span>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <button id="openTutorialBtn" class="px-2 py-1 bg-gray-800 hover:bg-gray-700 text-sky-300 text-[11px] font-bold rounded-lg border border-gray-700 transition">
+                ❓ 遊び方
+            </button>
+            <!-- Small Ce Mascot Icon in Play Screen -->
+            <img src="chara_minigame_ce.png" alt="セリウム" class="w-11 h-11 object-contain drop-shadow-[0_0_8px_rgba(227,179,65,0.4)] pointer-events-none"
+                 onerror="this.style.display='none'">
+        </div>
+    </header>
+
+    <!-- Main Kaleidoscope Canvas Container -->
+    <div class="relative w-[320px] h-[320px] sm:w-[380px] sm:h-[380px] my-3 rounded-full kaleido-glow border-4 border-gray-800 overflow-hidden bg-radial from-slate-900 to-black cursor-grab active:cursor-grabbing transition-all duration-300" id="kaleidoContainer">
+        <canvas id="kaleidoCanvas" width="700" height="700" class="w-full h-full block"></canvas>
+    </div>
+
+    <!-- Quick Controls -->
+    <div class="flex gap-2 w-80 sm:w-[380px] mb-3">
+        <button id="rotateBtn" class="flex-1 py-2 px-3 bg-gray-800 hover:bg-gray-700 active:bg-sky-600 text-gray-200 text-xs font-bold rounded-lg border border-gray-700 transition flex items-center justify-center gap-1 shadow">
+            <span>🔄</span> <span id="rotateLabel">自動回転: OFF</span>
+        </button>
+        <button id="clearBtn" class="py-2 px-3 bg-gray-800 hover:bg-red-900 text-gray-200 text-xs font-bold rounded-lg border border-gray-700 transition shadow">
+            🗑️ 全消去
+        </button>
+        <button id="cePolishingBtn" class="flex-1 py-2 px-3 bg-gray-800 hover:bg-amber-900 text-amber-300 text-xs font-bold rounded-lg border border-gray-700 transition flex items-center justify-center gap-1 shadow">
+            <span>✨</span> セリウム磨き
+        </button>
+    </div>
+
+    <!-- Workspace & Controls -->
+    <div class="w-full max-w-lg glass-panel rounded-t-2xl p-4 flex flex-col gap-3 flex-grow border-t border-gray-800">
+        
+        <!-- Gem Inspector Panel -->
+        <div id="inspector" class="bg-gray-950 border border-gray-800 rounded-xl p-2.5 flex items-center justify-between gap-2 opacity-50 pointer-events-none transition-opacity duration-200">
+            <div class="flex items-center gap-2 max-w-[120px]">
+                <span class="text-xs text-sky-400 font-bold truncate" id="selectedName">選択なし</span>
+            </div>
+            <div class="flex items-center gap-3 flex-grow justify-end">
+                <label class="text-[10px] text-gray-400 flex flex-col items-center">
+                    サイズ
+                    <input type="range" id="sizeSlider" min="0.4" max="2.5" step="0.1" value="1.0" class="w-16 accent-sky-400 h-1 mt-1">
+                </label>
+                <label class="text-[10px] text-gray-400 flex flex-col items-center">
+                    角度
+                    <input type="range" id="angleSlider" min="0" max="360" step="5" value="0" class="w-16 accent-sky-400 h-1 mt-1">
+                </label>
+                <button id="deleteBtn" class="px-2.5 py-1 text-[11px] bg-red-800 hover:bg-red-700 text-white font-bold rounded-md transition shadow">
+                    削除
+                </button>
+            </div>
+        </div>
+
+        <!-- Tray Filter & Header -->
+        <div class="flex justify-between items-center text-xs text-gray-400 px-1">
+            <span class="font-medium text-gray-300">📦 宝石図鑑（タップで1粒ずつ配置）</span>
+            <label class="flex items-center gap-1.5 cursor-pointer text-[11px] text-sky-300 bg-gray-900 px-2 py-1 rounded-md border border-gray-800 hover:border-sky-500">
+                <input type="checkbox" id="filterUnlockedToggle" class="accent-sky-400 rounded">
+                <span>入手済みのみ表示</span>
+            </label>
+        </div>
+
+        <!-- Gem Tray Grid -->
+        <div id="gemTray" class="grid grid-cols-4 sm:grid-cols-5 gap-2 max-h-56 overflow-y-auto p-2 bg-gray-950 rounded-xl border border-gray-900 custom-scroll">
+            <!-- Dynamic Gem Cards -->
+        </div>
+    </div>
+
+    <!-- 📖 Tutorial Modal with Large Ce Chara -->
+    <div id="tutorialModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div class="bg-gray-900 border-2 border-sky-500/50 rounded-2xl p-5 max-w-sm w-full modal-anim shadow-2xl flex flex-col items-center text-center relative overflow-hidden">
+            <!-- Decorative Light Flare -->
+            <div class="absolute -top-12 -left-12 w-32 h-32 bg-sky-500/20 rounded-full blur-2xl"></div>
+
+            <!-- Large Ce Mascot Image -->
+            <div class="relative mb-2">
+                <img src="chara_minigame_ce.png" alt="セリウム" class="w-36 h-36 object-contain drop-shadow-[0_0_15px_rgba(255,215,0,0.5)]"
+                     onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'120\' height=\'120\' viewBox=\'0 0 24 24\' fill=\'%23e3b341\'><circle cx=\'12\' cy=\'12\' r=\'10\'/></svg>'">
+            </div>
+
+            <h2 class="text-base font-bold text-sky-300 mb-2 tracking-wide">
+                ✨ セリウムのキラメキ万華鏡へようこそ！ ✨
+            </h2>
+
+            <div class="text-xs text-gray-300 space-y-2 text-left bg-gray-950/80 p-3 rounded-xl border border-gray-800 mb-4 w-full leading-relaxed">
+                <p>💎 <strong>① 自由な配置:</strong> 下の図鑑から宝石をタップして、最大10個まで好きな宝石を万華鏡に置けます！</p>
+                <p>🔄 <strong>② 刻々と変わる模様:</strong> 万華鏡内を指でドラッグするか、<strong>「自動回転: ON」</strong>にすると、中のビーズが揺れ動いて刻々と美しい模様に変化します！</p>
+                <p>✨ <strong>③ セリウム磨き:</strong> 酸化セリウムの輝き効果で、宝石のツヤと透明感をアップできます！</p>
+            </div>
+
+            <button id="closeTutorialBtn" class="w-full py-2.5 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-bold text-xs rounded-xl shadow-lg transition transform active:scale-95">
+                万華鏡を覗いてみる！
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // 💎 100 Gem Master Data
+        const gemsMaster = [
+            { id: 1, name: 'ダイヤモンド', img: 'houseki1.png', color: '#e0f7fa', desc: '永遠の輝きを放つ最高硬度の宝石。' },
+            { id: 2, name: 'ルビー', img: 'houseki2.png', color: '#ff1744', desc: '情熱的な赤色を持つ宝石の女王。' },
+            { id: 3, name: 'サファイア', img: 'houseki3.png', color: '#2979ff', desc: '気高き青色を湛える知性の石。' },
+            { id: 4, name: 'エメラルド', img: 'houseki4.png', color: '#00e676', desc: '深緑の美しさが際立つ癒やしの宝石。' },
+            { id: 5, name: 'アメジスト', img: 'houseki5.png', color: '#d500f9', desc: '高貴な紫色が美しい神秘的な水晶。' },
+            { id: 6, name: 'シトリン', img: 'houseki6.png', color: '#ffc400', desc: '太陽の光を閉じ込めた黄色の水晶。' },
+            { id: 7, name: 'トパーズ', img: 'houseki7.png', color: '#00b0ff', desc: '透明感と豊かな色彩を持つ硬い鉱物。' },
+            { id: 8, name: 'ガーネット', img: 'houseki8.png', color: '#d50000', desc: 'ざくろの実のように深い赤色の結晶。' },
+            { id: 9, name: 'アクアマリン', img: 'houseki9.png', color: '#80deea', desc: '穏やかな海の水面を思わせる宝石。' },
+            { id: 10, name: 'ペリドット', img: 'houseki10.png', color: '#76ff03', desc: '夜でも輝きを失わない黄緑色の石。' },
+            { id: 11, name: 'オパール', img: 'houseki11.png', color: '#ea80fc', desc: '虹色の遊色効果を持つ神秘の石。' },
+            { id: 12, name: 'ターコイズ', img: 'houseki12.png', color: '#00e5ff', desc: '空の色を映したスカイブルーの石。' },
+            { id: 13, name: '翡翠（ヒスイ）', img: 'houseki13.png', color: '#69f0ae', desc: '神聖視されてきた東洋の緑色宝石。' },
+            { id: 14, name: '琥珀（アンバー）', img: 'houseki14.png', color: '#ff9100', desc: '樹液が化石化した温もりある宝石。' },
+            { id: 15, name: 'フローライト', img: 'houseki15.png', color: '#b388ff', desc: 'グラデーションが美しい蛍石。' },
+            { id: 18, name: '水晶', img: 'houseki18.png', color: '#ffffff', desc: '無色透明で完璧な美しさの石。' },
+            { id: 21, name: 'ラピスラズリ', img: 'houseki21.png', color: '#3d5aff', desc: '群青色に黄金が輝く聖なる石。' },
+            { id: 26, name: 'ムーンストーン', img: 'houseki26.png', color: '#e0e0e0', desc: '月光のようなシラー効果の石。' },
+            { id: 31, name: 'クンツァイト', img: 'houseki31.png', color: '#ff80ab', desc: 'ライラックピンクの上品な石。' },
+            { id: 39, name: 'マラカイト', img: 'houseki39.png', color: '#00c853', desc: '孔雀の羽のような同心円模様の石。' },
+            { id: 48, name: 'ラリマー', img: 'houseki48.png', color: '#40c4ff', desc: 'カリブ海の海と空のような水色の石。' },
+            { id: 63, name: 'パライバトルマリン', img: 'houseki63.png', color: '#1de9b6', desc: 'ネオンブルーに発光する奇跡のトルマリン。' },
+            { id: 77, name: 'ルチルクォーツ', img: 'houseki77.png', color: '#ffd700', desc: '金色の針状結晶が内包された水晶。' },
+            { id: 100, name: 'レアアース・プリズム鉱', img: 'houseki100.png', color: '#ff4081', desc: 'すべての希土類を束ねた究極の鉱物。' }
+        ];
+
+        // Fill remaining IDs up to 100
+        for (let i = 1; i <= 100; i++) {
+            if (!gemsMaster.some(g => g.id === i)) {
+                gemsMaster.push({
+                    id: i,
+                    name: `宝石 #${i}`,
+                    img: `houseki${i}.png`,
+                    color: `hsl(${ (i * 37) % 360 }, 75%, 65%)`,
+                    desc: `コレクションナンバー #${i} の綺麗な鉱物。`
+                });
+            }
+        }
+        gemsMaster.sort((a, b) => a.id - b.id);
+
+        let playerUnlockedGemIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 18, 21, 26, 31, 39, 48, 63, 77, 100];
+
+        const CONFIG = {
+            maxCapacity: 10,
+            slices: 6,
+            canvasSize: 700
+        };
+
+        const imageCache = {};
+        const imageErrorFlags = {};
+        let placedGems = [];
+        let selectedIndex = -1;
+        let isAutoRotating = false;
+        let mirrorRotationAngle = 0;
+        let isPolished = false;
+        let filterUnlockedOnly = false;
+
+        let canvas, ctx;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            canvas = document.getElementById('kaleidoCanvas');
+            ctx = canvas.getContext('2d');
+
+            preloadImages();
+            initGemTray();
+            setupEvents();
+            requestAnimationFrame(renderLoop);
+        });
+
+        function preloadImages() {
+            gemsMaster.forEach(gem => {
+                const img = new Image();
+                img.src = gem.img;
+                img.onload = () => { imageCache[gem.id] = img; };
+                img.onerror = () => { imageErrorFlags[gem.id] = true; };
+            });
+        }
+
+        // SVG crystal fallback generator for missing images
+        function createCrystalSVGDataUrl(colorHex) {
+            const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24"><polygon points="12,2 19,7 19,17 12,22 5,17 5,7" fill="${colorHex}" stroke="#ffffff" stroke-width="1.5"/><polygon points="12,2 19,7 12,12 5,7" fill="rgba(255,255,255,0.4)"/><polygon points="12,12 19,17 12,22 5,17" fill="rgba(0,0,0,0.2)"/></svg>`;
+            return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+        }
+
+        function initGemTray() {
+            const tray = document.getElementById('gemTray');
+            tray.innerHTML = '';
+
+            gemsMaster.forEach(gem => {
+                const isUnlocked = playerUnlockedGemIds.includes(gem.id);
+
+                if (filterUnlockedOnly && !isUnlocked) return;
+
+                const card = document.createElement('div');
+                card.className = `flex flex-col items-center justify-between p-2 bg-gray-900 border rounded-lg transition-all duration-200 select-none ${
+                    isUnlocked 
+                        ? 'border-gray-800 hover:border-sky-500 hover:-translate-y-0.5 cursor-pointer' 
+                        : 'border-gray-900 opacity-40 cursor-not-allowed'
+                }`;
+
+                if (isUnlocked) {
+                    card.title = gem.desc;
+                    const fallbackSvg = createCrystalSVGDataUrl(gem.color || '#79c0ff');
+                    
+                    card.innerHTML = `
+                        <div class="w-10 h-10 flex items-center justify-center pointer-events-none">
+                            <img src="${gem.img}" alt="${gem.name}" class="max-w-full max-h-full object-contain" 
+                                 onerror="this.onerror=null; this.src='${fallbackSvg}';">
+                        </div>
+                        <span class="text-[10px] text-gray-300 mt-1 truncate w-full text-center">${gem.name}</span>
+                    `;
+                    card.addEventListener('click', () => addGemToKaleido(gem));
+                } else {
+                    card.title = '未獲得の宝石';
+                    card.innerHTML = `
+                        <div class="w-10 h-10 flex items-center justify-center text-lg text-gray-500 font-bold">🔒</div>
+                        <span class="text-[10px] text-gray-500 truncate w-full text-center">???</span>
+                    `;
+                }
+
+                tray.appendChild(card);
+            });
+        }
+
+        function addGemToKaleido(gem) {
+            if (placedGems.length >= CONFIG.maxCapacity) {
+                alert(`配置できるのは最大 ${CONFIG.maxCapacity} 個までです！`);
+                return;
+            }
+
+            const radius = 30 + Math.random() * 80;
+            const angle = Math.random() * Math.PI * 2;
+
+            placedGems.push({
+                master: gem,
+                x: Math.cos(angle) * radius,
+                y: Math.sin(angle) * radius,
+                baseRadius: radius,
+                baseAngle: angle,
+                scale: 1.0,
+                rotation: Math.random() * Math.PI,
+                rotSpeed: (Math.random() - 0.5) * 0.02,
+                floatPhase: Math.random() * Math.PI * 2,
+                floatSpeed: 0.015 + Math.random() * 0.02
+            });
+
+            selectGem(placedGems.length - 1);
+            updateUI();
+        }
+
+        function selectGem(index) {
+            selectedIndex = index;
+            const inspector = document.getElementById('inspector');
+            const selectedName = document.getElementById('selectedName');
+            const sizeSlider = document.getElementById('sizeSlider');
+            const angleSlider = document.getElementById('angleSlider');
+
+            if (selectedIndex >= 0 && selectedIndex < placedGems.length) {
+                const gem = placedGems[selectedIndex];
+                inspector.classList.remove('opacity-50', 'pointer-events-none');
+                selectedName.textContent = `${gem.master.name}`;
+                sizeSlider.value = gem.scale;
+                angleSlider.value = Math.round((gem.rotation * 180) / Math.PI) % 360;
+            } else {
+                inspector.classList.add('opacity-50', 'pointer-events-none');
+                selectedName.textContent = '選択なし';
+            }
+        }
+
+        function setupEvents() {
+            // Tutorial Modal Trigger
+            const tutModal = document.getElementById('tutorialModal');
+            document.getElementById('openTutorialBtn').addEventListener('click', () => {
+                tutModal.classList.remove('hidden');
+            });
+            document.getElementById('closeTutorialBtn').addEventListener('click', () => {
+                tutModal.classList.add('hidden');
+            });
+
+            // Filter Toggle
+            document.getElementById('filterUnlockedToggle').addEventListener('change', (e) => {
+                filterUnlockedOnly = e.target.checked;
+                initGemTray();
+            });
+
+            // Auto Rotation Toggle
+            const rotateBtn = document.getElementById('rotateBtn');
+            const rotateLabel = document.getElementById('rotateLabel');
+            rotateBtn.addEventListener('click', () => {
+                isAutoRotating = !isAutoRotating;
+                rotateLabel.textContent = isAutoRotating ? "⏸️ 自動回転: ON" : "🔄 自動回転: OFF";
+                rotateBtn.classList.toggle('bg-sky-700', isAutoRotating);
+                rotateBtn.classList.toggle('border-sky-400', isAutoRotating);
+            });
+
+            // Clear All
+            document.getElementById('clearBtn').addEventListener('click', () => {
+                placedGems = [];
+                selectGem(-1);
+                updateUI();
+            });
+
+            // Cerium Polish Toggle
+            const ceBtn = document.getElementById('cePolishingBtn');
+            const ceStatusText = document.getElementById('ceStatusText');
+            const container = document.getElementById('kaleidoContainer');
+
+            ceBtn.addEventListener('click', () => {
+                isPolished = !isPolished;
+                ceBtn.classList.toggle('bg-amber-600', isPolished);
+                ceBtn.classList.toggle('text-white', isPolished);
+                container.classList.toggle('cerium-active', isPolished);
+                ceStatusText.textContent = isPolished ? "✨ Active" : "OFF";
+                ceStatusText.className = isPolished ? "text-amber-400 font-bold" : "text-gray-400";
+            });
+
+            // Inspector controls
+            document.getElementById('sizeSlider').addEventListener('input', (e) => {
+                if (selectedIndex >= 0) placedGems[selectedIndex].scale = parseFloat(e.target.value);
+            });
+            document.getElementById('angleSlider').addEventListener('input', (e) => {
+                if (selectedIndex >= 0) placedGems[selectedIndex].rotation = (parseFloat(e.target.value) * Math.PI) / 180;
+            });
+            document.getElementById('deleteBtn').addEventListener('click', () => {
+                if (selectedIndex >= 0) {
+                    placedGems.splice(selectedIndex, 1);
+                    selectGem(-1);
+                    updateUI();
+                }
+            });
+
+            // Touch / Drag Interaction
+            let isDragging = false;
+            let activeGemIdx = -1;
+            let startX = 0, startY = 0;
+
+            const getCanvasCoords = (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                const scale = CONFIG.canvasSize / rect.width;
+                return {
+                    x: (clientX - rect.left - rect.width / 2) * scale,
+                    y: (clientY - rect.top - rect.height / 2) * scale
+                };
+            };
+
+            const dragStart = (e) => {
+                const pos = getCanvasCoords(e);
+                let hitIdx = -1;
+
+                for (let i = placedGems.length - 1; i >= 0; i--) {
+                    const g = placedGems[i];
+                    const dx = g.x - pos.x;
+                    const dy = g.y - pos.y;
+                    if (Math.sqrt(dx * dx + dy * dy) < 45 * g.scale) {
+                        hitIdx = i;
+                        break;
+                    }
+                }
+
+                if (hitIdx !== -1) {
+                    activeGemIdx = hitIdx;
+                    selectGem(hitIdx);
+                } else {
+                    activeGemIdx = -1;
+                    selectGem(-1);
+                }
+
+                isDragging = true;
+                startX = pos.x;
+                startY = pos.y;
+            };
+
+            const dragMove = (e) => {
+                if (!isDragging) return;
+                const pos = getCanvasCoords(e);
+                const dx = pos.x - startX;
+                const dy = pos.y - startY;
+
+                if (activeGemIdx !== -1) {
+                    placedGems[activeGemIdx].x = pos.x;
+                    placedGems[activeGemIdx].y = pos.y;
+                    placedGems[activeGemIdx].baseRadius = Math.sqrt(pos.x * pos.x + pos.y * pos.y);
+                    placedGems[activeGemIdx].baseAngle = Math.atan2(pos.y, pos.x);
+                } else {
+                    placedGems.forEach(g => {
+                        g.x += dx * 0.25;
+                        g.y += dy * 0.25;
+                        g.rotation += dx * 0.008;
+                        g.baseRadius = Math.sqrt(g.x * g.x + g.y * g.y);
+                        g.baseAngle = Math.atan2(g.y, g.x);
+                    });
+                }
+
+                startX = pos.x;
+                startY = pos.y;
+            };
+
+            const dragEnd = () => { isDragging = false; };
+
+            container.addEventListener('mousedown', dragStart);
+            container.addEventListener('mousemove', dragMove);
+            window.addEventListener('mouseup', dragEnd);
+
+            container.addEventListener('touchstart', dragStart, {passive: false});
+            container.addEventListener('touchmove', dragMove, {passive: false});
+            window.addEventListener('touchend', dragEnd);
+        }
+
+        function updateUI() {
+            document.getElementById('placedCount').textContent = placedGems.length;
+        }
+
+        function renderLoop() {
+            ctx.clearRect(0, 0, CONFIG.canvasSize, CONFIG.canvasSize);
+
+            const cx = CONFIG.canvasSize / 2;
+            const cy = CONFIG.canvasSize / 2;
+
+            if (isAutoRotating) {
+                mirrorRotationAngle += 0.004;
+
+                placedGems.forEach((gem) => {
+                    gem.floatPhase += gem.floatSpeed;
+                    gem.rotation += gem.rotSpeed;
+                    gem.baseAngle += 0.002;
+                    const swayRadius = gem.baseRadius + Math.sin(gem.floatPhase) * 12;
+                    gem.x = Math.cos(gem.baseAngle) * swayRadius;
+                    gem.y = Math.sin(gem.baseAngle) * swayRadius;
+                });
+            }
+
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.rotate(mirrorRotationAngle);
+
+            const sliceAngle = (Math.PI * 2) / CONFIG.slices;
+
+            for (let i = 0; i < CONFIG.slices; i++) {
+                ctx.save();
+                ctx.rotate(i * sliceAngle);
+
+                if (i % 2 === 1) {
+                    ctx.scale(1, -1);
+                }
+
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.arc(0, 0, CONFIG.canvasSize / 2, -sliceAngle / 2, sliceAngle / 2);
+                ctx.closePath();
+                ctx.clip();
+
+                drawGemsSector();
+
+                ctx.restore();
+            }
+
+            ctx.restore();
+
+            requestAnimationFrame(renderLoop);
+        }
+
+        function drawGemsSector() {
+            placedGems.forEach((gem, idx) => {
+                const img = imageCache[gem.master.id];
+                const isFailed = imageErrorFlags[gem.master.id];
+
+                ctx.save();
+                ctx.translate(gem.x, gem.y);
+                ctx.rotate(gem.rotation);
+                ctx.scale(gem.scale, gem.scale);
+
+                const size = 52;
+
+                if (isPolished) {
+                    ctx.shadowBlur = 22;
+                    ctx.shadowColor = 'rgba(255, 230, 150, 0.9)';
+                } else {
+                    ctx.shadowBlur = 8;
+                    ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
+                }
+
+                if (img && !isFailed) {
+                    ctx.drawImage(img, -size / 2, -size / 2, size, size);
+                } else {
+                    // Beautiful Crystal Vector Fallback
+                    ctx.beginPath();
+                    ctx.moveTo(0, -size / 2);
+                    ctx.lineTo(size / 2, -size / 4);
+                    ctx.lineTo(size / 2, size / 4);
+                    ctx.lineTo(0, size / 2);
+                    ctx.lineTo(-size / 2, size / 4);
+                    ctx.lineTo(-size / 2, -size / 4);
+                    ctx.closePath();
+                    
+                    ctx.fillStyle = gem.master.color || '#79c0ff';
+                    ctx.fill();
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 1.5;
+                    ctx.stroke();
+
+                    // Inner facet highlight
+                    ctx.beginPath();
+                    ctx.moveTo(0, -size / 2);
+                    ctx.lineTo(0, size / 2);
+                    ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+                    ctx.stroke();
+                }
+
+                if (idx === selectedIndex) {
+                    ctx.strokeStyle = '#e3b341';
+                    ctx.lineWidth = 3;
+                    ctx.strokeRect(-size / 2 - 4, -size / 2 - 4, size + 8, size + 8);
+                }
+
+                ctx.restore();
+            });
+        }
+    </script>
+</body>
+</html>
