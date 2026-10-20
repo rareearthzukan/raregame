@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>深海ドリル＆ジェット掘削</title>
+<style>
+:root{--cy:#22d3ee;--line:#0e7490;--card:rgba(8,22,48,.85)}
+*{box-sizing:border-box}
+body{margin:0;padding:12px;background:linear-gradient(#0a1a33,#0b1329 40%,#08101f);color:#fff;font-family:'Noto Sans JP','Hiragino Sans','Yu Gothic',sans-serif;font-weight:700;min-height:100vh}
+.wrap{max-width:480px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+.card{background:var(--card);border:2px solid var(--line);border-radius:18px;padding:12px}
+h1{margin:0 0 8px;font-size:1.05rem;color:var(--cy);font-weight:800}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.st{border:1.5px solid var(--line);border-radius:12px;background:#07142b;padding:5px 2px;text-align:center}
+.st small{display:block;font-size:.65rem;color:var(--cy);font-weight:500}
+.st b{font-size:1.15rem}
+.wear{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:.75rem;color:#cbd5e1}
+.wtrack{flex:1;height:12px;border-radius:8px;background:#030b1a;border:1.5px solid var(--line);overflow:hidden}
+.wfill{height:100%;width:0;background:linear-gradient(90deg,#22d3ee,#f59e0b,#ef4444);transition:width .3s}
+.stage{padding:8px;border-color:var(--cy);box-shadow:0 0 14px rgba(34,211,238,.35)}
+canvas{width:100%;height:auto;display:block;border-radius:14px;border:2px solid var(--cy);touch-action:manipulation}
+.bar{height:16px;margin:12px 4px 4px;border-radius:8px;background:#06142c;border:1.5px solid var(--line);position:relative;overflow:hidden}
+.tg{position:absolute;left:40%;width:20%;height:100%;background:rgba(34,197,94,.35);border-left:2px dashed #22c55e;border-right:2px dashed #22c55e}
+.ptr{position:absolute;left:0;width:5px;height:100%;background:#facc15;box-shadow:0 0 8px #facc15}
+.say{display:flex;align-items:center;gap:10px}
+.ava{flex:none;width:60px;height:60px;border-radius:50%;border:3px solid var(--cy);background:radial-gradient(#0e3a5a,#030b1a);display:flex;align-items:center;justify-content:center;font-size:1.9rem;box-shadow:0 0 10px rgba(34,211,238,.5)}
+.bub{position:relative;background:#fff;color:#0f172a;border-radius:14px;padding:10px 12px;font-size:.88rem;line-height:1.45;flex:1}
+.bub:before{content:"";position:absolute;left:-8px;top:22px;border:8px solid transparent;border-right-color:#fff;border-left:0}
+.ctl{display:flex;gap:10px}
+button{font:inherit;color:#fff;cursor:pointer;border:2px solid var(--cy);border-radius:16px;background:linear-gradient(#0e7490,#0b4a66);padding:14px;box-shadow:0 0 10px rgba(34,211,238,.3)}
+button:active{transform:scale(.96)}
+#dig{flex:2;font-size:1.2rem}
+#rep{flex:1;font-size:.9rem}
+#rep:disabled{opacity:.4}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <h1>🌊 南鳥島 レアアース泥 掘削ミッション</h1>
+    <div class="stats">
+      <div class="st"><small>深度</small><b id="sd" style="color:#4ade80">0m</b></div>
+      <div class="st"><small>レアアース</small><b id="sr" style="color:#fde047">0g</b></div>
+      <div class="st"><small>修繕費</small><b id="sc" style="color:#f87171">-0g</b></div>
+      <div class="st"><small>コンボ</small><b id="sb">0</b></div>
+    </div>
+    <div class="wear">🔧 ドリル摩耗度<div class="wtrack"><div class="wfill" id="wf"></div></div><span id="wp">0%</span></div>
+  </div>
+
+  <div class="card stage">
+    <canvas id="cv"></canvas>
+    <div class="bar"><div class="tg"></div><div class="ptr" id="ptr"></div></div>
+  </div>
+
+  <div class="card say"><div class="ava">🧑‍🔬</div><div class="bub" id="say">タイミングよく掘削ボタンを押して、光る泥の層まで掘り進めよう！</div></div>
+
+  <div class="ctl"><button id="dig">⛏ 掘削 (SPACE)</button><button id="rep">🔧 修繕 30g</button></div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const cv=$('cv'),ctx=cv.getContext('2d');
+const W=360,H=440,SURF=105,SEA=335,PX=180,L1=150,L2=400;
+const dpr=Math.min(devicePixelRatio||1,2);
+cv.width=W*dpr;cv.height=H*dpr;ctx.scale(dpr,dpr);
+const yOf=d=>SEA+d*0.6;
+const rnd=i=>{const x=Math.sin(i*127.1+311.7)*43758.5453;return x-Math.floor(x)};
+
+let depth=0,dDepth=0,combo=0,dur=100,ree=0,repCost=0,pos=0,dir=1,hyper=false,started=false,shake=0,flash=0,flashCol='34,211,238';
+let parts=[],texts=[];
+
+function glow(x,y,r,rgb,a){const g=ctx.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,`rgba(${rgb},${a})`);g.addColorStop(1,`rgba(${rgb},0)`);ctx.fillStyle=g;ctx.fillRect(x-r,y-r,r*2,r*2)}
+function layerName(){return depth>=L2?'【深層】南鳥島タイプ・レアアース泥':depth>=L1?'【中層】堆積泥層':'【表層】軟弱泥層'}
+
+function drawShip(t,bob){
+  const y=SURF+bob, sx=165;
+  // 船体
+  ctx.fillStyle='#e8eef6';ctx.beginPath();ctx.moveTo(sx-78,y-14);ctx.lineTo(sx+80,y-14);ctx.lineTo(sx+62,y+3);ctx.lineTo(sx-58,y+3);ctx.closePath();ctx.fill();
+  ctx.fillStyle='#b91c1c';ctx.beginPath();ctx.moveTo(sx-68,y-3);ctx.lineTo(sx+71,y-3);ctx.lineTo(sx+62,y+3);ctx.lineTo(sx-58,y+3);ctx.closePath();ctx.fill();
+  // 艦橋
+  ctx.fillStyle='#f1f5f9';ctx.fillRect(sx-62,y-34,44,20);ctx.fillRect(sx-52,y-46,26,12);
+  ctx.fillStyle='#fde68a';for(let i=0;i<6;i++)ctx.fillRect(sx-58+i*7,y-28,5,4);ctx.fillRect(sx-48,y-42,5,4);ctx.fillRect(sx-40,y-42,5,4);ctx.fillRect(sx-32,y-42,5,4);
+  ctx.strokeStyle='#cbd5e1';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(sx-39,y-46);ctx.lineTo(sx-39,y-58);ctx.stroke();
+  glow(sx-39,y-59,8,'255,90,90',.6+.3*Math.sin(t/300));
+  // デリック
+  ctx.strokeStyle='#f59e0b';ctx.lineWidth=2.5;
+  ctx.beginPath();ctx.moveTo(sx-13,y-14);ctx.lineTo(sx+15,y-82);ctx.lineTo(sx+43,y-14);ctx.stroke();
+  ctx.lineWidth=1.5;for(let k=1;k<5;k++){const f=k/5,yy=y-14-68*f,hw=28*(1-f)/2*1+2;ctx.beginPath();ctx.moveTo(sx+15-hw-12*(1-f)+(1-f)*0,yy);ctx.lineTo(sx+15+hw+12*(1-f),yy);ctx.stroke()}
+  // 帆(旗)
+  ctx.strokeStyle='#e2e8f0';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(sx+55,y-14);ctx.lineTo(sx+55,y-40);ctx.lineTo(sx+78,y-14);ctx.stroke();
+  // 船のライト
+  [sx-30,sx+10,sx+50].forEach((x,i)=>glow(x,y-8,12,'253,224,71',.55+.15*Math.sin(t/400+i)));
+}
+
+function drawWorld(t,cam,bob,dy){
+  // 空
+  let g=ctx.createLinearGradient(0,SURF-130,0,SURF);g.addColorStop(0,'#141638');g.addColorStop(.6,'#3b2a5e');g.addColorStop(1,'#f08a4b');
+  ctx.fillStyle=g;ctx.fillRect(0,-400,W,400+SURF);
+  for(let i=0;i<40;i++){ctx.fillStyle=`rgba(255,255,255,${.3+.5*Math.abs(Math.sin(t/900+i))})`;ctx.fillRect(rnd(i)*W,rnd(i+50)*(SURF-25),1.5,1.5)}
+  glow(W*.72,SURF,90,'255,150,70',.35);
+  // 海
+  g=ctx.createLinearGradient(0,SURF,0,SEA);g.addColorStop(0,'#0f5a8c');g.addColorStop(.5,'#0a2c58');g.addColorStop(1,'#06142e');
+  ctx.fillStyle=g;ctx.fillRect(0,SURF,W,SEA-SURF);
+  ctx.fillStyle='rgba(120,200,255,.05)';
+  for(let k=0;k<3;k++){ctx.beginPath();ctx.moveTo(50+k*110,SURF);ctx.lineTo(85+k*110,SURF);ctx.lineTo(150+k*110,SEA);ctx.lineTo(30+k*110,SEA);ctx.fill()}
+  // 深度目盛り
+  ctx.font='700 11px sans-serif';ctx.textAlign='left';
+  for(let k=1;k<=3;k++){const y=SURF+k*(SEA-SURF)/3;ctx.strokeStyle='rgba(180,215,235,.45)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(10,y);ctx.lineTo(24,y);ctx.stroke();ctx.fillStyle='rgba(190,220,240,.65)';ctx.fillText(k*2000+'m',28,y+4)}
+  // クラゲ
+  for(let j=0;j<3;j++){const x=W*(.2+.3*j)+Math.sin(t/2000+j*2)*25,y=SURF+62+j*52+Math.sin(t/1300+j)*8;
+    ctx.fillStyle='rgba(190,130,255,.22)';ctx.beginPath();ctx.ellipse(x,y,20,15,0,Math.PI,0);ctx.fill();
+    ctx.strokeStyle='rgba(190,130,255,.28)';ctx.lineWidth=1.5;
+    for(let k=-2;k<=2;k++){ctx.beginPath();ctx.moveTo(x+k*7,y);for(let s=1;s<=5;s++)ctx.lineTo(x+k*7+Math.sin(t/500+s+k)*4,y+s*7);ctx.stroke()}}
+  // 海底
+  const B=[[SEA,yOf(L1),'#4a4d58','#343741'],[yOf(L1),yOf(L2),'#3a2c42','#2b2030'],[yOf(L2),yOf(L2)+3000,'#2c1a15','#1a0f0b']];
+  B.forEach(([a,b,c1,c2])=>{g=ctx.createLinearGradient(0,a,0,Math.min(b,a+400));g.addColorStop(0,c1);g.addColorStop(1,c2);ctx.fillStyle=g;ctx.fillRect(0,a,W,b-a)});
+  ctx.strokeStyle='rgba(255,255,255,.06)';ctx.lineWidth=1;
+  for(let y=Math.max(SEA,Math.floor(cam/16)*16);y<cam+H;y+=16){ctx.beginPath();ctx.moveTo(0,y);for(let x=0;x<=W;x+=30)ctx.lineTo(x,y+Math.sin(x/30+y)*2);ctx.stroke()}
+  ctx.fillStyle='rgba(120,220,255,.18)';ctx.fillRect(0,SEA-1,W,2);
+  ctx.fillStyle='rgba(190,220,240,.7)';ctx.fillText('水深 6,000m',28,SEA-6);
+  ctx.fillStyle='rgba(255,255,255,.35)';ctx.fillText('中層 150m',10,yOf(L1)-4);ctx.fillText('深層 400m',10,yOf(L2)-4);
+  // 岩と光る泥
+  const cols=['34,211,238','244,114,182','253,224,71'];
+  for(let r=Math.floor(Math.max(cam,SEA)/12);r<=Math.floor((cam+H)/12);r++){
+    if(rnd(r)>.42)continue;const y=r*12+rnd(r+.3)*8,x=rnd(r+.5)*(W-60)+30;
+    if(y>yOf(L2)&&rnd(r*7)>.4){const c=cols[Math.floor(rnd(r*3)*3)],f=.7+.3*Math.sin(t/300+r);glow(x,y,12,c,.55*f);ctx.fillStyle=`rgb(${c})`;ctx.beginPath();ctx.arc(x,y,2+rnd(r+.9)*2,0,7);ctx.fill()}
+    else{const s=4+rnd(r+.7)*6;ctx.fillStyle='#4b5563';ctx.beginPath();ctx.ellipse(x,y,s,s*.65,0,0,7);ctx.fill();ctx.fillStyle='rgba(255,255,255,.12)';ctx.beginPath();ctx.ellipse(x-1,y-s*.25,s*.6,s*.25,0,0,7);ctx.fill()}}
+  // 海面ライン
+  ctx.strokeStyle='rgba(120,220,255,.7)';ctx.lineWidth=2;ctx.beginPath();for(let x=0;x<=W;x+=10)ctx.lineTo(x,SURF+Math.sin(x/20+t/500)*1.2);ctx.stroke();
+  drawShip(t,bob);
+  // パイプ
+  const hx=PX+(shake?Math.sin(t)*shake*.15:0),hy=dy;
+  const y0=SURF-6+bob,y1=hy-34;
+  ctx.lineCap='round';ctx.strokeStyle='#4b5a70';ctx.lineWidth=9;ctx.beginPath();ctx.moveTo(PX,y0);ctx.lineTo(hx,y1);ctx.stroke();
+  ctx.strokeStyle='#a9b8cb';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(PX-1.5,y0);ctx.lineTo(hx-1.5,y1);ctx.stroke();
+  ctx.strokeStyle='#1e293b';ctx.lineWidth=2.5;for(let y=y0+14;y<y1;y+=26){ctx.beginPath();ctx.moveTo(PX-5,y);ctx.lineTo(PX+5,y);ctx.stroke()}
+  ctx.lineCap='butt';
+  // ドリルヘッド
+  const rgb=hyper?'255,150,50':'34,211,238';
+  if(hyper)glow(hx,hy,60,'255,120,40',.45);
+  g=ctx.createLinearGradient(hx-24,0,hx+24,0);g.addColorStop(0,'#2b3547');g.addColorStop(.5,'#7c8ca3');g.addColorStop(1,'#2b3547');
+  ctx.fillStyle='#44546a';ctx.fillRect(hx-10,hy-40,20,10);
+  ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(hx-14,hy-30);ctx.lineTo(hx+14,hy-30);ctx.lineTo(hx+25,hy-6);ctx.lineTo(hx-25,hy-6);ctx.fill();
+  ctx.save();ctx.beginPath();ctx.rect(hx-25,hy-8,50,6);ctx.clip();ctx.fillStyle='#facc15';ctx.fillRect(hx-25,hy-8,50,6);ctx.fillStyle='#111';for(let x=-30;x<30;x+=10){ctx.beginPath();ctx.moveTo(hx+x,hy-2);ctx.lineTo(hx+x+5,hy-2);ctx.lineTo(hx+x+11,hy-8);ctx.lineTo(hx+x+6,hy-8);ctx.fill()}ctx.restore();
+  glow(hx-24,hy-12,16,rgb,.9);glow(hx+24,hy-12,16,rgb,.9);
+  ctx.fillStyle='#94a3b8';ctx.beginPath();ctx.moveTo(hx-20,hy-2);ctx.lineTo(hx+20,hy-2);ctx.lineTo(hx,hy+34);ctx.fill();
+  ctx.save();ctx.beginPath();ctx.moveTo(hx-20,hy-2);ctx.lineTo(hx+20,hy-2);ctx.lineTo(hx,hy+34);ctx.clip();
+  ctx.fillStyle='rgba(15,23,42,.55)';const sp=t*(hyper?.25:.06);
+  for(let k=-1;k<5;k++){const yy=hy-2+((k*10+sp)%40);ctx.beginPath();ctx.moveTo(hx-22,yy);ctx.lineTo(hx+22,yy+8);ctx.lineTo(hx+22,yy+12);ctx.lineTo(hx-22,yy+4);ctx.fill()}ctx.restore();
+  ctx.strokeStyle=`rgb(${rgb})`;ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(hx,hy-2,24,5,0,0,7);ctx.stroke();
+  // パーティクル
+  if(started&&hyper&&Math.random()<.8)parts.push({x:hx+(Math.random()-.5)*16,y:hy+30,vx:(Math.random()-.5)*2,vy:-1.2-Math.random()*1.5,l:40,c:Math.random()<.5?'255,160,60':'253,224,71',r:2+Math.random()*2});
+  parts=parts.filter(p=>p.l>0);parts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.l--;glow(p.x,p.y,p.r*3,p.c,p.l/45)});
+  texts=texts.filter(s=>s.l>0);ctx.textAlign='center';ctx.font='900 18px sans-serif';
+  texts.forEach(s=>{s.y-=.7;s.l--;ctx.globalAlpha=Math.min(1,s.l/20);ctx.lineWidth=4;ctx.strokeStyle='#0b1329';ctx.strokeText(s.t,s.x,s.y);ctx.fillStyle=s.c;ctx.fillText(s.t,s.x,s.y);ctx.globalAlpha=1});
+}
+
+function rr(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath()}
+
+function drawHUD(t){
+  // 耐久ゲージ
+  const gx=W-30,gy=44,gw=18,gh=H-130;
+  ctx.textAlign='center';ctx.font='800 11px sans-serif';ctx.fillStyle='#22d3ee';ctx.fillText('耐久',gx+gw/2,gy-8);
+  rr(gx,gy,gw,gh,9);ctx.fillStyle='rgba(2,10,25,.75)';ctx.fill();ctx.strokeStyle='#22d3ee';ctx.lineWidth=2;ctx.stroke();
+  const fh=(gh-6)*dur/100;if(fh>0){const g=ctx.createLinearGradient(0,gy+gh,0,gy);g.addColorStop(0,dur<35?'#ef4444':'#0ea5e9');g.addColorStop(1,dur<35?'#f97316':'#22d3ee');rr(gx+3,gy+gh-3-fh,gw-6,fh,6);ctx.fillStyle=g;ctx.fill()}
+  ctx.fillStyle=dur<35?'#f87171':'#fde047';ctx.fillText(Math.round(dur)+'%',gx+gw/2,gy+gh+16);
+  // 下部ピル
+  const label=started?layerName():'水深6,000m 到達 掘削を開始';
+  ctx.font='800 13px sans-serif';const w=ctx.measureText(label).width+36;
+  rr(W/2-w/2,H-44,w,30,15);ctx.fillStyle='rgba(4,20,40,.88)';ctx.fill();ctx.strokeStyle='#22d3ee';ctx.lineWidth=2;ctx.stroke();
+  ctx.fillStyle='#67e8f9';ctx.fillText(label,W/2,H-24);
+  // タイトル
+  if(!started){ctx.font='900 46px sans-serif';ctx.lineJoin='round';ctx.lineWidth=7;ctx.strokeStyle='#9a3412';ctx.strokeText('掘削スタート',W/2,H*.3);
+    const g=ctx.createLinearGradient(0,H*.3-40,0,H*.3);g.addColorStop(0,'#fde68a');g.addColorStop(1,'#f97316');ctx.fillStyle=g;ctx.shadowColor='rgba(255,160,40,.8)';ctx.shadowBlur=14;ctx.fillText('掘削スタート',W/2,H*.3);ctx.shadowBlur=0}
+  if(flash>0){ctx.fillStyle=`rgba(${flashCol},${flash*.25})`;ctx.fillRect(0,0,W,H);flash-=.05}
+  const v=ctx.createRadialGradient(W/2,H/2,H*.35,W/2,H/2,H*.75);v.addColorStop(0,'rgba(0,0,0,0)');v.addColorStop(1,'rgba(0,0,10,.4)');ctx.fillStyle=v;ctx.fillRect(0,0,W,H);
+}
+
+function frame(t){
+  pos+=2*dir;if(pos>=98||pos<=0)dir*=-1;$('ptr').style.left=pos+'%';
+  dDepth+=(depth-dDepth)*.1;
+  const dy=yOf(dDepth),cam=Math.max(0,dy-H*.62);
+  let sx=0,sy=0;if(shake>0){sx=(Math.random()-.5)*shake;sy=(Math.random()-.5)*shake;shake*=.85;if(shake<.3)shake=0}
+  ctx.clearRect(0,0,W,H);ctx.save();ctx.translate(sx,-cam+sy);
+  drawWorld(t,cam,Math.sin(t/900)*1.5,dy);
+  ctx.restore();drawHUD(t);requestAnimationFrame(frame);
+}
+
+function say(s){$('say').textContent=s}
+function ui(){
+  $('sd').textContent=depth+'m';$('sr').textContent=ree+'g';$('sc').textContent='-'+repCost+'g';$('sb').textContent=combo;
+  $('wf').style.width=(100-dur)+'%';$('wp').textContent=(100-dur)+'%';$('rep').disabled=ree<30||dur>=100;
+}
+const HIT=['いいぞ！その調子で掘り進めよう。','ジャスト！泥の層が変わってきたよ。','リズムを保てばコンボが伸びるよ！'];
+function burst(x,y,c,n){for(let i=0;i<n;i++)parts.push({x,y,vx:(Math.random()-.5)*4,vy:-Math.random()*3,l:30+Math.random()*20,c,r:2+Math.random()*2})}
+
+function dig(){
+  started=true;
+  if(dur<=0){say('ドリルが壊れている！レアアース30gで修繕しよう。');return}
+  if(pos>=40&&pos<=60){
+    combo++;const gain=combo>=5?50:10;
+    if(combo>=5&&!hyper){hyper=true;say('🔥 ジェット掘削モード突入！一気に掘り進めよう！')}
+    else say(hyper?'🔥 ジェット掘削中！コンボを切らすな！':HIT[Math.floor(Math.random()*3)]);
+    depth+=gain;if(depth>=L2)ree+=combo>=5?15:5;
+    burst(PX,yOf(depth)+30,hyper?'255,160,60':'34,211,238',16);
+    texts.push({x:PX+42,y:yOf(depth)-6,t:'+'+gain+'m',c:'#fde047',l:50});
+    flash=.6;flashCol='34,211,238';
+  }else{
+    combo=0;hyper=false;dur=Math.max(0,dur-15);shake=10;flash=.8;flashCol='239,68,68';
+    texts.push({x:PX+42,y:yOf(depth),t:'MISS',c:'#f87171',l:40});
+    say(dur<=0?'🚨 ドリルが限界！修繕してください！':'タイミングミス！ドリル刃が摩耗したよ。緑のゾーンを狙って！');
+  }
+  ui();
+}
+function repair(){if(ree<30||dur>=100)return;ree-=30;repCost+=30;dur=Math.min(100,dur+40);say('🔧 修繕完了！耐久度が40%回復したよ。');ui()}
+
+$('dig').onclick=dig;$('rep').onclick=repair;cv.onclick=()=>{started=true};
+addEventListener('keydown',e=>{if(e.code==='Space'){e.preventDefault();dig()}});
+ui();requestAnimationFrame(frame);
+</script>
+</body>
+</html>
