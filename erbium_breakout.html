@@ -109,7 +109,7 @@
         <div class="avatar-wrap"><img id="avatar" src="chara0_Er.png" alt="Er" onerror="this.src='chara0_Y.png'"></div>
         <div class="stat-col">
           <div class="score-line">SCORE <b id="score">0</b></div>
-          <div class="sub-line">❤️ レーザー残弾: <b id="lives">3</b></div>
+          <div class="sub-line">❤️ レーザー残弾: <b id="lives">6</b></div>
           <div class="mode-indicator" id="modeIndicator">✨ 画面をスワイプしてスタート！</div>
         </div>
       </div>
@@ -129,6 +129,7 @@
         <button class="ctrl-btn" id="btnR">右 ▶</button>
       </div>
 
+      <button class="btn-back" id="backToStageSelectBtn" style="background:#00a8a8;">🎮 ステージ選択に戻る</button>
       <button class="btn-back" onclick="location.href='map.html'">🗺️ マップに戻る</button>
     </div>
 
@@ -225,13 +226,13 @@
     $('userLevelDisp').textContent = userLevel;
 
     let state = 'tutorial';
-    let score = 0, lives = 3, claimed = false, result = null;
+    let score = 0, lives = 6, claimed = false, result = null;
     let currentDiff = 'normal';
     let speedBoostCounter = 0; 
 
     // パドルの位置を少し上に配置（H - 50）し、下に指を置くスペースを確保
     const paddle = { x: W / 2 - 35, y: H - 50, w: 70, h: 11, dx: 6 };
-    let laser = { x: W / 2, y: H - 62, baseVx: 3, baseVy: -4.5, vx: 3, vy: -4.5, radius: 7, active: false };
+    let laser = { x: W / 2, y: H - 62, baseVx: 3 * 0.7, baseVy: -4.5 * 0.7, vx: 3 * 0.7, vy: -4.5 * 0.7, radius: 7, active: false };
 
     let blocks = [];
 
@@ -263,24 +264,24 @@
       const menu = $('diffMenu');
       menu.innerHTML = '';
 
-      const unlNormal = userLevel >= 17;
+      const unlNormal = userLevel >= 1;
       const btnN = document.createElement('button');
       btnN.className = 'diff-btn ' + (unlNormal ? 'diff-normal' : 'diff-locked');
-      btnN.innerHTML = `<span>✨ ノーマルステージ<br><small>全消しEXP: 500</small></span><span>${unlNormal ? '▶ 挑戦' : 'Lv.17〜'}</span>`;
+      btnN.innerHTML = `<span>✨ ノーマルステージ<br><small>全消しEXP: 500</small></span><span>${unlNormal ? '▶ 挑戦' : 'Lv.1〜'}</span>`;
       if (unlNormal) btnN.onclick = () => selectStage('normal');
       menu.appendChild(btnN);
 
-      const unlHard = userLevel >= 22;
+      const unlHard = userLevel >= 15;
       const btnH = document.createElement('button');
       btnH.className = 'diff-btn ' + (unlHard ? 'diff-hard' : 'diff-locked');
-      btnH.innerHTML = `<span>⚡ ハード (特殊ギミック)<br><small>全消しEXP: 2,000</small></span><span>${unlHard ? '▶ 挑戦' : 'Lv.22〜'}</span>`;
+      btnH.innerHTML = `<span>⚡ ハード (特殊ギミック)<br><small>全消しEXP: 2,000</small></span><span>${unlHard ? '▶ 挑戦' : 'Lv.15〜'}</span>`;
       if (unlHard) btnH.onclick = () => selectStage('hard');
       menu.appendChild(btnH);
 
-      const unlVHard = userLevel >= 27;
+      const unlVHard = userLevel >= 20;
       const btnV = document.createElement('button');
       btnV.className = 'diff-btn ' + (unlVHard ? 'diff-vhard' : 'diff-locked');
-      btnV.innerHTML = `<span>🔥 ベリーハード (骨配置)<br><small>全消しEXP: 10,000</small></span><span>${unlVHard ? '▶ 挑戦' : 'Lv.27〜'}</span>`;
+      btnV.innerHTML = `<span>🔥 ベリーハード (骨配置)<br><small>全消しEXP: 10,000</small></span><span>${unlVHard ? '▶ 挑戦' : 'Lv.20〜'}</span>`;
       if (unlVHard) btnV.onclick = () => selectStage('vhard');
       menu.appendChild(btnV);
     }
@@ -326,7 +327,7 @@
     }
 
     function startGame() {
-      score = 0; lives = 3; claimed = false; speedBoostCounter = 0;
+      score = 0; lives = 6; claimed = false; speedBoostCounter = 0;
       paddle.x = W / 2 - 35;
       resetLaser();
       initBlocks();
@@ -394,6 +395,15 @@
     $('btnL').addEventListener('pointerdown', () => leftPressed = true);
     $('btnL').addEventListener('pointerup', () => leftPressed = false);$('btnR').addEventListener('pointerdown', () => rightPressed = true);
     $('btnR').addEventListener('pointerup', () => rightPressed = false);$('btnFire').addEventListener('click', fireAction);
+
+    $('backToStageSelectBtn').addEventListener('click', () => {
+      state = 'select';
+      $('pause-btn').style.display = 'none';
+      $('pauseModal').style.display = 'none';
+      $('resultModal').style.display = 'none';
+      buildDiffMenu();
+      $('selectModal').style.display = 'flex';
+    });
 
     $('pause-btn').addEventListener('click', () => {
       if (state === 'play') { state = 'pause'; $('pauseModal').style.display = 'flex'; }
