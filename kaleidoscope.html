@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
     <title>セリウムのキラメキ万華鏡 〜Jewel Kaleidoscope〜</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -60,6 +60,10 @@
         .modal-anim {
             animation: modalSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
+
+        html, body { touch-action: manipulation; overscroll-behavior-y: none; -webkit-tap-highlight-color: transparent; }
+        /* 万華鏡内のドラッグでページがスクロールしないようにする */
+        #kaleidoContainer { touch-action: none; }
     </style>
 </head>
 <body class="flex flex-col items-center min-h-screen pb-6">
@@ -87,12 +91,12 @@
     </header>
 
     <!-- Main Kaleidoscope Canvas Container -->
-    <div class="relative w-[320px] h-[320px] sm:w-[380px] sm:h-[380px] my-3 rounded-full kaleido-glow border-4 border-gray-800 overflow-hidden bg-radial from-slate-900 to-black cursor-grab active:cursor-grabbing transition-all duration-300" id="kaleidoContainer">
+    <div class="relative my-3 rounded-full kaleido-glow border-4 border-gray-800 overflow-hidden bg-radial from-slate-900 to-black cursor-grab active:cursor-grabbing transition-all duration-300" id="kaleidoContainer" style="width:min(92vw,420px);aspect-ratio:1/1;">
         <canvas id="kaleidoCanvas" width="700" height="700" class="w-full h-full block"></canvas>
     </div>
 
     <!-- Quick Controls -->
-    <div class="flex gap-2 w-80 sm:w-[380px] mb-3">
+    <div class="flex gap-2 mb-3" style="width:min(92vw,420px)">
         <button id="rotateBtn" class="flex-1 py-2 px-3 bg-gray-800 hover:bg-gray-700 active:bg-sky-600 text-gray-200 text-xs font-bold rounded-lg border border-gray-700 transition flex items-center justify-center gap-1 shadow">
             <span>🔄</span> <span id="rotateLabel">自動回転: OFF</span>
         </button>
@@ -107,29 +111,46 @@
     <!-- Workspace & Controls -->
     <div class="w-full max-w-lg glass-panel rounded-t-2xl p-4 flex flex-col gap-3 flex-grow border-t border-gray-800">
         
+        <!-- 🔢 置いた宝石スロット（1〜10番） -->
+        <div>
+            <div class="flex items-center justify-between mb-1.5 gap-2">
+                <span class="text-xs font-bold text-gray-200">🔢 置いた宝石 <strong id="slotCountLabel" class="text-amber-400">0/10</strong>
+                    <span class="font-normal text-[10px] text-gray-500">（番号タップで選択）</span></span>
+                <label class="flex items-center gap-1.5 cursor-pointer text-[11px] text-sky-300 bg-gray-900 px-2 py-1 rounded-md border border-gray-800 hover:border-sky-500">
+                    <input type="checkbox" id="showNumbersToggle" class="accent-sky-400 rounded">
+                    <span>番号を万華鏡に表示</span>
+                </label>
+            </div>
+            <div id="slotBar" class="grid grid-cols-5 sm:grid-cols-10 gap-1.5"></div>
+        </div>
+
         <!-- Gem Inspector Panel -->
-        <div id="inspector" class="bg-gray-950 border border-gray-800 rounded-xl p-2.5 flex items-center justify-between gap-2 opacity-50 pointer-events-none transition-opacity duration-200">
-            <div class="flex items-center gap-2 max-w-[120px]">
-                <span class="text-xs text-sky-400 font-bold truncate" id="selectedName">選択なし</span>
+        <div id="inspector" class="bg-gray-950 border border-gray-800 rounded-xl p-3 flex flex-col gap-2.5 opacity-50 pointer-events-none transition-opacity duration-200">
+            <div class="flex items-center justify-between gap-2">
+                <div class="flex items-center gap-2 min-w-0">
+                    <span id="selectedBadge" class="shrink-0 w-6 h-6 rounded-full bg-gray-700 text-white text-xs font-bold flex items-center justify-center">–</span>
+                    <span class="text-sm text-sky-400 font-bold truncate" id="selectedName">選択なし</span>
+                </div>
+                <div class="flex gap-1.5 shrink-0">
+                    <button id="locateBtn" class="px-2.5 py-2 text-[11px] bg-sky-800 hover:bg-sky-700 text-white font-bold rounded-md transition shadow">📍 光らせる</button>
+                    <button id="centerBtn" class="px-2.5 py-2 text-[11px] bg-gray-700 hover:bg-gray-600 text-white font-bold rounded-md transition shadow">🎯 中央へ</button>
+                    <button id="deleteBtn" class="px-2.5 py-2 text-[11px] bg-red-800 hover:bg-red-700 text-white font-bold rounded-md transition shadow">削除</button>
+                </div>
             </div>
-            <div class="flex items-center gap-3 flex-grow justify-end">
-                <label class="text-[10px] text-gray-400 flex flex-col items-center">
-                    サイズ
-                    <input type="range" id="sizeSlider" min="0.4" max="2.5" step="0.1" value="1.0" class="w-16 accent-sky-400 h-1 mt-1">
+            <div class="grid grid-cols-2 gap-4">
+                <label class="text-[11px] text-gray-400 flex flex-col">サイズ
+                    <input type="range" id="sizeSlider" min="0.4" max="2.5" step="0.1" value="1.0" class="w-full accent-sky-400 mt-1">
                 </label>
-                <label class="text-[10px] text-gray-400 flex flex-col items-center">
-                    角度
-                    <input type="range" id="angleSlider" min="0" max="360" step="5" value="0" class="w-16 accent-sky-400 h-1 mt-1">
+                <label class="text-[11px] text-gray-400 flex flex-col">角度
+                    <input type="range" id="angleSlider" min="0" max="360" step="5" value="0" class="w-full accent-sky-400 mt-1">
                 </label>
-                <button id="deleteBtn" class="px-2.5 py-1 text-[11px] bg-red-800 hover:bg-red-700 text-white font-bold rounded-md transition shadow">
-                    削除
-                </button>
             </div>
+            <p class="text-[10px] text-gray-500 leading-relaxed">宝石をドラッグで移動／余白をなぞるとビーズがくるくる回ります。宝石は常に鏡の内側にあるので見失いません。</p>
         </div>
 
         <!-- Tray Filter & Header -->
         <div class="flex justify-between items-center text-xs text-gray-400 px-1">
-            <span class="font-medium text-gray-300">📦 宝石図鑑（タップで1粒ずつ配置）</span>
+            <span class="font-medium text-gray-300">📦 宝石図鑑（タップで配置・<span id="remainLabel" class="text-amber-400">あと10個</span>）</span>
             <label class="flex items-center gap-1.5 cursor-pointer text-[11px] text-sky-300 bg-gray-900 px-2 py-1 rounded-md border border-gray-800 hover:border-sky-500">
                 <input type="checkbox" id="filterUnlockedToggle" class="accent-sky-400 rounded">
                 <span>入手済みのみ表示</span>
@@ -159,9 +180,10 @@
             </h2>
 
             <div class="text-xs text-gray-300 space-y-2 text-left bg-gray-950/80 p-3 rounded-xl border border-gray-800 mb-4 w-full leading-relaxed">
-                <p>💎 <strong>① 自由な配置:</strong> 下の図鑑から宝石をタップして、最大10個まで好きな宝石を万華鏡に置けます！</p>
-                <p>🔄 <strong>② 刻々と変わる模様:</strong> 万華鏡内を指でドラッグするか、<strong>「自動回転: ON」</strong>にすると、中のビーズが揺れ動いて刻々と美しい模様に変化します！</p>
-                <p>✨ <strong>③ セリウム磨き:</strong> 酸化セリウムの輝き効果で、宝石のツヤと透明感をアップできます！</p>
+                <p>💎 <strong>① 自由な配置:</strong> 下の図鑑から宝石をタップして、最大10個まで置けます。置いた宝石には <strong>1〜10の番号</strong> が付き、光る輪でどこにあるか分かります！</p>
+                <p>👆 <strong>② 選ぶ・動かす:</strong> 万華鏡の中の宝石をタップ、または <strong>番号スロット</strong> をタップで選択。ドラッグで移動、余白をなぞるとビーズがくるくる回ります。</p>
+                <p>🔄 <strong>③ 自動回転:</strong> 「自動回転: ON」にすると模様が刻々と変化。宝石は常に鏡の内側を動くので、見失いません。</p>
+                <p>✨ <strong>④ セリウム磨き:</strong> 酸化セリウムの輝き効果で、宝石のツヤと透明感をアップできます！</p>
             </div>
 
             <button id="closeTutorialBtn" class="w-full py-2.5 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-bold text-xs rounded-xl shadow-lg transition transform active:scale-95">
@@ -169,6 +191,8 @@
             </button>
         </div>
     </div>
+
+    <div id="toast" class="fixed left-1/2 -translate-x-1/2 bottom-6 z-40 px-4 py-2 rounded-full bg-gray-900/95 border border-sky-500/60 text-xs text-sky-100 shadow-lg opacity-0 pointer-events-none transition-opacity duration-300 max-w-[90vw] text-center" role="status" aria-live="polite"></div>
 
     <script>
         // 💎 100 Gem Master Data
@@ -221,6 +245,21 @@
             canvasSize: 700
         };
 
+        // ── 万華鏡の幾何 ──────────────────────────────────────────
+        // 宝石は「鏡で囲まれた60°のくさび」の中にだけ存在する。
+        // 角度 a は無制限に増減してよく、描画時に鏡で折り返す(fold)ため、
+        // どこへ動かしても必ずくさびの内側＝画面に見える。
+        const H = Math.PI / CONFIG.slices;            // 鏡までの角度(30°)
+        const R_VIEW = CONFIG.canvasSize / 2;         // 表示される円の半径
+        const R_MIN = 26;
+        const rMaxFor = (scale) => R_VIEW - 26 * scale - 6;
+        const fold = (a) => {
+            const P = 4 * H;
+            let t = ((a + H) % P + P) % P;
+            if (t > 2 * H) t = P - t;
+            return t - H;
+        };
+
         const imageCache = {};
         const imageErrorFlags = {};
         let placedGems = [];
@@ -229,6 +268,11 @@
         let mirrorRotationAngle = 0;
         let isPolished = false;
         let filterUnlockedOnly = false;
+        let showAllNumbers = false;
+        let locate = { index: -1, start: 0, until: 0 };
+        let drag = null;
+        let lastTime = 0;
+        let toastTimer = null;
 
         let canvas, ctx;
 
@@ -239,6 +283,7 @@
             preloadImages();
             initGemTray();
             setupEvents();
+            updateUI();
             requestAnimationFrame(renderLoop);
         });
 
@@ -297,68 +342,161 @@
             });
         }
 
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.remove('opacity-0');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => t.classList.add('opacity-0'), 2200);
+        }
+
+        function locateGem(index) {
+            const now = performance.now();
+            locate = { index, start: now, until: now + 1800 };
+        }
+
+        // 既存の宝石と重ならない、くさび内の位置を探す
+        function findFreeSpot() {
+            let best = { r: 120, a: 0 }, bestScore = -1;
+            for (let t = 0; t < 40; t++) {
+                const r = 70 + Math.random() * 170;
+                const a = (Math.random() * 2 - 1) * H * 0.8;
+                const px = r * Math.cos(a), py = r * Math.sin(a);
+                let score = 1e9;
+                placedGems.forEach(g => {
+                    const f = fold(g.a);
+                    [f, 2 * H - f, -2 * H - f].forEach(ang => {   // 本体＋左右の鏡像
+                        score = Math.min(score, Math.hypot(px - g.r * Math.cos(ang), py - g.r * Math.sin(ang)));
+                    });
+                });
+                if (score > bestScore) { bestScore = score; best = { r, a }; }
+            }
+            return best;
+        }
+
         function addGemToKaleido(gem) {
             if (placedGems.length >= CONFIG.maxCapacity) {
-                alert(`配置できるのは最大 ${CONFIG.maxCapacity} 個までです！`);
+                showToast(`最大 ${CONFIG.maxCapacity} 個までです。不要な宝石を削除してね`);
                 return;
             }
-
-            const radius = 30 + Math.random() * 80;
-            const angle = Math.random() * Math.PI * 2;
-
+            const spot = findFreeSpot();
             placedGems.push({
                 master: gem,
-                x: Math.cos(angle) * radius,
-                y: Math.sin(angle) * radius,
-                baseRadius: radius,
-                baseAngle: angle,
+                r: spot.r,
+                a: spot.a,
                 scale: 1.0,
                 rotation: Math.random() * Math.PI,
                 rotSpeed: (Math.random() - 0.5) * 0.02,
-                floatPhase: Math.random() * Math.PI * 2,
-                floatSpeed: 0.015 + Math.random() * 0.02
+                va: (Math.random() < 0.5 ? -1 : 1) * (0.004 + Math.random() * 0.005),
+                vr: (Math.random() < 0.5 ? -1 : 1) * (0.1 + Math.random() * 0.25),
+                x: 0, y: 0
             });
-
-            selectGem(placedGems.length - 1);
+            const idx = placedGems.length - 1;
+            selectGem(idx);
+            locateGem(idx);
             updateUI();
+            showToast(`${idx + 1}個目：${gem.name} を置きました`);
         }
 
         function selectGem(index) {
-            selectedIndex = index;
+            selectedIndex = (index >= 0 && index < placedGems.length) ? index : -1;
             const inspector = document.getElementById('inspector');
-            const selectedName = document.getElementById('selectedName');
-            const sizeSlider = document.getElementById('sizeSlider');
-            const angleSlider = document.getElementById('angleSlider');
+            const badge = document.getElementById('selectedBadge');
+            const name = document.getElementById('selectedName');
 
-            if (selectedIndex >= 0 && selectedIndex < placedGems.length) {
+            if (selectedIndex >= 0) {
                 const gem = placedGems[selectedIndex];
                 inspector.classList.remove('opacity-50', 'pointer-events-none');
-                selectedName.textContent = `${gem.master.name}`;
-                sizeSlider.value = gem.scale;
-                angleSlider.value = Math.round((gem.rotation * 180) / Math.PI) % 360;
+                badge.textContent = selectedIndex + 1;
+                badge.className = 'shrink-0 w-6 h-6 rounded-full bg-amber-400 text-gray-900 text-xs font-bold flex items-center justify-center';
+                name.textContent = gem.master.name;
+                document.getElementById('sizeSlider').value = gem.scale;
+                document.getElementById('angleSlider').value = (((Math.round((gem.rotation * 180) / Math.PI / 5) * 5) % 360) + 360) % 360;
             } else {
                 inspector.classList.add('opacity-50', 'pointer-events-none');
-                selectedName.textContent = '選択なし';
+                badge.textContent = '–';
+                badge.className = 'shrink-0 w-6 h-6 rounded-full bg-gray-700 text-white text-xs font-bold flex items-center justify-center';
+                name.textContent = '選択なし';
+            }
+            renderSlots();
+        }
+
+        // 1〜10番のスロット（空きも表示）
+        function renderSlots() {
+            const bar = document.getElementById('slotBar');
+            bar.innerHTML = '';
+            for (let i = 0; i < CONFIG.maxCapacity; i++) {
+                const g = placedGems[i];
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                if (g) {
+                    const sel = i === selectedIndex;
+                    btn.className = 'relative aspect-square rounded-lg border-2 flex items-center justify-center transition ' +
+                        (sel ? 'border-amber-400 bg-amber-900/30 shadow-[0_0_10px_rgba(227,179,65,0.7)]' : 'border-gray-700 bg-gray-900 hover:border-sky-500');
+                    btn.setAttribute('aria-label', `${i + 1}個目 ${g.master.name} を選ぶ`);
+                    const fb = createCrystalSVGDataUrl(g.master.color || '#79c0ff');
+                    btn.innerHTML = `<span class="absolute top-0 left-0 px-1.5 text-[11px] font-bold rounded-br-lg ${sel ? 'bg-amber-400 text-gray-900' : 'bg-black/70 text-amber-300'}">${i + 1}</span>` +
+                        `<img src="${g.master.img}" alt="" class="w-3/5 h-3/5 object-contain pointer-events-none" onerror="this.onerror=null; this.src='${fb}';">`;
+                    btn.addEventListener('click', () => { selectGem(i); locateGem(i); });
+                } else {
+                    btn.className = 'relative aspect-square rounded-lg border-2 border-dashed border-gray-800 flex items-center justify-center text-gray-700 text-lg font-bold';
+                    btn.textContent = i + 1;
+                    btn.setAttribute('aria-label', `${i + 1}個目 空き`);
+                    btn.addEventListener('click', () => showToast('下の宝石図鑑をタップして置いてね'));
+                }
+                bar.appendChild(btn);
             }
         }
 
-        function setupEvents() {
-            // Tutorial Modal Trigger
-            const tutModal = document.getElementById('tutorialModal');
-            document.getElementById('openTutorialBtn').addEventListener('click', () => {
-                tutModal.classList.remove('hidden');
-            });
-            document.getElementById('closeTutorialBtn').addEventListener('click', () => {
-                tutModal.classList.add('hidden');
-            });
+        function updateUI() {
+            const n = placedGems.length;
+            const countEl = document.getElementById('placedCount');
+            countEl.textContent = n;
+            countEl.className = n >= CONFIG.maxCapacity ? 'text-red-400' : 'text-amber-400';
+            document.getElementById('slotCountLabel').textContent = `${n}/${CONFIG.maxCapacity}`;
+            const remain = CONFIG.maxCapacity - n;
+            document.getElementById('remainLabel').textContent = remain > 0 ? `あと${remain}個` : '満杯';
+            renderSlots();
+        }
 
-            // Filter Toggle
+        // ── 座標変換 ──────────────────────────────────────────────
+        // 画面上のどの鏡像をタップしても、元の「くさび内の座標」に折り返して戻す
+        function toCanvas(e) {
+            const rect = canvas.getBoundingClientRect();
+            const k = CONFIG.canvasSize / rect.width;
+            return { x: (e.clientX - rect.left - rect.width / 2) * k, y: (e.clientY - rect.top - rect.height / 2) * k };
+        }
+        function screenToLocal(px, py) {
+            const slice = 2 * H;
+            const ang = Math.atan2(py, px) - mirrorRotationAngle;
+            const k = Math.round(ang / slice);
+            let phi = ang - k * slice;
+            if (((k % 2) + 2) % 2 === 1) phi = -phi;   // 奇数番の鏡像は反転して描いている
+            return { r: Math.hypot(px, py), phi };
+        }
+        function hitTest(loc) {
+            const px = loc.r * Math.cos(loc.phi), py = loc.r * Math.sin(loc.phi);
+            let best = -1, bestD = Infinity;
+            placedGems.forEach((g, i) => {
+                const f = fold(g.a);
+                const d = Math.hypot(px - g.r * Math.cos(f), py - g.r * Math.sin(f));
+                if (d < 30 * g.scale + 14 && (d < bestD || (i === selectedIndex && d <= bestD + 8))) { best = i; bestD = d; }
+            });
+            return best;
+        }
+
+        function setupEvents() {
+            const tutModal = document.getElementById('tutorialModal');
+            document.getElementById('openTutorialBtn').addEventListener('click', () => tutModal.classList.remove('hidden'));
+            document.getElementById('closeTutorialBtn').addEventListener('click', () => tutModal.classList.add('hidden'));
+
             document.getElementById('filterUnlockedToggle').addEventListener('change', (e) => {
                 filterUnlockedOnly = e.target.checked;
                 initGemTray();
             });
+            document.getElementById('showNumbersToggle').addEventListener('change', (e) => { showAllNumbers = e.target.checked; });
 
-            // Auto Rotation Toggle
+            // 自動回転
             const rotateBtn = document.getElementById('rotateBtn');
             const rotateLabel = document.getElementById('rotateLabel');
             rotateBtn.addEventListener('click', () => {
@@ -368,18 +506,30 @@
                 rotateBtn.classList.toggle('border-sky-400', isAutoRotating);
             });
 
-            // Clear All
-            document.getElementById('clearBtn').addEventListener('click', () => {
-                placedGems = [];
-                selectGem(-1);
-                updateUI();
+            // 全消去（誤タップ防止の2回タップ確認）
+            const clearBtn = document.getElementById('clearBtn');
+            let clearArmed = false, clearTimer = null;
+            const disarm = () => { clearArmed = false; clearBtn.textContent = '🗑️ 全消去'; clearBtn.classList.remove('bg-red-800'); };
+            clearBtn.addEventListener('click', () => {
+                if (placedGems.length === 0) return;
+                if (!clearArmed) {
+                    clearArmed = true;
+                    clearBtn.textContent = '⚠️ もう一度で消去';
+                    clearBtn.classList.add('bg-red-800');
+                    clearTimer = setTimeout(disarm, 2500);
+                } else {
+                    clearTimeout(clearTimer); disarm();
+                    placedGems = [];
+                    selectGem(-1);
+                    updateUI();
+                    showToast('すべて消去しました');
+                }
             });
 
-            // Cerium Polish Toggle
+            // セリウム磨き
             const ceBtn = document.getElementById('cePolishingBtn');
             const ceStatusText = document.getElementById('ceStatusText');
             const container = document.getElementById('kaleidoContainer');
-
             ceBtn.addEventListener('click', () => {
                 isPolished = !isPolished;
                 ceBtn.classList.toggle('bg-amber-600', isPolished);
@@ -389,155 +539,131 @@
                 ceStatusText.className = isPolished ? "text-amber-400 font-bold" : "text-gray-400";
             });
 
-            // Inspector controls
+            // インスペクター
             document.getElementById('sizeSlider').addEventListener('input', (e) => {
-                if (selectedIndex >= 0) placedGems[selectedIndex].scale = parseFloat(e.target.value);
+                if (selectedIndex < 0) return;
+                const g = placedGems[selectedIndex];
+                g.scale = parseFloat(e.target.value);
+                g.r = Math.min(g.r, rMaxFor(g.scale));
             });
             document.getElementById('angleSlider').addEventListener('input', (e) => {
                 if (selectedIndex >= 0) placedGems[selectedIndex].rotation = (parseFloat(e.target.value) * Math.PI) / 180;
             });
+            document.getElementById('locateBtn').addEventListener('click', () => { if (selectedIndex >= 0) locateGem(selectedIndex); });
+            document.getElementById('centerBtn').addEventListener('click', () => {
+                if (selectedIndex < 0) return;
+                const g = placedGems[selectedIndex];
+                g.r = Math.min(130, rMaxFor(g.scale)); g.a = 0;
+                locateGem(selectedIndex);
+            });
             document.getElementById('deleteBtn').addEventListener('click', () => {
-                if (selectedIndex >= 0) {
-                    placedGems.splice(selectedIndex, 1);
-                    selectGem(-1);
-                    updateUI();
-                }
+                if (selectedIndex < 0) return;
+                const n = selectedIndex + 1;
+                placedGems.splice(selectedIndex, 1);
+                selectGem(-1);
+                updateUI();
+                showToast(`${n}個目を削除しました（番号を詰めました）`);
             });
 
-            // Touch / Drag Interaction
-            let isDragging = false;
-            let activeGemIdx = -1;
-            let startX = 0, startY = 0;
-
-            const getCanvasCoords = (e) => {
-                const rect = canvas.getBoundingClientRect();
-                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-                const scale = CONFIG.canvasSize / rect.width;
-                return {
-                    x: (clientX - rect.left - rect.width / 2) * scale,
-                    y: (clientY - rect.top - rect.height / 2) * scale
-                };
-            };
-
-            const dragStart = (e) => {
-                const pos = getCanvasCoords(e);
-                let hitIdx = -1;
-
-                for (let i = placedGems.length - 1; i >= 0; i--) {
-                    const g = placedGems[i];
-                    const dx = g.x - pos.x;
-                    const dy = g.y - pos.y;
-                    if (Math.sqrt(dx * dx + dy * dy) < 45 * g.scale) {
-                        hitIdx = i;
-                        break;
+            // ── ポインター操作（マウス・タッチ共通。合成mousedownによる二重発火を防ぐ）──
+            container.addEventListener('pointerdown', (e) => {
+                if (drag) return;
+                e.preventDefault();
+                container.setPointerCapture(e.pointerId);
+                const p = toCanvas(e);
+                const hit = hitTest(screenToLocal(p.x, p.y));
+                drag = { id: e.pointerId, gem: hit, moved: false, sx: p.x, sy: p.y, lastAng: Math.atan2(p.y, p.x) };
+                if (hit !== -1) selectGem(hit);
+            });
+            container.addEventListener('pointermove', (e) => {
+                if (!drag || e.pointerId !== drag.id) return;
+                const p = toCanvas(e);
+                if (!drag.moved && Math.hypot(p.x - drag.sx, p.y - drag.sy) < 8) return;
+                drag.moved = true;
+                if (drag.gem !== -1) {
+                    // 宝石ドラッグ：指の位置を鏡の内側へ折り返して反映（外へ出ない）
+                    const loc = screenToLocal(p.x, p.y);
+                    const g = placedGems[drag.gem];
+                    g.r = Math.min(Math.max(loc.r, R_MIN), rMaxFor(g.scale));
+                    g.a = loc.phi;
+                } else {
+                    // 余白ドラッグ：ビーズ全体を回す（中心付近は無視）
+                    const ang = Math.atan2(p.y, p.x);
+                    if (Math.hypot(p.x, p.y) > 40) {
+                        let d = ang - drag.lastAng;
+                        if (d > Math.PI) d -= 2 * Math.PI;
+                        if (d < -Math.PI) d += 2 * Math.PI;
+                        placedGems.forEach(g => { g.a += d; });
                     }
+                    drag.lastAng = ang;
                 }
-
-                if (hitIdx !== -1) {
-                    activeGemIdx = hitIdx;
-                    selectGem(hitIdx);
-                } else {
-                    activeGemIdx = -1;
-                    selectGem(-1);
-                }
-
-                isDragging = true;
-                startX = pos.x;
-                startY = pos.y;
+            });
+            const endDrag = (e) => {
+                if (!drag || e.pointerId !== drag.id) return;
+                if (!drag.moved && drag.gem === -1) selectGem(-1);   // 余白をタップ＝選択解除
+                drag = null;
             };
-
-            const dragMove = (e) => {
-                if (!isDragging) return;
-                const pos = getCanvasCoords(e);
-                const dx = pos.x - startX;
-                const dy = pos.y - startY;
-
-                if (activeGemIdx !== -1) {
-                    placedGems[activeGemIdx].x = pos.x;
-                    placedGems[activeGemIdx].y = pos.y;
-                    placedGems[activeGemIdx].baseRadius = Math.sqrt(pos.x * pos.x + pos.y * pos.y);
-                    placedGems[activeGemIdx].baseAngle = Math.atan2(pos.y, pos.x);
-                } else {
-                    placedGems.forEach(g => {
-                        g.x += dx * 0.25;
-                        g.y += dy * 0.25;
-                        g.rotation += dx * 0.008;
-                        g.baseRadius = Math.sqrt(g.x * g.x + g.y * g.y);
-                        g.baseAngle = Math.atan2(g.y, g.x);
-                    });
-                }
-
-                startX = pos.x;
-                startY = pos.y;
-            };
-
-            const dragEnd = () => { isDragging = false; };
-
-            container.addEventListener('mousedown', dragStart);
-            container.addEventListener('mousemove', dragMove);
-            window.addEventListener('mouseup', dragEnd);
-
-            container.addEventListener('touchstart', dragStart, {passive: false});
-            container.addEventListener('touchmove', dragMove, {passive: false});
-            window.addEventListener('touchend', dragEnd);
+            container.addEventListener('pointerup', endDrag);
+            container.addEventListener('pointercancel', endDrag);
         }
 
-        function updateUI() {
-            document.getElementById('placedCount').textContent = placedGems.length;
-        }
-
-        function renderLoop() {
-            ctx.clearRect(0, 0, CONFIG.canvasSize, CONFIG.canvasSize);
-
-            const cx = CONFIG.canvasSize / 2;
-            const cy = CONFIG.canvasSize / 2;
+        // ── 描画 ─────────────────────────────────────────────────
+        function renderLoop(now) {
+            const dt = Math.min(3, (now - (lastTime || now)) / 16.667);
+            lastTime = now;
 
             if (isAutoRotating) {
-                mirrorRotationAngle += 0.004;
-
-                placedGems.forEach((gem) => {
-                    gem.floatPhase += gem.floatSpeed;
-                    gem.rotation += gem.rotSpeed;
-                    gem.baseAngle += 0.002;
-                    const swayRadius = gem.baseRadius + Math.sin(gem.floatPhase) * 12;
-                    gem.x = Math.cos(gem.baseAngle) * swayRadius;
-                    gem.y = Math.sin(gem.baseAngle) * swayRadius;
+                mirrorRotationAngle += 0.004 * dt;
+                placedGems.forEach((g, i) => {
+                    // 選択中・ドラッグ中の宝石は止めて、調整しやすくする
+                    if (i === selectedIndex || (drag && drag.gem === i)) return;
+                    g.rotation += g.rotSpeed * dt;
+                    g.a += g.va * dt;                       // 鏡で折り返されるので常に見える
+                    g.r += g.vr * dt;
+                    const hi = rMaxFor(g.scale) * 0.85, lo = 50;
+                    if (g.r > hi) g.vr = -Math.abs(g.vr);
+                    else if (g.r < lo) g.vr = Math.abs(g.vr);
                 });
             }
+
+            placedGems.forEach(g => {
+                const f = fold(g.a);
+                g.x = g.r * Math.cos(f);
+                g.y = g.r * Math.sin(f);
+            });
+
+            ctx.clearRect(0, 0, CONFIG.canvasSize, CONFIG.canvasSize);
+            const cx = CONFIG.canvasSize / 2, cy = CONFIG.canvasSize / 2;
 
             ctx.save();
             ctx.translate(cx, cy);
             ctx.rotate(mirrorRotationAngle);
-
             const sliceAngle = (Math.PI * 2) / CONFIG.slices;
-
             for (let i = 0; i < CONFIG.slices; i++) {
                 ctx.save();
                 ctx.rotate(i * sliceAngle);
-
-                if (i % 2 === 1) {
-                    ctx.scale(1, -1);
-                }
-
+                if (i % 2 === 1) ctx.scale(1, -1);
                 ctx.beginPath();
                 ctx.moveTo(0, 0);
-                ctx.arc(0, 0, CONFIG.canvasSize / 2, -sliceAngle / 2, sliceAngle / 2);
+                ctx.arc(0, 0, R_VIEW, -sliceAngle / 2, sliceAngle / 2);
                 ctx.closePath();
                 ctx.clip();
-
-                drawGemsSector();
-
+                drawGemsSector(now);
                 ctx.restore();
             }
-
             ctx.restore();
 
+            drawBadges(cx, cy);
             requestAnimationFrame(renderLoop);
         }
 
-        function drawGemsSector() {
-            placedGems.forEach((gem, idx) => {
+        function drawGemsSector(now) {
+            // 選択中の宝石は最前面に描く（重なって隠れていても見つけられる）
+            const order = placedGems.map((_, i) => i).filter(i => i !== selectedIndex);
+            if (selectedIndex >= 0) order.push(selectedIndex);
+
+            order.forEach(idx => {
+                const gem = placedGems[idx];
                 const img = imageCache[gem.master.id];
                 const isFailed = imageErrorFlags[gem.master.id];
 
@@ -545,21 +671,14 @@
                 ctx.translate(gem.x, gem.y);
                 ctx.rotate(gem.rotation);
                 ctx.scale(gem.scale, gem.scale);
-
                 const size = 52;
 
-                if (isPolished) {
-                    ctx.shadowBlur = 22;
-                    ctx.shadowColor = 'rgba(255, 230, 150, 0.9)';
-                } else {
-                    ctx.shadowBlur = 8;
-                    ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
-                }
+                if (isPolished) { ctx.shadowBlur = 22; ctx.shadowColor = 'rgba(255, 230, 150, 0.9)'; }
+                else { ctx.shadowBlur = 8; ctx.shadowColor = 'rgba(0, 0, 0, 0.6)'; }
 
                 if (img && !isFailed) {
                     ctx.drawImage(img, -size / 2, -size / 2, size, size);
                 } else {
-                    // Beautiful Crystal Vector Fallback
                     ctx.beginPath();
                     ctx.moveTo(0, -size / 2);
                     ctx.lineTo(size / 2, -size / 4);
@@ -568,28 +687,77 @@
                     ctx.lineTo(-size / 2, size / 4);
                     ctx.lineTo(-size / 2, -size / 4);
                     ctx.closePath();
-                    
                     ctx.fillStyle = gem.master.color || '#79c0ff';
                     ctx.fill();
                     ctx.strokeStyle = '#ffffff';
                     ctx.lineWidth = 1.5;
                     ctx.stroke();
-
-                    // Inner facet highlight
                     ctx.beginPath();
                     ctx.moveTo(0, -size / 2);
                     ctx.lineTo(0, size / 2);
                     ctx.strokeStyle = 'rgba(255,255,255,0.4)';
                     ctx.stroke();
                 }
-
-                if (idx === selectedIndex) {
-                    ctx.strokeStyle = '#e3b341';
-                    ctx.lineWidth = 3;
-                    ctx.strokeRect(-size / 2 - 4, -size / 2 - 4, size + 8, size + 8);
-                }
-
                 ctx.restore();
+            });
+
+            // 選択リング＆「ここだよ」パルス
+            placedGems.forEach((gem, idx) => {
+                const isSel = idx === selectedIndex;
+                const isLoc = idx === locate.index && now < locate.until;
+                if (!isSel && !isLoc) return;
+                ctx.save();
+                ctx.translate(gem.x, gem.y);
+                if (isSel) {
+                    ctx.shadowBlur = 14;
+                    ctx.shadowColor = 'rgba(227,179,65,0.9)';
+                    ctx.strokeStyle = '#e3b341';
+                    ctx.lineWidth = 4;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, 26 * gem.scale + 10 + Math.sin(now / 220) * 2, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+                if (isLoc) {
+                    const p = ((now - locate.start) % 700) / 700;
+                    ctx.shadowBlur = 0;
+                    ctx.strokeStyle = `rgba(121,192,255,${1 - p})`;
+                    ctx.lineWidth = 5;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, 30 + p * 110, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+                ctx.restore();
+            });
+        }
+
+        // 番号バッジ（文字が反転・回転しないよう、画面座標で全ての鏡像に描く）
+        function drawBadges(cx, cy) {
+            const slice = 2 * H;
+            placedGems.forEach((g, i) => {
+                const isSel = i === selectedIndex;
+                if (!isSel && !showAllNumbers) return;
+                const f = fold(g.a);
+                const lx = g.r * Math.cos(f), ly0 = g.r * Math.sin(f);
+                for (let k = 0; k < CONFIG.slices; k++) {
+                    const ly = (k % 2 === 1) ? -ly0 : ly0;
+                    const ang = mirrorRotationAngle + k * slice;
+                    const sx = cx + lx * Math.cos(ang) - ly * Math.sin(ang) + 26;
+                    const sy = cy + lx * Math.sin(ang) + ly * Math.cos(ang) - 26;
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.arc(sx, sy, isSel ? 19 : 15, 0, Math.PI * 2);
+                    ctx.fillStyle = isSel ? '#e3b341' : 'rgba(13,17,23,0.85)';
+                    ctx.fill();
+                    ctx.lineWidth = 2;
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.stroke();
+                    ctx.fillStyle = isSel ? '#111827' : '#ffffff';
+                    ctx.font = `bold ${isSel ? 22 : 18}px system-ui, sans-serif`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(String(i + 1), sx, sy + 1);
+                    ctx.restore();
+                }
             });
         }
     </script>
