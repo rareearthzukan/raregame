@@ -115,7 +115,7 @@
         <div>
             <div class="flex items-center justify-between mb-1.5 gap-2">
                 <span class="text-xs font-bold text-gray-200">🔢 置いた宝石 <strong id="slotCountLabel" class="text-amber-400">0/10</strong>
-                    <span class="font-normal text-[10px] text-gray-500">（番号タップで選択）</span></span>
+                    <span class="font-normal text-[10px] text-gray-500">（番号タップで選択／もう一度で解除）</span></span>
                 <label class="flex items-center gap-1.5 cursor-pointer text-[11px] text-sky-300 bg-gray-900 px-2 py-1 rounded-md border border-gray-800 hover:border-sky-500">
                     <input type="checkbox" id="showNumbersToggle" class="accent-sky-400 rounded">
                     <span>番号を万華鏡に表示</span>
@@ -133,7 +133,7 @@
                 </div>
                 <div class="flex gap-1.5 shrink-0">
                     <button id="locateBtn" class="px-2.5 py-2 text-[11px] bg-sky-800 hover:bg-sky-700 text-white font-bold rounded-md transition shadow">📍 光らせる</button>
-                    <button id="centerBtn" class="px-2.5 py-2 text-[11px] bg-gray-700 hover:bg-gray-600 text-white font-bold rounded-md transition shadow">🎯 中央へ</button>
+                    <button id="deselectBtn" class="px-2.5 py-2 text-[11px] bg-gray-700 hover:bg-gray-600 text-white font-bold rounded-md transition shadow">✖ 選択解除</button>
                     <button id="deleteBtn" class="px-2.5 py-2 text-[11px] bg-red-800 hover:bg-red-700 text-white font-bold rounded-md transition shadow">削除</button>
                 </div>
             </div>
@@ -145,7 +145,7 @@
                     <input type="range" id="angleSlider" min="0" max="360" step="5" value="0" class="w-full accent-sky-400 mt-1">
                 </label>
             </div>
-            <p class="text-[10px] text-gray-500 leading-relaxed">宝石をドラッグで移動／余白をなぞるとビーズがくるくる回ります。宝石は常に鏡の内側にあるので見失いません。</p>
+            <p class="text-[10px] text-gray-500 leading-relaxed">宝石をドラッグで移動／余白をなぞるとビーズがくるくる回ります。選択を外すには「✖ 選択解除」、選択中の番号をもう一度タップ、または万華鏡の余白をタップ。</p>
         </div>
 
         <!-- Tray Filter & Header -->
@@ -181,7 +181,7 @@
 
             <div class="text-xs text-gray-300 space-y-2 text-left bg-gray-950/80 p-3 rounded-xl border border-gray-800 mb-4 w-full leading-relaxed">
                 <p>💎 <strong>① 自由な配置:</strong> 下の図鑑から宝石をタップして、最大10個まで置けます。置いた宝石には <strong>1〜10の番号</strong> が付き、光る輪でどこにあるか分かります！</p>
-                <p>👆 <strong>② 選ぶ・動かす:</strong> 万華鏡の中の宝石をタップ、または <strong>番号スロット</strong> をタップで選択。ドラッグで移動、余白をなぞるとビーズがくるくる回ります。</p>
+                <p>👆 <strong>② 選ぶ・動かす:</strong> 万華鏡の中の宝石をタップ、または <strong>番号スロット</strong> をタップで選択（もう一度タップで解除）。ドラッグで移動、余白をなぞるとビーズがくるくる回ります。</p>
                 <p>🔄 <strong>③ 自動回転:</strong> 「自動回転: ON」にすると模様が刻々と変化。宝石は常に鏡の内側を動くので、見失いません。</p>
                 <p>✨ <strong>④ セリウム磨き:</strong> 酸化セリウムの輝き効果で、宝石のツヤと透明感をアップできます！</p>
             </div>
@@ -433,11 +433,14 @@
                     const sel = i === selectedIndex;
                     btn.className = 'relative aspect-square rounded-lg border-2 flex items-center justify-center transition ' +
                         (sel ? 'border-amber-400 bg-amber-900/30 shadow-[0_0_10px_rgba(227,179,65,0.7)]' : 'border-gray-700 bg-gray-900 hover:border-sky-500');
-                    btn.setAttribute('aria-label', `${i + 1}個目 ${g.master.name} を選ぶ`);
+                    btn.setAttribute('aria-label', `${i + 1}個目 ${g.master.name} を${sel ? '選択解除' : '選ぶ'}`);
                     const fb = createCrystalSVGDataUrl(g.master.color || '#79c0ff');
                     btn.innerHTML = `<span class="absolute top-0 left-0 px-1.5 text-[11px] font-bold rounded-br-lg ${sel ? 'bg-amber-400 text-gray-900' : 'bg-black/70 text-amber-300'}">${i + 1}</span>` +
                         `<img src="${g.master.img}" alt="" class="w-3/5 h-3/5 object-contain pointer-events-none" onerror="this.onerror=null; this.src='${fb}';">`;
-                    btn.addEventListener('click', () => { selectGem(i); locateGem(i); });
+                    btn.addEventListener('click', () => {
+                        if (i === selectedIndex) { selectGem(-1); showToast('選択を解除しました'); }
+                        else { selectGem(i); locateGem(i); }
+                    });
                 } else {
                     btn.className = 'relative aspect-square rounded-lg border-2 border-dashed border-gray-800 flex items-center justify-center text-gray-700 text-lg font-bold';
                     btn.textContent = i + 1;
@@ -550,12 +553,7 @@
                 if (selectedIndex >= 0) placedGems[selectedIndex].rotation = (parseFloat(e.target.value) * Math.PI) / 180;
             });
             document.getElementById('locateBtn').addEventListener('click', () => { if (selectedIndex >= 0) locateGem(selectedIndex); });
-            document.getElementById('centerBtn').addEventListener('click', () => {
-                if (selectedIndex < 0) return;
-                const g = placedGems[selectedIndex];
-                g.r = Math.min(130, rMaxFor(g.scale)); g.a = 0;
-                locateGem(selectedIndex);
-            });
+            document.getElementById('deselectBtn').addEventListener('click', () => selectGem(-1));
             document.getElementById('deleteBtn').addEventListener('click', () => {
                 if (selectedIndex < 0) return;
                 const n = selectedIndex + 1;
