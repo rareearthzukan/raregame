@@ -3,10 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ホルミウム・レーザー：体内ミッション</title>
+  <title>ホルミウム・ビリヤード：レーザー・バンクショット</title>
   <style>
-    body { background-color: #1a1a2e; color: #fff; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; height: 100dvh; margin: 0; overflow: hidden; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; overscroll-behavior: none; }
-    .phone { flex-shrink: 0; }
+    body { background-color: #1a1a2e; color: #fff; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; user-select: none; -webkit-user-select: none; }
     .phone { width: 360px; height: 740px; background: #0f3460; border: 4px solid #16213e; border-radius: 24px; display: flex; flex-direction: column; overflow: hidden; position: relative; box-sizing: border-box; }
     .header { background: #16213e; padding: 8px 10px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: bold; border-bottom: 2px solid #e94560; flex-shrink: 0; gap: 6px; }
     .bgm-btn { background: rgba(0,0,0,.4); border: 1px solid #00fff5; color: #00fff5; border-radius: 12px; padding: 2px 8px; font-size: 12px; cursor: pointer; transition: all .2s; }
@@ -99,7 +98,7 @@
 
   <div class="phone">
     <div class="header">
-      <span>🔴 ホルミウム・レーザー治療</span>
+      <span>🔴 ホルミウム・ビリヤード</span>
       <button id="bgm-btn" class="bgm-btn">🎵 ON</button>
     </div>
 
@@ -108,8 +107,8 @@
         <div class="avatar" id="avHo"><img id="imgHo" alt="Ho"></div>
         <div class="stat-col">
           <div class="stat-title" id="stTitle">-</div>
-          <div class="stat-line">残りレーザー <span class="dots" id="stShots"></span></div>
-          <div class="stat-line">のこり病変 <span class="hp" id="stHp"></span></div>
+          <div class="stat-line">残りショット <span class="dots" id="stShots"></span></div>
+          <div class="stat-line">相手のHP <span class="hp" id="stHp"></span></div>
         </div>
         <div class="avatar foe" id="avFoe"><img id="imgFoe" alt="foe"></div>
       </div>
@@ -121,7 +120,7 @@
       </div>
 
       <div class="power-row">
-        <span>🔋 チャージ</span>
+        <span>🔋 パワー</span>
         <input type="range" id="power" min="5" max="100" value="60">
         <b id="powerVal">60%</b>
       </div>
@@ -131,7 +130,7 @@
         <button class="ctrl-btn" id="btnR">▶<small>微調整</small></button>
         <button class="ctrl-btn" id="btnHint">💡<small>ヒント</small></button>
         <button class="ctrl-btn" id="btnRetry">↺<small>やり直し</small></button>
-        <button class="ctrl-btn shot" id="btnShot">🔴 発射！</button>
+        <button class="ctrl-btn shot" id="btnShot">🔴 うつ！</button>
       </div>
 
       <div class="nav-row">
@@ -318,7 +317,7 @@ const Core = (function () {
     return tr;
   }
 
-  /* ソルバー：入るレーザーを探す。強健性（少しずれても入る）も確認できる */
+  /* ソルバー：入るショットを探す。強健性（少しずれても入る）も確認できる */
   const okShot = (res) => res.pocketed.length > 0 && !res.scratch && !res.foul && res.balls.some(b => b.kind === 'target' && !b.alive);
   const pocketedTargets = (res) => res.balls.filter(b => b.kind === 'target' && !b.alive).map(b => b.id).sort().join(',');
   function robust(balls, a, p, key) {
@@ -377,7 +376,7 @@ const STAGES = [{"id": 0, "d": 0, "n": 0, "limit": 3, "par": 1, "plan": [{"a": 0
     { name: '尿管狭窄', kana: 'ニョウカン', desc: '尿の通り道がせまくなる病気。レーザーで切り開く治療に使われることがあるよ。',
       lines: { start: 'ぎゅうぅっ…通さないぞ…', hurt: 'ゆるんだ…？', foul: 'せまい道は難しいだろう？', win: 'ひらけた…！', fail: 'ぎゅうぅっ…！' } }
   ];
-  const HO_LINES = { start: 'いくよ、レーザー発射準備！', win: 'やったー！治療かんりょう！', miss: 'うーん、角度が違ったかな', foul: 'あっ、ミス…！' };
+  const HO_LINES = { start: 'いくよ、レーザー発射準備！', win: 'やったー！治療かんりょう！', miss: 'うーん、角度が違ったかな', foul: 'あっ、ファウル…！' };
   const PER = 4;   // 1体あたりのステージ数
 
   /* ═════════ キャラクター画像（ファイルが無ければコード描画で代用）═════════ */
@@ -471,162 +470,91 @@ const STAGES = [{"id": 0, "d": 0, "n": 0, "limit": 3, "par": 1, "plan": [{"a": 0
   function mix(h, to, a) { const c = hex2rgb(h); return 'rgb(' + c.map((v, i) => Math.round(v + (to[i] - v) * a)).join(',') + ')'; }
   const lighten = (h, a) => mix(h, [255, 255, 255], a), darken = (h, a) => mix(h, [0, 0, 0], a);
 
-  /* ── 体内フィールド（1回だけ描いて使い回す）── */
+  /* ── 台（1回だけ描いて使い回す）── */
   const tableCv = document.createElement('canvas');
-  // 回収カプセルの表示位置（物理側のポケット判定は Core.POCKETS のまま）
-  const POCKET_VIS = [[OX - 5, OY - 5, 19], [OX + W + 5, OY - 5, 19], [OX - 5, OY + H + 5, 19], [OX + W + 5, OY + H + 5, 19], [OX - 9, OY + H / 2, 16], [OX + W + 9, OY + H / 2, 16]];
-  function capsuleBase(g, x, y, r) {
-    let pg = g.createRadialGradient(x, y, r * .1, x, y, r * 1.55); pg.addColorStop(0, 'rgba(0,255,220,.55)'); pg.addColorStop(.5, 'rgba(0,200,200,.18)'); pg.addColorStop(1, 'rgba(0,0,0,0)');
-    g.fillStyle = pg; g.beginPath(); g.arc(x, y, r * 1.55, 0, 6.283); g.fill();
-    pg = g.createRadialGradient(x, y, 1, x, y, r); pg.addColorStop(0, '#0b6a72'); pg.addColorStop(.55, '#04252e'); pg.addColorStop(1, '#02121c');
-    g.fillStyle = pg; g.beginPath(); g.arc(x, y, r, 0, 6.283); g.fill();
-    g.strokeStyle = '#3ff0d2'; g.lineWidth = 2.2; g.beginPath(); g.arc(x, y, r, 0, 6.283); g.stroke();
-  }
   function buildTable() {
     const c = tableCv; c.width = CW * DPR; c.height = CH * DPR; const g = c.getContext('2d'); g.scale(DPR, DPR);
-    const rng = seeded(11);
-    // 外側：生体バリア（細胞のかべ）
-    let gr = g.createLinearGradient(0, 0, CW, CH); gr.addColorStop(0, '#b0408f'); gr.addColorStop(.5, '#6e2069'); gr.addColorStop(1, '#42125a');
+    const rng = seeded(7);
+    // 木枠
+    let gr = g.createLinearGradient(0, 0, CW, CH); gr.addColorStop(0, '#9a6532'); gr.addColorStop(.5, '#6b3f1b'); gr.addColorStop(1, '#4a2a10');
     g.fillStyle = gr; rr(g, 0, 0, CW, CH, 18); g.fill();
     g.save(); rr(g, 0, 0, CW, CH, 18); g.clip();
-    for (let i = 0; i < 280; i++) { const x = rng() * CW, y = rng() * CH, r = 2 + rng() * 4.5; g.fillStyle = 'rgba(255,175,225,' + (.05 + rng() * .09) + ')'; g.beginPath(); g.arc(x, y, r, 0, 6.283); g.fill(); g.strokeStyle = 'rgba(60,0,70,.28)'; g.lineWidth = .8; g.stroke(); }
+    for (let i = 0; i < 140; i++) { const y = rng() * CH, x = rng() * CW; g.strokeStyle = 'rgba(0,0,0,' + (.05 + rng() * .08) + ')'; g.lineWidth = .6 + rng(); g.beginPath(); g.moveTo(x, y); g.bezierCurveTo(x + 30, y + 3, x + 60, y - 3, x + 90 + rng() * 80, y + 2); g.stroke(); }
+    for (let i = 0; i < 90; i++) { const y = rng() * CH, x = rng() * CW; g.strokeStyle = 'rgba(255,220,170,' + (.04 + rng() * .05) + ')'; g.lineWidth = .8; g.beginPath(); g.moveTo(x, y); g.lineTo(x + 20 + rng() * 60, y + 1); g.stroke(); }
     g.restore();
-    g.strokeStyle = 'rgba(255,195,240,.45)'; g.lineWidth = 1.5; rr(g, 1.5, 1.5, CW - 3, CH - 3, 17); g.stroke();
-    // 内側：体液フィールド
-    gr = g.createRadialGradient(CW / 2, CH / 2, 20, CW / 2, CH / 2, 300); gr.addColorStop(0, '#2c3d96'); gr.addColorStop(.55, '#1b256c'); gr.addColorStop(1, '#0c113c');
+    g.strokeStyle = 'rgba(255,225,180,.35)'; g.lineWidth = 1.5; rr(g, 1.5, 1.5, CW - 3, CH - 3, 17); g.stroke();
+    g.strokeStyle = 'rgba(0,0,0,.45)'; g.lineWidth = 2; rr(g, 12.5, 12.5, CW - 25, CH - 25, 8); g.stroke();
+    // クッション
+    gr = g.createLinearGradient(0, 14, 0, CH - 14); gr.addColorStop(0, '#0e7a62'); gr.addColorStop(1, '#075243');
+    g.fillStyle = gr; rr(g, 14, 14, CW - 28, CH - 28, 7); g.fill();
+    // フェルト
+    gr = g.createRadialGradient(CW / 2, CH / 2, 20, CW / 2, CH / 2, 280); gr.addColorStop(0, '#22a88a'); gr.addColorStop(.55, '#16866f'); gr.addColorStop(1, '#0c5a4c');
     g.fillStyle = gr; g.fillRect(OX, OY, W, H);
-    g.save(); g.beginPath(); g.rect(OX, OY, W, H); g.clip();
-    // 血管のような流れ
-    g.lineCap = 'round';
-    for (let i = 0; i < 8; i++) { const y0 = OY + rng() * H, x0 = OX - 20; g.strokeStyle = 'rgba(255,110,160,' + (.05 + rng() * .05) + ')'; g.lineWidth = 6 + rng() * 14; g.beginPath(); g.moveTo(x0, y0); g.bezierCurveTo(x0 + 90, y0 + (rng() - .5) * 120, x0 + 190, y0 + (rng() - .5) * 120, x0 + W + 40, y0 + (rng() - .5) * 90); g.stroke(); }
-    // 組織の細胞（うすい輪郭）
-    for (let i = 0; i < 48; i++) { const x = OX + rng() * W, y = OY + rng() * H, r = 8 + rng() * 22; g.strokeStyle = rng() < .5 ? 'rgba(130,210,255,.08)' : 'rgba(255,150,210,.07)'; g.lineWidth = 1.2; g.beginPath(); g.arc(x, y, r, 0, 6.283); g.stroke(); if (rng() < .5) { g.beginPath(); g.arc(x + r * .25, y + r * .1, r * .3, 0, 6.283); g.stroke(); } }
-    // ただよう赤血球
-    for (let i = 0; i < 12; i++) { const x = OX + rng() * W, y = OY + rng() * H, r = 5 + rng() * 4; g.fillStyle = 'rgba(220,60,90,.14)'; g.beginPath(); g.arc(x, y, r, 0, 6.283); g.fill(); g.fillStyle = 'rgba(120,20,60,.18)'; g.beginPath(); g.arc(x, y, r * .45, 0, 6.283); g.fill(); }
-    // 微粒子
-    for (let i = 0; i < 160; i++) { g.fillStyle = 'rgba(190,225,255,' + (.05 + rng() * .1) + ')'; g.fillRect(OX + rng() * W, OY + rng() * H, 1, 1); }
-    g.restore();
-    // バリアの内側のかがやき（ミラー面）
-    g.save(); g.shadowColor = '#ff7ad0'; g.shadowBlur = 12; g.strokeStyle = 'rgba(255,175,232,.9)'; g.lineWidth = 2; g.strokeRect(OX, OY, W, H); g.restore();
-    // ミラーノード（かべの小さな光）
-    g.fillStyle = 'rgba(255,225,245,.75)';
-    for (let i = 1; i < 8; i++) { if (i === 4) continue; [7, CW - 7].forEach(x => { g.beginPath(); g.arc(x, OY + i * H / 8, 2, 0, 6.283); g.fill(); }); }
-    for (let i = 1; i < 4; i++) [CH - 7].forEach(y => { g.beginPath(); g.arc(OX + i * W / 4, y, 2, 0, 6.283); g.fill(); });
-    // ラベル
-    g.font = 'bold 9px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = 'rgba(255,230,247,.92)'; g.fillText('生体バリア ＝ レーザーをはね返すかべ', CW / 2, 12);
-    // 回収カプセル
-    POCKET_VIS.forEach(([x, y, r]) => capsuleBase(g, x, y, r));
-  }
-  function drawPocketsAnim(g, t) {
-    g.save(); g.globalCompositeOperation = 'lighter';
-    POCKET_VIS.forEach(([x, y, r], i) => {
-      const k = .5 + .5 * Math.sin(t * 3 + i);
-      g.strokeStyle = 'rgba(70,255,220,' + (.45 + .3 * k) + ')'; g.lineWidth = 1.6; g.setLineDash([4, 5]); g.lineDashOffset = -t * 18 * (i % 2 ? -1 : 1);
-      g.beginPath(); g.arc(x, y, r - 3.5, 0, 6.283); g.stroke();
-      g.setLineDash([]); g.strokeStyle = 'rgba(120,255,230,' + (.25 + .25 * k) + ')'; g.lineWidth = 1;
-      g.beginPath(); g.arc(x, y, r * (.35 + .2 * k), 0, 6.283); g.stroke();
+    for (let i = 0; i < 2600; i++) { g.fillStyle = rng() < .5 ? 'rgba(255,255,255,.035)' : 'rgba(0,0,0,.05)'; g.fillRect(OX + rng() * W, OY + rng() * H, 1 + rng() * 1.5, 1); }
+    // クッション際の影とハイライト
+    [[OX, OY, W, 12, 0, 1], [OX, OY + H - 12, W, 12, 1, 0], [OX, OY, 12, H, 0, 1, 1], [OX + W - 12, OY, 12, H, 1, 0, 1]].forEach(([x, y, w, h, a, b, v]) => {
+      const lg = v ? g.createLinearGradient(x, 0, x + w, 0) : g.createLinearGradient(0, y, 0, y + h);
+      lg.addColorStop(0, 'rgba(0,0,0,' + (.32 * (1 - a)) + ')'); lg.addColorStop(1, 'rgba(0,0,0,' + (.32 * (1 - b)) + ')'); g.fillStyle = lg; g.fillRect(x, y, w, h);
     });
-    g.setLineDash([]); g.restore();
+    g.strokeStyle = 'rgba(190,255,235,.28)'; g.lineWidth = 1; g.strokeRect(OX + .5, OY + .5, W - 1, H - 1);
+    // スポット
+    g.fillStyle = 'rgba(0,0,0,.22)'; [[OX + W / 2, OY + H * .25], [OX + W / 2, OY + H * .75]].forEach(([x, y]) => { g.beginPath(); g.arc(x, y, 2.2, 0, 6.283); g.fill(); });
+    g.strokeStyle = 'rgba(255,255,255,.07)'; g.setLineDash([5, 5]); g.beginPath(); g.moveTo(OX + 4, OY + H * .75); g.lineTo(OX + W - 4, OY + H * .75); g.stroke(); g.setLineDash([]);
+    // ダイヤモンド
+    const dia = (x, y) => { g.save(); g.translate(x, y); g.rotate(Math.PI / 4); g.fillStyle = '#f7f0dc'; g.fillRect(-2.6, -2.6, 5.2, 5.2); g.strokeStyle = 'rgba(0,0,0,.4)'; g.lineWidth = .8; g.strokeRect(-2.6, -2.6, 5.2, 5.2); g.restore(); };
+    for (let i = 1; i < 8; i++) { if (i === 4) continue; dia(7, OY + i * H / 8); dia(CW - 7, OY + i * H / 8); }
+    for (let i = 1; i < 4; i++) { dia(OX + i * W / 4, 7); dia(OX + i * W / 4, CH - 7); }
+    // ポケット
+    const pocket = (x, y, r) => {
+      let pg = g.createRadialGradient(x, y, r * .2, x, y, r * 1.25); pg.addColorStop(0, '#000'); pg.addColorStop(.75, '#0a0a0c'); pg.addColorStop(1, 'rgba(0,0,0,0)');
+      g.fillStyle = pg; g.beginPath(); g.arc(x, y, r * 1.25, 0, 6.283); g.fill();
+      g.fillStyle = '#050506'; g.beginPath(); g.arc(x, y, r, 0, 6.283); g.fill();
+      g.strokeStyle = '#c9a14a'; g.lineWidth = 2.2; g.beginPath(); g.arc(x, y, r, 0, 6.283); g.stroke();
+      g.strokeStyle = 'rgba(255,240,190,.5)'; g.lineWidth = 1; g.beginPath(); g.arc(x, y, r - 1.6, Math.PI * 1.1, Math.PI * 1.6); g.stroke();
+    };
+    pocket(OX - 5, OY - 5, 19); pocket(OX + W + 5, OY - 5, 19); pocket(OX - 5, OY + H + 5, 19); pocket(OX + W + 5, OY + H + 5, 19);
+    pocket(OX - 9, OY + H / 2, 16); pocket(OX + W + 9, OY + H / 2, 16);
   }
 
-  /* ── キャラ（コア／病変／正常細胞）の描画部品 ── */
-  const CRYSTAL_K = [1, .92, 1.06, .95, 1, .93, 1.07, .96];
-  function crystalPath(g, x, y, r) {
-    g.beginPath();
-    CRYSTAL_K.forEach((k, i) => { const a = i * Math.PI / 4 + Math.PI / 8, px = x + Math.cos(a) * r * k, py = y + Math.sin(a) * r * k; i ? g.lineTo(px, py) : g.moveTo(px, py); });
-    g.closePath();
-  }
-  function cellFace(g, x, y, r) {
-    g.strokeStyle = '#5a1a33'; g.lineWidth = 1.4; g.lineCap = 'round';
-    [-1, 1].forEach(s => { g.beginPath(); g.arc(x + s * r * .36, y - r * .02, r * .2, Math.PI, 0); g.stroke(); });
-    g.beginPath(); g.arc(x, y + r * .05, r * .36, .2 * Math.PI, .8 * Math.PI); g.stroke();
-    g.fillStyle = 'rgba(255,90,130,.5)'; [-1, 1].forEach(s => { g.beginPath(); g.ellipse(x + s * r * .62, y + r * .28, r * .18, r * .11, 0, 0, 6.283); g.fill(); });
-  }
-  function drawCore(g, x, y, t, b) {
-    g.save(); g.globalCompositeOperation = 'lighter';
-    let gr = g.createRadialGradient(x, y, R * .3, x, y, R * 2.5); gr.addColorStop(0, 'rgba(255,190,90,.6)'); gr.addColorStop(1, 'rgba(255,140,30,0)');
-    g.fillStyle = gr; g.beginPath(); g.arc(x, y, R * 2.5, 0, 6.283); g.fill(); g.restore();
-    gr = g.createRadialGradient(x - R * .3, y - R * .3, 1, x, y, R); gr.addColorStop(0, '#ffffff'); gr.addColorStop(.35, '#ffe3a0'); gr.addColorStop(.75, '#ffa630'); gr.addColorStop(1, '#e8590c');
-    g.fillStyle = gr; g.beginPath(); g.arc(x, y, R, 0, 6.283); g.fill();
-    g.save(); g.translate(x, y); g.rotate(t * 2); g.strokeStyle = 'rgba(255,255,255,.85)'; g.lineWidth = 1.4; g.lineCap = 'round';
-    g.beginPath(); g.moveTo(-R * .75, 0); g.lineTo(R * .75, 0); g.moveTo(0, -R * .75); g.lineTo(0, R * .75); g.stroke(); g.restore();
-    if (b.aimGlow) { g.strokeStyle = 'rgba(255,200,110,' + (.55 + .3 * Math.sin(t * 5)) + ')'; g.lineWidth = 1.8; g.setLineDash([3, 3]); g.lineDashOffset = -t * 12; g.beginPath(); g.arc(x, y, R + 4, 0, 6.283); g.stroke(); g.setLineDash([]); g.lineDashOffset = 0; }
-  }
-  function drawLesion(g, x, y, t, b) {
-    const d = S.stage ? S.stage.d : 0;
-    let gr;
-    if (d === 0) {            // 結石：かたい結晶
-      g.save(); g.shadowColor = 'rgba(190,225,255,.8)'; g.shadowBlur = 8;
-      gr = g.createLinearGradient(x - R, y - R, x + R, y + R); gr.addColorStop(0, '#f7fbff'); gr.addColorStop(.5, '#b9c9e6'); gr.addColorStop(1, '#7f94bd');
-      g.fillStyle = gr; crystalPath(g, x, y, R * 1.08); g.fill(); g.restore();
-      g.strokeStyle = '#4a5f8a'; g.lineWidth = 1.5; crystalPath(g, x, y, R * 1.08); g.stroke();
-      g.strokeStyle = 'rgba(255,255,255,.6)'; g.lineWidth = 1; g.beginPath();
-      CRYSTAL_K.forEach((k, i) => { const a = i * Math.PI / 4 + Math.PI / 8; g.moveTo(x, y); g.lineTo(x + Math.cos(a) * R * k * 1.08, y + Math.sin(a) * R * k * 1.08); }); g.stroke();
-      const tw = .5 + .5 * Math.sin(t * 5 + b.id); g.fillStyle = 'rgba(255,255,255,' + (.5 + .5 * tw) + ')';
-      g.beginPath(); g.moveTo(x - R * .4, y - R * .75); g.lineTo(x - R * .32, y - R * .5); g.lineTo(x - R * .08, y - R * .42); g.lineTo(x - R * .32, y - R * .34); g.lineTo(x - R * .4, y - R * .1); g.lineTo(x - R * .48, y - R * .34); g.lineTo(x - R * .72, y - R * .42); g.lineTo(x - R * .48, y - R * .5); g.closePath(); g.fill();
-    } else if (d === 1) {     // 前立腺：トゲトゲの細胞
-      g.strokeStyle = '#7a3f95'; g.lineWidth = 2; g.lineCap = 'round';
-      for (let i = 0; i < 10; i++) { const a = i * Math.PI / 5 + t * .3, c = Math.cos(a), s = Math.sin(a); g.beginPath(); g.moveTo(x + c * R * .8, y + s * R * .8); g.lineTo(x + c * R * 1.2, y + s * R * 1.2); g.stroke(); g.fillStyle = '#ecbdf7'; g.beginPath(); g.arc(x + c * R * 1.22, y + s * R * 1.22, 1.9, 0, 6.283); g.fill(); }
-      gr = g.createRadialGradient(x - R * .3, y - R * .35, 1, x, y, R); gr.addColorStop(0, '#f1d3f7'); gr.addColorStop(.5, '#c98ad9'); gr.addColorStop(1, '#6d2f8a');
-      g.fillStyle = gr; g.beginPath(); g.arc(x, y, R * .92, 0, 6.283); g.fill();
-      g.strokeStyle = '#4a1f63'; g.lineWidth = 1.4; g.stroke();
-      g.strokeStyle = '#2b1033'; g.lineWidth = 1.6; g.beginPath(); g.moveTo(x - R * .55, y - R * .38); g.lineTo(x - R * .15, y - R * .2); g.moveTo(x + R * .55, y - R * .38); g.lineTo(x + R * .15, y - R * .2); g.stroke();
-      g.fillStyle = '#2b1033'; [-1, 1].forEach(s => { g.beginPath(); g.arc(x + s * R * .32, y - R * .02, 1.6, 0, 6.283); g.fill(); });
-    } else {                  // 尿管狭窄：しめつけられた細胞
-      gr = g.createRadialGradient(x - R * .3, y - R * .35, 1, x, y, R); gr.addColorStop(0, '#d2f7d8'); gr.addColorStop(.5, '#6fcf85'); gr.addColorStop(1, '#2c7c44');
-      g.fillStyle = gr; g.beginPath(); g.arc(x, y, R, 0, 6.283); g.fill();
-      g.save(); g.beginPath(); g.arc(x, y, R, 0, 6.283); g.clip(); g.fillStyle = 'rgba(242,95,92,.92)'; g.fillRect(x - R, y - R * .22, R * 2, R * .44); g.strokeStyle = '#7a1f1d'; g.lineWidth = 1; g.strokeRect(x - R, y - R * .22, R * 2, R * .44); g.restore();
-      g.strokeStyle = '#1d5a30'; g.lineWidth = 1.5; g.beginPath(); g.arc(x, y, R, 0, 6.283); g.stroke();
-      g.fillStyle = 'rgba(255,255,255,.7)'; g.beginPath(); g.ellipse(x - R * .35, y - R * .5, R * .22, R * .12, -.5, 0, 6.283); g.fill();
-    }
-    // ターゲットの印（回るダッシュ輪）
-    g.save(); g.strokeStyle = 'rgba(255,235,59,.7)'; g.lineWidth = 1.4; g.setLineDash([3, 4]); g.lineDashOffset = -t * 10;
-    g.beginPath(); g.arc(x, y, R + 4.5, 0, 6.283); g.stroke(); g.restore();
-  }
-  function drawCell(g, x, y, t, b) {
-    const k = .5 + .5 * Math.sin(t * 3 + b.id);
-    g.save(); g.shadowColor = 'rgba(125,255,176,.55)'; g.shadowBlur = 6 + 4 * k;
-    const gr = g.createRadialGradient(x - R * .3, y - R * .35, 1, x, y, R); gr.addColorStop(0, '#ffe3ea'); gr.addColorStop(.5, '#ff9fb8'); gr.addColorStop(1, '#d4527a');
-    g.fillStyle = gr; g.beginPath(); g.arc(x, y, R, 0, 6.283); g.fill(); g.restore();
-    g.fillStyle = 'rgba(200,60,110,.25)'; g.beginPath(); g.arc(x + R * .2, y + R * .15, R * .5, 0, 6.283); g.fill();
-    g.strokeStyle = '#a63a5f'; g.lineWidth = 1.2; g.beginPath(); g.arc(x, y, R, 0, 6.283); g.stroke();
-    cellFace(g, x, y, R);
-    g.strokeStyle = 'rgba(125,255,176,' + (.5 + .4 * k) + ')'; g.lineWidth = 1.8; g.beginPath(); g.arc(x, y, R + 3.5 + k, 0, 6.283); g.stroke();
-  }
+  /* ── 玉 ── */
+  const BALL_COL = { 0: '#f4f1e8', 1: '#f2c311', 2: '#1f5fd1', 3: '#d62828', 4: '#6a2c91', 5: '#f27a1a', 6: '#1d8f4a', 7: '#8a2b2b', 8: '#17171a', 9: '#f2c311' };
   function drawBall(g, b, t, alpha) {
-    const x = OX + b.x, y = OY + b.y;
+    const x = OX + b.x, y = OY + b.y, col = BALL_COL[b.num] || '#888';
     g.save(); if (alpha != null) g.globalAlpha = alpha;
-    if (b.kind === 'cue') drawCore(g, x, y, t, b); else if (b.kind === 'target') drawLesion(g, x, y, t, b); else drawCell(g, x, y, t, b);
+    g.fillStyle = 'rgba(0,0,0,.38)'; g.beginPath(); g.ellipse(x + 2.5, y + 3.6, R * .98, R * .8, 0, 0, 6.283); g.fill();
+    const gr = g.createRadialGradient(x - R * .38, y - R * .42, R * .1, x, y, R * 1.05);
+    gr.addColorStop(0, lighten(col, .6)); gr.addColorStop(.42, col); gr.addColorStop(1, darken(col, .6));
+    g.fillStyle = gr; g.beginPath(); g.arc(x, y, R, 0, 6.283); g.fill();
+    if (b.num > 0) {
+      g.fillStyle = '#f7f4ea'; g.beginPath(); g.arc(x, y, R * .5, 0, 6.283); g.fill();
+      g.fillStyle = '#111'; g.font = 'bold ' + Math.round(R * .72) + 'px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(String(b.num), x, y + .6);
+    }
+    g.fillStyle = 'rgba(255,255,255,.75)'; g.beginPath(); g.ellipse(x - R * .36, y - R * .42, R * .3, R * .17, -.6, 0, 6.283); g.fill();
+    if (b.kind === 'block') { g.strokeStyle = 'rgba(255,71,87,' + (.55 + .35 * Math.sin(t * 6)) + ')'; g.lineWidth = 2; g.beginPath(); g.arc(x, y, R + 3, 0, 6.283); g.stroke(); }
+    if (b.kind === 'cue' && b.aimGlow) { g.strokeStyle = 'rgba(255,179,71,' + (.5 + .3 * Math.sin(t * 5)) + ')'; g.lineWidth = 2; g.beginPath(); g.arc(x, y, R + 3, 0, 6.283); g.stroke(); }
     g.restore();
   }
 
-  /* ── レーザーファイバー（プローブ）：チャージ量でコアとの距離と光が変わる ── */
+  /* ── キュー ── */
   function drawCue(g, cx, cy, ang, pull, alpha) {
-    const t = performance.now() / 1000, pw = S.power;
-    g.save(); g.globalAlpha = alpha == null ? 1 : alpha; g.translate(cx, cy);
-    // チャージリング（パワーに応じて一周に近づく）
-    g.strokeStyle = 'rgba(255,190,90,.85)'; g.lineWidth = 2.4; g.lineCap = 'round';
-    g.beginPath(); g.arc(0, 0, R + 8, -Math.PI / 2, -Math.PI / 2 + 6.283 * pw); g.stroke();
-    g.strokeStyle = 'rgba(255,190,90,.18)'; g.lineWidth = 1; g.beginPath(); g.arc(0, 0, R + 8, 0, 6.283); g.stroke();
-    g.rotate(ang);
-    const gap = R + 8 + pull, L = 270;
-    // ファイバー本体（遠くへ行くほどうすく）
-    let lg = g.createLinearGradient(-gap, 0, -gap - L, 0); lg.addColorStop(0, 'rgba(120,138,178,.95)'); lg.addColorStop(1, 'rgba(120,138,178,.2)');
-    g.strokeStyle = lg; g.lineWidth = 5; g.beginPath(); g.moveTo(-gap - 14, 0); g.lineTo(-gap - L, 0); g.stroke();
-    lg = g.createLinearGradient(-gap, 0, -gap - L, 0); lg.addColorStop(0, 'rgba(225,238,255,.95)'); lg.addColorStop(1, 'rgba(225,238,255,.15)');
-    g.strokeStyle = lg; g.lineWidth = 1.6; g.beginPath(); g.moveTo(-gap - 14, 0); g.lineTo(-gap - L, 0); g.stroke();
-    // 先端の金具
-    const mg = g.createLinearGradient(0, -3.6, 0, 3.6); mg.addColorStop(0, '#f2f6ff'); mg.addColorStop(.5, '#9aa8c4'); mg.addColorStop(1, '#58668a');
-    g.fillStyle = mg; g.beginPath(); g.roundRect(-gap - 16, -3.6, 16, 7.2, 2.5); g.fill();
-    g.strokeStyle = 'rgba(20,30,60,.6)'; g.lineWidth = .8; g.stroke();
-    // 発光（チャージが大きいほど強い）
-    g.save(); g.globalCompositeOperation = 'lighter';
-    const rad = 6 + 16 * pw, rg = g.createRadialGradient(-gap, 0, 0, -gap, 0, rad); rg.addColorStop(0, 'rgba(255,240,200,.95)'); rg.addColorStop(.4, 'rgba(255,170,60,.55)'); rg.addColorStop(1, 'rgba(255,120,20,0)');
-    g.fillStyle = rg; g.beginPath(); g.arc(-gap, 0, rad, 0, 6.283); g.fill();
-    // ファイバー内を先端へ走る光の粒
-    g.fillStyle = 'rgba(255,255,255,.9)';
-    for (let k = 0; k < 6; k++) { const s = (t * 150 + k * L / 6) % (L - 16); g.beginPath(); g.arc(-gap - 16 - (L - 16 - s), 0, 1.6, 0, 6.283); g.fill(); }
-    g.restore();
+    g.save(); g.globalAlpha = alpha == null ? 1 : alpha; g.translate(cx, cy); g.rotate(ang);
+    const gap = R + 3 + pull, L = 270;
+    const seg = (xa, hwa, xb, hwb, stops) => {
+      const gr = g.createLinearGradient(0, -Math.max(hwa, hwb), 0, Math.max(hwa, hwb));
+      stops.forEach(([o, c]) => gr.addColorStop(o, c)); g.fillStyle = gr;
+      g.beginPath(); g.moveTo(-xa, -hwa); g.lineTo(-xb, -hwb); g.lineTo(-xb, hwb); g.lineTo(-xa, hwa); g.closePath(); g.fill();
+    };
+    g.save(); g.translate(3, 5); g.globalAlpha *= .28; g.fillStyle = '#000'; g.beginPath(); g.moveTo(-gap, -2.4); g.lineTo(-gap - L, -5.6); g.lineTo(-gap - L, 5.6); g.lineTo(-gap, 2.4); g.fill(); g.restore();
+    const hw = x => 2.4 + 3.2 * (x - gap) / L;
+    const a = gap, b = gap + 5, c = gap + 15, d = gap + L * .56, e = gap + L * .6, f = gap + L - 14, h = gap + L;
+    seg(a, hw(a), b, hw(b), [[0, '#79c8ff'], [1, '#2a7fc9']]);
+    seg(b, hw(b), c, hw(c), [[0, '#fbfbf5'], [.5, '#e2e2d6'], [1, '#b8b8ac']]);
+    seg(c, hw(c), d, hw(d), [[0, '#fff0c9'], [.45, '#e6c383'], [1, '#a9783a']]);
+    seg(d, hw(d), e, hw(e), [[0, '#e9b64a'], [1, '#a37314']]);
+    seg(e, hw(e), f, hw(f), [[0, '#6a3a1d'], [.45, '#3d1f0e'], [1, '#22110a']]);
+    seg(f, hw(f), h, hw(h), [[0, '#d9a441'], [.5, '#8a5f1a'], [1, '#4a3009']]);
+    g.strokeStyle = 'rgba(255,255,255,.35)'; g.lineWidth = .8; g.beginPath(); g.moveTo(-c, -hw(c) * .55); g.lineTo(-d, -hw(d) * .55); g.stroke();
+    g.fillStyle = '#ffb347'; [.72, .76].forEach(k => { const x = gap + L * k; g.fillRect(-x - 1.5, -hw(x), 3, hw(x) * 2); });
     g.restore();
   }
 
@@ -706,7 +634,7 @@ const STAGES = [{"id": 0, "d": 0, "n": 0, "limit": 3, "par": 1, "plan": [{"a": 0
           const pk = tr.obj.path.pocket, pxx = OX + (pk.x < 1 ? -5 : pk.x > W - 1 ? W + 5 : pk.x), pyy = OY + (pk.y < 1 ? -5 : pk.y > H - 1 ? H + 5 : pk.y);
           const k = .5 + .5 * Math.sin(t * 8); g.strokeStyle = 'rgba(120,255,170,' + (.5 + .5 * k) + ')'; g.lineWidth = 3; g.beginPath(); g.arc(pxx, pyy, 20 + k * 3, 0, 6.283); g.stroke();
           g.font = 'bold 11px sans-serif'; g.textAlign = 'center'; g.lineWidth = 3; g.strokeStyle = 'rgba(10,15,30,.9)';
-          const ty = pyy < CH / 2 ? pyy + 32 : pyy - 30; g.strokeText('OK!', pxx, ty); g.fillStyle = '#9dffbd'; g.fillText('OK!', pxx, ty);
+          const ty = pyy < CH / 2 ? pyy + 32 : pyy - 30; g.strokeText('IN!', pxx, ty); g.fillStyle = '#9dffbd'; g.fillText('IN!', pxx, ty);
         }
       }
     }
@@ -760,7 +688,7 @@ const STAGES = [{"id": 0, "d": 0, "n": 0, "limit": 3, "par": 1, "plan": [{"a": 0
   function updateTrace() { S.trace = S.mode === 'aim' || S.mode === 'strike' ? C.trace(S.balls, S.angle, 3) : null; }
   function updateButtons() { const on = S.mode === 'aim'; ['btnShot', 'btnL', 'btnR', 'btnHint', 'btnRetry'].forEach(i => $(i).disabled = !on); $('power').disabled = !on; }
 
-  /* ═════════ レーザー ═════════ */
+  /* ═════════ ショット ═════════ */
   function shoot() {
     if (S.mode !== 'aim') return;
     ac(); sfx('shot');
@@ -778,11 +706,11 @@ const STAGES = [{"id": 0, "d": 0, "n": 0, "limit": 3, "par": 1, "plan": [{"a": 0
     while (S.acc >= C.DT && n < 60) { C.step(S.shotBalls, S.res); S.acc -= C.DT; n++; }
     S.res.ev.splice(0).forEach(e => {
       if (e.t === 'hit') { sfx('hit', e.s); burst(e.x, e.y, '#fff3d6', 5, 90); }
-      else if (e.t === 'wall') { sfx('wall', e.s); if (e.s > 120) burst(e.x, e.y, '#ff9ad5', 4, 70); }
+      else if (e.t === 'wall') { sfx('wall', e.s); if (e.s > 120) burst(e.x, e.y, '#ffd9a0', 3, 60); }
       else if (e.t === 'pocket') {
         sfx('pocket'); const pk = { x: e.x < 1 ? -5 : e.x > W - 1 ? W + 5 : e.x, y: e.y < 1 ? -5 : e.y > H - 1 ? H + 5 : e.y };
         rings.push({ x: OX + pk.x, y: OY + pk.y, r: 8, life: .6 }); burst(pk.x, pk.y, e.kind === 'target' ? '#9dffbd' : '#ff6b7a', 22, 190);
-        floatText(pk.x, pk.y + (pk.y < H / 2 ? 30 : -30), e.kind === 'target' ? '回収！' : e.kind === 'cue' ? 'コアが…' : 'NG!', e.kind === 'target' ? '#9dffbd' : '#ff8a96');
+        floatText(pk.x, pk.y + (pk.y < H / 2 ? 30 : -30), e.kind === 'target' ? 'HIT!' : e.kind === 'cue' ? '手球が…' : 'NG!', e.kind === 'target' ? '#9dffbd' : '#ff8a96');
         if (e.kind === 'target') { setFoeMood('hurt', 900); } shakeT = .2;
       }
     });
@@ -795,7 +723,7 @@ const STAGES = [{"id": 0, "d": 0, "n": 0, "limit": 3, "par": 1, "plan": [{"a": 0
     const got = S.shotBalls.filter(b => b.kind === 'target' && !b.alive && S.pre.has(b.id)).length;
     if (res.scratch || res.foul) {
       S.balls = C.clone(S.snap); sfx('foul');
-      banner(res.foul ? '⚠ 正常細胞がカプセルに入っちゃった！<br>配置にもどします' : '⚠ レーザーコアが回収されちゃった！<br>配置にもどします', 1700, true);
+      banner(res.foul ? '⚠ ブロッカー(黒玉)が落ちた！<br>配置にもどします' : '⚠ 手球が落ちた！<br>配置にもどします', 1700, true);
       setHoMood('sad', 1600); say(D.kana, D.lines.foul, 1800);
     } else {
       S.balls = S.shotBalls.map(b => ({ ...b, vx: 0, vy: 0 }));
@@ -843,15 +771,15 @@ const STAGES = [{"id": 0, "d": 0, "n": 0, "limit": 3, "par": 1, "plan": [{"a": 0
     setImg($('resAvatar'), 'ho', 0, r.win ? 'happy' : 'sad');
     $('resTitle').textContent = r.win ? '✨ ' + D.name + 'を治療完了！' : '💦 あと一歩…！';
     $('resStars').innerHTML = r.win ? [1, 2, 3].map(i => '<span class="' + (i <= r.stars ? '' : 'off') + '">★</span>').join('') : '';
-    $('resMsg').textContent = r.win ? (r.stars === 3 ? 'パーフェクト！最少の発射回数でクリア！' : r.stars === 2 ? 'いい腕前！あと少しで★3だよ' : 'クリア！発射回数を減らせば★が増えるよ') : 'レーザーを使い切ったよ。フィールドをよく見て、バリアの反射の角度を考えてみよう。';
+    $('resMsg').textContent = r.win ? (r.stars === 3 ? 'パーフェクト！最少のショット数でクリア！' : r.stars === 2 ? 'いい腕前！あと少しで★3だよ' : 'クリア！ショット数を減らせば★が増えるよ') : 'ショットを使い切ったよ。配置をよく見て、反射の角度を考えてみよう。';
     const hasNext = st.id < STAGES.length - 1;
-    $('resBox').innerHTML = r.win ? '<div class="result-row"><span>🎯 使ったレーザー:</span><span style="color:#00fff5;">' + S.shotsUsed + ' / ' + st.limit + '（目安 ' + st.par + '）</span></div>'
+    $('resBox').innerHTML = r.win ? '<div class="result-row"><span>🎯 使ったショット:</span><span style="color:#00fff5;">' + S.shotsUsed + ' / ' + st.limit + '（目安 ' + st.par + '）</span></div>'
       + '<div class="result-row"><span>💡 ヒント:</span><span style="color:#ffde59;">' + S.hints + ' 回</span></div>'
       + '<div class="result-row"><span>🧪 ホルミウム(Ho):</span><span style="color:#ffb347;">+' + r.ho + ' 個</span></div>'
       + '<div class="result-row"><span>⭐ 経験値:</span><span style="color:#a29bfe;">+' + r.exp + ' EXP</span></div>'
       + '<div style="border-top:1px dashed #00fff5;margin-top:2px;padding-top:4px;font-weight:bold;display:flex;justify-content:space-between;"><span>💰 獲得賞金:</span><span style="color:#55ff55;">+' + r.money + ' G</span></div>'
       + (r.first ? '' : '<div style="font-size:10px;color:#94a3b8;">※ 2回目以降は★が増えたぶんだけ賞金がもらえます</div>')
-      : '<div class="result-row"><span>🎯 使ったレーザー:</span><span style="color:#ff8a96;">' + S.shotsUsed + ' / ' + st.limit + '</span></div>';
+      : '<div class="result-row"><span>🎯 使ったショット:</span><span style="color:#ff8a96;">' + S.shotsUsed + ' / ' + st.limit + '</span></div>';
     $('resMain').textContent = r.win ? (hasNext ? '▶ つぎのステージへ' : '🏁 ぜんぶクリア！ステージ選択へ') : '🔄 もう一度ちょうせん';
     $('resSub').textContent = r.win ? '🔄 もう一度あそぶ' : '💡 ヒントを見てやり直す';
     $('resMain').onclick = () => { sfx('click'); claim(); if (r.win) { hasNext ? startStage(st.id + 1) : openSelect(); } else startStage(st.id); };
@@ -885,12 +813,12 @@ const STAGES = [{"id": 0, "d": 0, "n": 0, "limit": 3, "par": 1, "plan": [{"a": 0
 
   /* ═════════ チュートリアル ═════════ */
   const TUTOR = [
-    { t: '① ねらいを決めよう', d: '画面をドラッグ（なぞる）と、オレンジの「レーザーコア」から狙い線がのびるよ。◀▶ボタンで細かく調整できる。ゴールは、体の中の病変（✨結晶など）を、青緑の「回収カプセル」に全部入れること！' },
-    { t: '② 生体バリアでレーザーが反射', d: 'まわりのピンクのかべは「生体バリア」。レーザーは鏡のように、入射角＝反射角ではね返るよ。θ(シータ)の数字を見れば、かべを使った“まわり込み”の行き先が正確にわかる！' },
-    { t: '③ 命中予測リングを見よう', d: '狙い線の先の白い輪が「命中予測リング」。ここにコアが届くと、病変が水色の点線の向きに飛んでいくよ。点線がカプセルに入って「OK!」と出たら成功コース！' },
-    { t: '④ チャージで届く距離が変わる', d: '「チャージ」を上げるほど、レーザーコアは遠くまで進む。くっきり光る部分までがコアの届く距離で、うすい点線の先には届かないよ。' },
-    { t: '⑤ 正常な細胞を守ろう', d: 'ニコニコ顔のピンクの細胞は、守らなきゃいけない正常細胞！さわってはじくのはOKだけど、回収カプセルに入れるとミス。コア自身がカプセルに吸い込まれてもミスだよ。ミスすると配置はもどるけど、レーザーは1回ぶん減る。' },
-    { t: '⑥ ヒントと★', d: '少ない発射回数でクリアするほど★がふえて、ごほうびもアップ！困ったら💡ヒントで解き方を教えてもらえる（その場合★は最大2）。やり直しは何度でもOK！' }
+    { t: '① 台を見て、狙いを決めよう', d: '台をドラッグ（なぞる）と、手球からレーザーの狙い線がのびるよ。◀▶ボタンで0.2°ずつ細かく調整できる。ゴールは、色つきの玉を全部ポケットに落とすこと！' },
+    { t: '② レーザーは鏡のように反射する', d: 'クッションは「ミラー」。入射角と反射角はいつも同じだから、θ(シータ)の数字を見れば、バンクショットの行き先が正確にわかるよ。' },
+    { t: '③ ゴーストボールで的球を狙う', d: '狙い線の先の白い輪が「ゴーストボール」。ここに手球が来ると、的球が水色の点線の向きに飛ぶよ。点線がポケットに入って「IN!」と出たら成功コース！' },
+    { t: '④ パワーで届く距離が変わる', d: '「パワー」を上げるほどレーザーが遠くまで届く。くっきり光る部分までが手球の届く距離で、うすい点線の先には届かないよ。' },
+    { t: '⑤ 落としちゃダメな玉とショット数', d: '🔴黒い玉(ブロッカー)や手球をポケットに落とすとファウル！配置はもどるけど、ショットは1回ぶん減るよ。ショット数にも限りがあるから注意。' },
+    { t: '⑥ ヒントと★', d: '少ないショット数でクリアするほど★がふえて、ごほうびもアップ！困ったら💡ヒントで解き方を教えてもらえる（その場合★は最大2）。やり直しは何度でもOK！' }
   ];
   let tutorIdx = 0, tutorOpen = true, tutorFromSel = false;
   $('tutorDots').innerHTML = TUTOR.map(() => '<span></span>').join('');
@@ -911,35 +839,13 @@ const STAGES = [{"id": 0, "d": 0, "n": 0, "limit": 3, "par": 1, "plan": [{"a": 0
 
   const tc = $('tutorCanvas'), tg = tc.getContext('2d'); tc.width = 250 * DPR; tc.height = 120 * DPR; tg.scale(DPR, DPR);
   function tlabel(txt, x, y, col, size) { tg.save(); tg.font = 'bold ' + (size || 10) + 'px sans-serif'; tg.textAlign = 'center'; tg.textBaseline = 'middle'; tg.lineWidth = 3; tg.strokeStyle = 'rgba(10,15,30,.95)'; tg.strokeText(txt, x, y); tg.fillStyle = col || '#ffe9b8'; tg.fillText(txt, x, y); tg.restore(); }
-  function tball(x, y, num, r) {   // 0=レーザーコア / 8=正常細胞 / それ以外=病変（結晶）
-    tg.save();
-    if (num === 0) {
-      tg.save(); tg.globalCompositeOperation = 'lighter'; let hg = tg.createRadialGradient(x, y, r * .3, x, y, r * 2.4); hg.addColorStop(0, 'rgba(255,190,90,.6)'); hg.addColorStop(1, 'rgba(255,140,30,0)'); tg.fillStyle = hg; tg.beginPath(); tg.arc(x, y, r * 2.4, 0, 6.283); tg.fill(); tg.restore();
-      const gr = tg.createRadialGradient(x - r * .3, y - r * .3, 1, x, y, r); gr.addColorStop(0, '#fff'); gr.addColorStop(.35, '#ffe3a0'); gr.addColorStop(.75, '#ffa630'); gr.addColorStop(1, '#e8590c');
-      tg.fillStyle = gr; tg.beginPath(); tg.arc(x, y, r, 0, 6.283); tg.fill();
-    } else if (num === 8) {
-      const gr = tg.createRadialGradient(x - r * .3, y - r * .35, 1, x, y, r); gr.addColorStop(0, '#ffe3ea'); gr.addColorStop(.5, '#ff9fb8'); gr.addColorStop(1, '#d4527a');
-      tg.fillStyle = gr; tg.beginPath(); tg.arc(x, y, r, 0, 6.283); tg.fill(); tg.strokeStyle = '#a63a5f'; tg.lineWidth = 1.2; tg.stroke();
-      const k = .5 + .5 * Math.sin(performance.now() / 300); tg.strokeStyle = 'rgba(125,255,176,' + (.5 + .4 * k) + ')'; tg.lineWidth = 1.6; tg.beginPath(); tg.arc(x, y, r + 3 + k, 0, 6.283); tg.stroke();
-      cellFace(tg, x, y, r);
-    } else {
-      const gr = tg.createLinearGradient(x - r, y - r, x + r, y + r); gr.addColorStop(0, '#f7fbff'); gr.addColorStop(.5, '#b9c9e6'); gr.addColorStop(1, '#7f94bd');
-      tg.fillStyle = gr; crystalPath(tg, x, y, r * 1.08); tg.fill(); tg.strokeStyle = '#4a5f8a'; tg.lineWidth = 1.3; tg.stroke();
-      tg.strokeStyle = 'rgba(255,255,255,.6)'; tg.lineWidth = .9; tg.beginPath(); CRYSTAL_K.forEach((k, i) => { const a = i * Math.PI / 4 + Math.PI / 8; tg.moveTo(x, y); tg.lineTo(x + Math.cos(a) * r * k * 1.08, y + Math.sin(a) * r * k * 1.08); }); tg.stroke();
-      tg.strokeStyle = 'rgba(255,235,59,.7)'; tg.lineWidth = 1.3; tg.setLineDash([3, 4]); tg.beginPath(); tg.arc(x, y, r + 4, 0, 6.283); tg.stroke();
-    }
-    tg.restore();
-  }
+  function tball(x, y, num, r) { const col = BALL_COL[num]; const gr = tg.createRadialGradient(x - r * .35, y - r * .4, 1, x, y, r * 1.05); gr.addColorStop(0, lighten(col, .6)); gr.addColorStop(.45, col); gr.addColorStop(1, darken(col, .6)); tg.fillStyle = gr; tg.beginPath(); tg.arc(x, y, r, 0, 6.283); tg.fill(); if (num) { tg.fillStyle = '#f7f4ea'; tg.beginPath(); tg.arc(x, y, r * .5, 0, 6.283); tg.fill(); tg.fillStyle = '#111'; tg.font = 'bold ' + Math.round(r * .75) + 'px sans-serif'; tg.textAlign = 'center'; tg.textBaseline = 'middle'; tg.fillText(num, x, y + .5); } }
   function tlaser(pts, k) { tg.save(); tg.globalCompositeOperation = 'lighter'; tg.lineCap = 'round'; tg.lineJoin = 'round'; [[8, .18, '255,140,30'], [4, .4, '255,170,60'], [1.8, .95, '255,248,225']].forEach(([w, a, c]) => { tg.strokeStyle = 'rgba(' + c + ',' + a * k + ')'; tg.lineWidth = w; tg.beginPath(); pts.forEach((p, i) => i ? tg.lineTo(p[0], p[1]) : tg.moveTo(p[0], p[1])); tg.stroke(); }); tg.restore(); }
   function ttable() {
-    tg.clearRect(0, 0, 250, 120); tg.fillStyle = '#6e2069'; tg.fillRect(0, 0, 250, 120);
-    const gr = tg.createRadialGradient(125, 60, 10, 125, 60, 140); gr.addColorStop(0, '#2c3d96'); gr.addColorStop(1, '#0c113c'); tg.fillStyle = gr; tg.fillRect(8, 8, 234, 104);
-    tg.save(); tg.shadowColor = '#ff7ad0'; tg.shadowBlur = 8; tg.strokeStyle = 'rgba(255,175,232,.9)'; tg.lineWidth = 1.5; tg.strokeRect(8.5, 8.5, 233, 103); tg.restore();
-    [[8, 8], [242, 8], [8, 112], [242, 112]].forEach(([x, y]) => capsuleBaseT(x, y, 9));
-  }
-  function capsuleBaseT(x, y, r) {
-    const pg = tg.createRadialGradient(x, y, 1, x, y, r); pg.addColorStop(0, '#0b6a72'); pg.addColorStop(.6, '#04252e'); pg.addColorStop(1, '#02121c');
-    tg.fillStyle = pg; tg.beginPath(); tg.arc(x, y, r, 0, 6.283); tg.fill(); tg.strokeStyle = '#3ff0d2'; tg.lineWidth = 1.6; tg.stroke();
+    tg.clearRect(0, 0, 250, 120); tg.fillStyle = '#6b3f1b'; tg.fillRect(0, 0, 250, 120);
+    const gr = tg.createRadialGradient(125, 60, 10, 125, 60, 140); gr.addColorStop(0, '#22a88a'); gr.addColorStop(1, '#0e6a58'); tg.fillStyle = gr; tg.fillRect(8, 8, 234, 104);
+    tg.strokeStyle = 'rgba(190,255,235,.3)'; tg.strokeRect(8.5, 8.5, 233, 103);
+    [[8, 8], [242, 8], [8, 112], [242, 112]].forEach(([x, y]) => { tg.fillStyle = '#050506'; tg.beginPath(); tg.arc(x, y, 8, 0, 6.283); tg.fill(); tg.strokeStyle = '#c9a14a'; tg.lineWidth = 1.5; tg.stroke(); });
   }
   function partial(pts, f) { // 折れ線を割合fぶんだけ返す
     let tot = 0; const L = []; for (let i = 0; i < pts.length - 1; i++) { const l = Math.hypot(pts[i + 1][0] - pts[i][0], pts[i + 1][1] - pts[i][1]); L.push(l); tot += l; }
@@ -965,20 +871,20 @@ const STAGES = [{"id": 0, "d": 0, "n": 0, "limit": 3, "par": 1, "plan": [{"a": 0
       tlaser(partial([C0, G], f), 1);
       tg.setLineDash([3, 3]); tg.strokeStyle = 'rgba(255,255,255,.85)'; tg.lineWidth = 1.3; tg.beginPath(); tg.arc(G[0], G[1], 9, 0, 6.283); tg.stroke(); tg.setLineDash([]);
       tg.setLineDash([6, 4]); tg.lineDashOffset = -t * 16; tg.strokeStyle = 'rgba(0,255,245,.95)'; tg.lineWidth = 2; tg.beginPath(); tg.moveTo(T0[0], T0[1]); tg.lineTo(pk[0] - 6, pk[1] + 3); tg.stroke(); tg.setLineDash([]); tg.lineDashOffset = 0;
-      tlabel('OK!', pk[0] - 22, pk[1] + 22, '#9dffbd', 11); tlabel('命中予測リング', G[0] - 8, G[1] + 20, '#fff', 9);
+      tlabel('IN!', pk[0] - 22, pk[1] + 22, '#9dffbd', 11); tlabel('ゴーストボール', G[0] - 8, G[1] + 20, '#fff', 9);
     } else if (i === 3) {
       const reach = 70 + 120 * (.5 + .5 * Math.sin(t * 1.5)), C0 = [26, 70];
       tball(C0[0], C0[1], 0, 9); tlaser([C0, [C0[0] + reach, C0[1]]], 1);
       tg.setLineDash([4, 6]); tg.strokeStyle = 'rgba(255,200,120,.4)'; tg.lineWidth = 1.5; tg.beginPath(); tg.moveTo(C0[0] + reach, C0[1]); tg.lineTo(238, C0[1]); tg.stroke(); tg.setLineDash([]);
-      tball(196, 70, 2, 9); tlabel(reach > 160 ? 'チャージ大：とどく！' : 'チャージ小：とどかない', 125, 100, reach > 160 ? '#9dffbd' : '#ff9aa5', 11);
+      tball(196, 70, 2, 9); tlabel(reach > 160 ? 'パワー大：とどく！' : 'パワー小：とどかない', 125, 100, reach > 160 ? '#9dffbd' : '#ff9aa5', 11);
     } else if (i === 4) {
       tball(70, 48, 8, 10); tg.strokeStyle = 'rgba(255,71,87,.9)'; tg.lineWidth = 2.4; tg.beginPath(); tg.moveTo(58, 36); tg.lineTo(82, 60); tg.moveTo(82, 36); tg.lineTo(58, 60); tg.stroke();
       tball(150, 48, 0, 10); tg.beginPath(); tg.moveTo(138, 36); tg.lineTo(162, 60); tg.moveTo(162, 36); tg.lineTo(138, 60); tg.stroke();
-      tlabel('正常細胞', 70, 78, '#ffe9b8'); tlabel('レーザーコア', 150, 78, '#ffe9b8'); tlabel('カプセルに入れるとミス', 125, 100, '#ff9aa5', 11);
+      tlabel('黒い玉', 70, 78, '#ffe9b8'); tlabel('手球', 150, 78, '#ffe9b8'); tlabel('落とすとファウル', 125, 100, '#ff9aa5', 11);
       tg.font = '15px sans-serif'; tg.textAlign = 'center'; tg.fillStyle = '#ffb347'; const dots = Math.floor(t * .8) % 4; tg.fillText('●'.repeat(3 - Math.min(dots, 3)) + '○'.repeat(Math.min(dots, 3)), 214, 40);
     } else {
       tg.font = '26px sans-serif'; tg.textAlign = 'center'; tg.fillStyle = '#ffde59'; const n = 1 + Math.floor(t * .9) % 3; tg.fillText('★'.repeat(n) + '☆'.repeat(3 - n), 125, 40);
-      tlabel('少ない発射回数ほど★アップ！', 125, 70, '#9dffbd', 11); tlabel('💡 ヒント：解き方をおしえるよ（★は最大2）', 125, 94, '#ffe9b8', 9);
+      tlabel('少ないショット数ほど★アップ！', 125, 70, '#9dffbd', 11); tlabel('💡 ヒント：解き方をおしえるよ（★は最大2）', 125, 94, '#ffe9b8', 9);
     }
   }
 
@@ -1005,7 +911,7 @@ const STAGES = [{"id": 0, "d": 0, "n": 0, "limit": 3, "par": 1, "plan": [{"a": 0
     if (S.mode !== 'aim') return; if (S.hints >= 3) { say('ホルミウム', 'ヒントは1ステージ3回までだよ', 1800); return; }
     banner('💡 解き方を考え中…', 800); setTimeout(() => {
       const f = C.findShots(S.balls, { angleStep: 1, want: 1 });
-      if (f.best.length) { const b = f.best[0]; S.angle = b.a; S.power = b.p; $('power').value = Math.round(b.p * 100); S.hints++; sfx('hint'); updateTrace(); updateHUD(); say('ホルミウム', 'この狙いで入りそう！「発射」を押してね', 2400); }
+      if (f.best.length) { const b = f.best[0]; S.angle = b.a; S.power = b.p; $('power').value = Math.round(b.p * 100); S.hints++; sfx('hint'); updateTrace(); updateHUD(); say('ホルミウム', 'この狙いで入りそう！「うつ」を押してね', 2400); }
       else say('ホルミウム', 'うーん…この配置は「やり直し」が早いかも', 2400);
     }, 40);
   });
@@ -1028,7 +934,7 @@ const STAGES = [{"id": 0, "d": 0, "n": 0, "limit": 3, "par": 1, "plan": [{"a": 0
     requestAnimationFrame(frame);
   }
   function render(t, dt) {
-    const g = ctx; g.clearRect(0, 0, CW, CH); g.drawImage(tableCv, 0, 0, CW, CH); drawPocketsAnim(g, t);
+    const g = ctx; g.clearRect(0, 0, CW, CH); g.drawImage(tableCv, 0, 0, CW, CH);
     const sx = shakeT > 0 ? (Math.random() - .5) * shakeT * 30 : 0, sy = shakeT > 0 ? (Math.random() - .5) * shakeT * 30 : 0; if (shakeT > 0) shakeT = Math.max(0, shakeT - dt);
     g.save(); g.translate(sx, sy);
     if (S.mode === 'aim' && S.trace) drawGuide(g, t);
@@ -1053,9 +959,6 @@ const STAGES = [{"id": 0, "d": 0, "n": 0, "limit": 3, "par": 1, "plan": [{"a": 0
   if (location.hash === '#debug') window.__ho = { S, start: startStage, aim: (a, p) => { S.angle = a; S.power = p; $('power').value = Math.round(p * 100); updateTrace(); updateHUD(); }, shoot, stages: STAGES, progress };
 
   /* ═════════ 初期化 ═════════ */
-  const phoneEl = document.querySelector('.phone');
-  function fitScreen() { const k = Math.min(window.innerWidth / 368, window.innerHeight / 748, 1.6); phoneEl.style.transform = 'scale(' + k + ')'; }
-  window.addEventListener('resize', fitScreen); window.addEventListener('orientationchange', fitScreen); fitScreen();
   buildTable(); setHoMood('idle');
   S.balls = []; updateButtons();
   showTutorSlide(0);
