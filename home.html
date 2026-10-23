@@ -180,7 +180,7 @@ const furnitureMaster = {
   'tree_m' : { name:'庭木１',                     cost:400,   bonus:0.4, img:'home_kagu6.png', size:26, x:75, y:70, emoji:'🌳' }
 };
 
-const IMG_PREFIX='home_kagu_';
+const IMG_PREFIX='kagu_';
 const MILE_ROWS=[
   ['stool','スツール','🪑',120,0.1,10,88],['cushion','クッション','🟡',80,0.1,8,90],['flower_vase','花瓶','💐',100,0.1,7,70],
   ['nightstand','ナイトテーブル','🛋️',150,0.1,12,86],['wall_clock','壁掛け時計','🕰️',150,0.2,9,38],['wall_art','壁掛けアート','🖼️',180,0.2,14,40],
@@ -188,7 +188,26 @@ const MILE_ROWS=[
   ['floor_lamp','フロアライト','💡',300,0.3,9,86],['coffee_table','ローテーブル','🪵',350,0.3,22,90],['mirror','姿見','🪞',300,0.3,10,86],
   ['fan','扇風機','🌀',350,0.4,10,86],['bookshelf','本棚','📚',500,0.5,16,86],['kotatsu','こたつ','🔥',600,0.5,26,92],
   ['wardrobe','クローゼット','🚪',700,0.6,20,86],['bed','ベッド','🛏️',900,0.9,34,90],['aquarium','水槽','🐠',1200,1.0,20,84],
-  ['gaming_pc','ゲーミングPC','🖥️',1800,1.6,18,80],['piano','ピアノ','🎹',2000,1.5,30,88]
+  ['gaming_pc','ゲーミングPC','🖥️',1800,1.6,18,80],['piano','ピアノ','🎹',2000,1.5,30,88],
+  // 追加したマイル購入家具（18種）
+  ['light_natural', 'ぬくもりフロアランプ', '💡', 250, 0.2, 12, 86],
+  ['tana_natural', 'ナチュラルオープンシェルフ', '🗄️', 350, 0.3, 20, 86],
+  ['isu_natural', '北欧デザインチェア', '🪑', 180, 0.2, 14, 88],
+  ['syokubutsu_natural', '癒やしのグリーンポット', '🪴', 300, 0.3, 16, 82],
+  ['tokei_natural', 'ウッドフレーム壁掛け時計', '🕰️', 150, 0.1, 10, 40],
+  ['komono_natural', 'もっちりラウンドクッション', '🟡', 100, 0.1, 10, 92],
+  ['sofa1_mono', 'モダンシングルアームソファ', '🛋️', 800, 0.8, 24, 90],
+  ['renji_mono', 'キッチンレンジラック', '🍳', 600, 0.5, 22, 80],
+  ['tana_mono', 'モノトーン飾り棚', '📚', 550, 0.5, 24, 82],
+  ['light_mono', 'インダストリアルペンダントライト', '💡', 300, 0.3, 14, 38],
+  ['sofa3_mono', 'フィットビーズクッション', '🛋️', 220, 0.2, 16, 92],
+  ['kagami_mono', 'モダンスタンドミラー', '🪞', 350, 0.3, 14, 86],
+  ['table_mono', 'カフェ風ラウンドテーブル', '☕', 400, 0.4, 22, 90],
+  ['shikimono_mono', 'モノトーンデザインラグ', '🟫', 300, 0.3, 32, 94],
+  ['side_mono', 'ベッドサイドキャビネット', '🛋️', 200, 0.2, 14, 88],
+  ['side2_mono', 'モノトーン3段チェスト', '🗄️', 700, 0.6, 22, 86],
+  ['isu_mono', 'モダンラウンドスツール', '🪑', 150, 0.1, 12, 90],
+  ['senpuki_mono', 'スタイリッシュサーキュレーター', '🌀', 380, 0.4, 12, 86]
 ];
 const GOLD_ROWS=[
   ['bbq','BBQグリル','🍖',10000,0.1,14,88],['robo_cleaner','ロボット掃除機','🤖',12000,0.1,9,92],['chess_table','チェステーブル','♟️',15000,0.1,16,88],
@@ -200,7 +219,20 @@ const GOLD_ROWS=[
   ['pool_table','ビリヤード台','🎱',130000,0.3,38,90],['fountain','庭の噴水','⛲',140000,0.3,26,86],['bar_counter','ホームバー','🍸',150000,0.3,36,88],
   ['greenhouse','温室','🌱',160000,0.3,40,86],['kitchen_island','アイランドキッチン','🍳',180000,0.4,38,90],['fireplace','暖炉','🔥',200000,0.4,26,84],
   ['golf_sim','ゴルフシミュレーター','⛳',220000,0.3,40,90],['home_theater','ホームシアター','🎬',250000,0.5,42,88],['sauna','ホームサウナ','🧖',300000,0.4,32,88],
-  ['jacuzzi','ジャグジー','🛁',350000,0.4,34,90],['grand_piano','グランドピアノ','🎹',500000,0.5,40,90],['rare_crystal','レアアース結晶ディスプレイ','💎',500000,0.5,16,80]
+  ['jacuzzi','ジャグジー','🛁',350000,0.4,34,90],['grand_piano','グランドピアノ','🎹',500000,0.5,40,90],['rare_crystal','レアアース結晶ディスプレイ','💎',500000,0.5,16,80],
+  // 追加したゴールド購入家具（12種）
+  ['bed_natural', '温もりウッドのベッド', '🛏️', 15000, 0.2, 34, 90],
+  ['sofa_natural', '北欧風ファブリックソファ', '🛋️', 18000, 0.2, 32, 92],
+  ['desk_mono', 'スタイリッシュワークデスク', '💻', 20000, 0.2, 28, 88],
+  ['sofa2_mono', 'シックモダン2人掛けソファ', '🛋️', 25000, 0.2, 34, 92],
+  ['tv_mono', 'モダンTVボード', '📺', 30000, 0.3, 26, 72],
+  ['bed_mono', 'モノトーンシックベッド', '🛏️', 20000, 0.2, 34, 90],
+  ['dai_mono', 'ダークウッドローボード', '🪵', 16000, 0.2, 30, 84],
+  ['clo_mono', 'ブラックワードローブ', '🚪', 22000, 0.3, 26, 84],
+  ['reizo_mono', 'シルバーデザイン冷蔵庫', '🧊', 55000, 0.2, 32, 78],
+  ['table2_mono', 'モノトーンダイニングセット', '🍽️', 25000, 0.2, 34, 92],
+  ['sink_mono', 'スタイリッシュキッチンカウンター', '🍳', 180000, 0.4, 40, 78],
+  ['desk_lab', 'サイエンス・ラボデスク', '🔬', 40000, 0.2, 28, 88]
 ];
 MILE_ROWS.forEach(r=>furnitureMaster[r[0]]={name:r[1],emoji:r[2],cost:r[3],bonus:r[4],size:r[5],x:50,y:r[6],img:IMG_PREFIX+r[0]+'.png'});
 GOLD_ROWS.forEach(r=>furnitureMaster[r[0]]={name:r[1],emoji:r[2],gold:r[3],cost:0,bonus:r[4],size:r[5],x:50,y:r[6],img:IMG_PREFIX+r[0]+'.png'});
@@ -486,7 +518,6 @@ function talkChara(id){
   if(!c) return;
 
   if(id === 'Er'){
-    // エルビウム（Er）のおしゃべり & ミニゲーム選択肢
     const html = `
       <div style="font-size:0.8rem; text-align:left; line-height:1.5">
         <p>「フフ、私とお話ししたいの？光ファイバーで世界中の通信を増幅するのも得意だけど、私といえばやっぱり美肌レーザー（エルビウムYAGレーザー）や光の増幅技術ね！」</p>
@@ -500,10 +531,9 @@ function talkChara(id){
     askModal(`✨ エルビウムとの会話`, html, '閉じる', null, '');
 
   } else if(id === 'Ce'){
-    // ★ セリウム（Ce）のおしゃべり & カレイドスコープミニゲーム選択肢
     const html = `
       <div style="font-size:0.8rem; text-align:left; line-height:1.5">
-        <p>「こんにちは！セリウムだよ。<b>環境を守るお掃除職人</b>として、排ガスの浄化や液晶の研磨が得意なんだ！フットワークが軽くて、世界を美しく保つ情熱家だよ。」</p>
+        <p>「こんにちは！セリウムだよ。<b>環境を守るお掃除職人</b>として、排ガスの浄化や液晶の研磨が得意なんだ！フットワークが軽くて、世界を美しく保つの情熱家だよ。」</p>
         <p>「主な活躍の場は、<b>自動車触媒、液晶研磨材、ライター石</b>などなど！光やガラスを磨き上げるのも私の得意分野なんだ。」</p>
         <p>「どう？私と一緒に、集めた宝石を使ってキラキラの万華鏡を作ってみない？」</p>
         <div style="display:flex; flex-direction:column; gap:6px; margin-top:10px">
@@ -515,7 +545,6 @@ function talkChara(id){
     askModal(`✨ セリウムとの会話`, html, '閉じる', null, '');
 
   } else {
-    // 他の全キャラクターの共通会話処理
     const html = `
       <div style="font-size:0.82rem; text-align:center; padding:10px 0">
         <p>「こんにちは！${c.name}だよ。いつでもお部屋で声をかけてね！一緒にお仕事がんばろう！」</p>
@@ -634,7 +663,6 @@ function drag(el,it,idx,name,size,isChara,charaId){
     clearTimeout(wt); wt=setTimeout(()=>{ if(cur()!==wp){ hist(wp); save(); } wp=''; },400); },{passive:false});
 }
 
-/* 共通行テンプレート用ヘルパー関数 */
 function row(thumb, name, sub, btnObj){
   const btnHtml = btnObj.html || '';
   const ownClass = btnObj.own ? 'own' : '';
@@ -665,7 +693,6 @@ function renderShop(){
   L.scrollTop=top;
 }
 
-/* ショップアイテムのタップ（拡大プレビューモーダル） */
 function openPreview(id){
   const f = furnitureMaster[id]; if(!f) return;
   const own = (gameState.homeFurnishings||[]).includes(id);
