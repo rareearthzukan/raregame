@@ -544,6 +544,19 @@ function talkChara(id){
     `;
     askModal(`✨ セリウムとの会話`, html, '閉じる', null, '');
 
+  } else if(id === 'Y'){
+    const html = `
+      <div style="font-size:0.8rem; text-align:left; line-height:1.5">
+        <p>こんにちは！イットリウムだよ。好奇心旺盛で元気いっぱいの私と一緒なら、どんな診断も楽しくなりそう！</p>
+        <p>私の<b>『性格診断』</b>をやっていかない？あなたの隠れた魅力やぴったりの元素がわかるかも！</p>
+        <div style="display:flex; flex-direction:column; gap:6px; margin-top:10px">
+          <button class="btn" style="background:#3b82f6; font-weight:bold; font-size:0.82rem" onclick="location.href='https://17rareearth.github.io/17character/index_uranai.html'">🔮 性格診断を遊ぶ</button>
+          <button class="btn" style="background:#64748b" onclick="askModal('💡 イットリウム解説', 'イットリウム(Y)は、色鮮やかなLEDの赤色蛍光体や超伝導材料、セラミックスなど、ハイテク製品や身の回りの鮮やかな色彩を支える頼もしい元素だよ！', '戻る', ()=>talkChara('Y'), '')">📖 イットリウムについて詳しく知る</button>
+        </div>
+      </div>
+    `;
+    askModal(`✨ イットリウムとの会話`, html, '閉じる', null, '');
+
   } else {
     const html = `
       <div style="font-size:0.82rem; text-align:center; padding:10px 0">
