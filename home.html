@@ -98,7 +98,7 @@ textarea{width:100%;height:5rem;font-size:.65rem;border:1px solid var(--line);bo
 
 .overlay{position:fixed;inset:0;display:none;justify-content:center;align-items:center;background:rgba(10,15,30,.7);z-index:200;padding:1rem}
 .modal{background:#1e293b;color:#fff;border:2px solid var(--accent,#3b82f6);border-radius:1rem;padding:1.1rem;width:100%;max-width:24rem;text-align:center}
-.modal h3{margin:0 0 .4rem;font-size:1rem}.modal p{margin:0 0 .8rem;font-size:.8rem;line-height:1.5;text-align:left}
+.modal h3{margin:0 0 .4rem;font-size:1rem}.modal p,.modal .mdesc{margin:0 0 .8rem;font-size:.8rem;line-height:1.5;text-align:left}
 .modal .row{display:flex;gap:.5rem;margin-top:.8rem}.modal .row .btn{flex:1}
 </style>
 </head>
@@ -162,7 +162,7 @@ textarea{width:100%;height:5rem;font-size:.65rem;border:1px solid var(--line);bo
 </div>
 
 <div id="toast"></div>
-<div class="overlay" id="modal"><div class="modal"><h3 id="mTitle"></h3><p id="mDesc"></p>
+<div class="overlay" id="modal"><div class="modal"><h3 id="mTitle"></h3><div id="mDesc" class="mdesc"></div>
   <div class="row" id="mRows"><button class="btn" style="background:#94a3b8;color:#fff" onclick="closeModal()">キャンセル</button><button class="btn" id="mOk" style="background:#ef4444;color:#fff">OK</button></div></div></div>
 
 <script>
@@ -544,6 +544,19 @@ function talkChara(id){
     `;
     askModal(`✨ セリウムとの会話`, html, '閉じる', null, '');
 
+  } else if(id === 'Y'){
+    const html = `
+      <div style="font-size:0.8rem; text-align:left; line-height:1.5">
+        <p>「こんにちは！イットリウムだよ。好奇心旺盛で元気いっぱいの私と一緒なら、どんな診断も楽しくなりそう！」</p>
+        <p>「私の<b>『レアアース性格診断』</b>をやっていかない？12問の質問に答えると、あなたにぴったりの元素キャラがわかるよ！」</p>
+        <div style="display:flex; flex-direction:column; gap:6px; margin-top:10px">
+          <button class="btn" style="background:#10b981; font-weight:bold; font-size:0.82rem" onclick="openGameUranai()">🔮 性格診断をはじめる</button>
+          <button class="btn" style="background:#3b82f6" onclick="askModal('💡 イットリウム解説', 'イットリウム(Y)は、色鮮やかなLEDの赤色蛍光体や超伝導材料、セラミックスなど、ハイテク製品や身の回りの鮮やかな色彩を支える頼もしい元素だよ！', '戻る', ()=>talkChara('Y'), '')">📖 イットリウムについて詳しく知る</button>
+        </div>
+      </div>
+    `;
+    askModal(`✨ イットリウムとの会話`, html, '閉じる', null, '');
+
   } else {
     const html = `
       <div style="font-size:0.82rem; text-align:center; padding:10px 0">
@@ -818,5 +831,6 @@ window.addEventListener('load',()=>{
   } catch(e){}
 });
 </script>
+<script src="uranai.js"></script>
 </body>
 </html>
