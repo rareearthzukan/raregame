@@ -97,16 +97,9 @@ textarea{width:100%;height:5rem;font-size:.65rem;border:1px solid var(--line);bo
 #toast.show{opacity:1;transform:translate(-50%,0)}
 
 .overlay{position:fixed;inset:0;display:none;justify-content:center;align-items:center;background:rgba(10,15,30,.7);z-index:200;padding:1rem}
-.modal{background:#1e293b;color:#fff;border:2px solid var(--accent,#3b82f6);border-radius:1rem;padding:1.1rem;width:100%;max-width:26rem;text-align:center}
+.modal{background:#1e293b;color:#fff;border:2px solid var(--accent,#3b82f6);border-radius:1rem;padding:1.1rem;width:100%;max-width:24rem;text-align:center}
 .modal h3{margin:0 0 .4rem;font-size:1rem}.modal p{margin:0 0 .8rem;font-size:.8rem;line-height:1.5;text-align:left}
 .modal .row{display:flex;gap:.5rem;margin-top:.8rem}.modal .row .btn{flex:1}
-
-/* 診断用モーダル内スタイル追加 */
-.uranai-modal-content { background: #f4f6fb; color: #333; padding: 15px; border-radius: 10px; max-height: 70vh; overflow-y: auto; text-align: left; }
-.uranai-question { background: white; padding: 12px; margin-bottom: 12px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
-.uranai-question p { font-weight: bold; margin-bottom: 8px; font-size: 0.78rem; color: #333; }
-.uranai-option { display: block; margin-bottom: 5px; padding: 5px 8px; border-radius: 5px; cursor: pointer; font-size: 0.72rem; background: #fafafa; border: 1px solid #e2e8f0; }
-.uranai-option:hover { background: #eef2ff; }
 </style>
 </head>
 <body>
@@ -196,6 +189,7 @@ const MILE_ROWS=[
   ['fan','扇風機','🌀',350,0.4,10,86],['bookshelf','本棚','📚',500,0.5,16,86],['kotatsu','こたつ','🔥',600,0.5,26,92],
   ['wardrobe','クローゼット','🚪',700,0.6,20,86],['bed','ベッド','🛏️',900,0.9,34,90],['aquarium','水槽','🐠',1200,1.0,20,84],
   ['gaming_pc','ゲーミングPC','🖥️',1800,1.6,18,80],['piano','ピアノ','🎹',2000,1.5,30,88],
+  // 追加したマイル購入家具（18種）
   ['light_natural', 'ぬくもりフロアランプ', '💡', 250, 0.2, 12, 86],
   ['tana_natural', 'ナチュラルオープンシェルフ', '🗄️', 350, 0.3, 20, 86],
   ['isu_natural', '北欧デザインチェア', '🪑', 180, 0.2, 14, 88],
@@ -226,6 +220,7 @@ const GOLD_ROWS=[
   ['greenhouse','温室','🌱',160000,0.3,40,86],['kitchen_island','アイランドキッチン','🍳',180000,0.4,38,90],['fireplace','暖炉','🔥',200000,0.4,26,84],
   ['golf_sim','ゴルフシミュレーター','⛳',220000,0.3,40,90],['home_theater','ホームシアター','🎬',250000,0.5,42,88],['sauna','ホームサウナ','🧖',300000,0.4,32,88],
   ['jacuzzi','ジャグジー','🛁',350000,0.4,34,90],['grand_piano','グランドピアノ','🎹',500000,0.5,40,90],['rare_crystal','レアアース結晶ディスプレイ','💎',500000,0.5,16,80],
+  // 追加したゴールド購入家具（12種）
   ['bed_natural', '温もりウッドのベッド', '🛏️', 15000, 0.2, 34, 90],
   ['sofa_natural', '北欧風ファブリックソファ', '🛋️', 18000, 0.2, 32, 92],
   ['desk_mono', 'スタイリッシュワークデスク', '💻', 20000, 0.2, 28, 88],
@@ -271,7 +266,7 @@ const themesMaster = {
   wood:{name:'☕ ウッド＆カフェ', wall:wallBg('#e9dcc6','radial-gradient(rgba(120,80,40,.07) 2px,transparent 2.5px) 0 0/.9rem .9rem','#3f5a4a','#c9a24d'),
     base:'#2f4538', floor:planks('#9a5f36','#7a4524','rgba(30,15,5,.4)'), floorH:planksH('#9a5f36','#7a4524','rgba(30,15,5,.4)'), bg:'#f3ead8', card:'#fffaf0', text:'#4a3525', line:'#d9c4a4', accent:'#3f5a4a', item:'#f6edd9', onaccent:'#fff'},
   pink:{name:'🌸 さくらピンク', wall:wallBg('#fde8ec','linear-gradient(transparent,transparent)','#f9c9d4','#fff'),
-    base:'#fff', floor:planks('#f1d2b8','rgba(140,80,60,.22)','#e0b896'), floorH:planksH('#f1d2b8','#e0b896','rgba(140,80,60,.22)'), bg:'#fff4f6', card:'#fff', text:'#7a3b4b', line:'#f6cdd6', accent:'#e0728f', item:'#fff0f3', onaccent:'#fff'},
+    base:'#fff', floor:planks('#f1d2b8','#e0b896','rgba(140,80,60,.22)'), floorH:planksH('#f1d2b8','#e0b896','rgba(140,80,60,.22)'), bg:'#fff4f6', card:'#fff', text:'#7a3b4b', line:'#f6cdd6', accent:'#e0728f', item:'#fff0f3', onaccent:'#fff'},
   blue:{name:'🌊 ミント＆スカイ', wall:wallBg('#e3f4ee','linear-gradient(rgba(255,255,255,.5) .15rem,transparent .15rem) 0 0/1.4rem 1.4rem,linear-gradient(90deg,rgba(255,255,255,.5) .15rem,transparent .15rem) 0 0/1.4rem 1.4rem','#b9e1d6','#fff'),
     base:'#fff', floor:tiles('#f4efe4','#d5e8e2'), bg:'#eef8f4', card:'#fff', text:'#2c5a52', line:'#c5e4da', accent:'#3fa38e', item:'#f0faf6', onaccent:'#fff'},
   cyber:{name:'⚡ サイバーネオン', wall:wallBg('#141a33','linear-gradient(rgba(0,255,245,.12) .08rem,transparent .08rem) 0 0/1.4rem 1.4rem,linear-gradient(90deg,rgba(0,255,245,.12) .08rem,transparent .08rem) 0 0/1.4rem 1.4rem','#1c2548','#00fff5'),
@@ -309,4 +304,519 @@ Object.keys(DECOR).forEach(k=>Object.assign(themesMaster[k],DECOR[k]));
 const dirNames = ['北の壁','東の壁','南の壁','西の壁','🌿 お庭'];
 const dirLabels = ['北','東','南','西','🌿'];
 
-/*
+/* ═════════ 状態管理 ═════════ */
+let gameState = {};
+try {
+  gameState = JSON.parse(localStorage.getItem('rareEarthGameState')) || {};
+} catch(e) { gameState = {}; }
+const defaults = {
+  miles:500, level:1, money:1500, mudStock:5, products:{}, homeFurnishings:[], placedItems:[],
+  currentTheme:'natural', currentBgm:'room', charaOwned:[], charaTasks:{}, tutorialShown6:false
+};
+Object.keys(defaults).forEach(k=>{ if(gameState[k]===undefined) gameState[k]=defaults[k]; });
+const save = ()=>{ try{ localStorage.setItem('rareEarthGameState',JSON.stringify(gameState)); }catch(e){} };
+const $ = id=>document.getElementById(id);
+let dir = 0, tab = 'shop';
+
+const bgm=$('bgm'), bgmBtn=$('bgm-btn'); 
+if(bgm) bgm.volume=.3;
+let isMuted = false;
+try { isMuted = localStorage.getItem('bgmMutedHome')==='true'; } catch(e){}
+
+function updateBgmSource(){ try{ if(bgm) bgm.src=(bgmMaster[gameState.currentBgm]||bgmMaster.room).file; }catch(e){} }
+function updateBgmUI(){ if(!bgmBtn) return; bgmBtn.innerText=isMuted?'🔇 OFF':'🎵 ON'; bgmBtn.className='bgm-btn'+(isMuted?' muted':''); }
+function toggleBGM(){ 
+  isMuted=!isMuted; 
+  try{ localStorage.setItem('bgmMutedHome',isMuted); }catch(e){}
+  updateBgmUI(); 
+  if(bgm){ if(isMuted) bgm.pause(); else bgm.play().catch(()=>{}); }
+}
+function unlock(){ if(bgm) bgm.play().then(()=>['click','touchstart'].forEach(e=>document.removeEventListener(e,unlock))).catch(()=>{}); }
+
+let curTheme=null;
+function scene(){
+  try {
+    const t=curTheme||themesMaster.natural;
+    const winEl=$('win'), doorEl=$('door'), phoneEl=$('phone'), stageEl=$('stage');
+    if(winEl) winEl.style.display=(dir===2&&t.win!==false)?'block':'none';
+    if(doorEl) doorEl.style.display=(t.door&&dir===(t.doorDir===undefined?1:t.doorDir))?'block':'none';
+    if(phoneEl) phoneEl.style.setProperty('--floor',((dir===1||dir===3)&&t.floorH)?t.floorH:t.floor);
+    if(stageEl) stageEl.classList.toggle('flat',!!t.flat);
+  } catch(e){}
+}
+function applyTheme(k){
+  try {
+    const t=themesMaster[k]||themesMaster.natural, pEl=$('phone');
+    if(!pEl) return;
+    const s=pEl.style;
+    ['wall','base','floor','bg','card','text','line','accent','item','onaccent'].forEach(p=>s.setProperty('--'+p,t[p]||''));
+    s.setProperty('--garden',t.garden||GARDEN_DEFAULT);
+    ['door','door2','knob'].forEach(p=>s.setProperty('--'+p,t[p]||'none'));
+    curTheme=t; scene();
+  } catch(e){}
+}
+
+function toast(m){ const t=$('toast'); if(!t) return; t.innerText=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2000); }
+function askModal(title,desc,ok,fn,no){
+  try {
+    const mT=$('mTitle'), mD=$('mDesc'), mR=$('mRows'), mO=$('modal');
+    if(mT) mT.innerText=title; if(mD) mD.innerHTML=desc;
+    if(mR) mR.innerHTML=`<button class="btn" style="background:#94a3b8;color:#fff" onclick="closeModal()">${no||'キャンセル'}</button><button class="btn" id="mOk" style="background:#ef4444;color:#fff">${ok}</button>`;
+    const mOkBtn=$('mOk'); if(mOkBtn) mOkBtn.onclick=()=>{closeModal();fn&&fn();};
+    if(mO) mO.style.display='flex';
+  } catch(e){}
+}
+function closeModal(){ const mO=$('modal'); if(mO) mO.style.display='none'; }
+
+function buildControls(){
+  try {
+    const db=$('dirBtns'); if(db) db.innerHTML=dirLabels.map((l,i)=>`<button class="dir" id="dir${i}" onclick="changeDirection(${i})">${l}</button>`).join('');
+    const tabs={shop:'🛒ショップ',display:'📦配置',theme:'🎨テイスト',music:'🎵音楽',save:'💾セーブ'};
+    const tb=$('tabs'); if(tb) tb.innerHTML=Object.keys(tabs).map(k=>`<button class="tab" id="tab-${k}" onclick="switchTab('${k}')">${tabs[k]}</button>`).join('');
+  } catch(e){}
+}
+function changeDirection(d){
+  dir=d; const dt=$('dirTitle'); if(dt) dt.innerText=dirNames[d];
+  for(let i=0;i<5;i++){ const dBtn=$('dir'+i); if(dBtn) dBtn.classList.toggle('on',i===d); }
+  const ind=$('indoor'), gar=$('garden');
+  if(ind) ind.style.display=d===4?'none':'block'; if(gar) gar.style.display=d===4?'block':'none';
+  scene(); renderRoom();
+}
+function switchTab(t){
+  tab=t;
+  ['shop','display','theme','music','save'].forEach(k=>{
+    const lk=$('L-'+k), tbk=$('tab-'+k);
+    if(lk) lk.classList.toggle('on',k===t);
+    if(tbk) tbk.classList.toggle('on',k===t);
+  });
+}
+function updateUI(){
+  try {
+    checkTaskCompletions();
+    const mil=$('miles'), lev=$('money'), lvl=$('level'), rlvl=$('roomLevel'), bon=$('bonus');
+    if(mil) mil.innerText=(gameState.miles||0).toLocaleString();
+    if(lvl) lvl.innerText=gameState.level||1;
+    if(lev) lev.innerText=(gameState.money||0).toLocaleString();
+    let b=0;
+    (gameState.placedItems||[]).forEach(i=>{ if(i.type==='furn'&&furnitureMaster[i.id]) b+=furnitureMaster[i.id].bonus; if(i.type==='prod') b+=.2; });
+    if(bon) bon.innerText=b.toFixed(1);
+    if(rlvl) rlvl.innerText=Math.floor(1+b/1.5);
+    renderShop(); renderDisplay(); renderTheme(); renderMusic(); renderRoom();
+  } catch(e){}
+}
+
+/* ═════════════════════════════════════════════════════════════
+   ★ キャラクター17名定義・パラメータ・お仕事システム ★
+   ═════════════════════════════════════════════════════════════ */
+const CHARA_PREFIX='chara0_', CHARA_SIZE=20;
+const CHARAS={
+  Sc:{name:'スカンジウム', type:'prod',   mH:2.0, mQ:12, rH:2.5, rQ:6,  pH:3.0, pQ:2, desc:'バランス型。製品製造もそつなくこなす器用な子。'},
+  Y:{name:'イットリウム',   type:'mine',   mH:1.5, mQ:18, rH:3.0, rQ:6,  pH:4.0, pQ:2, desc:'好奇心旺盛で元気！掘削スピードに自信あり。'},
+  La:{name:'ランタン',       type:'refine', mH:2.5, mQ:12, rH:1.8, rQ:9,  pH:3.5, pQ:2, desc:'おっとり優しく、緻密な精製作業が得意。'},
+  Ce:{name:'セリウム',       type:'refine', mH:2.2, mQ:14, rH:2.0, rQ:8,  pH:3.5, pQ:2, desc:'リーダーシップがあり、安定した精製品質を生む。'},
+  Pr:{name:'プラセオジム',   type:'mine',   mH:1.6, mQ:17, rH:2.8, rQ:6,  pH:4.0, pQ:2, desc:'目立ちたがり屋でエネルギッシュに泥を掘り出す。'},
+  Nd:{name:'ネオジム',       type:'mine',   mH:1.4, mQ:20, rH:3.0, rQ:6,  pH:3.8, pQ:2, desc:'強力な磁力のように引き付ける力で大量掘削！'},
+  Pm:{name:'プロメチウム',   type:'refine', mH:2.6, mQ:10, rH:1.9, rQ:9,  pH:3.6, pQ:2, desc:'内向的で研究熱心。精製度を高めるのが得意。'},
+  Sm:{name:'サマリウム',     type:'refine', mH:2.4, mQ:12, rH:2.1, rQ:8,  pH:3.5, pQ:2, desc:'冷静沈着。ミスなく確実に精製を進める。'},
+  Eu:{name:'ユウロピウム',   type:'prod',   mH:2.2, mQ:13, rH:2.5, rQ:7,  pH:2.8, pQ:3, desc:'華やかな発光製品を作るのが得意なクリエイター。'},
+  Gd:{name:'ガドリニウム',   type:'mine',   mH:1.8, mQ:16, rH:2.6, rQ:7,  pH:3.6, pQ:2, desc:'どっしりとした安定感でコツコツ掘削する。'},
+  Tb:{name:'テルビウム',     type:'mine',   mH:1.5, mQ:19, rH:2.9, rQ:6,  pH:3.7, pQ:2, desc:'活動的で、スピーディーな資源回収をお約束！'},
+  Dy:{name:'ジスプロシウム', type:'prod',   mH:2.0, mQ:14, rH:2.4, rQ:8,  pH:2.5, pQ:3, desc:'ハイテク製品の製造に不可欠な高性能ワーカー。'},
+  Ho:{name:'ホルミウム',     type:'refine', mH:2.5, mQ:11, rH:2.0, rQ:8,  pH:3.6, pQ:2, desc:'音楽や美を愛し、丁寧な精製で高い成果を上げる。'},
+  Er:{name:'エルビウム',     type:'refine', mH:2.3, mQ:13, rH:1.7, rQ:10, pH:3.4, pQ:2, desc:'最高峰の精製スペシャリスト。光通信や美容レーザーでも大活躍！'},
+  Tm:{name:'ツリウム',       type:'mine',   mH:1.7, mQ:16, rH:2.7, rQ:7,  pH:3.8, pQ:2, desc:'真面目にコツコツと掘削作業をこなす頑張り屋。'},
+  Yb:{name:'イッテルビウム', type:'refine', mH:2.4, mQ:12, rH:2.2, rQ:8,  pH:3.5, pQ:2, desc:'落ち着いた雰囲気で確実に精製をこなす。'},
+  Lu:{name:'ルテチウム',     type:'prod',   mH:2.1, mQ:13, rH:2.5, rQ:7,  pH:2.7, pQ:3, desc:'最後を飾るシャープな切れ味で製品製造をサポート。'}
+};
+
+function charaCount(lv){ return Math.min(17, lv<3?1:lv<5?2:lv<8?3:4+Math.floor((lv-8)/3)); }
+function nextCharaText(){
+  const n=charaCount(gameState.level||1); if(n>=17) return '🎉 全キャラクターが揃いました！';
+  let lv=(gameState.level||1)+1; while(charaCount(lv)<=n) lv++; return `🔒 次のキャラクターは Lv.${lv} で登場！`;
+}
+
+function syncCrafted(){
+  if(!gameState.crafted) gameState.crafted={}; let ch=false; const p=gameState.products||{};
+  recipes.forEach(r=>{ if(p[r.id]>0&&!gameState.crafted[r.id]){ gameState.crafted[r.id]=true; ch=true; } });
+  if(ch) save();
+}
+
+function ensureCharas(){
+  try {
+    const ids=Object.keys(CHARAS), want=charaCount(gameState.level||1);
+    if(!Array.isArray(gameState.charaOwned)) gameState.charaOwned=[];
+    if(!gameState.placedItems) gameState.placedItems=[];
+    
+    let added=0;
+    while(gameState.charaOwned.length<want){
+      const rest=ids.filter(i=>!gameState.charaOwned.includes(i)); if(!rest.length) break;
+      let id;
+      if(!gameState.charaOwned.includes('Er') && rest.includes('Er')) {
+        id = 'Er';
+      } else {
+        id = rest[Math.floor(Math.random()*rest.length)];
+      }
+      gameState.charaOwned.push(id);
+      gameState.placedItems.push({type:'chara',id,dir:0,s:1,x:25+Math.random()*50,y:90}); added++;
+    }
+    if(added){ save(); setTimeout(()=>toast('🎉 新しい仲間がお部屋に来たよ！'),600); }
+
+    if((gameState.level||1) >= 6 && !gameState.tutorialShown6) {
+      gameState.tutorialShown6 = true; save();
+      setTimeout(() => {
+        askModal('🏠 イットリウム＆初期メンバーからの声かけ！',
+          `「プレイヤーさん、Lv.6おめでとう！私のお部屋や庭に配置して話しかけてくれたら、いつでも<b>『お仕事』</b>や<b>『お話し』</b>ができるよ！」`,
+          'わかった！', null, '');
+      }, 1000);
+    }
+  } catch(e){}
+}
+
+/* ═════════ キャラクター対話・お仕事モーダル ═════════ */
+function openCharaTaskModal(id){
+  const c = CHARAS[id]; if(!c) return;
+  if(!gameState.charaTasks) gameState.charaTasks={};
+  const task = gameState.charaTasks[id], now = Date.now();
+
+  if(task && task.endTime > now){
+    const leftMin = Math.ceil((task.endTime - now)/60000);
+    askModal(`⏳ ${c.name}はお仕事中です`,
+      `<div style="text-align:center"><p>${c.desc}</p>` +
+      `<p style="color:#00fff5; font-weight:bold">現在のお仕事: ${task.type==='mine'?'⛏️ 掘削':task.type==='refine'?'🧪 精製':'🏭 製品製造'}</p>` +
+      `<p>残り時間: 約 <b>${leftMin}分</b></p></div>`,
+      '閉じる', null, '');
+    return;
+  }
+
+  if(task && task.endTime <= now && !task.claimed){ claimTaskReward(id); return; }
+
+  const canProd = (gameState.level||1) >= 12;
+  const html = `
+    <div style="font-size:0.8rem">
+      <p style="margin:0 0 6px">${c.desc}</p>
+      <div style="background:rgba(0,0,0,0.3); padding:8px; border-radius:6px; margin-bottom:8px">
+        <b>【得意分野】</b> ${c.type==='mine'?'⛏️ 掘削特化':c.type==='refine'?'🧪 精製特化':'🏭 製造バランス型'}<br>
+        • 掘削: ${c.mH}時間で <b>${c.mQ}個</b> の泥収集<br>
+        • 精製: ${c.rH}時間で <b>${c.rQ}個</b> のレアアース精製<br>
+        • 製造(Lv.12~): ${c.pH}時間で <b>${c.pQ}個</b> の製品制作 ${canProd?'':'<span style="color:#f87171">(🔒Lv12未開放)</span>'}
+      </div>
+      <p style="text-align:center; font-weight:bold; color:#ffde59; margin:4px 0">何をしましょうか？</p>
+      <div style="display:flex; gap:4px; flex-direction:column">
+        <button class="btn" style="background:#8b5cf6; font-size:0.8rem; margin-bottom:4px" onclick="talkChara('${id}')">🗣️ お話する</button>
+        <button class="btn" style="background:#3b82f6" onclick="startCharaTask('${id}','mine')">⛏️ 掘削を頼む (${c.mH}時間 / ${c.mQ}個)</button>
+        <button class="btn" style="background:#10b981" onclick="startCharaTask('${id}','refine')">🧪 精製を頼む (${c.rH}時間 / ${c.rQ}個)</button>
+        <button class="btn" style="background:${canProd?'#eab308':'#475569'}" ${canProd?'':'disabled'} onclick="startCharaTask('${id}','prod')">🏭 製品製造を頼む (${c.pH}時間 / ${c.pQ}個)</button>
+      </div>
+    </div>
+  `;
+  askModal(`🧑 ${c.name}`, html, '閉じる', null, '');
+}
+
+/* キャラクター会話機能 */
+function talkChara(id){
+  const c = CHARAS[id];
+  if(!c) return;
+
+  if(id === 'Er'){
+    const html = `
+      <div style="font-size:0.8rem; text-align:left; line-height:1.5">
+        <p>「フフ、私とお話ししたいの？光ファイバーで世界中の通信を増幅するのも得意だけど、私といえばやっぱり美肌レーザー（エルビウムYAGレーザー）や光の増幅技術ね！」</p>
+        <p>「私のミニゲーム<b>『美肌ブロック崩し』</b>で遊んでいく？」</p>
+        <div style="display:flex; flex-direction:column; gap:6px; margin-top:10px">
+          <button class="btn" style="background:#ec4899; font-weight:bold; font-size:0.82rem" onclick="location.href='erbium_breakout.html'">🎮 美肌ブロック崩しを遊ぶ</button>
+          <button class="btn" style="background:#3b82f6" onclick="askModal('💡 エルビウム解説', 'エルビウム(Er)は、光ファイバー増幅器(EDFA)に欠かせない元素！波長1550nmの光を増幅して長距離通信を支えたり、皮膚の水分に吸収されやすいレーザーとして美容・皮膚科医療で広く使われているよ。', '戻る', ()=>talkChara('Er'), '')">📖 エルビウムについて詳しく知る</button>
+        </div>
+      </div>
+    `;
+    askModal(`✨ エルビウムとの会話`, html, '閉じる', null, '');
+
+  } else if(id === 'Ce'){
+    const html = `
+      <div style="font-size:0.8rem; text-align:left; line-height:1.5">
+        <p>「こんにちは！セリウムだよ。<b>環境を守るお掃除職人</b>として、排ガスの浄化や液晶の研磨が得意なんだ！フットワークが軽くて、世界を美しく保つの情熱家だよ。」</p>
+        <p>「主な活躍の場は、<b>自動車触媒、液晶研磨材、ライター石</b>などなど！光やガラスを磨き上げるのも私の得意分野なんだ。」</p>
+        <p>「どう？私と一緒に、集めた宝石を使ってキラキラの万華鏡を作ってみない？」</p>
+        <div style="display:flex; flex-direction:column; gap:6px; margin-top:10px">
+          <button class="btn" style="background:#eab308; color:#000; font-weight:bold; font-size:0.82rem" onclick="location.href='kaleidoscope.html'">💎 セリウムのキラメキ万華鏡を遊ぶ</button>
+          <button class="btn" style="background:#3b82f6" onclick="askModal('💡 セリウム解説', 'セリウム(Ce)はレアアースの中で最も埋蔵量が多く、ガラスや宝石の鏡面仕上げ研磨剤（酸化セリウム）や、自動車の排ガスをクリーンにする触媒、ライターの火花を散らす石（ミッシュメタル）など、私たちの暮らしを足元から支える環境の守り手だよ！', '戻る', ()=>talkChara('Ce'), '')">📖 セリウムについて詳しく知る</button>
+        </div>
+      </div>
+    `;
+    askModal(`✨ セリウムとの会話`, html, '閉じる', null, '');
+
+  } else {
+    const html = `
+      <div style="font-size:0.82rem; text-align:center; padding:10px 0">
+        <p>「こんにちは！${c.name}だよ。いつでもお部屋で声をかけてね！一緒にお仕事がんばろう！」</p>
+      </div>
+    `;
+    askModal(`💬 ${c.name}`, html, '閉じる', null, '');
+  }
+}
+
+function startCharaTask(id, type){
+  const c = CHARAS[id]; if(!c) return;
+  let hours = type==='mine'? c.mH : type==='refine'? c.rH : c.pH;
+  const durationMs = hours * 3600 * 1000; 
+  if(!gameState.charaTasks) gameState.charaTasks={};
+  gameState.charaTasks[id] = { type, startTime: Date.now(), endTime: Date.now() + durationMs, claimed: false, hours };
+  save(); closeModal();
+  toast(`✨ ${c.name}が ${type==='mine'?'掘削':type==='refine'?'精製':'製品製造'} に出発しました！`);
+  updateUI();
+}
+
+function checkTaskCompletions(){}
+
+function claimTaskReward(id){
+  const c = CHARAS[id]; if(!c || !gameState.charaTasks) return;
+  const task = gameState.charaTasks[id]; if(!task) return;
+
+  const isFever = Math.random() < 0.10;
+  const mult = isFever ? (1.5 + Math.random()*0.5) : 1.0;
+  let baseQ = task.type==='mine'? c.mQ : task.type==='refine'? c.rQ : c.pQ;
+  let finalQ = Math.round(baseQ * mult);
+
+  if(task.type === 'mine'){ gameState.mudStock = (gameState.mudStock || 0) + finalQ; }
+  else if(task.type === 'refine'){ gameState.money = (gameState.money || 0) + finalQ * 250; }
+  else {
+    const rId = recipes[Math.floor(Math.random()*recipes.length)].id;
+    if(!gameState.products) gameState.products={};
+    gameState.products[rId] = (gameState.products[rId] || 0) + finalQ;
+  }
+
+  delete gameState.charaTasks[id];
+  save(); closeModal();
+
+  if(isFever){
+    askModal(`🔥 大成功！大生産フィーバー発生！！`,
+      `<div style="text-align:center"><p style="font-size:2rem">🎉✨</p>` +
+      `<p><b>${c.name}</b> の作業が大フィーバー！通常より大量の成果物を持ち帰りました！</p>` +
+      `<p style="color:#ffde59; font-size:1.1rem; font-weight:bold">+ ${finalQ} 獲得！</p></div>`,
+      'やったね！', null, '');
+  } else {
+    toast(`🎉 ${c.name}がお仕事を完了して帰ってきました！(+${finalQ})`);
+  }
+  updateUI();
+}
+
+function renderRoom(){
+  try {
+    const box=$('objs'); if(!box) return; box.innerHTML='';
+    (gameState.placedItems||[]).forEach((it,idx)=>{
+      if(it.dir!==dir) return;
+      let name,src,emoji,size,isChara=false, charaId='';
+      if(it.type==='furn'){ const f=furnitureMaster[it.id]; if(!f) return; name=f.name; src=f.img; emoji=f.emoji; size=f.size; }
+      else if(it.type==='chara'){
+        const c=CHARAS[it.id]; if(!c) return; name=c.name; src=CHARA_PREFIX+it.id+'.png'; emoji='🧪'; size=CHARA_SIZE; isChara=true; charaId=it.id;
+      } else { const r=recipes.find(r=>r.id===it.id)||{}; name=r.name||'製品'; src=r.img; emoji=r.emoji; size=PROD_SIZE; }
+      it.s=it.s||1;
+      const el=document.createElement('div'); el.className='obj';
+      el.style.cssText=`left:${it.x}%;top:${it.y}%;width:${size*it.s}%`;
+      const im=document.createElement('img'); im.src=IMG_DIR+src; im.alt=name;
+      im.onerror=()=>{ im.remove(); el.innerHTML=`<div class="ph">${emoji||'📦'}<small>${name}</small></div>`; };
+      el.appendChild(im);
+
+      if(isChara){
+        const task = gameState.charaTasks ? gameState.charaTasks[charaId] : null;
+        const now = Date.now();
+        let badgeText = '💬 お仕事', badgeBg = '#3b82f6';
+        if(task){
+          if(task.endTime <= now){ badgeText = '✨ 完了！'; badgeBg = '#f59e0b'; }
+          else { badgeText = '⏳ 作業中'; badgeBg = '#64748b'; }
+        }
+        const badge = document.createElement('div');
+        badge.className = 'chara-badge'; badge.style.background = badgeBg; badge.innerText = badgeText;
+        el.appendChild(badge);
+      }
+
+      drag(el,it,idx,name,size,isChara,charaId); box.appendChild(el);
+    });
+  } catch(e){}
+}
+
+function drag(el,it,idx,name,size,isChara,charaId){
+  const P=new Map(); let moved=false,tot=0,pre='',d0=1,s0=1,wp='',wt;
+  const dist=()=>{ const a=[...P.values()]; return Math.max(1,Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y)); };
+  const setW=()=>{ el.style.width=size*it.s+'%'; };
+  const clamp=v=>Math.max(.3,Math.min(3,v));
+  el.addEventListener('pointerdown',e=>{ e.preventDefault(); el.setPointerCapture(e.pointerId); P.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(P.size===1){ moved=false; tot=0; pre=cur(); } else if(P.size===2){ d0=dist(); s0=it.s; moved=true; } });
+  el.addEventListener('pointermove',e=>{
+    const p=P.get(e.pointerId); if(!p) return;
+    const dx=e.clientX-p.x, dy=e.clientY-p.y; p.x=e.clientX; p.y=e.clientY;
+    if(P.size>=2){ it.s=clamp(s0*dist()/d0); setW(); return; }
+    tot+=Math.abs(dx)+Math.abs(dy); if(tot>6) moved=true;
+    const stageEl = $('stage'); if(!stageEl) return;
+    const r=stageEl.getBoundingClientRect();
+    it.x=Math.max(0,Math.min(100,it.x+dx/r.width*100)); it.y=Math.max(10,Math.min(100,it.y+dy/r.height*100));
+    el.style.left=it.x+'%'; el.style.top=it.y+'%';
+  });
+  const up=e=>{
+    if(!P.delete(e.pointerId)||P.size>0) return;
+    if(moved){ if(cur()!==pre){ hist(pre); save(); } return; }
+    if(isChara){ openCharaTaskModal(charaId); }
+    else { askModal('レイアウト変更',`「${name}」をお部屋から片付けますか？`,'片付ける',()=>{ hist(); gameState.placedItems.splice(idx,1); save(); updateUI(); toast('📦 片付けました'); }); }
+  };
+  el.addEventListener('pointerup',up); el.addEventListener('pointercancel',up);
+  el.addEventListener('wheel',e=>{ e.preventDefault(); if(!wp) wp=cur();
+    it.s=clamp(it.s*(e.deltaY<0?1.08:.93)); setW();
+    clearTimeout(wt); wt=setTimeout(()=>{ if(cur()!==wp){ hist(wp); save(); } wp=''; },400); },{passive:false});
+}
+
+function row(thumb, name, sub, btnObj){
+  const btnHtml = btnObj.html || '';
+  const ownClass = btnObj.own ? 'own' : '';
+  return `<div class="item ${ownClass}">${thumb}<div class="nm">${name}${sub?`<small>${sub}</small>`:''}</div>${btnHtml}</div>`;
+}
+
+function shopRow(id, f, own){
+  const price = f.gold ? `${f.gold.toLocaleString()}G` : `${f.cost}マイル`;
+  const thumbHtml = `
+    <div class="thumb">
+      <img src="${IMG_DIR}${f.img}" alt="${f.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+      <span class="emoji-ph">${f.emoji||'📦'}</span>
+    </div>`;
+  const btnHtml = own ? '<button class="btn done" onclick="event.stopPropagation()">所持済</button>' : `<button class="btn" onclick="event.stopPropagation(); buy('${id}')">購入</button>`;
+  return `<div class="item ${own?'own':''}" onclick="openPreview('${id}')">${thumbHtml}<div class="nm">${f.name}<small>${price} ／ ボーナス +${f.bonus}%</small></div>${btnHtml}</div>`;
+}
+
+let shopMode='mile';
+function setShopMode(m){ shopMode=m; renderShop(); }
+function renderShop(){
+  const L=$('L-shop'); if(!L) return;
+  const top=L.scrollTop;
+  const bar=`<div style="display:flex;gap:.3rem;flex-shrink:0"><button class="tab ${shopMode==='mile'?'on':''}" onclick="setShopMode('mile')">✈️ マイルで買う</button><button class="tab ${shopMode==='gold'?'on':''}" onclick="setShopMode('gold')">💰 Gで買う</button></div>`;
+  L.innerHTML = bar + Object.keys(furnitureMaster).filter(id=>!!furnitureMaster[id].gold===(shopMode==='gold')).map(id=>{
+    const f=furnitureMaster[id], own=(gameState.homeFurnishings||[]).includes(id);
+    return shopRow(id, f, own);
+  }).join('');
+  L.scrollTop=top;
+}
+
+function openPreview(id){
+  const f = furnitureMaster[id]; if(!f) return;
+  const own = (gameState.homeFurnishings||[]).includes(id);
+  const price = f.gold ? `${f.gold.toLocaleString()} G` : `${f.cost} マイル`;
+  
+  const html = `
+    <div style="text-align:center">
+      <div style="width:7rem;height:7rem;margin:0 auto 0.6rem;background:#0b1224;border:2px solid var(--line);border-radius:.8rem;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden">
+        <img src="${IMG_DIR}${f.img}" alt="${f.name}" style="max-width:90%;max-height:90%;object-fit:contain" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+        <span style="font-size:3rem;display:none">${f.emoji||'📦'}</span>
+      </div>
+      <p style="font-size:0.85rem;margin:0 0 4px">価格: <b>${price}</b></p>
+      <p style="font-size:0.8rem;color:#38bdf8;margin:0 0 10px">居心地ボーナス: <b>+${f.bonus}%</b></p>
+      <p style="font-size:0.75rem;opacity:0.8;margin:0 0 10px">お部屋に配置すると居心地レベルが上がり、精製や報酬がアップします！</p>
+    </div>
+  `;
+
+  if(own){
+    askModal(`📦 ${f.name} (所持済み)`, html, '閉じる', null, '');
+  } else {
+    askModal(`🛒 ${f.name} の購入確認`, html, '購入する', ()=>{ buy(id); }, 'キャンセル');
+  }
+}
+
+function buy(id){
+  const f=furnitureMaster[id]; if(!f) return;
+  if(f.gold){ if((gameState.money||0)<f.gold){ toast('⚠️ ゴールドが足りません！'); return; } gameState.money-=f.gold; }
+  else { if((gameState.miles||0)<f.cost){ toast('⚠️ マイルが足りません！'); return; } gameState.miles-=f.cost; }
+  if(!gameState.homeFurnishings) gameState.homeFurnishings=[];
+  if(!gameState.homeFurnishings.includes(id)) gameState.homeFurnishings.push(id);
+  save();
+  const seU=$('se-unlock'); if(seU){ seU.currentTime=0; seU.play().catch(()=>{}); }
+  toast(`🎉 『${f.name}』を購入！`); updateUI();
+}
+
+function renderDisplay(){
+  const L=$('L-display'); if(!L) return;
+  let h = '';
+  (gameState.charaOwned||[]).forEach(id=>{
+    const c = CHARAS[id]; if(!c) return;
+    const thumb = `<div class="thumb"><img src="${CHARA_PREFIX}${id}.png" alt="${c.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"><span class="emoji-ph">🧪</span></div>`;
+    h += row(thumb, `🧑 ${c.name}`, c.desc, {html:`<button class="btn" style="background:#8b5cf6;color:#fff" onclick="place('chara','${id}')">配置</button>`});
+  });
+
+  (gameState.homeFurnishings||[]).forEach(id=>{
+    const f = furnitureMaster[id]; if(!f) return;
+    const thumb = `<div class="thumb"><img src="${IMG_DIR}${f.img}" alt="${f.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"><span class="emoji-ph">${f.emoji||'📦'}</span></div>`;
+    h += row(thumb, f.name, `ボーナス +${f.bonus}%`, {html:`<button class="btn" onclick="place('furn','${id}')">配置</button>`});
+  });
+
+  recipes.forEach(r=>{
+    const n = (gameState.products||{})[r.id] || 0;
+    if(gameState.crafted && gameState.crafted[r.id]){
+      const thumb = `<div class="thumb"><img src="${IMG_DIR}${r.img}" alt="${r.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"><span class="emoji-ph">${r.emoji||'📦'}</span></div>`;
+      h += row(thumb, r.name, n>0 ? `在庫:${n}` : '製造済み', {html:`<button class="btn" style="background:#eab308;color:#fff" onclick="place('prod','${r.id}')">配置</button>`});
+    }
+  });
+
+  L.innerHTML = h + `<div style="text-align:center;opacity:.7;padding:.5rem;font-size:.7rem">${nextCharaText()}</div>`;
+}
+
+function place(type,id){
+  const f=furnitureMaster[id]; hist();
+  if(!gameState.placedItems) gameState.placedItems=[];
+  gameState.placedItems.push({type,id,dir,s:1,x:(f?f.x:30+Math.random()*40),y:(f?f.y:(type==='chara'?90:80))});
+  save(); const seG=$('nyu2'); if(seG){ seG.currentTime=0; seG.play().catch(()=>{}); }
+  toast('✨ 配置！ドラッグで移動・2本指で拡大縮小'); updateUI();
+}
+
+function renderTheme(){
+  const L=$('L-theme'); if(!L) return;
+  if((gameState.level||1)<3){ L.innerHTML='<div style="text-align:center;opacity:.7;padding:1rem;font-size:.75rem">🔒 Lv.3 到達でテイスト変更が解放されます！</div>'; return; }
+  L.innerHTML=Object.keys(themesMaster).map(k=>{ const t=themesMaster[k], cur=gameState.currentTheme===k;
+    const sw=`<div class="swatch"><i style="background:${t.wall}"></i><i style="background:${t.floor}"></i></div>`;
+    return row(sw,t.name,'',{own:cur,html:cur?'<button class="btn done">適用中</button>':`<button class="btn" onclick="setTheme('${k}')">変更</button>`}); }).join('');
+}
+function setTheme(k){ gameState.currentTheme=k; save(); applyTheme(k); updateUI(); toast('🎨 テイストを変更しました！'); }
+
+function renderMusic(){
+  const L=$('L-music'); if(!L) return;
+  if((gameState.level||1)<5){ L.innerHTML='<div style="text-align:center;opacity:.7;padding:1rem;font-size:.75rem">🔒 Lv.5 到達でジュークボックスが解放されます！</div>'; return; }
+  L.innerHTML=Object.keys(bgmMaster).map(k=>{ const cur=gameState.currentBgm===k;
+    return row('',`🎵 ${bgmMaster[k].name}`,'',{own:cur,html:cur?'<button class="btn done">再生中</button>':`<button class="btn" onclick="setBgm('${k}')">再生</button>`}); }).join('');
+}
+function setBgm(k){ gameState.currentBgm=k; save(); updateBgmSource(); if(!isMuted && bgm) bgm.play().catch(()=>{}); updateUI(); toast(`🎶 「${bgmMaster[k].name}」に変更`); }
+
+function exportSave(){
+  try{ const enc=btoa(unescape(encodeURIComponent(localStorage.getItem('rareEarthGameState')||JSON.stringify(gameState))));
+    const ta=$('saveCode'); if(ta){ ta.value=enc; ta.select(); }
+    navigator.clipboard.writeText(enc).then(()=>toast('📋 コピーしました！')).catch(()=>toast('📋 生成しました（手動でコピーしてね）'));
+  }catch(e){ toast('⚠️ エクスポートに失敗しました'); }
+}
+function importSave(){
+  const ta=$('saveCode'), c=ta?ta.value.trim():'';
+  if(!c){ toast('⚠️ 復元コードを入力してください'); return; }
+  askModal('セーブデータの復元','現在のデータが上書きされます。よろしいですか？','復元する',()=>{
+    try{ const p=JSON.parse(decodeURIComponent(escape(atob(c)))); if(!p||typeof p!=='object') throw 0;
+      localStorage.setItem('rareEarthGameState',JSON.stringify(p)); gameState=p;
+      Object.keys(defaults).forEach(k=>{ if(gameState[k]===undefined) gameState[k]=defaults[k]; });
+      applyTheme(gameState.currentTheme); updateBgmSource(); ensureCharas(); syncCrafted(); updateUI(); toast('✨ 復元しました！');
+    }catch(e){ toast('⚠️ 無効なセーブコードです'); } });
+}
+
+let past=[], future=[];
+const cur=()=>JSON.stringify(gameState.placedItems||[]);
+function hist(s){ past.push(s||cur()); if(past.length>50) past.shift(); future=[]; histBtns(); }
+function histBtns(){
+  const uB=$('undoBtn'), rB=$('redoBtn');
+  if(uB) uB.disabled=!past.length; if(rB) rB.disabled=!future.length;
+}
+function restore(s){ gameState.placedItems=JSON.parse(s); save(); updateUI(); histBtns(); }
+function undo(){ if(!past.length) return; future.push(cur()); restore(past.pop()); }
+function redo(){ if(!future.length) return; past.push(cur()); restore(future.pop()); }
+function resetRoom(){
+  askModal('お部屋のリセット','本当にリセットしてよいですか？\n置いた家具・製品・キャラをすべて片付けます。','はい',()=>{ hist(); gameState.placedItems=[]; save(); updateUI(); toast('🧹 リセットしました'); },'いいえ');
+}
+
+window.addEventListener('load',()=>{
+  try {
+    buildControls(); switchTab('shop'); changeDirection(0);
+    updateBgmSource(); updateBgmUI(); applyTheme(gameState.currentTheme||'natural'); ensureCharas(); syncCrafted(); updateUI(); histBtns();
+    if(!isMuted && bgm) bgm.play().catch(()=>['click','touchstart'].forEach(e=>document.addEventListener(e,unlock)));
+  } catch(e){}
+});
+</script>
+</body>
+</html>
