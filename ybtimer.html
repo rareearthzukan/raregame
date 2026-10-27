@@ -61,8 +61,11 @@
       margin-bottom: 8px;
     }
 
+    header { gap: 8px; }
     h1 {
-      font-size: 1.15rem;
+      font-size: clamp(0.95rem, 4.2vw, 1.15rem);
+      min-width: 0;
+      line-height: 1.25;
       color: var(--primary-neon);
       display: flex;
       align-items: center;
@@ -76,8 +79,16 @@
       padding: 6px 12px;
       border-radius: 20px;
       font-size: 0.75rem;
+      line-height: 1.2;
       cursor: pointer;
       transition: all 0.2s;
+      flex: 0 0 auto;
+      white-space: nowrap;
+      min-width: 7.5em;
+      text-align: center;
+    }
+    @media (max-width: 360px) {
+      .theme-toggle-btn { min-width: 6.5em; padding: 6px 8px; font-size: 0.7rem; }
     }
 
     .container {
@@ -441,549 +452,261 @@
     レアアース17元素キャラ図鑑 - イッテルビウム (Yb)
   </footer>
 
+  <script>window.YB_TIMER_UI = true;</script>
+  <script src="ybtimer-core.js"></script>
   <script>
-    const charaImages = {};
-    const imgSources = {
-      yb0: 'CharaYb_time0.png',
-      yb1: 'CharaYb_time1.png',
-      yb2: 'CharaYb_time2.png'
-    };
+    const T = window.YbTimer;
+    const $ = id => document.getElementById(id);
+    let isLightTheme = false, currentCharaState = 0, pokeTimeout = null, pokeCount = 0;
 
-    let loadedImagesCount = 0;
-    let imagesLoadedSuccessfully = false;
-
-    Object.keys(imgSources).forEach(key => {
-      charaImages[key] = new Image();
-      charaImages[key].src = imgSources[key];
-      charaImages[key].onload = () => {
-        loadedImagesCount++;
-        if (loadedImagesCount === 3) {
-          imagesLoadedSuccessfully = true;
-          drawCharaAvatar();
-        }
-      };
+    /* ---------- キャラ画像 ---------- */
+    const charaImages = {}, imgSources = { yb0: 'CharaYb_time0.png', yb1: 'CharaYb_time1.png', yb2: 'CharaYb_time2.png' };
+    let loaded = 0, imagesOk = false;
+    Object.keys(imgSources).forEach(k => {
+      charaImages[k] = new Image(); charaImages[k].src = imgSources[k];
+      charaImages[k].onload = () => { if (++loaded === 3) { imagesOk = true; drawCharaAvatar(); } };
     });
 
-    let mode = 'pomo';
-    let pomoPhase = 'work';
-    let pomoCycleCount = 1;
+    function setupHiDPI(cvs, size) {
+      const d = window.devicePixelRatio || 1;
+      cvs.width = size * d; cvs.height = size * d;
+      cvs.style.width = size + 'px'; cvs.style.height = size + 'px';
+      cvs.getContext('2d').setTransform(d, 0, 0, d, 0, 0);
+    }
 
-    let isRunning = false;
-    let targetEndTime = null;
-    let pomoWorkSec = 25 * 60;
-    let pomoBreakSec = 5 * 60;
-    let pomoLongBreakSec = 15 * 60;
-    let totalDurationSec = 25 * 60;
-    let remainingSec = 25 * 60;
+    /* ---------- セリフ ---------- */
+    const pokeLines = {
+      time: [
+        "1日は86,400秒です。そのうちの1,500秒、つまり25分を、今ここに使いましょう。",
+        "1分が60秒、1時間が60分なのは、古代メソポタミアの60進法に由来すると言われています。",
+        "光は1秒間に地球を約7周半します。とても速いですが、集中の1秒も同じ1秒です。",
+        "日本標準時は、兵庫県明石市を通る東経135度の時刻が基準です。1886年に定められました。",
+        "現在の1秒は、セシウム133原子の振動を約92億回数えた長さと定められています。",
+        "うるう秒は2016年末が最後でした。2035年までに廃止する方針が決まっています。",
+        "砂時計は、14世紀ごろのヨーロッパの記録に登場します。電気のない時代の頼もしい計時道具でした。",
+        "ポモドーロという名前は、イタリア語で「トマト」の意味です。トマト型のキッチンタイマーが由来です。",
+        "ポモドーロ・テクニックは、1980年代の終わりごろにフランチェスコ・シリロさんが考案しました。",
+        "地球が1回自転する時間は、星を基準にすると約23時間56分です。24時間より少し短いのです。",
+        "GPS衛星には原子時計が載っています。ナノ秒のずれが、位置の誤差につながります。",
+        "5分間は300秒です。短く感じても、始めてしまえば意外と進むものですよ。"
+      ],
+      yb: [
+        "私の原子番号は70、元素記号はYbです。ランタノイドの14番目の元素になります。",
+        "名前の由来は、スウェーデンのイッテルビー村です。イットリウム、テルビウム、エルビウムも、同じ村の名前から来ています。",
+        "私は1878年に、マリニャックさんが発見しました。のちに、この中からルテチウムも分離されています。",
+        "私を使った光格子時計は、宇宙の年齢ほどの時間でも、ずれが1秒に満たないと言われる精度です。",
+        "私は、将来の「秒の定義」の候補として検討されている元素のひとつです。時間とは、浅からぬ縁があります。",
+        "光格子時計では、私の原子を光の格子に閉じ込めます。時計に使う光は、約578ナノメートルの黄緑色です。",
+        "私を添加した光ファイバーは、産業用のファイバーレーザーに使われています。金属加工の現場で活躍しています。",
+        "Yb:YAGというレーザー結晶があります。私は、高出力レーザーの材料としても使われています。",
+        "私の同位体のひとつ、イッテルビウム169は、小型のX線源として医療や検査に使われることがあります。",
+        "私は銀白色のやわらかい金属で、融点は約824℃です。意外と、おだやかな性格なのです。",
+        "私の安定同位体は7種類あります。数が多いのも、ひそかな自慢です。",
+        "地殻に含まれる量は、1トンあたり約3グラムです。レアアースの中では、中くらいの存在です。",
+        "ランタノイドは、多くが3価のイオンになります。私は2価にもなりやすい、少し変わり者です。",
+        "私の名前を略すと「Yb」です。読み方は、「ワイ・ビー」とお呼びいただいて大丈夫ですよ。"
+      ],
+      trivia: [
+        "レアアースは、全部で17元素です。ランタノイド15種に、スカンジウムとイットリウムが加わります。",
+        "名前は「レア」ですが、実は地殻にそれなりに存在します。取り出して精製するのが大変なのです。",
+        "ネオジム磁石は、小型で強力です。スマートフォンのスピーカーや、電気自動車のモーターに使われています。",
+        "セリウムの名前は、小惑星ケレスに由来します。元素の名前には、宇宙の星から取られたものもあります。",
+        "プロメチウムは、安定な同位体を持たない、レアアースでは唯一の放射性元素です。",
+        "ガドリニウムの化合物は、MRI検査の造影剤に使われています。",
+        "ユウロピウムは、赤色の蛍光体として、昔のテレビや蛍光灯に使われました。",
+        "ルテチウムは、PET検査の検出器に使われます。見えない体の中を、写してくれる元素です。",
+        "ジスプロシウムの名前は、ギリシャ語の「近づきがたい」に由来します。見つけ出すのに苦労したのです。",
+        "ランタンは、ニッケル水素電池の電極に使われます。身近なところに、レアアースは隠れています。",
+        "日本の南鳥島周辺の海底には、レアアースを含む泥が見つかっています。将来の資源として注目されています。",
+        "イットリウムは、白色LEDの蛍光体に使われます。夜の部屋を照らす光にも、仲間が活躍しています。",
+        "サマリウムは、サマルスキー鉱という鉱物から名づけられました。鉱物名は、ロシアの鉱山技師の名前に由来します。",
+        "プラセオジムの名前は「緑の双子」、ネオジムは「新しい双子」の意味です。この2つは、長いあいだ1つの元素と思われていました。"
+      ],
+      focus: [
+        "短い休憩は、集中力の回復に役立つとされています。休むのも、作業のうちです。",
+        "やりかけの作業のほうが記憶に残りやすい、という心理効果があります。ツァイガルニク効果と呼ばれます。",
+        "最初の1分が、いちばん重い一歩です。始めてしまえば、あとは流れに乗れますよ。",
+        "水分補給をお忘れなく。小さな休憩のたびに、ひと口どうぞ。",
+        "目が疲れたら、遠くを20秒ほど眺めてみましょう。ほんの少しで、ずいぶん楽になります。",
+        "背筋をすっと伸ばしてみてください。呼吸が深くなり、気持ちも整います。",
+        "作業の区切りに、次にやることを一行だけメモしておくと、再開が楽になります。",
+        "完璧を目指すより、まず終わらせてみましょう。直すのは、そのあとで十分です。"
+      ]
+    };
+    const runningLines = [
+      "今、計測中です。画面を離れても、私が見守っています。",
+      "残り時間は、画面の円と数字でご確認ください。焦らなくて大丈夫です。",
+      "その調子です。ひとつずつ、着実に進めていきましょう。",
+      "つつかれても、タイマーは止まりません。ご安心ください。",
+      "いまの集中は、きっと後で役に立ちます。",
+      "呼吸を整えて、もう少しだけ頑張りましょう。"
+    ];
+    const pokeSpecial = [
+      "あの……つつきすぎではありませんか？ 嫌ではありませんが、タイマーも見てあげてくださいね。",
+      "20回目です。私の原子は、これくらいでは壊れませんが、集中は途切れてしまいます。",
+      "30回です。もしかして、休憩したい気分ですか？",
+      "つつく回数の記録更新です。そろそろ、作業に戻りましょうか。"
+    ];
+    let bag = [];
+    function nextPokeLine() {
+      if (!bag.length) {
+        bag = Object.values(pokeLines).flat();
+        for (let i = bag.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [bag[i], bag[j]] = [bag[j], bag[i]]; }
+      }
+      return bag.pop();
+    }
+    function setSpeech(t) { $('speechBubble').innerText = `「${t}」`; }
+    function pokeChara() {
+      pokeCount++;
+      currentCharaState = Math.random() < 0.5 ? 1 : 2;
+      drawCharaAvatar();
+      const sp = pokeCount % 10 === 0 ? pokeSpecial[(pokeCount / 10 - 1) % pokeSpecial.length] : null;
+      setSpeech(sp || (T.state.isRunning && Math.random() < 0.3 ? runningLines[Math.floor(Math.random() * runningLines.length)] : nextPokeLine()));
+      if (pokeTimeout) clearTimeout(pokeTimeout);
+      pokeTimeout = setTimeout(() => { currentCharaState = 0; drawCharaAvatar(); }, 900);
+    }
 
-    let currentCharaState = 0;
-    let pokeTimeout = null;
-    let audioCtx = null;
-    let isLightTheme = false;
+    function drawCharaAvatar() {
+      const ctx = $('charaCanvas').getContext('2d');
+      ctx.clearRect(0, 0, 110, 110);
+      if (imagesOk) { ctx.drawImage(charaImages['yb' + currentCharaState], 0, 0, 110, 110); return; }
+      ctx.fillStyle = isLightTheme ? '#e8f5e9' : '#1e293b';
+      ctx.beginPath(); ctx.arc(55, 55, 38, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = isLightTheme ? '#2e7d32' : '#00ffcc'; ctx.lineWidth = 3; ctx.stroke();
+      ctx.fillStyle = ctx.strokeStyle; ctx.font = 'bold 16px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('Yb', 55, 55);
+    }
 
-    let sandParticles = [];
-    const MAX_PARTICLES = 100;
-    for (let i = 0; i < MAX_PARTICLES; i++) {
-      sandParticles.push({
-        x: 0, y: 0,
-        vx: (Math.random() - 0.5) * 1.2,
-        vy: Math.random() * 2.5 + 2,
-        size: Math.random() * 2 + 1,
-        active: false
-      });
+    /* ---------- タイマー描画 ---------- */
+    function drawTimerCanvas() {
+      const ctx = $('timerCanvas').getContext('2d');
+      ctx.clearRect(0, 0, 220, 220);
+      if (T.state.mode === 'pomo') drawTimeTimer(ctx); else drawHourglass(ctx);
+    }
+
+    function drawTimeTimer(ctx) {
+      const S = T.state, cx = 110, cy = 110, R = 98, dark = !isLightTheme;
+      const accent = S.pomoPhase === 'work' ? (dark ? '#ff3366' : '#e53935') : (dark ? '#00ccff' : '#0288d1');
+      const g = ctx.createRadialGradient(cx, cy - 20, 10, cx, cy, R);
+      g.addColorStop(0, dark ? '#1a2540' : '#ffffff'); g.addColorStop(1, dark ? '#0f172a' : '#eef3ee');
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.fill();
+      ctx.lineWidth = 3; ctx.strokeStyle = dark ? '#00ffcc' : '#2e7d32'; ctx.stroke();
+
+      const progress = T.remaining() / S.totalDurationSec, a0 = -Math.PI / 2, a1 = a0 + Math.PI * 2 * progress;
+      if (progress > 0) {
+        ctx.fillStyle = accent; ctx.globalAlpha = 0.8;
+        ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, R - 12, a0, a1); ctx.closePath(); ctx.fill();
+        ctx.globalAlpha = 1;
+      }
+      for (let i = 0; i < 60; i++) {
+        const a = a0 + i * Math.PI / 30, major = i % 5 === 0, r1 = R - 3, r2 = R - (major ? 12 : 7);
+        ctx.strokeStyle = dark ? (major ? '#00ffcc' : '#475569') : (major ? '#2c3e50' : '#9aa5a0');
+        ctx.lineWidth = major ? 2 : 1;
+        ctx.beginPath(); ctx.moveTo(cx + Math.cos(a) * r1, cy + Math.sin(a) * r1); ctx.lineTo(cx + Math.cos(a) * r2, cy + Math.sin(a) * r2); ctx.stroke();
+      }
+      ctx.fillStyle = dark ? '#cbd5e1' : '#2c3e50'; ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      for (let i = 0; i < 60; i += 5) {
+        const a = a0 + i * Math.PI / 30;
+        ctx.fillText(String(i), cx + Math.cos(a) * (R - 24), cy + Math.sin(a) * (R - 24));
+      }
+      if (progress > 0 && progress < 1) {
+        ctx.strokeStyle = dark ? '#fff' : '#2c3e50'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.cos(a1) * (R - 12), cy + Math.sin(a1) * (R - 12)); ctx.stroke();
+      }
+      ctx.fillStyle = dark ? '#1e293b' : '#fff'; ctx.strokeStyle = dark ? '#00ffcc' : '#2e7d32'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(cx, cy, 6, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    }
+
+    function glassPath(cx, top, bottom, neck = 3, halfW = 42) {
+      const cy = (top + bottom) / 2, p = new Path2D();
+      p.moveTo(cx - halfW, top);
+      p.bezierCurveTo(cx - halfW, cy - 34, cx - neck, cy - 22, cx - neck, cy);
+      p.bezierCurveTo(cx - neck, cy + 22, cx - halfW, cy + 34, cx - halfW, bottom);
+      p.lineTo(cx + halfW, bottom);
+      p.bezierCurveTo(cx + halfW, cy + 34, cx + neck, cy + 22, cx + neck, cy);
+      p.bezierCurveTo(cx + neck, cy - 22, cx + halfW, cy - 34, cx + halfW, top);
+      p.closePath(); return p;
+    }
+
+    function drawHourglass(ctx) {
+      const S = T.state, W = 220, cx = 110, top = 32, bottom = 188, cy = (top + bottom) / 2;
+      const progress = T.remaining() / S.totalDurationSec, dark = !isLightTheme;
+      const line = dark ? '#00ffcc' : '#2e7d32', sand = dark ? '#ffd166' : '#d9a441', glass = glassPath(cx, top, bottom);
+      ctx.fillStyle = dark ? 'rgba(0,255,204,0.06)' : 'rgba(46,125,50,0.06)'; ctx.fill(glass);
+      ctx.save(); ctx.clip(glass); ctx.fillStyle = sand;
+      const levelY = cy - (cy - top) * progress;
+      ctx.fillRect(0, levelY, W, cy - levelY);
+      const H = (bottom - cy) * 0.9 * (1 - progress);
+      if (H > 0) {
+        ctx.beginPath(); ctx.moveTo(0, bottom); ctx.lineTo(0, bottom - H * 0.35);
+        ctx.quadraticCurveTo(cx, bottom - H * 1.4, W, bottom - H * 0.35); ctx.lineTo(W, bottom); ctx.closePath(); ctx.fill();
+      }
+      if (S.isRunning && progress > 0) {
+        ctx.strokeStyle = sand; ctx.lineWidth = 1.5; ctx.setLineDash([3, 3]); ctx.lineDashOffset = -Date.now() / 25;
+        ctx.beginPath(); ctx.moveTo(cx, cy - 4); ctx.lineTo(cx, bottom - H); ctx.stroke(); ctx.setLineDash([]);
+      }
+      ctx.restore();
+      ctx.strokeStyle = line; ctx.lineWidth = 3; ctx.stroke(glass);
+      ctx.lineWidth = 5; ctx.lineCap = 'round'; ctx.beginPath();
+      ctx.moveTo(cx - 56, top - 6); ctx.lineTo(cx + 56, top - 6); ctx.moveTo(cx - 56, bottom + 6); ctx.lineTo(cx + 56, bottom + 6); ctx.stroke();
+      ctx.lineWidth = 2;
+      [-1, 1].forEach(s => { ctx.beginPath(); ctx.moveTo(cx + s * 52, top - 4); ctx.lineTo(cx + s * 52, bottom + 4); ctx.stroke(); });
+    }
+
+    /* ---------- UI ---------- */
+    function updateUI() {
+      const S = T.state, r = T.remaining();
+      $('digitalTime').innerText = `${String(Math.floor(r / 60)).padStart(2, '0')}:${String(r % 60).padStart(2, '0')}`;
+      const b = $('startBtn');
+      b.innerText = S.isRunning ? '❚❚ 一時停止' : '▶ スタート';
+      b.style.background = S.isRunning ? '#ff3366' : 'var(--primary-neon)';
+      b.style.color = S.isRunning ? '#fff' : (isLightTheme ? '#ffffff' : '#0a0f1d');
+      $('tabPomo').classList.toggle('active', S.mode === 'pomo');
+      $('tabNormal').classList.toggle('active', S.mode === 'normal');
+      const pomo = S.mode === 'pomo';
+      $('pomoStatusTag').style.display = pomo ? 'block' : 'none';
+      $('pomoSettingsPanel').style.display = pomo ? 'block' : 'none';
+      $('normalSettingsPanel').style.display = pomo ? 'none' : 'block';
+      if (pomo) {
+        const n = (S.pomoDone % 4) + 1;
+        $('pomoStatusTag').innerText = S.pomoPhase === 'work' ? `🍅 集中時間 (${S.pomoWorkSec / 60}分) ${n}/4`
+          : S.pomoPhase === 'shortBreak' ? `☕ 小休憩 (${S.pomoBreakSec / 60}分)` : `🌴 長い休憩 (${S.pomoLongBreakSec / 60}分)`;
+      }
+      drawTimerCanvas();
     }
 
     function toggleTheme() {
       isLightTheme = !isLightTheme;
       document.body.classList.toggle('light-theme', isLightTheme);
-      const btn = document.getElementById('themeToggleBtn');
-      btn.innerText = isLightTheme ? '🌙 暗くする' : '☀️ 明るくする';
-      localStorage.setItem('yb_timer_theme_pref', isLightTheme ? 'light' : 'cyber');
-      drawTimerCanvas();
+      $('themeToggleBtn').innerText = isLightTheme ? '🌙 暗くする' : '☀️ 明るくする';
+      try { localStorage.setItem('yb_timer_theme_pref', isLightTheme ? 'light' : 'cyber'); } catch (e) {}
+      drawCharaAvatar(); updateUI();
     }
-
-    function initAudio() {
-      if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      }
+    function toggleTimer() {
+      if (T.state.isRunning) { T.pause(); setSpeech('タイマーを一時停止いたしました。'); }
+      else { T.start(); if (T.state.isRunning) setSpeech('計測を開始します。集中していきましょう。画面を離れても計測は続きます。'); }
     }
-
-    // 初回スタート時のみ鳴る「ポポポポ…」という可愛らしい効果音
-    function playStartPopSound() {
-      try {
-        initAudio();
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-        const notes = [440, 554.37, 659.25, 880];
-        notes.forEach((freq, idx) => {
-          setTimeout(() => {
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-            gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.1);
-          }, idx * 80);
-        });
-      } catch (e) {}
+    function resetTimer() { T.reset(); setSpeech('タイマーを初期状態にリセットいたしました。'); }
+    function switchMode(m) {
+      T.setMode(m);
+      setSpeech(m === 'pomo' ? 'ポモドーロモードです。視覚的に残り時間が把握しやすくなっています。' : '通常タイマーモードです。砂時計の描写で計測を行います。');
     }
-
-    function playAlarmSound() {
-      try {
-        initAudio();
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-        const now = audioCtx.currentTime;
-        [0, 0.2, 0.4].forEach((delay) => {
-          const osc = audioCtx.createOscillator();
-          const gain = audioCtx.createGain();
-          osc.type = 'triangle';
-          osc.frequency.setValueAtTime(783.99, now + delay);
-          gain.gain.setValueAtTime(0.3, now + delay);
-          gain.gain.exponentialRampToValueAtTime(0.01, now + delay + 0.15);
-          osc.connect(gain);
-          gain.connect(audioCtx.destination);
-          osc.start(now + delay);
-          osc.stop(now + delay + 0.15);
-        });
-      } catch (e) {}
+    function updateCustomTimes() {
+      T.setPomoTimes(+$('workTimeSelect').value * 60, +$('breakTimeSelect').value * 60, +$('longBreakSelect').value * 60);
     }
+    function setStandardTimer(min) { T.setStandard(min); setSpeech(`${min}分タイマーに設定いたしました。`); }
 
     window.addEventListener('DOMContentLoaded', () => {
-      const savedTheme = localStorage.getItem('yb_timer_theme_pref');
-      if (savedTheme === 'light') {
-        isLightTheme = true;
-        document.body.classList.add('light-theme');
-        document.getElementById('themeToggleBtn').innerText = '🌙 暗くする';
-      }
-
-      loadStateFromStorage();
-      updateUI();
-      drawCharaAvatar();
-      drawTimerCanvas();
-
-      document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible' && isRunning) {
-          syncTimer();
-        }
-      });
-
-      setInterval(() => {
-        if (isRunning) {
-          syncTimer();
-        } else {
-          drawTimerCanvas();
-        }
-      }, 250);
+      setupHiDPI($('timerCanvas'), 220); setupHiDPI($('charaCanvas'), 110);
+      try { if (localStorage.getItem('yb_timer_theme_pref') === 'light') { isLightTheme = true; document.body.classList.add('light-theme'); $('themeToggleBtn').innerText = '🌙 暗くする'; } } catch (e) {}
+      const S = T.state;
+      $('workTimeSelect').value = S.pomoWorkSec / 60; $('breakTimeSelect').value = S.pomoBreakSec / 60; $('longBreakSelect').value = S.pomoLongBreakSec / 60;
+      window.addEventListener('yb:complete', e => setSpeech(e.detail.message));
+      window.addEventListener('yb:change', updateUI);
+      window.addEventListener('yb:tick', updateUI);
+      setInterval(() => { if (!document.hidden) updateUI(); }, 100);   // 砂のアニメーション用
+      drawCharaAvatar(); updateUI();
     });
-
-    function syncTimer() {
-      if (!targetEndTime) return;
-      const now = Date.now();
-      const diffSec = Math.ceil((targetEndTime - now) / 1000);
-
-      if (diffSec <= 0) {
-        remainingSec = 0;
-        isRunning = false;
-        targetEndTime = null;
-        saveStateToStorage();
-        onTimerComplete();
-      } else {
-        remainingSec = diffSec;
-      }
-      updateUI();
-      drawTimerCanvas();
-    }
-
-    function onTimerComplete() {
-      playAlarmSound();
-      if (mode === 'pomo') {
-        if (pomoPhase === 'work') {
-          pomoCycleCount++;
-          if (pomoCycleCount % 4 === 0) {
-            setupPomoPhase('longBreak');
-            setSpeech("4セッションを達成しました。しっかり長休憩をとりましょう。");
-          } else {
-            setupPomoPhase('shortBreak');
-            setSpeech("作業お疲れ様でした。準備ができたらスタートをして小休憩に入ってください。");
-          }
-        } else {
-          setupPomoPhase('work');
-          setSpeech("休憩時間が終了しました。次の集中セッションに入りましょう。");
-        }
-      } else {
-        setSpeech("設定したお時間になりました。お疲れ様でした。");
-      }
-      updateUI();
-      drawTimerCanvas();
-    }
-
-    function setupPomoPhase(phase) {
-      pomoPhase = phase;
-      if (phase === 'work') totalDurationSec = pomoWorkSec;
-      else if (phase === 'shortBreak') totalDurationSec = pomoBreakSec;
-      else if (phase === 'longBreak') totalDurationSec = pomoLongBreakSec;
-      remainingSec = totalDurationSec;
-      isRunning = false;
-      targetEndTime = null;
-      saveStateToStorage();
-    }
-
-    function updateCustomTimes() {
-      pomoWorkSec = parseInt(document.getElementById('workTimeSelect').value) * 60;
-      pomoBreakSec = parseInt(document.getElementById('breakTimeSelect').value) * 60;
-      pomoLongBreakSec = parseInt(document.getElementById('longBreakSelect').value) * 60;
-
-      if (!isRunning && mode === 'pomo') {
-        setupPomoPhase(pomoPhase);
-        updateUI();
-        drawTimerCanvas();
-      }
-    }
-
-    function setStandardTimer(min) {
-      totalDurationSec = min * 60;
-      remainingSec = totalDurationSec;
-      isRunning = false;
-      targetEndTime = null;
-      setSpeech(`${min}分タイマーに設定いたしました。`);
-      updateUI();
-      drawTimerCanvas();
-    }
-
-    function toggleTimer() {
-      if (isRunning) {
-        isRunning = false;
-        targetEndTime = null;
-        setSpeech("タイマーを一時停止いたしました。");
-      } else {
-        if (remainingSec <= 0) return;
-        initAudio();
-        playStartPopSound(); // スタート時の初回ポポポポ音
-        isRunning = true;
-        targetEndTime = Date.now() + remainingSec * 1000;
-        setSpeech("計測を開始します。集中していきましょう。");
-      }
-      saveStateToStorage();
-      updateUI();
-    }
-
-    function resetTimer() {
-      isRunning = false;
-      targetEndTime = null;
-      remainingSec = totalDurationSec;
-      setSpeech("タイマーを初期状態にリセットいたしました。");
-      saveStateToStorage();
-      updateUI();
-      drawTimerCanvas();
-    }
-
-    function switchMode(newMode) {
-      if (mode === newMode) return;
-      mode = newMode;
-      isRunning = false;
-      targetEndTime = null;
-
-      if (mode === 'pomo') {
-        setupPomoPhase('work');
-        setSpeech("ポモドーロモードです。視覚的に残り時間が把握しやすくなっています。");
-      } else {
-        totalDurationSec = 5 * 60;
-        remainingSec = 5 * 60;
-        setSpeech("通常タイマーモードです。砂時計の描写で計測を行います。");
-      }
-      updateUI();
-      drawTimerCanvas();
-    }
-
-    function setSpeech(text) {
-      document.getElementById('speechBubble').innerText = `「${text}」`;
-    }
-
-    function pokeChara() {
-      currentCharaState = Math.random() < 0.5 ? 1 : 2;
-      drawCharaAvatar();
-      const dialogues = [
-        "私の原子番号は70、イッテルビウムです。高精度な原子時計にも用いられます。",
-        "ご安心ください。私はあなたの集中の時間を静かに見守っています。",
-        "適度な休憩は作業効率を高める鍵となります。無理をなさらず進めましょう。"
-      ];
-      setSpeech(dialogues[Math.floor(Math.random() * dialogues.length)]);
-
-      if (pokeTimeout) clearTimeout(pokeTimeout);
-      pokeTimeout = setTimeout(() => {
-        currentCharaState = 0;
-        drawCharaAvatar();
-      }, 900);
-    }
-
-    function drawCharaAvatar() {
-      const cvs = document.getElementById('charaCanvas');
-      const ctx = cvs.getContext('2d');
-      ctx.clearRect(0, 0, cvs.width, cvs.height);
-
-      if (imagesLoadedSuccessfully) {
-        let img = charaImages.yb0;
-        if (currentCharaState === 1) img = charaImages.yb1;
-        if (currentCharaState === 2) img = charaImages.yb2;
-        ctx.drawImage(img, 0, 0, cvs.width, cvs.height);
-        return;
-      }
-
-      const cx = 110, cy = 110;
-      ctx.fillStyle = isLightTheme ? '#e8f5e9' : '#1e293b';
-      ctx.beginPath(); ctx.arc(cx, cy, 70, 0, Math.PI * 2); ctx.fill();
-      ctx.strokeStyle = isLightTheme ? '#2e7d32' : '#00ffcc'; ctx.lineWidth = 3; ctx.stroke();
-      ctx.fillStyle = isLightTheme ? '#2e7d32' : '#00ffcc'; ctx.font = 'bold 16px sans-serif';
-      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText('Yb', cx, cy);
-    }
-
-    function drawTimerCanvas() {
-      const cvs = document.getElementById('timerCanvas');
-      const ctx = cvs.getContext('2d');
-      ctx.clearRect(0, 0, cvs.width, cvs.height);
-
-      if (mode === 'pomo') {
-        drawTimeTimer(ctx, cvs.width, cvs.height);
-      } else {
-        drawHourglassWithParticles(ctx, cvs.width, cvs.height);
-      }
-    }
-
-    function drawTimeTimer(ctx, w, h) {
-      const size = Math.min(w, h);
-      const cx = w / 2;
-      const cy = h / 2;
-      const boxSize = size * 0.9;
-      const radius = boxSize * 0.42;
-
-      ctx.save();
-      ctx.shadowColor = isLightTheme ? 'rgba(0,0,0,0.06)' : 'rgba(0, 255, 204, 0.2)';
-      ctx.shadowBlur = 12;
-      ctx.fillStyle = isLightTheme ? '#ffffff' : '#0f172a';
-      ctx.strokeStyle = isLightTheme ? '#c8e6c9' : '#00ffcc';
-      ctx.lineWidth = 2;
-
-      const rx = cx - boxSize / 2;
-      const ry = cy - boxSize / 2;
-      ctx.beginPath();
-      ctx.roundRect(rx, ry, boxSize, boxSize, 24);
-      ctx.fill();
-      ctx.stroke();
-      ctx.restore();
-
-      ctx.fillStyle = isLightTheme ? '#fafafa' : '#131c31';
-      ctx.beginPath();
-      ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = isLightTheme ? '#e0e0e0' : '#1e293b';
-      ctx.lineWidth = 2;
-      ctx.stroke();
-
-      const progress = remainingSec / totalDurationSec;
-      const startAngle = -Math.PI / 2;
-      const endAngle = startAngle + (Math.PI * 2 * progress);
-
-      if (progress > 0) {
-        ctx.fillStyle = (pomoPhase === 'work') 
-          ? (isLightTheme ? 'rgba(229, 57, 53, 0.75)' : 'rgba(255, 51, 102, 0.75)') 
-          : (isLightTheme ? 'rgba(2, 136, 209, 0.75)' : 'rgba(0, 204, 255, 0.75)');
-        ctx.beginPath();
-        ctx.moveTo(cx, cy);
-        ctx.arc(cx, cy, radius - 2, startAngle, endAngle, false);
-        ctx.closePath();
-        ctx.fill();
-      }
-
-      ctx.fillStyle = isLightTheme ? '#333333' : '#94a3b8';
-      ctx.font = 'bold 15px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-
-      for (let i = 0; i < 60; i += 5) {
-        const angle = -Math.PI / 2 + (i * (Math.PI * 2 / 60));
-        const outerR = radius - 4;
-        const innerR = outerR - 10;
-        const x1 = cx + Math.cos(angle) * outerR;
-        const y1 = cy + Math.sin(angle) * outerR;
-        const x2 = cx + Math.cos(angle) * innerR;
-        const y2 = cy + Math.sin(angle) * innerR;
-
-        ctx.strokeStyle = isLightTheme ? '#666' : '#00ffcc';
-        ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
-
-        const labelR = innerR - 14;
-        const lx = cx + Math.cos(angle) * labelR;
-        const ly = cy + Math.sin(angle) * labelR;
-        ctx.fillText(i.toString(), lx, ly);
-      }
-
-      ctx.fillStyle = isLightTheme ? '#ffffff' : '#1e293b';
-      ctx.strokeStyle = isLightTheme ? '-ccc' : '#00ffcc';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.arc(cx, cy, radius * 0.2, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-    }
-
-    // 砂時計グラフィック（上部に最初からたまる砂 ＋ 落下する砂粒子の再現）
-    function drawHourglassWithParticles(ctx, w, h) {
-      const cx = w / 2;
-      const cy = h / 2;
-      const progress = remainingSec / totalDurationSec; // 1 (開始) -> 0 (終了)
-
-      ctx.strokeStyle = isLightTheme ? '#2e7d32' : '#00ffcc';
-      ctx.lineWidth = 4;
-
-      // 砂時計の木枠・上下プレート
-      ctx.beginPath();
-      ctx.moveTo(cx - 50, cy - 90); ctx.lineTo(cx + 50, cy - 90);
-      ctx.moveTo(cx - 50, cy + 90); ctx.lineTo(cx + 50, cy + 90);
-      ctx.stroke();
-
-      // ガラス管のアウトライン
-      ctx.beginPath();
-      ctx.moveTo(cx - 45, cy - 80);
-      ctx.bezierCurveTo(cx - 40, cy - 25, cx - 10, cy - 4, cx, cy);
-      ctx.bezierCurveTo(cx + 10, cy - 4, cx + 40, cy - 25, cx + 45, cy - 80);
-      ctx.lineTo(cx - 45, cy - 80);
-      ctx.fillStyle = isLightTheme ? 'rgba(46,125,50,0.05)' : 'rgba(0,255,204,0.05)';
-      ctx.fill(); ctx.stroke();
-
-      ctx.beginPath();
-      ctx.moveTo(cx - 45, cy + 80);
-      ctx.bezierCurveTo(cx - 40, cy + 25, cx - 10, cy + 4, cx, cy);
-      ctx.bezierCurveTo(cx + 10, cy + 4, cx + 40, cy + 25, cx + 45, cy + 80);
-      ctx.lineTo(cx - 45, cy + 80);
-      ctx.fill(); ctx.stroke();
-
-      // --- 1. 上部にたまっている砂の描写 (progressに応じて上から減っていく) ---
-      const topSandHeight = 55 * progress;
-      if (topSandHeight > 0) {
-        ctx.save();
-        ctx.fillStyle = isLightTheme ? '#4caf50' : '#00ffcc';
-        ctx.beginPath();
-        // 上部ガラスの形状に合わせて台形状に描画
-        const topY = cy - 80 + (55 - topSandHeight);
-        ctx.moveTo(cx - 38, cy - 20);
-        ctx.lineTo(cx + 38, cy - 20);
-        ctx.lineTo(cx + 42, topY);
-        ctx.lineTo(cx - 42, topY);
-        ctx.closePath();
-        ctx.fill();
-        ctx.restore();
-      }
-
-      // --- 2. 下部にたまっている砂の描写 (時間経過とともに下から積もっていく) ---
-      const bottomSandHeight = 70 * (1 - progress);
-      if (bottomSandHeight > 0) {
-        ctx.fillStyle = isLightTheme ? '#4caf50' : '#00ffcc';
-        ctx.fillRect(cx - 38, cy + 80 - bottomSandHeight, 76, bottomSandHeight);
-      }
-
-      // --- 3. 中央から落ちる砂の線 ＆ 粒子アニメーション ---
-      if (isRunning && remainingSec > 0) {
-        ctx.strokeStyle = isLightTheme ? '#81c784' : '#78ffd6';
-        ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx, cy + 75); ctx.stroke();
-
-        sandParticles.forEach(p => {
-          if (!p.active) {
-            if (Math.random() < 0.5) {
-              p.active = true;
-              p.x = cx + (Math.random() - 0.5) * 3;
-              p.y = cy;
-            }
-          } else {
-            p.y += p.vy;
-            ctx.fillStyle = isLightTheme ? '#81c784' : '#78ffd6';
-            ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill();
-            if (p.y > cy + 80 - bottomSandHeight) p.active = false;
-          }
-        });
-      }
-    }
-
-    function updateUI() {
-      const m = Math.floor(remainingSec / 60).toString().padStart(2, '0');
-      const s = (remainingSec % 60).toString().padStart(2, '0');
-      document.getElementById('digitalTime').innerText = `${m}:${s}`;
-
-      const startBtn = document.getElementById('startBtn');
-      if (isRunning) {
-        startBtn.innerText = '❚❚ 一時停止';
-        startBtn.style.background = '#ff3366';
-        startBtn.style.color = '#fff';
-      } else {
-        startBtn.innerText = '▶ スタート';
-        startBtn.style.background = 'var(--primary-neon)';
-        startBtn.style.color = isLightTheme ? '#ffffff' : '#0a0f1d';
-      }
-
-      document.getElementById('tabPomo').classList.toggle('active', mode === 'pomo');
-      document.getElementById('tabNormal').classList.toggle('active', mode === 'normal');
-
-      const pomoTag = document.getElementById('pomoStatusTag');
-      const pomoSettingsPanel = document.getElementById('pomoSettingsPanel');
-      const normalSettingsPanel = document.getElementById('normalSettingsPanel');
-
-      if (mode === 'pomo') {
-        pomoTag.style.display = 'block';
-        pomoSettingsPanel.style.display = 'block';
-        normalSettingsPanel.style.display = 'none';
-
-        if (pomoPhase === 'work') {
-          pomoTag.innerText = `🍅 集中時間 (${pomoWorkSec/60}分)`;
-        } else if (pomoPhase === 'shortBreak') {
-          pomoTag.innerText = `☕ 小休憩 (${pomoBreakSec/60}分)`;
-        } else {
-          pomoTag.innerText = `🌴 長い休憩 (${pomoLongBreakSec/60}分)`;
-        }
-      } else {
-        pomoTag.style.display = 'none';
-        pomoSettingsPanel.style.display = 'none';
-        normalSettingsPanel.style.display = 'block';
-      }
-    }
-
-    function saveStateToStorage() {
-      const state = { mode, pomoPhase, pomoCycleCount, isRunning, targetEndTime, pomoWorkSec, pomoBreakSec, pomoLongBreakSec, totalDurationSec, remainingSec };
-      localStorage.setItem('yb_timer_state_final_pref', JSON.stringify(state));
-    }
-
-    function loadStateFromStorage() {
-      const saved = localStorage.getItem('yb_timer_state_final_pref');
-      if (!saved) return;
-      try {
-        const state = JSON.parse(saved);
-        mode = state.mode || 'pomo';
-        pomoPhase = state.pomoPhase || 'work';
-        pomoCycleCount = state.pomoCycleCount || 1;
-        pomoWorkSec = state.pomoWorkSec || 25 * 60;
-        pomoBreakSec = state.pomoBreakSec || 5 * 60;
-        pomoLongBreakSec = state.pomoLongBreakSec || 15 * 60;
-        totalDurationSec = state.totalDurationSec || 25 * 60;
-        isRunning = state.isRunning || false;
-        targetEndTime = state.targetEndTime || null;
-
-        document.getElementById('workTimeSelect').value = pomoWorkSec / 60;
-        document.getElementById('breakTimeSelect').value = pomoBreakSec / 60;
-        document.getElementById('longBreakSelect').value = pomoLongBreakSec / 60;
-
-        if (isRunning && targetEndTime) {
-          const diff = Math.ceil((targetEndTime - Date.now()) / 1000);
-          if (diff > 0) remainingSec = diff;
-          else { remainingSec = 0; isRunning = false; targetEndTime = null; }
-        } else {
-          remainingSec = state.remainingSec || totalDurationSec;
-        }
-      } catch (e) {}
-    }
   </script>
 </body>
 </html>
