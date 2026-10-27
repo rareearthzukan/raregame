@@ -170,9 +170,9 @@ try { ['gesturestart','gesturechange','gestureend'].forEach(e=>document.addEvent
 
 const IMG_DIR = '';
 const furnitureMaster = {
-  'desk_l' : { name:'おしゃれなデスク',           cost:200,   bonus:0.3, img:'home_kagu0.png', size:28, x:30, y:88, emoji:'🗄️' },
-  'sofa_m' : { name:'デザイナーズソファ',         cost:1000,  bonus:1.0, img:'home_kagu1.png', size:34, x:55, y:92, emoji:'🛋️' },
-  'tv_l'   : { name:'大型モニター',               cost:2500,  bonus:1.8, img:'home_kagu2.png', size:24, x:70, y:70, emoji:'📺' },
+  'desk_l' : { name:'クラシカルなデスク',           cost:2000,   bonus:0.3, img:'home_kagu0.png', size:28, x:30, y:88, emoji:'🗄️' },
+  'sofa_m' : { name:'クラシカルなソファ',         cost:1000,  bonus:1.0, img:'home_kagu1.png', size:34, x:55, y:92, emoji:'🛋️' },
+  'tv_l'   : { name:'大きな窓とカーテン',               cost:2500,  bonus:1.8, img:'home_kagu2.png', size:24, x:70, y:70, emoji:'📺' },
   'plant_m': { name:'観葉植物１',                 cost:400,   bonus:0.4, img:'home_kagu3.png', size:14, x:90, y:82, emoji:'🪴' },
   'daiTC'  : { name:'ダイニングテーブル＆チェアー', cost:200,   bonus:0.3, img:'home_kagu7.png', size:34, x:50, y:92, emoji:'🍽️' },
   'plant_s': { name:'観葉植物２',                 cost:400,   bonus:0.4, img:'home_kagu4.png', size:12, x:12, y:84, emoji:'🌿' },
@@ -233,6 +233,17 @@ const GOLD_ROWS=[
   ['table2_mono', 'モノトーンダイニングセット', '🍽️', 25000, 0.2, 34, 92],
   ['sink_mono', 'スタイリッシュキッチンカウンター', '🍳', 180000, 0.4, 40, 78],
   ['desk_lab', 'サイエンス・ラボデスク', '🔬', 40000, 0.2, 28, 88]
+  // 追加したラボシリーズ家具（10種）
+  ['centrifuge_lab', '卓上遠心分離機', '🌀', 35000, 0.2, 24, 76],
+  ['microscope_lab', '研究用顕微鏡デスク', '🔬', 45000, 0.2, 30, 88],
+  ['whiteboard_lab', 'キャスター付きホワイトボード', '📋', 15000, 0.2, 32, 90],
+  ['pc_lab', '解析用PCワークステーション', '💻', 50000, 0.2, 30, 88],
+  ['bench_lab', '試薬・機器設置実験台', '🧪', 60000, 0.3, 36, 80],
+  ['scale_lab', '精密電子天秤', '⚖️', 30000, 0.2, 22, 74],
+  ['rack_lab', '試験管スタンド＆サンプルケース', '🧪', 12000, 0.1, 20, 70],
+  ['shelf_lab', 'スチールストレージラック', '📦', 25000, 0.3, 32, 82],
+  ['trash_lab', 'ペダル式ラボダストボックス', '🗑️', 8000, 0.1, 18, 65],
+  ['stirrer_lab', 'マグネティックスターラー', '⚗️', 18000, 0.1, 20, 70]
 ];
 MILE_ROWS.forEach(r=>furnitureMaster[r[0]]={name:r[1],emoji:r[2],cost:r[3],bonus:r[4],size:r[5],x:50,y:r[6],img:IMG_PREFIX+r[0]+'.png'});
 GOLD_ROWS.forEach(r=>furnitureMaster[r[0]]={name:r[1],emoji:r[2],gold:r[3],cost:0,bonus:r[4],size:r[5],x:50,y:r[6],img:IMG_PREFIX+r[0]+'.png'});
