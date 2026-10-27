@@ -14,7 +14,7 @@
 
     body {
       margin: 0;
-      padding: 10px;
+      padding: 6px;
       font-family: 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif;
       background: #f0f4f8;
       color: #333;
@@ -25,8 +25,8 @@
     }
 
     h1 {
-      font-size: 1.4rem;
-      margin: 5px 0 10px;
+      font-size: 1.25rem;
+      margin: 4px 0 8px;
       text-align: center;
       color: #2c3e50;
     }
@@ -37,13 +37,13 @@
       max-width: 960px;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 10px;
     }
 
-    /* エリア設定 (3列構造・中央をスリム化) */
+    /* エリア設定 (3列構造) */
     .boards-wrapper {
       display: flex;
-      gap: 8px;
+      gap: 4px;
       width: 100%;
     }
 
@@ -54,34 +54,35 @@
     }
 
     .board-light { flex: 5; }
-    .board-special { flex: 2.2; min-width: 85px; } /* どちらでもない枠をスリム化 */
+    .board-special { flex: 2.5; min-width: 65px; } /* どちらでもない枠 */
     .board-heavy { flex: 5; }
 
     .board-title {
       width: 100%;
-      padding: 6px 2px;
-      border-radius: 8px 8px 0 0;
+      padding: 5px 2px;
+      border-radius: 6px 6px 0 0;
       font-weight: bold;
-      font-size: 0.9rem;
+      font-size: 0.8rem;
       text-align: center;
       color: white;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      white-space: nowrap;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      line-height: 1.15;
+      word-break: break-all;
     }
 
     .board-desc {
       width: 100%;
-      font-size: 0.65rem;
+      font-size: 0.6rem;
       text-align: center;
-      padding: 4px 2px;
+      padding: 3px 2px;
       line-height: 1.2;
-      min-height: 36px;
+      min-height: 38px;
       display: flex;
       align-items: center;
       justify-content: center;
       background: #f8fafc;
-      border-left: 2px solid #cbd5e1;
-      border-right: 2px solid #cbd5e1;
+      border-left: 1px solid #cbd5e1;
+      border-right: 1px solid #cbd5e1;
       color: #475569;
     }
 
@@ -91,15 +92,15 @@
 
     .drop-zone {
       width: 100%;
-      min-height: 140px;
+      min-height: 130px;
       background: #ffffff;
-      border: 3px dashed #cbd5e1;
+      border: 2px dashed #cbd5e1;
       border-top: none;
-      border-radius: 0 0 8px 8px;
-      padding: 5px;
+      border-radius: 0 0 6px 6px;
+      padding: 4px 2px;
       display: flex;
       flex-wrap: wrap;
-      gap: 5px;
+      gap: 3px;
       align-content: flex-start;
       justify-content: center;
       transition: background 0.2s, border-color 0.2s;
@@ -116,41 +117,52 @@
       background: #fff;
       border: 2px solid #cbd5e1;
       border-radius: 8px;
-      padding: 8px;
+      padding: 6px 4px;
     }
 
     .unassigned-title {
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       font-weight: bold;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
       color: #64748b;
       text-align: center;
     }
 
     .unassigned-zone {
-      min-height: 90px;
+      min-height: 85px;
       display: flex;
       flex-wrap: wrap;
-      gap: 6px;
+      gap: 4px;
       justify-content: center;
       align-items: center;
     }
 
-    /* キャラクターカード */
+    /* キャラクターカード（2列に収まるサイズ） */
     .char-card {
-      width: 66px;
+      width: 47%;
+      max-width: 68px;
       background: white;
-      border: 2px solid #e2e8f0;
-      border-radius: 8px;
-      padding: 3px;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 2px;
       display: flex;
       flex-direction: column;
       align-items: center;
       cursor: grab;
       touch-action: none;
       position: relative;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
       transition: transform 0.1s, box-shadow 0.1s;
+    }
+
+    /* 待機ゾーンではより柔軟に配置 */
+    .unassigned-zone .char-card {
+      width: 58px;
+    }
+
+    /* 特別枠内のカード幅 */
+    .board-special .char-card {
+      width: 90%;
     }
 
     .char-card:active {
@@ -162,24 +174,30 @@
     }
 
     .char-img {
-      width: 44px;
-      height: 44px;
+      width: 38px;
+      height: 38px;
       object-fit: contain;
       pointer-events: none;
     }
 
     .char-name {
-      font-size: 0.58rem;
+      font-size: 0.55rem;
       font-weight: bold;
       text-align: center;
-      line-height: 1.1;
-      margin-top: 2px;
+      line-height: 1.05;
+      margin-top: 1px;
       word-break: break-all;
     }
 
     .char-symbol {
-      font-size: 0.58rem;
+      font-size: 0.55rem;
       color: #64748b;
+    }
+
+    /* 強調用赤字スタイル */
+    .highlight-red {
+      color: #e74c3c;
+      font-weight: bold;
     }
 
     /* 判定マーク overlay */
@@ -188,7 +206,7 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      font-size: 2.8rem;
+      font-size: 2.4rem;
       font-weight: bold;
       pointer-events: none;
       z-index: 10;
@@ -202,18 +220,18 @@
     .controls {
       display: flex;
       justify-content: center;
-      gap: 15px;
+      gap: 12px;
       margin-top: 2px;
     }
 
     .btn {
-      padding: 10px 24px;
-      font-size: 1rem;
+      padding: 8px 20px;
+      font-size: 0.95rem;
       font-weight: bold;
       border: none;
-      border-radius: 25px;
+      border-radius: 20px;
       cursor: pointer;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      box-shadow: 0 3px 5px rgba(0,0,0,0.1);
       transition: background 0.2s, transform 0.1s;
     }
 
@@ -236,18 +254,18 @@
       width: 100%;
       max-width: 960px;
       background: white;
-      border-radius: 12px;
-      padding: 10px 15px;
+      border-radius: 10px;
+      padding: 8px 12px;
       display: flex;
       align-items: center;
-      gap: 12px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-      border: 2px solid #e2e8f0;
+      gap: 10px;
+      box-shadow: 0 3px 5px rgba(0,0,0,0.05);
+      border: 1.5px solid #e2e8f0;
     }
 
     .nav-avatar {
-      width: 60px;
-      height: 60px;
+      width: 52px;
+      height: 52px;
       flex-shrink: 0;
     }
 
@@ -261,19 +279,19 @@
       position: relative;
       background: #f1f5f9;
       border-radius: 8px;
-      padding: 10px 12px;
+      padding: 8px 10px;
       flex-grow: 1;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       line-height: 1.4;
     }
 
     .nav-speech::before {
       content: '';
       position: absolute;
-      left: -10px;
+      left: -8px;
       top: 50%;
       transform: translateY(-50%);
-      border-width: 6px 10px 6px 0;
+      border-width: 5px 8px 5px 0;
       border-style: solid;
       border-color: transparent #f1f5f9 transparent transparent;
     }
@@ -297,27 +315,28 @@
       justify-content: center;
       align-items: center;
       z-index: 10000;
-      padding: 20px;
+      padding: 15px;
     }
 
     .modal-content {
       background: white;
       border-radius: 12px;
-      padding: 20px;
-      max-width: 450px;
+      padding: 18px;
+      max-width: 420px;
       width: 100%;
       text-align: center;
     }
 
     .modal-content h2 {
       margin-top: 0;
+      font-size: 1.15rem;
       color: #1e293b;
     }
 
     .modal-content p {
       text-align: left;
-      font-size: 0.88rem;
-      line-height: 1.6;
+      font-size: 0.85rem;
+      line-height: 1.5;
       color: #475569;
     }
 
@@ -327,19 +346,23 @@
 
     @media (min-width: 600px) {
       .char-card {
-        width: 78px;
-        padding: 5px;
+        width: 72px;
+        max-width: 72px;
+        padding: 4px;
+      }
+      .unassigned-zone .char-card {
+        width: 72px;
       }
       .char-img {
-        width: 52px;
-        height: 52px;
+        width: 48px;
+        height: 48px;
       }
-      .char-name { font-size: 0.68rem; }
-      .char-symbol { font-size: 0.62rem; }
-      .drop-zone { min-height: 170px; }
-      .board-title { font-size: 1rem; }
-      .board-desc { font-size: 0.72rem; }
-      .nav-speech { font-size: 0.95rem; }
+      .char-name { font-size: 0.65rem; }
+      .char-symbol { font-size: 0.6rem; }
+      .drop-zone { min-height: 160px; padding: 6px; gap: 6px; }
+      .board-title { font-size: 0.95rem; }
+      .board-desc { font-size: 0.7rem; }
+      .nav-speech { font-size: 0.9rem; }
     }
   </style>
 </head>
@@ -353,11 +376,11 @@
       <img src="chara0_La.png" alt="ランタン" id="nav-img">
     </div>
     <div class="nav-speech" id="nav-text">
-      ランタン：「17キャラクターを正しいグループへ分類してね！『どちらでもない』枠は1人だけだよ！」
+      「僕、ランタンだよ！17キャラクターを正しいグループへドラッグ（スワイプ）してね！『どちらでもない』枠は1人だけだよ！」
     </div>
   </div>
 
-  <div id="game-container" style="margin-top: 10px;">
+  <div id="game-container" style="margin-top: 6px;">
     <!-- ドロップエリア（看板・解説・枠） -->
     <div class="boards-wrapper">
       <!-- 軽レアアース -->
@@ -367,9 +390,9 @@
         <div class="drop-zone" id="zone-light" data-type="light"></div>
       </div>
 
-      <!-- どちらでもない（特別枠・スリム化） -->
+      <!-- どちらでもない（特別枠・テキスト折り返し対応） -->
       <div class="board-container board-special">
-        <div class="board-title special-title">どちらでもない</div>
+        <div class="board-title special-title">どちらでも<br>ない</div>
         <div class="board-desc">1人だけ！</div>
         <div class="drop-zone" id="zone-special" data-type="special" data-limit="1"></div>
       </div>
@@ -398,8 +421,8 @@
   <!-- チュートリアルモーダル（2ページ構成） -->
   <div class="modal-overlay" id="tutorial-modal">
     <div class="modal-content">
-      <div style="text-align: center; margin-bottom: 8px;">
-        <img src="chara0_La.png" style="width: 65px; height: 65px;" id="tut-img">
+      <div style="text-align: center; margin-bottom: 6px;">
+        <img src="chara0_La.png" style="width: 60px; height: 60px;" id="tut-img">
       </div>
 
       <!-- 1ページ目 -->
@@ -409,7 +432,7 @@
           レアアースは、大きく分けると<b>「軽レアアース」</b>と<b>「重レアアース」</b>の2つのグループに分類されるよ！<br><br>
           でも実は…どちらにも当てはまらない<b>「特別な子」</b>が1人だけ混ざっているんだ！
         </p>
-        <button class="btn btn-submit" id="btn-tut-next" style="margin-top: 10px;">次へ ➔</button>
+        <button class="btn btn-submit" id="btn-tut-next" style="margin-top: 8px;">次へ ➔</button>
       </div>
 
       <!-- 2ページ目 -->
@@ -420,7 +443,7 @@
           2. <b>「どちらでもない」枠には1人しか入れられないよ！</b>探してみてね。<br>
           3. 全員仕分けたら「<b>回答する</b>」を押すと正解数に応じて<b>お金（Ｇ）</b>や<b>経験値（EXP）</b>がもらえるよ！
         </p>
-        <button class="btn btn-submit" id="btn-start" style="margin-top: 10px;">ゲームスタート！</button>
+        <button class="btn btn-submit" id="btn-start" style="margin-top: 8px;">ゲームスタート！</button>
       </div>
     </div>
   </div>
@@ -691,8 +714,8 @@
       const rewardG = correctCount * 100;
       const rewardEXP = correctCount * 50;
 
-      // ランタンの豆知識解説セリフ
-      const lanthanumTalk = "<br><br>💡 <b>「ちなみに、スカンジウムは軽・重のどちらにもぴったり当てはまらない特別な元素なんだよ！<br>あとね、重レアアースはとっても希少で採るのも大変だから、お値段がすごく高価（プレミアム）なんだ！<br>それに比べて僕、ランタンは、地球上にたくさんあってリーズナブル！カメラのレンズやハイブリッドカーの電池でも大活躍してる、とっても身近な存在なんだよ！」</b>";
+      // 指定された改行と赤字強調（スカンジウム・ランタン）のセリフ
+      const lanthanumTalk = `<br><br>💡 <b>「ちなみに、<span class="highlight-red">スカンジウム</span>は軽・重のどちらにもぴったり当てはまらない特別な元素なんだよ！<br>あとね、重レアアースはとっても希少で採るのも大変だから、お値段がすごく高価（プレミアム）なんだ！<br><br>それに比べて僕、<span class="highlight-red">ランタン</span>は地球上にたくさんあってリーズナブル！カメラのレンズやハイブリッドカーの電池でも大活躍してる、とっても身近で頼もしい存在なんだ〜！」</b>`;
 
       const navText = document.getElementById('nav-text');
       if (correctCount === totalCount) {
