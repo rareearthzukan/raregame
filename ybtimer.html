@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>イッテルビウムのポモドーロ＆タイマー | レアアース17元素</title>
+  <style>
+    :root {
+      --primary-color: #2e7d32;
+      --primary-light: #e8f5e9;
+      --accent-red: #e53935;
+      --accent-blue: #1e88e5;
+      --bg-color: #f4f7f4;
+      --card-bg: #ffffff;
+      --text-color: #2c3e50;
+      --border-color: #c8e6c9;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 16px;
+    }
+
+    header {
+      width: 100%;
+      max-width: 500px;
+      text-align: center;
+      padding: 12px 0;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      font-size: 1.3rem;
+      color: var(--primary-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 500px;
+      background: var(--card-bg);
+      border-radius: 20px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      border: 2px solid var(--border-color);
+    }
+
+    /* キャラクターエリア */
+    .chara-section {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+
+    .speech-bubble {
+      position: relative;
+      background: var(--primary-light);
+      border: 2px solid var(--primary-color);
+      border-radius: 16px;
+      padding: 12px 16px;
+      width: 100%;
+      font-size: 0.95rem;
+      line-height: 1.4;
+      color: #1b5e20;
+      margin-bottom: 12px;
+      min-height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(46,125,50,0.1);
+    }
+
+    .speech-bubble::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-width: 10px 10px 0;
+      border-style: solid;
+      border-color: var(--primary-color) transparent;
+      display: block;
+      width: 0;
+    }
+
+    .speech-bubble::before {
+      content: '';
+      position: absolute;
+      bottom: -7px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-width: 8px 8px 0;
+      border-style: solid;
+      border-color: var(--primary-light) transparent;
+      display: block;
+      width: 0;
+      z-index: 1;
+    }
+
+    .chara-avatar-container {
+      width: 120px;
+      height: 120px;
+      position: relative;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    #charaCanvas {
+      width: 120px;
+      height: 120px;
+    }
+
+    .poke-btn {
+      margin-top: 6px;
+      background: #f0f4f8;
+      border: 1px solid #b0bec5;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      color: #455a64;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .poke-btn:active {
+      transform: scale(0.95);
+      background: #e0e0e0;
+    }
+
+    /* モード切り替えタブ */
+    .mode-tabs {
+      display: flex;
+      width: 100%;
+      background: #f1f8e9;
+      border-radius: 12px;
+      padding: 4px;
+      gap: 4px;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      background: transparent;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: bold;
+      color: #558b2f;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .tab-btn.active {
+      background: var(--card-bg);
+      color: var(--primary-color);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    /* タイマー表示エリア */
+    .timer-display-area {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .visual-canvas-container {
+      width: 240px;
+      height: 240px;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #timerCanvas {
+      width: 240px;
+      height: 240px;
+    }
+
+    .digital-time {
+      font-size: 2.2rem;
+      font-weight: bold;
+      color: #2c3e50;
+      font-family: monospace;
+      letter-spacing: 2px;
+    }
+
+    .pomo-status-tag {
+      font-size: 0.85rem;
+      font-weight: bold;
+      padding: 4px 12px;
+      border-radius: 12px;
+      background: #e8f5e9;
+      color: var(--primary-color);
+    }
+
+    /* コントロールボタン */
+    .controls {
+      display: flex;
+      gap: 12px;
+      width: 100%;
+      justify-content: center;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    }
+
+    .btn-primary {
+      background: var(--primary-color);
+      color: white;
+      flex: 2;
+      justify-content: center;
+    }
+
+    .btn-primary:hover {
+      background: #1b5e20;
+    }
+
+    .btn-secondary {
+      background: #eceff1;
+      color: #455a64;
+      flex: 1;
+      justify-content: center;
+    }
+
+    .btn-secondary:hover {
+      background: #cfd8dc;
+    }
+
+    /* 設定プリセット */
+    .presets {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      justify-content: center;
+    }
+
+    .preset-chip {
+      padding: 6px 12px;
+      background: #f1f8e9;
+      border: 1px solid #c8e6c9;
+      border-radius: 16px;
+      font-size: 0.85rem;
+      color: #33691e;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .preset-chip:hover {
+      background: #ded;
+    }
+
+    /* ポモドーロ説明 / ガイドモーダル */
+    .guide-box {
+      width: 100%;
+      background: #fafafa;
+      border: 1px dashed #ccc;
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-size: 0.85rem;
+      color: #555;
+      line-height: 1.5;
+    }
+
+    .guide-title {
+      font-weight: bold;
+      color: var(--primary-color);
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    footer {
+      margin-top: 16px;
+      font-size: 0.75rem;
+      color: #888;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>🧪 イッテルビウムの集中タイマー</h1>
+  </header>
+
+  <div class="container">
+    <!-- キャラクター吹き出しエリア -->
+    <div class="chara-section">
+      <div class="speech-bubble" id="speechBubble">
+        「やあ！ボクは17元素のイッテルビウムだよ。ポモドーロタイマーで一緒に作業に集中しよう！」
+      </div>
+      
+      <div class="chara-avatar-container" id="charaContainer" onclick="pokeChara()">
+        <canvas id="charaCanvas" width="240" height="240"></canvas>
+      </div>
+      <button class="poke-btn" onclick="pokeChara()">👆 つつく</button>
+    </div>
+
+    <!-- モード切り替えタブ -->
+    <div class="mode-tabs">
+      <button class="tab-btn active" id="tabPomo" onclick="switchMode('pomo')">🍅 ポモドーロ</button>
+      <button class="tab-btn" id="tabNormal" onclick="switchMode('normal')">⏳ 通常タイマー</button>
+    </div>
+
+    <!-- ポモドーロ状態タグ（ポモドーロ時のみ表示） -->
+    <div class="pomo-status-tag" id="pomoStatusTag">集中時間（25分）</div>
+
+    <!-- タイマービジュアル (Canvas) -->
+    <div class="timer-display-area">
+      <div class="visual-canvas-container">
+        <canvas id="timerCanvas" width="480" height="480"></canvas>
+      </div>
+      <div class="digital-time" id="digitalTime">25:00</div>
+    </div>
+
+    <!-- プリセットボタン（通常タイマー時） -->
+    <div class="presets" id="presetArea" style="display: none;">
+      <button class="preset-chip" onclick="setNormalTimer(3)">3分</button>
+      <button class="preset-chip" onclick="setNormalTimer(5)">5分</button>
+      <button class="preset-chip" onclick="setNormalTimer(10)">10分</button>
+      <button class="preset-chip" onclick="setNormalTimer(15)">15分</button>
+      <button class="preset-chip" onclick="setNormalTimer(30)">30分</button>
+    </div>
+
+    <!-- コントロールボタン -->
+    <div class="controls">
+      <button class="btn btn-primary" id="startBtn" onclick="toggleTimer()">▶ スタート</button>
+      <button class="btn btn-secondary" onclick="resetTimer()">↺ リセット</button>
+    </div>
+
+    <!-- ガイド説明 -->
+    <div class="guide-box" id="guideBox">
+      <div class="guide-title">💡 ポモドーロ・テクニックの使い方</div>
+      25分の作業 ➔ 5分の小休憩を繰り返す学習法だよ！<br>
+      作業が終わったら一度ボクが教えるから、準備ができたらスタートを押して休憩に入ろうね。
+    </div>
+  </div>
+
+  <footer>
+    レアアース17元素キャラ図鑑 - イッテルビウム (Yb)
+  </footer>
+
+  <script>
+    // --- 画像アセット設定 ---
+    const charaImages = {};
+    const imgSources = {
+      yb0: 'CharaYb_time0.png',
+      yb1: 'CharaYb_time1.png',
+      yb2: 'CharaYb_time2.png'
+    };
+
+    let loadedImagesCount = 0;
+    let imagesLoadedSuccessfully = false;
+
+    // 画像プリロード
+    Object.keys(imgSources).forEach(key => {
+      charaImages[key] = new Image();
+      charaImages[key].src = imgSources[key];
+      charaImages[key].onload = () => {
+        loadedImagesCount++;
+        if (loadedImagesCount === 3) {
+          imagesLoadedSuccessfully = true;
+          drawCharaAvatar();
+        }
+      };
+      charaImages[key].onerror = () => {
+        // 画像読み込み失敗時は自動生成キャンバスキャラを表示
+      };
+    });
+
+    // --- アプリ状態管理 ---
+    let mode = 'pomo'; // 'pomo' or 'normal'
+    let pomoPhase = 'work'; // 'work', 'shortBreak', 'longBreak'
+    let pomoCycleCount = 0;
+
+    let isRunning = false;
+    let targetEndTime = null;
+    let totalDurationSec = 25 * 60;
+    let remainingSec = 25 * 60;
+    let timerInterval = null;
+
+    // つつく状態管理
+    let currentCharaState = 0; // 0: normal, 1: poke1, 2: poke2
+    let pokeTimeout = null;
+
+    // Web Audio API（効果音生成用）
+    let audioCtx = null;
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+    }
+
+    // スタート時の「ポ」音（最初の1回だけ鳴る）
+    function playStartPopSound() {
+      try {
+        initAudio();
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+        osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.12); // A5
+        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.12);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.12);
+      } catch (e) {
+        console.log('Audio Context Error:', e);
+      }
+    }
+
+    // 終了アラーム音
+    function playAlarmSound() {
+      try {
+        initAudio();
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+        const now = audioCtx.currentTime;
+        [0, 0.2, 0.4].forEach((delay, idx) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(783.99, now + delay); // G5
+          gain.gain.setValueAtTime(0.4, now + delay);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + delay + 0.15);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(now + delay);
+          osc.stop(now + delay + 0.15);
+        });
+      } catch (e) {}
+    }
+
+    // --- 初期化 ---
+    window.addEventListener('DOMContentLoaded', () => {
+      // 記憶データの復元（バックグラウンド・再読み込み対応）
+      loadStateFromStorage();
+      
+      updateUI();
+      drawCharaAvatar();
+      drawTimerCanvas();
+
+      // バックグラウンド復帰時の時間再計算
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible' && isRunning) {
+          syncTimer();
+        }
+      });
+
+      // 定期フレーム更新
+      setInterval(() => {
+        if (isRunning) {
+          syncTimer();
+        } else {
+          drawTimerCanvas();
+        }
+      }, 250);
+    });
+
+    // --- タイマー同期関数（正確な時間計測） ---
+    function syncTimer() {
+      if (!targetEndTime) return;
+      const now = Date.now();
+      const diffSec = Math.ceil((targetEndTime - now) / 1000);
+
+      if (diffSec <= 0) {
+        remainingSec = 0;
+        isRunning = false;
+        targetEndTime = null;
+        saveStateToStorage();
+        onTimerComplete();
+      } else {
+        remainingSec = diffSec;
+      }
+      updateUI();
+      drawTimerCanvas();
+    }
+
+    // --- タイマー終了時の挙動 ---
+    function onTimerComplete() {
+      playAlarmSound();
+
+      if (mode === 'pomo') {
+        if (pomoPhase === 'work') {
+          pomoCycleCount++;
+          if (pomoCycleCount % 4 === 0) {
+            pomoPhase = 'longBreak';
+            totalDurationSec = 15 * 60;
+            remainingSec = 15 * 60;
+            setSpeech("作業お疲れ様！4サイクル達成だね！15分間の【長めの休憩】をしよう。準備ができたらスタートを押してね！");
+          } else {
+            pomoPhase = 'shortBreak';
+            totalDurationSec = 5 * 60;
+            remainingSec = 5 * 60;
+            setSpeech("25分の集中作業お疲れ様！準備ができたらスタートを押して【5分間の小休憩】に入ろうね！");
+          }
+        } else {
+          pomoPhase = 'work';
+          totalDurationSec = 25 * 60;
+          remainingSec = 25 * 60;
+          setSpeech("休憩終了！すっきりしたかな？準備ができたらスタートを押して次の【25分集中】を始めよう！");
+        }
+      } else {
+        setSpeech("お時間だよ！タイマーが終了したよ。お疲れ様！");
+      }
+      updateUI();
+      drawTimerCanvas();
+    }
+
+    // --- トグル（スタート/ストップ） ---
+    function toggleTimer() {
+      if (isRunning) {
+        // ポーズ
+        isRunning = false;
+        targetEndTime = null;
+        setSpeech("タイマーを一時停止したよ。準備ができたら再開してね！");
+      } else {
+        // スタート
+        if (remainingSec <= 0) return;
+        initAudio();
+        playStartPopSound(); // 最初の1回だけポポ音
+
+        isRunning = true;
+        targetEndTime = Date.now() + remainingSec * 1000;
+        
+        if (mode === 'pomo') {
+          if (pomoPhase === 'work') {
+            setSpeech("集中スタート！25分間、自分のペースでがんばろう！");
+          } else {
+            setSpeech("リラックスタイム！しっかり深呼吸して休憩してね。");
+          }
+        } else {
+          setSpeech("タイマーカウントダウン中…集中してね！");
+        }
+      }
+      saveStateToStorage();
+      updateUI();
+    }
+
+    // --- リセット ---
+    function resetTimer() {
+      isRunning = false;
+      targetEndTime = null;
+
+      if (mode === 'pomo') {
+        pomoPhase = 'work';
+        totalDurationSec = 25 * 60;
+        remainingSec = 25 * 60;
+        setSpeech("ポモドーロタイマーをリセットしたよ。いつでも25分集中を始められるよ！");
+      } else {
+        remainingSec = totalDurationSec;
+        setSpeech("タイマーをリセットしたよ！");
+      }
+      saveStateToStorage();
+      updateUI();
+      drawTimerCanvas();
+    }
+
+    // --- モード切り替え ---
+    function switchMode(newMode) {
+      if (mode === newMode) return;
+      mode = newMode;
+      isRunning = false;
+      targetEndTime = null;
+
+      if (mode === 'pomo') {
+        pomoPhase = 'work';
+        totalDurationSec = 25 * 60;
+        remainingSec = 25 * 60;
+        setSpeech("ポモドーロモードだよ！タイムタイマー風の時計で残り時間がパッと見でわかるよ。");
+      } else {
+        totalDurationSec = 5 * 60;
+        remainingSec = 5 * 60;
+        setSpeech("通常タイマーモードだよ！砂時計のビジュアルで時間を測るよ。下のボタンで好きな分数を選んでね。");
+      }
+      saveStateToStorage();
+      updateUI();
+      drawTimerCanvas();
+    }
+
+    // 通常タイマーの分設定
+    function setNormalTimer(minutes) {
+      if (mode !== 'normal') return;
+      isRunning = false;
+      targetEndTime = null;
+      totalDurationSec = minutes * 60;
+      remainingSec = minutes * 60;
+      setSpeech(`${minutes}分タイマーに設定したよ！準備ができたらスタートを押してね。`);
+      saveStateToStorage();
+      updateUI();
+      drawTimerCanvas();
+    }
+
+    // --- キャラクターの会話・セリフ変更 ---
+    function setSpeech(text) {
+      document.getElementById('speechBubble').innerText = `「${text}」`;
+    }
+
+    // --- 「つつく」アクション ---
+    function pokeChara() {
+      // 1 or 2 をランダム選択
+      currentCharaState = Math.random() < 0.5 ? 1 : 2;
+      drawCharaAvatar();
+
+      const pokeDialogues = [
+        "ボクの原子番号は70！希土類元素のイッテルビウムだよ！",
+        "えへへ、つつかれた！集中途中の息抜きかな？",
+        "イッテルビウムはレーザーや精密な時計（光格子時計）でも活躍してるんだよ！",
+        "調子はどう？無理せず自分のペースで進めようね！"
+      ];
+      setSpeech(pokeDialogues[Math.floor(Math.random() * pokeDialogues.length)]);
+
+      if (pokeTimeout) clearTimeout(pokeTimeout);
+      pokeTimeout = setTimeout(() => {
+        currentCharaState = 0;
+        drawCharaAvatar();
+      }, 900); // 0.9秒後にもとの表情に戻る
+    }
+
+    // --- キャラクターCanvas描画 ---
+    function drawCharaAvatar() {
+      const cvs = document.getElementById('charaCanvas');
+      const ctx = cvs.getContext('2d');
+      ctx.clearRect(0, 0, cvs.width, cvs.height);
+
+      // 画像が読み込まれていれば画像を使用
+      if (imagesLoadedSuccessfully) {
+        let img = charaImages.yb0;
+        if (currentCharaState === 1) img = charaImages.yb1;
+        if (currentCharaState === 2) img = charaImages.yb2;
+        ctx.drawImage(img, 0, 0, cvs.width, cvs.height);
+        return;
+      }
+
+      // 画像が無い場合のフォールバック（イッテルビウム風オリジナルキャラクター自動描画）
+      const cx = 120, cy = 120;
+
+      // 元素オーラ / 軌道円
+      ctx.strokeStyle = 'rgba(46, 125, 50, 0.3)';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(cx, cy, 100, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, 105, 45, Math.PI / 4, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // 顔の輪郭
+      ctx.fillStyle = '#fce4ec';
+      if (currentCharaState === 1) ctx.fillStyle = '#fff0f5';
+      ctx.beginPath();
+      ctx.arc(cx, cy, 75, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#2e7d32';
+      ctx.lineWidth = 4;
+      ctx.stroke();
+
+      // 髪の毛（緑系グラデーション）
+      ctx.fillStyle = '#4caf50';
+      ctx.beginPath();
+      ctx.arc(cx, cy - 25, 75, Math.PI, Math.PI * 2);
+      ctx.fill();
+
+      // 目
+      ctx.fillStyle = '#1b5e20';
+      if (currentCharaState === 0) {
+        ctx.beginPath(); ctx.arc(cx - 25, cy, 8, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(cx + 25, cy, 8, 0, Math.PI * 2); ctx.fill();
+      } else if (currentCharaState === 1) {
+        // ウインク / 驚き
+        ctx.beginPath(); ctx.arc(cx - 25, cy, 9, 0, Math.PI * 2); ctx.fill();
+        ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.moveTo(cx + 17, cy - 4); ctx.lineTo(cx + 33, cy + 4); ctx.stroke();
+      } else {
+        // にっこり（> <）
+        ctx.lineWidth = 4;
+        ctx.beginPath(); ctx.moveTo(cx - 32, cy - 6); ctx.lineTo(cx - 20, cy); ctx.lineTo(cx - 32, cy + 6); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(cx + 32, cy - 6); ctx.lineTo(cx + 20, cy); ctx.lineTo(cx + 32, cy + 6); ctx.stroke();
+      }
+
+      // 頬紅
+      ctx.fillStyle = 'rgba(244, 143, 177, 0.6)';
+      ctx.beginPath(); ctx.arc(cx - 35, cy + 15, 10, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(cx + 35, cy + 15, 10, 0, Math.PI * 2); ctx.fill();
+
+      // 口
+      ctx.strokeStyle = '#1b5e20';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(cx, cy + 15, 12, 0.1, Math.PI - 0.1);
+      ctx.stroke();
+
+      // 元素記号バッジ (Yb)
+      ctx.fillStyle = '#2e7d32';
+      ctx.beginPath(); ctx.arc(cx, cy - 65, 18, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 14px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('Yb', cx, cy - 64);
+    }
+
+    // --- タイマーCanvas描画（ビジュアルメイン） ---
+    function drawTimerCanvas() {
+      const cvs = document.getElementById('timerCanvas');
+      const ctx = cvs.getContext('2d');
+      ctx.clearRect(0, 0, cvs.width, cvs.height);
+
+      if (mode === 'pomo') {
+        drawAnalogTimeTimer(ctx, cvs.width, cvs.height);
+      } else {
+        drawHourglass(ctx, cvs.width, cvs.height);
+      }
+    }
+
+    // 1. ポモドーロ用：タイムタイマー風ビジュアル（アスペクト比正方形・真円構成）
+    function drawAnalogTimeTimer(ctx, w, h) {
+      const size = Math.min(w, h);
+      const cx = w / 2;
+      const cy = h / 2;
+      const boxSize = size * 0.88; // 外側の正方形ボディ
+      const radius = boxSize * 0.42; // 中央の真円タイマー盤面
+
+      // 1. 外側の四角い角丸ボディ（白〜薄グレーの立体筐体）
+      ctx.save();
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.08)';
+      ctx.shadowBlur = 16;
+      ctx.shadowOffsetY = 6;
+      ctx.fillStyle = '#fcfcfc';
+      ctx.strokeStyle = '#e0e0e0';
+      ctx.lineWidth = 4;
+      
+      const rx = cx - boxSize / 2;
+      const ry = cy - boxSize / 2;
+      const cornerRadius = 32;
+
+      ctx.beginPath();
+      ctx.roundRect(rx, ry, boxSize, boxSize, cornerRadius);
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+
+      // 2. 文字盤のベース（円形グラデーション背景）
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#d6d6d6';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // 3. 残り時間を示す赤い扇形（赤色または休憩中のエメラルド色）
+      const progress = remainingSec / totalDurationSec; // 1 -> 0
+      const startAngle = -Math.PI / 2; // 0分位置（12時方向）
+      const endAngle = startAngle + (Math.PI * 2 * progress);
+
+      if (progress > 0) {
+        ctx.fillStyle = (pomoPhase === 'work') ? '#e53935' : '#00b0ff';
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, radius - 2, startAngle, endAngle, false);
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      // 4. ダイヤルの目盛り（0, 5, 10 ... 55分）
+      ctx.fillStyle = '#333333';
+      ctx.font = 'bold 16px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      for (let i = 0; i < 60; i++) {
+        const angle = -Math.PI / 2 + (i * (Math.PI * 2 / 60));
+        const isMajor = (i % 5 === 0);
+        const tickLength = isMajor ? 12 : 6;
+        const outerR = radius - 4;
+        const innerR = outerR - tickLength;
+
+        const x1 = cx + Math.cos(angle) * outerR;
+        const y1 = cy + Math.sin(angle) * outerR;
+        const x2 = cx + Math.cos(angle) * innerR;
+        const y2 = cy + Math.sin(angle) * innerR;
+
+        ctx.strokeStyle = isMajor ? '#222' : '#888';
+        ctx.lineWidth = isMajor ? 2.5 : 1;
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+
+        // 数字表記（5分刻み）
+        if (isMajor) {
+          const labelR = innerR - 16;
+          const lx = cx + Math.cos(angle) * labelR;
+          const ly = cy + Math.sin(angle) * labelR;
+          ctx.fillText(i.toString(), lx, ly);
+        }
+      }
+
+      // 5. 中央の持ち手ツマミ（白ノブ）
+      ctx.save();
+      ctx.shadowColor = 'rgba(0,0,0,0.15)';
+      ctx.shadowBlur = 8;
+      ctx.shadowOffsetY = 2;
+      ctx.fillStyle = '#ffffff';
+      ctx.strokeStyle = '#d0d0d0';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius * 0.22, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // 2. 通常タイマー用：砂時計ビジュアル
+    function drawHourglass(ctx, w, h) {
+      const cx = w / 2;
+      const cy = h / 2;
+      const progress = remainingSec / totalDurationSec; // 1 -> 0
+
+      // 砂時計の外フレーム
+      ctx.strokeStyle = '#2e7d32';
+      ctx.lineWidth = 6;
+      ctx.lineJoin = 'round';
+
+      // 木枠（上下の板）
+      ctx.fillStyle = '#3e2723';
+      ctx.fillRect(cx - 70, cy - 140, 140, 16);
+      ctx.fillRect(cx - 70, cy + 124, 140, 16);
+
+      // ガラスの器形状
+      ctx.beginPath();
+      ctx.moveTo(cx - 55, cy - 124);
+      ctx.bezierCurveTo(cx - 50, cy - 40, cx - 12, cy - 10, cx - 4, cy);
+      ctx.bezierCurveTo(cx - 12, cy + 10, cx - 50, cy + 40, cx - 55, cy + 124);
+      ctx.lineTo(cx + 55, cy + 124);
+      ctx.bezierCurveTo(cx + 50, cy + 40, cx + 12, cy + 10, cx + 4, cy);
+      ctx.bezierCurveTo(cx + 12, cy - 10, cx + 50, cy - 40, cx + 55, cy - 124);
+      ctx.closePath();
+
+      ctx.fillStyle = 'rgba(232, 245, 233, 0.5)';
+      ctx.fill();
+      ctx.stroke();
+
+      // 砂（エメラルドグリーンの砂）
+      ctx.fillStyle = '#66bb6a';
+
+      // 上のアタッチメント（減っていく砂）
+      const topSandHeight = 90 * progress;
+      if (topSandHeight > 0) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(cx - 55, cy - 124 + (90 - topSandHeight), 110, topSandHeight);
+        ctx.clip();
+
+        ctx.beginPath();
+        ctx.moveTo(cx - 55, cy - 124);
+        ctx.bezierCurveTo(cx - 50, cy - 40, cx - 12, cy - 10, cx, cy);
+        ctx.bezierCurveTo(cx + 12, cy - 10, cx + 50, cy - 40, cx + 55, cy - 124);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // 下のアタッチメント（溜まる砂）
+      const bottomSandHeight = 90 * (1 - progress);
+      if (bottomSandHeight > 0) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(cx - 55, cy + 124 - bottomSandHeight, 110, bottomSandHeight);
+        ctx.clip();
+
+        ctx.beginPath();
+        ctx.moveTo(cx - 55, cy + 124);
+        ctx.bezierCurveTo(cx - 50, cy + 40, cx - 12, cy + 10, cx, cy);
+        ctx.bezierCurveTo(cx + 12, cy + 10, cx + 50, cy + 40, cx + 55, cy + 124);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // 落ちる砂のライン（動いている時のみ）
+      if (isRunning && remainingSec > 0) {
+        ctx.strokeStyle = '#81c784';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy - 2);
+        ctx.lineTo(cx, cy + 120);
+        ctx.stroke();
+      }
+    }
+
+    // --- UI更新 ---
+    function updateUI() {
+      // デジタル時計更新
+      const m = Math.floor(remainingSec / 60).toString().padStart(2, '0');
+      const s = (remainingSec % 60).toString().padStart(2, '0');
+      document.getElementById('digitalTime').innerText = `${m}:${s}`;
+
+      // ボタン表記
+      const startBtn = document.getElementById('startBtn');
+      if (isRunning) {
+        startBtn.innerText = '❚❚ 停止';
+        startBtn.style.background = '#e53935';
+      } else {
+        startBtn.innerText = '▶ スタート';
+        startBtn.style.background = '#2e7d32';
+      }
+
+      // タブアクティブ化
+      document.getElementById('tabPomo').classList.toggle('active', mode === 'pomo');
+      document.getElementById('tabNormal').classList.toggle('active', mode === 'normal');
+
+      // 表示切り替え
+      const pomoTag = document.getElementById('pomoStatusTag');
+      const presetArea = document.getElementById('presetArea');
+
+      if (mode === 'pomo') {
+        pomoTag.style.display = 'block';
+        presetArea.style.display = 'none';
+
+        if (pomoPhase === 'work') {
+          pomoTag.innerText = `🍅 集中時間 (${Math.floor(totalDurationSec/60)}分)`;
+          pomoTag.style.background = '#ffebee';
+          pomoTag.style.color = '#c62828';
+        } else if (pomoPhase === 'shortBreak') {
+          pomoTag.innerText = '☕ 小休憩 (5分)';
+          pomoTag.style.background = '#e1f5fe';
+          pomoTag.style.color = '#0277bd';
+        } else {
+          pomoTag.innerText = '🌴 長い休憩 (15分)';
+          pomoTag.style.background = '#e8f5e9';
+          pomoTag.style.color = '#2e7d32';
+        }
+      } else {
+        pomoTag.style.display = 'none';
+        presetArea.style.display = 'flex';
+      }
+    }
+
+    // --- ストレージ記憶（バックグラウンド復帰用） ---
+    function saveStateToStorage() {
+      const state = {
+        mode,
+        pomoPhase,
+        pomoCycleCount,
+        isRunning,
+        targetEndTime,
+        totalDurationSec,
+        remainingSec
+      };
+      localStorage.setItem('yb_timer_state', JSON.stringify(state));
+    }
+
+    function loadStateFromStorage() {
+      const saved = localStorage.getItem('yb_timer_state');
+      if (!saved) return;
+      try {
+        const state = JSON.parse(saved);
+        mode = state.mode || 'pomo';
+        pomoPhase = state.pomoPhase || 'work';
+        pomoCycleCount = state.pomoCycleCount || 0;
+        totalDurationSec = state.totalDurationSec || 25 * 60;
+        isRunning = state.isRunning || false;
+        targetEndTime = state.targetEndTime || null;
+
+        if (isRunning && targetEndTime) {
+          const now = Date.now();
+          const diff = Math.ceil((targetEndTime - now) / 1000);
+          if (diff > 0) {
+            remainingSec = diff;
+          } else {
+            remainingSec = 0;
+            isRunning = false;
+            targetEndTime = null;
+          }
+        } else {
+          remainingSec = state.remainingSec || totalDurationSec;
+        }
+      } catch (e) {
+        console.error('State load error:', e);
+      }
+    }
+  </script>
+</body>
+</html>
