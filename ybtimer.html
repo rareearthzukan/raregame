@@ -561,7 +561,7 @@
       currentCharaState = Math.random() < 0.5 ? 1 : 2;
       drawCharaAvatar();
       const sp = pokeCount % 10 === 0 ? pokeSpecial[(pokeCount / 10 - 1) % pokeSpecial.length] : null;
-      setSpeech(sp || (T.state.isRunning && Math.random() < 0.3 ? runningLines[Math.floor(Math.random() * runningLines.length)] : nextPokeLine()));
+      setSpeech(sp || (T.anyRunning() && Math.random() < 0.3 ? runningLines[Math.floor(Math.random() * runningLines.length)] : nextPokeLine()));
       if (pokeTimeout) clearTimeout(pokeTimeout);
       pokeTimeout = setTimeout(() => { currentCharaState = 0; drawCharaAvatar(); }, 900);
     }
@@ -581,18 +581,18 @@
     function drawTimerCanvas() {
       const ctx = $('timerCanvas').getContext('2d');
       ctx.clearRect(0, 0, 220, 220);
-      if (T.state.mode === 'pomo') drawTimeTimer(ctx); else drawHourglass(ctx);
+      if (T.cur().mode === 'pomo') drawTimeTimer(ctx); else drawHourglass(ctx);
     }
 
     function drawTimeTimer(ctx) {
-      const S = T.state, cx = 110, cy = 110, R = 98, dark = !isLightTheme;
-      const accent = S.pomoPhase === 'work' ? (dark ? '#ff3366' : '#e53935') : (dark ? '#00ccff' : '#0288d1');
+      const S = T.cur(), cx = 110, cy = 110, R = 98, dark = !isLightTheme;
+      const accent = S.phase === 'work' ? (dark ? '#ff3366' : '#e53935') : (dark ? '#00ccff' : '#0288d1');
       const g = ctx.createRadialGradient(cx, cy - 20, 10, cx, cy, R);
       g.addColorStop(0, dark ? '#1a2540' : '#ffffff'); g.addColorStop(1, dark ? '#0f172a' : '#eef3ee');
       ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.fill();
       ctx.lineWidth = 3; ctx.strokeStyle = dark ? '#00ffcc' : '#2e7d32'; ctx.stroke();
 
-      const progress = T.remaining() / S.totalDurationSec, a0 = -Math.PI / 2, a1 = a0 + Math.PI * 2 * progress;
+      const progress = S.remaining / S.total, a0 = -Math.PI / 2, a1 = a0 + Math.PI * 2 * progress;
       if (progress > 0) {
         ctx.fillStyle = accent; ctx.globalAlpha = 0.8;
         ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, R - 12, a0, a1); ctx.closePath(); ctx.fill();
@@ -629,8 +629,8 @@
     }
 
     function drawHourglass(ctx) {
-      const S = T.state, W = 220, cx = 110, top = 32, bottom = 188, cy = (top + bottom) / 2;
-      const progress = T.remaining() / S.totalDurationSec, dark = !isLightTheme;
+      const S = T.cur(), W = 220, cx = 110, top = 32, bottom = 188, cy = (top + bottom) / 2;
+      const progress = S.remaining / S.total, dark = !isLightTheme;
       const line = dark ? '#00ffcc' : '#2e7d32', sand = dark ? '#ffd166' : '#d9a441', glass = glassPath(cx, top, bottom);
       ctx.fillStyle = dark ? 'rgba(0,255,204,0.06)' : 'rgba(46,125,50,0.06)'; ctx.fill(glass);
       ctx.save(); ctx.clip(glass); ctx.fillStyle = sand;
@@ -654,13 +654,18 @@
     }
 
     /* ---------- UI ---------- */
+    const fmt = s => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
     function updateUI() {
-      const S = T.state, r = T.remaining();
-      $('digitalTime').innerText = `${String(Math.floor(r / 60)).padStart(2, '0')}:${String(r % 60).padStart(2, '0')}`;
+      const S = T.cur(), r = S.remaining;
+      $('digitalTime').innerText = fmt(r);
       const b = $('startBtn');
       b.innerText = S.isRunning ? '❚❚ 一時停止' : '▶ スタート';
       b.style.background = S.isRunning ? '#ff3366' : 'var(--primary-neon)';
       b.style.color = S.isRunning ? '#fff' : (isLightTheme ? '#ffffff' : '#0a0f1d');
+      // 裏で動いているタイマーがあれば、タブに残り時間を出す
+      const ip = T.info('pomo'), inn = T.info('normal');
+      $('tabPomo').innerText = '🍅 ポモドーロ' + (ip.isRunning ? ` ▶ ${fmt(ip.remaining)}` : '');
+      $('tabNormal').innerText = '⏳ 通常タイマー' + (inn.isRunning ? ` ▶ ${fmt(inn.remaining)}` : '');
       $('tabPomo').classList.toggle('active', S.mode === 'pomo');
       $('tabNormal').classList.toggle('active', S.mode === 'normal');
       const pomo = S.mode === 'pomo';
@@ -668,9 +673,9 @@
       $('pomoSettingsPanel').style.display = pomo ? 'block' : 'none';
       $('normalSettingsPanel').style.display = pomo ? 'none' : 'block';
       if (pomo) {
-        const n = (S.pomoDone % 4) + 1;
-        $('pomoStatusTag').innerText = S.pomoPhase === 'work' ? `🍅 集中時間 (${S.pomoWorkSec / 60}分) ${n}/4`
-          : S.pomoPhase === 'shortBreak' ? `☕ 小休憩 (${S.pomoBreakSec / 60}分)` : `🌴 長い休憩 (${S.pomoLongBreakSec / 60}分)`;
+        const n = (S.done % 4) + 1;
+        $('pomoStatusTag').innerText = S.phase === 'work' ? `🍅 集中時間 (${S.workSec / 60}分) ${n}/4`
+          : S.phase === 'shortBreak' ? `☕ 小休憩 (${S.breakSec / 60}分)` : `🌴 長い休憩 (${S.longSec / 60}分)`;
       }
       drawTimerCanvas();
     }
@@ -683,24 +688,28 @@
       drawCharaAvatar(); updateUI();
     }
     function toggleTimer() {
-      if (T.state.isRunning) { T.pause(); setSpeech('タイマーを一時停止いたしました。'); }
-      else { T.start(); if (T.state.isRunning) setSpeech('計測を開始します。集中していきましょう。画面を離れても計測は続きます。'); }
+      if (T.cur().isRunning) { T.pause(); setSpeech('タイマーを一時停止いたしました。'); }
+      else { T.start(); if (T.cur().isRunning) setSpeech('計測を開始します。集中していきましょう。画面を離れても計測は続きます。'); }
     }
     function resetTimer() { T.reset(); setSpeech('タイマーを初期状態にリセットいたしました。'); }
     function switchMode(m) {
-      T.setMode(m);
-      setSpeech(m === 'pomo' ? 'ポモドーロモードです。視覚的に残り時間が把握しやすくなっています。' : '通常タイマーモードです。砂時計の描写で計測を行います。');
+      T.setView(m);
+      const other = T.info(m === 'pomo' ? 'normal' : 'pomo');
+      setSpeech((m === 'pomo' ? 'ポモドーロの表示です。' : '通常タイマー（砂時計）の表示です。') + (other.isRunning ? `もう一方のタイマーも動いています。残り${fmt(other.remaining)}です。` : ''));
     }
     function updateCustomTimes() {
       T.setPomoTimes(+$('workTimeSelect').value * 60, +$('breakTimeSelect').value * 60, +$('longBreakSelect').value * 60);
     }
-    function setStandardTimer(min) { T.setStandard(min); setSpeech(`${min}分タイマーに設定いたしました。`); }
+    function setStandardTimer(min) {
+      const was = T.info('normal').isRunning;
+      T.setStandard(min); setSpeech(`${min}分タイマーに設定いたしました。` + (was ? '動いていた通常タイマーは、設定し直しました。' : ''));
+    }
 
     window.addEventListener('DOMContentLoaded', () => {
       setupHiDPI($('timerCanvas'), 220); setupHiDPI($('charaCanvas'), 110);
       try { if (localStorage.getItem('yb_timer_theme_pref') === 'light') { isLightTheme = true; document.body.classList.add('light-theme'); $('themeToggleBtn').innerText = '🌙 暗くする'; } } catch (e) {}
-      const S = T.state;
-      $('workTimeSelect').value = S.pomoWorkSec / 60; $('breakTimeSelect').value = S.pomoBreakSec / 60; $('longBreakSelect').value = S.pomoLongBreakSec / 60;
+      const P = T.state.pomo;
+      $('workTimeSelect').value = P.workSec / 60; $('breakTimeSelect').value = P.breakSec / 60; $('longBreakSelect').value = P.longSec / 60;
       window.addEventListener('yb:complete', e => setSpeech(e.detail.message));
       window.addEventListener('yb:change', updateUI);
       window.addEventListener('yb:tick', updateUI);
