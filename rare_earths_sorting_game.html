@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>レアアース仕分けゲーム</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+    }
+
+    body {
+      margin: 0;
+      padding: 10px;
+      font-family: 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif;
+      background: #f0f4f8;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    h1 {
+      font-size: 1.4rem;
+      margin: 5px 0 10px;
+      text-align: center;
+      color: #2c3e50;
+    }
+
+    /* ゲームコンテナ */
+    #game-container {
+      width: 100%;
+      max-width: 960px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* エリア設定 (3列構造・中央をスリム化) */
+    .boards-wrapper {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+    }
+
+    .board-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .board-light { flex: 5; }
+    .board-special { flex: 2.2; min-width: 85px; } /* どちらでもない枠をスリム化 */
+    .board-heavy { flex: 5; }
+
+    .board-title {
+      width: 100%;
+      padding: 6px 2px;
+      border-radius: 8px 8px 0 0;
+      font-weight: bold;
+      font-size: 0.9rem;
+      text-align: center;
+      color: white;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      white-space: nowrap;
+    }
+
+    .board-desc {
+      width: 100%;
+      font-size: 0.65rem;
+      text-align: center;
+      padding: 4px 2px;
+      line-height: 1.2;
+      min-height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f8fafc;
+      border-left: 2px solid #cbd5e1;
+      border-right: 2px solid #cbd5e1;
+      color: #475569;
+    }
+
+    .light-title { background: #e74c3c; }
+    .special-title { background: #8e44ad; }
+    .heavy-title { background: #34495e; }
+
+    .drop-zone {
+      width: 100%;
+      min-height: 140px;
+      background: #ffffff;
+      border: 3px dashed #cbd5e1;
+      border-top: none;
+      border-radius: 0 0 8px 8px;
+      padding: 5px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      align-content: flex-start;
+      justify-content: center;
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    .drop-zone.drag-over {
+      background: #e8f8f5;
+      border-color: #2ecc71;
+    }
+
+    /* 待機エリア */
+    .unassigned-container {
+      width: 100%;
+      background: #fff;
+      border: 2px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 8px;
+    }
+
+    .unassigned-title {
+      font-size: 0.85rem;
+      font-weight: bold;
+      margin-bottom: 6px;
+      color: #64748b;
+      text-align: center;
+    }
+
+    .unassigned-zone {
+      min-height: 90px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* キャラクターカード */
+    .char-card {
+      width: 66px;
+      background: white;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 3px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: grab;
+      touch-action: none;
+      position: relative;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      transition: transform 0.1s, box-shadow 0.1s;
+    }
+
+    .char-card:active {
+      cursor: grabbing;
+    }
+
+    .char-card.dragging {
+      opacity: 0.4;
+    }
+
+    .char-img {
+      width: 44px;
+      height: 44px;
+      object-fit: contain;
+      pointer-events: none;
+    }
+
+    .char-name {
+      font-size: 0.58rem;
+      font-weight: bold;
+      text-align: center;
+      line-height: 1.1;
+      margin-top: 2px;
+      word-break: break-all;
+    }
+
+    .char-symbol {
+      font-size: 0.58rem;
+      color: #64748b;
+    }
+
+    /* 判定マーク overlay */
+    .result-mark {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 2.8rem;
+      font-weight: bold;
+      pointer-events: none;
+      z-index: 10;
+      line-height: 1;
+    }
+
+    .mark-correct { color: #22c55e; text-shadow: 0 0 4px white; }
+    .mark-wrong { color: #ef4444; text-shadow: 0 0 4px white; }
+
+    /* 操作ボタン */
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 2px;
+    }
+
+    .btn {
+      padding: 10px 24px;
+      font-size: 1rem;
+      font-weight: bold;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    .btn:active {
+      transform: scale(0.96);
+    }
+
+    .btn-submit {
+      background: #3b82f6;
+      color: white;
+    }
+
+    .btn-reset {
+      background: #94a3b8;
+      color: white;
+    }
+
+    /* ナビゲーターエリア */
+    .nav-container {
+      width: 100%;
+      max-width: 960px;
+      background: white;
+      border-radius: 12px;
+      padding: 10px 15px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+      border: 2px solid #e2e8f0;
+    }
+
+    .nav-avatar {
+      width: 60px;
+      height: 60px;
+      flex-shrink: 0;
+    }
+
+    .nav-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .nav-speech {
+      position: relative;
+      background: #f1f5f9;
+      border-radius: 8px;
+      padding: 10px 12px;
+      flex-grow: 1;
+      font-size: 0.85rem;
+      line-height: 1.4;
+    }
+
+    .nav-speech::before {
+      content: '';
+      position: absolute;
+      left: -10px;
+      top: 50%;
+      transform: translateY(-50%);
+      border-width: 6px 10px 6px 0;
+      border-style: solid;
+      border-color: transparent #f1f5f9 transparent transparent;
+    }
+
+    /* タッチ追従用のクローン要素 */
+    .drag-clone {
+      position: fixed;
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.85;
+      transform: translate(-50%, -50%) scale(1.05);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    }
+
+    /* モーダル（チュートリアル） */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 10000;
+      padding: 20px;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      max-width: 450px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .modal-content h2 {
+      margin-top: 0;
+      color: #1e293b;
+    }
+
+    .modal-content p {
+      text-align: left;
+      font-size: 0.88rem;
+      line-height: 1.6;
+      color: #475569;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (min-width: 600px) {
+      .char-card {
+        width: 78px;
+        padding: 5px;
+      }
+      .char-img {
+        width: 52px;
+        height: 52px;
+      }
+      .char-name { font-size: 0.68rem; }
+      .char-symbol { font-size: 0.62rem; }
+      .drop-zone { min-height: 170px; }
+      .board-title { font-size: 1rem; }
+      .board-desc { font-size: 0.72rem; }
+      .nav-speech { font-size: 0.95rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>レアアース仕分けゲーム</h1>
+
+  <!-- ナビゲーターエリア -->
+  <div class="nav-container">
+    <div class="nav-avatar">
+      <img src="chara0_La.png" alt="ランタン" id="nav-img">
+    </div>
+    <div class="nav-speech" id="nav-text">
+      ランタン：「17キャラクターを正しいグループへ分類してね！『どちらでもない』枠は1人だけだよ！」
+    </div>
+  </div>
+
+  <div id="game-container" style="margin-top: 10px;">
+    <!-- ドロップエリア（看板・解説・枠） -->
+    <div class="boards-wrapper">
+      <!-- 軽レアアース -->
+      <div class="board-container board-light">
+        <div class="board-title light-title">軽レアアース</div>
+        <div class="board-desc">比較的埋蔵量が多く、私たちの生活を支える働き者。</div>
+        <div class="drop-zone" id="zone-light" data-type="light"></div>
+      </div>
+
+      <!-- どちらでもない（特別枠・スリム化） -->
+      <div class="board-container board-special">
+        <div class="board-title special-title">どちらでもない</div>
+        <div class="board-desc">1人だけ！</div>
+        <div class="drop-zone" id="zone-special" data-type="special" data-limit="1"></div>
+      </div>
+
+      <!-- 重レアアース -->
+      <div class="board-container board-heavy">
+        <div class="board-title heavy-title">重レアアース</div>
+        <div class="board-desc">希少性が極めて高く、エリート揃い。産業の最前線を支える。</div>
+        <div class="drop-zone" id="zone-heavy" data-type="heavy"></div>
+      </div>
+    </div>
+
+    <!-- 未配置エリア -->
+    <div class="unassigned-container">
+      <div class="unassigned-title">仕分けるキャラクター（ドラッグして移動）</div>
+      <div class="unassigned-zone drop-zone" id="zone-unassigned" data-type="unassigned"></div>
+    </div>
+
+    <!-- コントロールボタン -->
+    <div class="controls">
+      <button class="btn btn-submit" id="btn-submit">回答する</button>
+      <button class="btn btn-reset hidden" id="btn-reset">もう一度遊ぶ</button>
+    </div>
+  </div>
+
+  <!-- チュートリアルモーダル（2ページ構成） -->
+  <div class="modal-overlay" id="tutorial-modal">
+    <div class="modal-content">
+      <div style="text-align: center; margin-bottom: 8px;">
+        <img src="chara0_La.png" style="width: 65px; height: 65px;" id="tut-img">
+      </div>
+
+      <!-- 1ページ目 -->
+      <div id="tut-page-1">
+        <h2>レアアースって？</h2>
+        <p>
+          レアアースは、大きく分けると<b>「軽レアアース」</b>と<b>「重レアアース」</b>の2つのグループに分類されるよ！<br><br>
+          でも実は…どちらにも当てはまらない<b>「特別な子」</b>が1人だけ混ざっているんだ！
+        </p>
+        <button class="btn btn-submit" id="btn-tut-next" style="margin-top: 10px;">次へ ➔</button>
+      </div>
+
+      <!-- 2ページ目 -->
+      <div id="tut-page-2" class="hidden">
+        <h2>遊び方</h2>
+        <p>
+          1. 下のキャラクターたちを<b>ドラッグ（スワイプ）</b>して各エリアに運ぼう！<br>
+          2. <b>「どちらでもない」枠には1人しか入れられないよ！</b>探してみてね。<br>
+          3. 全員仕分けたら「<b>回答する</b>」を押すと正解数に応じて<b>お金（Ｇ）</b>や<b>経験値（EXP）</b>がもらえるよ！
+        </p>
+        <button class="btn btn-submit" id="btn-start" style="margin-top: 10px;">ゲームスタート！</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 効果音読み込み -->
+  <audio id="se-pochi" src="SE_pochi.mp3" preload="auto"></audio>
+  <audio id="se-hayaoshi" src="SE_hayaoshi.mp3" preload="auto"></audio>
+
+  <script>
+    // 17キャラクターデータ定義
+    const charactersData = [
+      // どちらでもない (特別枠)
+      { id: "Sc", name: "スカンジウム", symbol: "Sc", type: "special", img: "chara0_Sc.png", color: "#f8fafc" },
+      // 軽レアアース
+      { id: "La", name: "ランタン", symbol: "La", type: "light", img: "chara0_La.png", color: "#e0f2fe" },
+      { id: "Ce", name: "セリウム", symbol: "Ce", type: "light", img: "chara0_Ce.png", color: "#fef08a" },
+      { id: "Pr", name: "プラセオジム", symbol: "Pr", type: "light", img: "chara0_Pr.png", color: "#d9f99d" },
+      { id: "Nd", name: "ネオジム", symbol: "Nd", type: "light", img: "chara0_Nd.png", color: "#cbd5e1" },
+      { id: "Pm", name: "プロメチウム", symbol: "Pm", type: "light", img: "chara0_Pm.png", color: "#e9d5ff" },
+      { id: "Sm", name: "サマリウム", symbol: "Sm", type: "light", img: "chara0_Sm.png", color: "#ffedd5" },
+      { id: "Eu", name: "ユウロピウム", symbol: "Eu", type: "light", img: "chara0_Eu.png", color: "#fecaca" },
+      // 重レアアース
+      { id: "Y",  name: "イットリウム", symbol: "Y",  type: "heavy", img: "chara0_Y.png",  color: "#bae6fd" },
+      { id: "Gd", name: "ガドリニウム", symbol: "Gd", type: "heavy", img: "chara0_Gd.png", color: "#e2e8f0" },
+      { id: "Tb", name: "テルビウム", symbol: "Tb", type: "heavy", img: "chara0_Tb.png", color: "#bbf7d0" },
+      { id: "Dy", name: "ジスプロシウム", symbol: "Dy", type: "heavy", img: "chara0_Dy.png", color: "#94a3b8" },
+      { id: "Ho", name: "ホルミウム", symbol: "Ho", type: "heavy", img: "chara0_Ho.png", color: "#a7f3d0" },
+      { id: "Er", name: "エルビウム", symbol: "Er", type: "heavy", img: "chara0_Er.png", color: "#fbcfe8" },
+      { id: "Tm", name: "ツリウム", symbol: "Tm", type: "heavy", img: "chara0_Tm.png", color: "#ddd6fe" },
+      { id: "Yb", name: "イッテルビウム", symbol: "Yb", type: "heavy", img: "chara0_Yb.png", color: "#fef08a" },
+      { id: "Lu", name: "ルテチウム", symbol: "Lu", type: "heavy", img: "chara0_Lu.png", color: "#f1f5f9" }
+    ];
+
+    let isGameActive = true;
+    let draggedElement = null;
+    let touchClone = null;
+
+    function playSE(id) {
+      const audio = document.getElementById(id);
+      if (audio) {
+        audio.currentTime = 0;
+        audio.play().catch(() => {});
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initGame();
+      setupFallbackImages();
+
+      // チュートリアル1ページ目 ➔ 2ページ目
+      const nextBtn = document.getElementById('btn-tut-next');
+      if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+          playSE('se-pochi');
+          document.getElementById('tut-page-1').classList.add('hidden');
+          document.getElementById('tut-page-2').classList.remove('hidden');
+        });
+      }
+
+      // スタートボタン
+      const startBtn = document.getElementById('btn-start');
+      if (startBtn) {
+        startBtn.addEventListener('click', closeTutorial);
+        startBtn.addEventListener('touchend', (e) => {
+          e.preventDefault();
+          closeTutorial();
+        });
+      }
+
+      document.getElementById('btn-submit').addEventListener('click', submitAnswers);
+      document.getElementById('btn-reset').addEventListener('click', resetGame);
+    });
+
+    function closeTutorial() {
+      const modal = document.getElementById('tutorial-modal');
+      if (modal) {
+        modal.classList.add('hidden');
+      }
+      playSE('se-pochi');
+    }
+
+    function initGame() {
+      const unassignedZone = document.getElementById('zone-unassigned');
+      unassignedZone.innerHTML = '';
+      document.getElementById('zone-light').innerHTML = '';
+      document.getElementById('zone-special').innerHTML = '';
+      document.getElementById('zone-heavy').innerHTML = '';
+
+      const shuffled = [...charactersData].sort(() => Math.random() - 0.5);
+
+      shuffled.forEach(char => {
+        const card = createCharCard(char);
+        unassignedZone.appendChild(card);
+      });
+
+      const dropZones = document.querySelectorAll('.drop-zone');
+      dropZones.forEach(zone => {
+        zone.addEventListener('dragover', handleDragOver);
+        zone.addEventListener('dragleave', handleDragLeave);
+        zone.addEventListener('drop', handleDrop);
+      });
+    }
+
+    function createCharCard(char) {
+      const card = document.createElement('div');
+      card.className = 'char-card';
+      card.draggable = true;
+      card.dataset.id = char.id;
+      card.dataset.type = char.type;
+
+      card.innerHTML = `
+        <img src="${char.img}" alt="${char.name}" class="char-img">
+        <div class="char-name">${char.name}</div>
+        <div class="char-symbol">${char.symbol}</div>
+      `;
+
+      card.addEventListener('dragstart', handleDragStart);
+      card.addEventListener('dragend', handleDragEnd);
+
+      card.addEventListener('touchstart', handleTouchStart, { passive: false });
+      card.addEventListener('touchmove', handleTouchMove, { passive: false });
+      card.addEventListener('touchend', handleTouchEnd);
+
+      return card;
+    }
+
+    function canDropToZone(zone) {
+      const limit = zone.dataset.limit ? parseInt(zone.dataset.limit) : null;
+      if (limit !== null && zone.children.length >= limit) {
+        return false;
+      }
+      return true;
+    }
+
+    function handleDragStart(e) {
+      if (!isGameActive) return;
+      draggedElement = this;
+      this.classList.add('dragging');
+      playSE('se-pochi');
+      e.dataTransfer.setData('text/plain', this.dataset.id);
+    }
+
+    function handleDragEnd() {
+      this.classList.remove('dragging');
+      draggedElement = null;
+    }
+
+    function handleDragOver(e) {
+      if (!isGameActive) return;
+      e.preventDefault();
+      if (canDropToZone(this)) {
+        this.classList.add('drag-over');
+      }
+    }
+
+    function handleDragLeave() {
+      this.classList.remove('drag-over');
+    }
+
+    function handleDrop(e) {
+      if (!isGameActive) return;
+      e.preventDefault();
+      this.classList.remove('drag-over');
+
+      if (draggedElement && canDropToZone(this)) {
+        this.appendChild(draggedElement);
+      }
+    }
+
+    function handleTouchStart(e) {
+      if (!isGameActive) return;
+      playSE('se-pochi');
+      draggedElement = this;
+      
+      const touch = e.touches[0];
+      const rect = this.getBoundingClientRect();
+
+      touchClone = this.cloneNode(true);
+      touchClone.classList.add('drag-clone');
+      touchClone.style.width = rect.width + 'px';
+      touchClone.style.left = touch.clientX + 'px';
+      touchClone.style.top = touch.clientY + 'px';
+      document.body.appendChild(touchClone);
+
+      this.classList.add('dragging');
+    }
+
+    function handleTouchMove(e) {
+      if (!isGameActive || !touchClone) return;
+      e.preventDefault();
+
+      const touch = e.touches[0];
+      touchClone.style.left = touch.clientX + 'px';
+      touchClone.style.top = touch.clientY + 'px';
+
+      const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+      const dropZone = elementBelow ? elementBelow.closest('.drop-zone') : null;
+
+      document.querySelectorAll('.drop-zone').forEach(z => z.classList.remove('drag-over'));
+      if (dropZone && canDropToZone(dropZone)) {
+        dropZone.classList.add('drag-over');
+      }
+    }
+
+    function handleTouchEnd(e) {
+      if (!isGameActive) return;
+
+      if (touchClone) {
+        touchClone.remove();
+        touchClone = null;
+      }
+
+      if (draggedElement) {
+        draggedElement.classList.remove('dragging');
+
+        const touch = e.changedTouches[0];
+        const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+        const dropZone = elementBelow ? elementBelow.closest('.drop-zone') : null;
+
+        if (dropZone && canDropToZone(dropZone)) {
+          dropZone.appendChild(draggedElement);
+        }
+
+        document.querySelectorAll('.drop-zone').forEach(z => z.classList.remove('drag-over'));
+        draggedElement = null;
+      }
+    }
+
+    function submitAnswers() {
+      if (!isGameActive) return;
+
+      playSE('se-hayaoshi');
+
+      const unassignedZone = document.getElementById('zone-unassigned');
+
+      if (unassignedZone.children.length > 0) {
+        document.getElementById('nav-text').innerText = 
+          "「まだ仕分けられていないキャラクターがいるよ！全員をエリアに配置してね！」";
+        return;
+      }
+
+      isGameActive = false;
+
+      let correctCount = 0;
+      const totalCount = charactersData.length;
+
+      const cards = document.querySelectorAll('.char-card');
+      cards.forEach(card => {
+        card.draggable = false;
+        const parentZone = card.parentElement;
+        const targetType = parentZone.dataset.type;
+        const correctType = card.dataset.type;
+
+        const mark = document.createElement('div');
+        mark.className = 'result-mark';
+
+        if (targetType === correctType) {
+          correctCount++;
+          mark.innerText = '◯';
+          mark.classList.add('mark-correct');
+        } else {
+          mark.innerText = '✕';
+          mark.classList.add('mark-wrong');
+        }
+        card.appendChild(mark);
+      });
+
+      const rewardG = correctCount * 100;
+      const rewardEXP = correctCount * 50;
+
+      // ランタンの豆知識解説セリフ
+      const lanthanumTalk = "<br><br>💡 <b>「ちなみに、スカンジウムは軽・重のどちらにもぴったり当てはまらない特別な元素なんだよ！<br>あとね、重レアアースはとっても希少で採るのも大変だから、お値段がすごく高価（プレミアム）なんだ！<br>それに比べて僕、ランタンは、地球上にたくさんあってリーズナブル！カメラのレンズやハイブリッドカーの電池でも大活躍してる、とっても身近な存在なんだよ！」</b>";
+
+      const navText = document.getElementById('nav-text');
+      if (correctCount === totalCount) {
+        navText.innerHTML = `「<b>パーフェクト！素晴らしいよ！</b><br>全${totalCount}問大正解！<br>報酬: <b>${rewardG} G</b> / <b>${rewardEXP} EXP</b> をゲットしたよ！」${lanthanumTalk}`;
+      } else if (correctCount >= 12) {
+        navText.innerHTML = `「<b>すごい！もう少し！</b><br>${totalCount}問中 <b>${correctCount}問</b> 正解だよ！<br>報酬: <b>${rewardG} G</b> / <b>${rewardEXP} EXP</b> をゲット！」${lanthanumTalk}`;
+      } else {
+        navText.innerHTML = `「結果は ${totalCount}問中 <b>${correctCount}問</b> 正解だったよ。<br>間違えたところを見直してもう一度挑戦してみよう！<br>報酬: <b>${rewardG} G</b> / <b>${rewardEXP} EXP</b>」${lanthanumTalk}`;
+      }
+
+      document.getElementById('btn-submit').classList.add('hidden');
+      document.getElementById('btn-reset').classList.remove('hidden');
+    }
+
+    function resetGame() {
+      playSE('se-pochi');
+      isGameActive = true;
+      document.querySelectorAll('.result-mark').forEach(m => m.remove());
+      document.getElementById('nav-text').innerText = 
+        "「僕、ランタンだよ！17キャラクターを正しいグループへドラッグ（スワイプ）してね！『どちらでもない』枠は1人だけだよ！」";
+      
+      document.getElementById('btn-submit').classList.remove('hidden');
+      document.getElementById('btn-reset').classList.add('hidden');
+
+      initGame();
+    }
+
+    function setupFallbackImages() {
+      const images = document.querySelectorAll('img');
+      images.forEach(img => {
+        img.onerror = function() {
+          const name = this.alt || '元素';
+          const charObj = charactersData.find(c => c.name === name) || { color: '#e2e8f0', symbol: '元素' };
+          
+          const canvas = document.createElement('canvas');
+          canvas.width = 100;
+          canvas.height = 100;
+          const ctx = canvas.getContext('2d');
+
+          ctx.fillStyle = charObj.color || '#e2e8f0';
+          ctx.beginPath();
+          ctx.arc(50, 50, 45, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.fillStyle = '#334155';
+          ctx.font = 'bold 30px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(charObj.symbol || '元素', 50, 50);
+
+          this.src = canvas.toDataURL();
+        };
+      });
+    }
+  </script>
+</body>
+</html>
