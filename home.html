@@ -544,6 +544,48 @@ function talkChara(id){
     `;
     askModal(`✨ イットリウムとの会話`, html, '閉じる', null, '');
 
+} else if(id === 'Ho'){
+    const html = `
+      <div style="font-size:0.8rem; text-align:left; line-height:1.5">
+        <p>「……ホルミウムだ。<b>レーザーの精密な輝き</b>を司る。磁気や光を自在に制御するのが、私の役割……言葉は多く必要ない。」</p>
+        <p>「主な活躍の場は、<b>医療用レーザー、強力な磁石、光ファイバー</b>……静かに、しかし確実に仕事をこなす。」</p>
+        <p>「……試してみるか？レーザーを反射させ、標的を射抜く私のビリヤードを。」</p>
+        <div style="display:flex; flex-direction:column; gap:6px; margin-top:10px">
+          <button class="btn" style="background:#eab308; color:#000; font-weight:bold; font-size:0.82rem" onclick="location.href='ho_billiards.html'">🎱 ホルミウムのレーザービリヤードを遊ぶ</button>
+          <button class="btn" style="background:#3b82f6" onclick="askModal('💡 ホルミウム解説', 'ホルミウム(Ho)は強い磁性を持つ元素で、医療用レーザー機器（ホミウムヤグレーザー）や光ファイバーアンプ、特殊な合金などに使われているよ。高エネルギーの光を制御する隠れた実力者なんだ！', '戻る', ()=>talkChara('Ho'), '')">📖 ホルミウムについて詳しく知る</button>
+        </div>
+      </div>
+    `;
+    askModal(`✨ ホルミウムとの会話`, html, '閉じる', null, '');
+
+  } else if(id === 'La'){
+    const html = `
+      <div style="font-size:0.8rem; text-align:left; line-height:1.5">
+        <p>「やあ、ようこそ！ボクはランタンだよ。<b>レアアースグループの頼れるリーダー</b>として、みんなを支えたりまとめたりするのが大好きなんだ！遠慮しないで何でも相談してね。」</p>
+        <p>「ボクは<b>ハイブリッドカーの電池、カメラの高性能レンズ、石油の精製触媒</b>など、色んな場所でみんなのお手伝いをしているんだよ。」</p>
+        <p>「さあ、仲間たちの特徴をしっかり覚えて、みんなを正しく分類する仕分けゲームに挑戦してみよう！」</p>
+        <div style="display:flex; flex-direction:column; gap:6px; margin-top:10px">
+          <button class="btn" style="background:#eab308; color:#000; font-weight:bold; font-size:0.82rem" onclick="location.href='rare_earths_sorting_game.html'">📦 ランタンのレアアース仕分けゲームを遊ぶ</button>
+          <button class="btn" style="background:#3b82f6" onclick="askModal('💡 ランタン解説', 'ランタン(La)は「ランタノイド」と呼ばれるレアアースグループの代表格！ニッケル水素電池の材料や、カメラの屈折率の高い高級ガラスレンズ、石油の分解触媒など、幅広い技術の土台を支えているよ！', '戻る', ()=>talkChara('La'), '')">📖 ランタンについて詳しく知る</button>
+        </div>
+      </div>
+    `;
+    askModal(`✨ ランタンとの会話`, html, '閉じる', null, '');
+
+  } else if(id === 'Yb'){
+    const html = `
+      <div style="font-size:0.8rem; text-align:left; line-height:1.5">
+        <p>「やあ……僕がイッテルビウムだよ。<b>精密な光と時のコントロール</b>が得意なんだ。静かな環境で、正確な作業をこなすのが落ち着くんだよね。」</p>
+        <p>「高精度な<b>光格子時計や加工用レーザー、歪みセンサー</b>などで力を発揮しているよ。」</p>
+        <p>「僕と一緒に、一瞬の時間をピッタリ計るタイマーゲームで遊んでみないかい？」</p>
+        <div style="display:flex; flex-direction:column; gap:6px; margin-top:10px">
+          <button class="btn" style="background:#eab308; color:#000; font-weight:bold; font-size:0.82rem" onclick="location.href='ybtimer.html'">⏱️ イッテルビウムのジャストタイマーを遊ぶ</button>
+          <button class="btn" style="background:#3b82f6" onclick="askModal('💡 イッテルビウム解説', 'イッテルビウム(Yb)は、次世代の超高精度な「光格子時計」の原子として注目されている元素！強力なファイバーレーザーや、地震・圧力の検知センサーなど、極めて精密な分野で大活躍しているよ！', '戻る', ()=>talkChara('Yb'), '')">📖 イッテルビウムについて詳しく知る</button>
+        </div>
+      </div>
+    `;
+    askModal(`✨ イッテルビウムとの会話`, html, '閉じる', null, '');
+
   } else {
     const html = `
       <div style="font-size:0.82rem; text-align:center; padding:10px 0">
