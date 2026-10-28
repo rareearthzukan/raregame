@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ツリウムの「お名前呼んで」ゲーム</title>
+  <style>
+    :root {
+      --primary-color: #5c6bc0;
+      --accent-color: #ffca28;
+      --bg-color: #f0f4f8;
+      --card-bg: #ffffff;
+      --text-color: #333333;
+    }
+
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+    }
+
+    body {
+      margin: 0;
+      padding: 10px;
+      font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1200px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* タイトルヘッダー */
+    .game-title-header {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: var(--primary-color);
+      margin: 5px 0 10px 0;
+      text-align: center;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.05);
+    }
+
+    /* オープニング / ダイアログ */
+    .dialog-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.6);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+
+    .dialog-box {
+      background: #fff;
+      border-radius: 20px;
+      padding: 25px;
+      max-width: 520px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      animation: popIn 0.3s ease-out;
+    }
+
+    @keyframes popIn {
+      0% { transform: scale(0.8); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .dialog-img {
+      width: 130px;
+      height: 130px;
+      object-fit: contain;
+      margin-bottom: 10px;
+    }
+
+    .dialog-text {
+      font-size: 1.05rem;
+      line-height: 1.6;
+      margin-bottom: 20px;
+      background: #f7f9fc;
+      padding: 15px;
+      border-radius: 12px;
+      border: 2px solid #e2e8f0;
+      text-align: left;
+    }
+
+    /* ボタン共通スタイル */
+    .btn {
+      background-color: #4cae50;
+      color: white;
+      border: none;
+      padding: 10px 24px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      border-radius: 25px;
+      cursor: pointer;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      text-decoration: none;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 8px rgba(0,0,0,0.15);
+    }
+
+    .btn-retire {
+      background-color: #ef5350;
+      font-size: 0.9rem;
+      padding: 6px 14px;
+      border-radius: 18px;
+    }
+
+    .btn-secondary {
+      background-color: #5c6bc0;
+    }
+
+    .btn-sub {
+      background-color: #78909c;
+    }
+
+    /* ゲームヘッダー */
+    header {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: white;
+      padding: 8px 16px;
+      border-radius: 12px;
+      margin-bottom: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    .timer-bar {
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: #e53935;
+    }
+
+    .progress-info {
+      font-size: 1.05rem;
+      font-weight: bold;
+      color: var(--primary-color);
+    }
+
+    /* メインエリア */
+    .game-area {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 15px;
+      align-items: start;
+    }
+
+    /* キャラクターエリア (ドロップ先) */
+    .charas-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(115px, 1fr));
+      gap: 10px;
+      background: rgba(255, 255, 255, 0.7);
+      padding: 12px;
+      border-radius: 15px;
+    }
+
+    .chara-card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      border: 2px dashed #cbd5e1;
+      height: 145px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px;
+      position: relative;
+      transition: all 0.2s;
+    }
+
+    .chara-card.matched {
+      border-style: solid;
+      border-color: #4caf50;
+      background-color: #f0fdf4;
+    }
+
+    .chara-img-wrapper {
+      width: 75px;
+      height: 75px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .chara-img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+    /* 吹き出し (不正解時) */
+    .speech-bubble {
+      position: absolute;
+      top: -22px;
+      background: #ff5252;
+      color: white;
+      padding: 2px 6px;
+      border-radius: 8px;
+      font-size: 0.75rem;
+      font-weight: bold;
+      white-space: nowrap;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.2s;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .speech-bubble::after {
+      content: '';
+      position: absolute;
+      bottom: -5px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-width: 5px 5px 0;
+      border-style: solid;
+      border-color: #ff5252 transparent;
+      display: block;
+      width: 0;
+    }
+
+    .speech-bubble.show {
+      opacity: 1;
+      transform: translateY(0);
+      animation: shake 0.4s ease-in-out;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-5px); }
+      40%, 80% { transform: translateX(5px); }
+    }
+
+    /* 名札スロット (ドロップエリア) */
+    .slot-area {
+      width: 100%;
+      height: 38px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* 名札エリア (ドラッグ元) */
+    .names-container {
+      background: white;
+      padding: 12px;
+      border-radius: 15px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+      max-height: 75vh;
+      overflow-y: auto;
+    }
+
+    .names-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .name-tag {
+      background: #ffffff;
+      border: 2px solid var(--primary-color);
+      border-radius: 6px;
+      padding: 5px 10px;
+      font-size: 0.9rem;
+      font-weight: bold;
+      color: var(--primary-color);
+      cursor: grab;
+      box-shadow: 0 2px 3px rgba(0,0,0,0.08);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      touch-action: none;
+      user-select: none;
+    }
+
+    .name-tag .symbol {
+      background: var(--primary-color);
+      color: white;
+      padding: 1px 5px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+    }
+
+    .name-tag.dragging {
+      opacity: 0.4;
+    }
+
+    .name-tag.placed {
+      cursor: default;
+      box-shadow: none;
+      border-color: #4caf50;
+      background-color: #e8f5e9;
+      color: #2e7d32;
+      width: 100%;
+      height: 100%;
+      justify-content: center;
+      font-size: 0.85rem;
+      padding: 2px;
+    }
+    .name-tag.placed .symbol {
+      background-color: #2e7d32;
+    }
+
+    /* ドラッグ追従クローン */
+    .drag-clone {
+      position: fixed;
+      pointer-events: none;
+      z-index: 1000;
+      opacity: 0.9;
+      transform: scale(1.05);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+
+    /* 結果画面 */
+    .result-screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      background: white;
+      padding: 25px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+      width: 100%;
+      max-width: 600px;
+      text-align: center;
+    }
+
+    .result-title {
+      font-size: 2rem;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .result-title.success { color: #2e7d32; }
+    .result-title.miss { color: #c62828; }
+
+    /* ★ ツリウムの笑顔（CharaTm_game1.png）を大きく表示するためのスタイル */
+    .result-img-wrapper {
+      position: relative;
+      margin: 10px 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .result-img {
+      width: 260px; /* 大幅に拡大 */
+      height: 260px;
+      object-fit: contain;
+      filter: drop-shadow(0 8px 12px rgba(0,0,0,0.15));
+      transition: transform 0.3s ease;
+    }
+
+    .result-img.big-smile {
+      transform: scale(1.05);
+    }
+
+    .rewards-box {
+      background: #f8fafc;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 12px;
+      width: 100%;
+      margin: 10px 0 15px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .rewards-row {
+      display: flex;
+      justify-content: space-around;
+      width: 100%;
+    }
+
+    .reward-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .reward-label {
+      font-size: 0.85rem;
+      color: #64748b;
+    }
+
+    .reward-val {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #d97706;
+    }
+
+    .item-reward-box {
+      background: #fffbeb;
+      border: 1.5px dashed #f59e0b;
+      border-radius: 8px;
+      padding: 8px;
+      font-size: 0.9rem;
+      font-weight: bold;
+      color: #b45309;
+      text-align: center;
+    }
+
+    /* ボタン群ナビゲーション */
+    .action-btn-group {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+      width: 100%;
+    }
+
+    /* レスポンシブ対応 */
+    @media (max-width: 800px) {
+      .game-area {
+        grid-template-columns: 1fr;
+      }
+      .names-container {
+        max-height: none;
+      }
+      .names-grid {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      .charas-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+      .result-img {
+        width: 200px;
+        height: 200px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <!-- タイトル表示 -->
+  <div class="game-title-header">【ツリウムの「お名前呼んで」ゲーム】</div>
+
+  <!-- オープニングモーダル -->
+  <div id="openingModal" class="dialog-overlay">
+    <div class="dialog-box">
+      <img src="Chara0_Tm.png" alt="ツリウム" class="dialog-img" id="openingImg">
+      <div class="dialog-text">
+        「・・・ところでボクの名前って覚えてくれたかな・・・？みんなの名前はわかるかな？」<br><br>
+        🎮 <b>あそびかた</b><br>
+        右側の名札をドラッグ（またはスワイプ）して、同じ元素キャラクターの上のスペースに置いてね！全員正解させよう！
+      </div>
+      <button class="btn" onclick="startGame()">スタート！</button>
+    </div>
+  </div>
+
+  <!-- ゲームメイン画面 -->
+  <header id="gameHeader" style="display:none;">
+    <div class="progress-info">せいかい: <span id="correctCount">0</span> / 17</div>
+    <div class="timer-bar">のこり時間: <span id="timeLeft">90</span>秒</div>
+    <button class="btn btn-retire" onclick="retireGame()">🏠 リタイア（homeに戻る）</button>
+  </header>
+
+  <div id="gamePlayArea" class="game-area" style="display:none;">
+    <!-- キャラクター一覧エリア (ドロップ先) -->
+    <div class="charas-grid" id="charasGrid"></div>
+
+    <!-- 名札ドラッグエリア -->
+    <div class="names-container">
+      <div style="font-size: 0.85rem; font-weight: bold; color: #64748b; margin-bottom: 6px; text-align: center;">名札一覧</div>
+      <div class="names-grid" id="namesGrid"></div>
+    </div>
+  </div>
+
+  <!-- リザルト画面 -->
+  <div id="resultScreen" class="result-screen">
+    <div id="resultTitle" class="result-title"></div>
+    <div class="result-img-wrapper">
+      <img id="resultImg" class="result-img" src="" alt="結果">
+    </div>
+    <div id="resultMessage" style="margin-bottom: 8px; font-weight: bold; font-size: 1.05rem;"></div>
+    
+    <div class="rewards-box">
+      <div class="rewards-row">
+        <div class="reward-item">
+          <span class="reward-label">ボーナス</span>
+          <span class="reward-val" id="rewardGold">0 G</span>
+        </div>
+        <div class="reward-item">
+          <span class="reward-label">かかった時間</span>
+          <span class="reward-val" id="timeSpent">0秒</span>
+        </div>
+        <div class="reward-item">
+          <span class="reward-label">かくとく経験値</span>
+          <span class="reward-val" id="rewardExp">+0</span>
+        </div>
+      </div>
+      <div id="itemRewardContainer" style="display: none;">
+        <div class="item-reward-box">
+          🎁 獲得アイテム：元素詰め合わせＢＯＸ（全種類の元素×１０個）
+        </div>
+      </div>
+    </div>
+
+    <!-- 各種遷移ボタン -->
+    <div class="action-btn-group">
+      <button class="btn" onclick="resetGame()">🔄 もういちど遊ぶ</button>
+      <a href="home.html" class="btn btn-secondary">🏠 homeに戻る</a>
+      <a href="map.html" class="btn btn-sub">🗺️ mapに戻る</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  // --- データ定義 (17元素) ---
+  const ELEMENTS = [
+    { symbol: 'Sc', name: 'スカンジウム' },
+    { symbol: 'Y',  name: 'イットリウム' },
+    { symbol: 'La', name: 'ランタン' },
+    { symbol: 'Ce', name: 'セリウム' },
+    { symbol: 'Pr', name: 'プラセオジム' },
+    { symbol: 'Nd', name: 'ネオジム' },
+    { symbol: 'Pm', name: 'プロメチウム' },
+    { symbol: 'Sm', name: 'サマリウム' },
+    { symbol: 'Eu', name: 'ユウロピウム' },
+    { symbol: 'Gd', name: 'ガドリニウム' },
+    { symbol: 'Tb', name: 'テルビウム' },
+    { symbol: 'Dy', name: 'ジスプロシウム' },
+    { symbol: 'Ho', name: 'ホルミウム' },
+    { symbol: 'Er', name: 'エルビウム' },
+    { symbol: 'Tm', name: 'ツリウム' },
+    { symbol: 'Yb', name: 'イッテルビウム' },
+    { symbol: 'Lu', name: 'ルテチウム' }
+  ];
+
+  const LIMIT_TIME = 90; // 制限時間 (秒)
+  let timer = null;
+  let timeRemaining = LIMIT_TIME;
+  let correctMatches = 0;
+  let draggedElement = null;
+  let activeTouchClone = null;
+  let touchOffset = { x: 0, y: 0 };
+
+  // 音声関連
+  const audioSeikai = new Audio('mini_seikai.mp3');
+
+  function playSound(type) {
+    if (type === 'correct') {
+      audioSeikai.play().catch(() => playSynthSound(true));
+    } else {
+      playSynthSound(false);
+    }
+  }
+
+  // フォールバック用効果音合成
+  function playSynthSound(isCorrect) {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      if (isCorrect) {
+        osc.frequency.setValueAtTime(523.25, ctx.currentTime);
+        osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.1);
+        gain.gain.setValueAtTime(0.3, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.3);
+      } else {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(180, ctx.currentTime);
+        osc.frequency.setValueAtTime(140, ctx.currentTime + 0.15);
+        gain.gain.setValueAtTime(0.3, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.3);
+      }
+    } catch(e) {}
+  }
+
+  // ダミーSVGプレースホルダー作成
+  function createPlaceholderSVG(symbol) {
+    return `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="%23e2e8f0"/><circle cx="35" cy="40" r="5" fill="%23333"/><circle cx="65" cy="40" r="5" fill="%23333"/><path d="M 35 65 Q 50 75 65 65" stroke="%23333" stroke-width="3" fill="none"/><text x="50" y="25" font-family="sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="%235c6bc0">${symbol}</text></svg>`;
+  }
+
+  function shuffle(array) {
+    const arr = [...array];
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  function startGame() {
+    document.getElementById('openingModal').style.display = 'none';
+    document.getElementById('gameHeader').style.display = 'flex';
+    document.getElementById('gamePlayArea').style.display = 'grid';
+    document.getElementById('resultScreen').style.display = 'none';
+
+    correctMatches = 0;
+    timeRemaining = LIMIT_TIME;
+    document.getElementById('correctCount').innerText = correctMatches;
+    document.getElementById('timeLeft').innerText = timeRemaining;
+
+    buildGameBoard();
+    startTimer();
+  }
+
+  function startTimer() {
+    clearInterval(timer);
+    timer = setInterval(() => {
+      timeRemaining--;
+      document.getElementById('timeLeft').innerText = timeRemaining;
+      if (timeRemaining <= 0) {
+        clearInterval(timer);
+        endGame(false);
+      }
+    }, 1000);
+  }
+
+  // リタイア処理
+  function retireGame() {
+    if (confirm('ゲームをリタイアして home に戻りますか？')) {
+      clearInterval(timer);
+      window.location.href = 'home.html';
+    }
+  }
+
+  function buildGameBoard() {
+    const charasGrid = document.getElementById('charasGrid');
+    const namesGrid = document.getElementById('namesGrid');
+
+    charasGrid.innerHTML = '';
+    namesGrid.innerHTML = '';
+
+    const shuffledCharas = shuffle(ELEMENTS);
+    const shuffledNames = shuffle(ELEMENTS);
+
+    shuffledCharas.forEach(elem => {
+      const card = document.createElement('div');
+      card.className = 'chara-card';
+      card.dataset.symbol = elem.symbol;
+
+      const speech = document.createElement('div');
+      speech.className = 'speech-bubble';
+      speech.innerText = 'ちがうよ～';
+
+      const imgWrapper = document.createElement('div');
+      imgWrapper.className = 'chara-img-wrapper';
+
+      const img = document.createElement('img');
+      img.className = 'chara-img';
+      img.src = `Chara0_${elem.symbol}.png`;
+      img.onerror = () => { img.src = createPlaceholderSVG(elem.symbol); };
+
+      imgWrapper.appendChild(img);
+      imgWrapper.appendChild(speech);
+
+      const slot = document.createElement('div');
+      slot.className = 'slot-area';
+
+      card.appendChild(imgWrapper);
+      card.appendChild(slot);
+      charasGrid.appendChild(card);
+
+      card.addEventListener('dragover', e => e.preventDefault());
+      card.addEventListener('drop', e => handleDrop(e, elem.symbol));
+    });
+
+    shuffledNames.forEach(elem => {
+      const tag = document.createElement('div');
+      tag.className = 'name-tag';
+      tag.draggable = true;
+      tag.dataset.symbol = elem.symbol;
+      tag.id = `tag-${elem.symbol}`;
+
+      tag.innerHTML = `<span class="symbol">${elem.symbol}</span><span>${elem.name}</span>`;
+
+      tag.addEventListener('dragstart', e => {
+        draggedElement = elem.symbol;
+        e.dataTransfer.setData('text/plain', elem.symbol);
+        tag.classList.add('dragging');
+      });
+
+      tag.addEventListener('dragend', () => {
+        tag.classList.remove('dragging');
+      });
+
+      tag.addEventListener('touchstart', e => handleTouchStart(e, elem.symbol), { passive: false });
+      tag.addEventListener('touchmove', handleTouchMove, { passive: false });
+      tag.addEventListener('touchend', handleTouchEnd, { passive: false });
+
+      namesGrid.appendChild(tag);
+    });
+  }
+
+  function handleDrop(e, targetSymbol) {
+    e.preventDefault();
+    const symbol = e.dataTransfer.getData('text/plain') || draggedElement;
+    checkAnswer(symbol, targetSymbol);
+  }
+
+  function checkAnswer(draggedSymbol, targetSymbol) {
+    const card = document.querySelector(`.chara-card[data-symbol="${targetSymbol}"]`);
+    const tag = document.getElementById(`tag-${draggedSymbol}`);
+
+    if (!card || !tag || tag.classList.contains('placed')) return;
+
+    if (draggedSymbol === targetSymbol) {
+      playSound('correct');
+      card.classList.add('matched');
+      tag.classList.add('placed');
+      tag.draggable = false;
+
+      const slot = card.querySelector('.slot-area');
+      slot.appendChild(tag);
+
+      correctMatches++;
+      document.getElementById('correctCount').innerText = correctMatches;
+
+      if (correctMatches === ELEMENTS.length) {
+        clearInterval(timer);
+        endGame(true);
+      }
+    } else {
+      playSound('wrong');
+      const speech = card.querySelector('.speech-bubble');
+      speech.classList.add('show');
+      setTimeout(() => {
+        speech.classList.remove('show');
+      }, 1200);
+    }
+  }
+
+  function handleTouchStart(e, symbol) {
+    const tag = e.currentTarget;
+    if (tag.classList.contains('placed')) return;
+
+    draggedElement = symbol;
+    const touch = e.touches[0];
+    const rect = tag.getBoundingClientRect();
+
+    touchOffset.x = touch.clientX - rect.left;
+    touchOffset.y = touch.clientY - rect.top;
+
+    activeTouchClone = tag.cloneNode(true);
+    activeTouchClone.classList.add('drag-clone');
+    activeTouchClone.style.width = `${rect.width}px`;
+    activeTouchClone.style.left = `${touch.clientX - touchOffset.x}px`;
+    activeTouchClone.style.top = `${touch.clientY - touchOffset.y}px`;
+
+    document.body.appendChild(activeTouchClone);
+    tag.style.opacity = '0.4';
+  }
+
+  function handleTouchMove(e) {
+    if (!activeTouchClone) return;
+    e.preventDefault();
+
+    const touch = e.touches[0];
+    activeTouchClone.style.left = `${touch.clientX - touchOffset.x}px`;
+    activeTouchClone.style.top = `${touch.clientY - touchOffset.y}px`;
+  }
+
+  function handleTouchEnd(e) {
+    if (!activeTouchClone) return;
+
+    const touch = e.changedTouches[0];
+    activeTouchClone.style.display = 'none';
+    const dropTarget = document.elementFromPoint(touch.clientX, touch.clientY);
+    activeTouchClone.remove();
+    activeTouchClone = null;
+
+    const originalTag = document.getElementById(`tag-${draggedElement}`);
+    if (originalTag) originalTag.style.opacity = '1';
+
+    if (dropTarget) {
+      const card = dropTarget.closest('.chara-card');
+      if (card) {
+        const targetSymbol = card.dataset.symbol;
+        checkAnswer(draggedElement, targetSymbol);
+      }
+    }
+    draggedElement = null;
+  }
+
+  function endGame(isSuccess) {
+    document.getElementById('gameHeader').style.display = 'none';
+    document.getElementById('gamePlayArea').style.display = 'none';
+    const resultScreen = document.getElementById('resultScreen');
+    resultScreen.style.display = 'flex';
+
+    const titleEl = document.getElementById('resultTitle');
+    const imgEl = document.getElementById('resultImg');
+    const msgEl = document.getElementById('resultMessage');
+    const goldEl = document.getElementById('rewardGold');
+    const timeEl = document.getElementById('timeSpent');
+    const expEl = document.getElementById('rewardExp');
+    const itemRewardContainer = document.getElementById('itemRewardContainer');
+
+    const timeSpent = LIMIT_TIME - timeRemaining;
+    timeEl.innerText = isSuccess ? `${timeSpent}秒` : '時間切れ';
+
+    if (isSuccess) {
+      titleEl.innerText = 'CLEAR!!';
+      titleEl.className = 'result-title success';
+      imgEl.src = 'CharaTm_game1.png';
+      imgEl.classList.add('big-smile');
+      imgEl.onerror = () => { imgEl.src = createPlaceholderSVG('Tm'); };
+      msgEl.innerText = 'すごーい！全員のお名前完璧に覚えてくれたんだね！';
+
+      const bonusG = Math.max(100, (LIMIT_TIME - timeSpent) * 50);
+      goldEl.innerText = `${bonusG} G`;
+      expEl.innerText = '+100';
+      itemRewardContainer.style.display = 'block';
+    } else {
+      titleEl.innerText = 'MISS...';
+      titleEl.className = 'result-title miss';
+      imgEl.src = 'Chara0_Tm.png';
+      imgEl.classList.remove('big-smile');
+      imgEl.onerror = () => { imgEl.src = createPlaceholderSVG('Tm'); };
+      msgEl.innerText = 'ざんねん…制限時間になっちゃった。';
+
+      goldEl.innerText = '0 G';
+      expEl.innerText = '+50';
+      itemRewardContainer.style.display = 'none';
+    }
+  }
+
+  function resetGame() {
+    document.getElementById('openingModal').style.display = 'flex';
+    document.getElementById('resultScreen').style.display = 'none';
+    document.getElementById('openingImg').src = 'Chara0_Tm.png';
+  }
+</script>
+
+</body>
+</html>
