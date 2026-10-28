@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>ネオジムのMETALS SORTING & 金属分類図鑑</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome & Google Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Zen+Kaku+Gothic+New:wght@400;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            user-select: none;
+            -webkit-user-select: none;
+            box-sizing: border-box;
+            touch-action: manipulation;
+        }
+        body {
+            font-family: 'Zen Kaku Gothic New', sans-serif;
+            background-color: #0b0f19;
+            color: #e2e8f0;
+            overflow-x: hidden;
+        }
+        .font-orbitron {
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        /* 金属質感・サイバーテーマ */
+        .cyber-panel {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border: 2px solid #334155;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        /* 明るいグレー基調のベルトループ背景（キャラの切り抜きを自然に見せる） */
+        .conveyor-bg {
+            background: repeating-linear-gradient(
+                0deg,
+                #cbd5e1 0px,
+                #cbd5e1 20px,
+                #94a3b8 20px,
+                #94a3b8 40px
+            );
+            animation: conveyorMove 1.5s linear infinite;
+        }
+        .conveyor-paused {
+            animation-play-state: paused;
+        }
+        @keyframes conveyorMove {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 40px; }
+        }
+
+        /* 警告グラデーション */
+        .warning-line {
+            background: repeating-linear-gradient(
+                -45deg,
+                #ef4444,
+                #ef4444 10px,
+                #7f1d1d 10px,
+                #7f1d1d 20px
+            );
+        }
+
+        /* ネオンボタン */
+        .btn-neon {
+            transition: all 0.15s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-neon:active {
+            transform: scale(0.95);
+        }
+
+        /* カテゴリカラー（ボタン専用） */
+        .bg-base { background: linear-gradient(135deg, #475569, #334155); border-color: #94a3b8; }
+        .bg-precious { background: linear-gradient(135deg, #eab308, #ca8a04); border-color: #fef08a; text-shadow: 0 1px 2px rgba(0,0,0,0.6); }
+        .bg-rare { background: linear-gradient(135deg, #2563eb, #1d4ed8); border-color: #93c5fd; }
+        .bg-earth { background: linear-gradient(135deg, #9333ea, #7e22ce); border-color: #f0abfc; }
+
+        /* 鉱物チップ用：全元素で統一されたダークシアンメタリックデザイン */
+        .chip-unified {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            border: 2px solid #00fff5;
+            color: #ffffff;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+        }
+
+        /* ネオジムキャラリアクションアニメーション */
+        @keyframes ndReact {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1) translateY(-10px); }
+            100% { transform: scale(1); }
+        }
+        .nd-happy {
+            animation: ndReact 0.5s ease-out;
+        }
+
+        /* 右上「図鑑」ボタンの点滅強調 */
+        @keyframes blinkCircle {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(236, 72, 153, 0);
+                border-color: #00fff5;
+            }
+            50% {
+                box-shadow: 0 0 0 8px rgba(236, 72, 153, 0.8), 0 0 15px #f0abfc;
+                border-color: #ec4899;
+                transform: scale(1.1);
+            }
+        }
+        .blink-enc {
+            animation: blinkCircle 1s infinite ease-in-out;
+            border-radius: 9999px !important;
+            background-color: #831843 !important;
+            color: #f472b6 !important;
+        }
+
+        /* 浮遊テキストアニメーション */
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-50px) scale(1.3); }
+        }
+        .floating-text {
+            position: absolute;
+            animation: floatUp 0.8s ease-out forwards;
+            pointer-events: none;
+            font-weight: 900;
+            z-index: 50;
+        }
+
+        /* 落下鉱物スタイル */
+        .mineral-chip {
+            position: absolute;
+            transition: transform 0.05s linear;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-2 sm:p-4">
+
+    <!-- 外部音声SE -->
+    <audio id="se-seikai" src="SE_seikai.mp3" preload="auto"></audio>
+
+    <!-- メインコンテナ（スマホ枠風設計） -->
+    <div class="w-full max-w-[400px] h-[760px] cyber-panel rounded-3xl overflow-hidden flex flex-col relative border-4 border-slate-700 shadow-2xl">
+        
+        <!-- ヘッダー (ステータス・設定) -->
+        <header class="bg-slate-900 border-b border-slate-700 p-3 flex justify-between items-center z-20">
+            <div>
+                <div class="text-xs text-slate-400 font-bold flex items-center gap-1">
+                    <i class="fa-solid font-orbitron text-cyan-400 fa-magnet"></i> METALS SORTING
+                </div>
+                <div class="flex items-center gap-2 mt-0.5">
+                    <span id="level-display" class="bg-cyan-900/80 text-cyan-300 text-xs px-2 py-0.5 rounded font-orbitron border border-cyan-500/30">Lv.1</span>
+                    <span id="gold-display" class="text-yellow-400 font-orbitron text-sm font-bold"><i class="fa-solid fa-coins mr-1"></i>0 G</span>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-2">
+                <!-- 図鑑ボタン -->
+                <button id="btn-encyclopedia" class="bg-slate-800 hover:bg-slate-700 text-cyan-400 border border-cyan-500/50 p-2 rounded-xl text-xs flex items-center gap-1 transition">
+                    <i class="fa-solid fa-book-atlas text-sm"></i>
+                    <span class="font-bold">図鑑</span>
+                </button>
+                <!-- 音声切り替え -->
+                <button id="btn-sound" class="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-600 p-2 rounded-xl text-xs w-9 h-9 flex items-center justify-center">
+                    <i class="fa-solid fa-volume-xmark text-red-400"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- 経験値バー -->
+        <div class="w-full bg-slate-950 h-1.5 relative overflow-hidden">
+            <div id="exp-bar" class="bg-gradient-to-r from-cyan-500 to-blue-500 h-full w-0% transition-all duration-300"></div>
+        </div>
+
+        <!-- タイム＆スコアパネル -->
+        <div class="bg-slate-900/90 px-4 py-2 border-b border-slate-800 flex justify-between items-center z-10 font-orbitron">
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-clock text-rose-500 text-sm"></i>
+                <span class="text-xs text-slate-400">TIME:</span>
+                <span id="timer-display" class="text-lg font-bold text-white">60</span><span class="text-xs text-slate-400">s</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-bolt text-amber-400 text-sm"></i>
+                <span class="text-xs text-slate-400">COMBO:</span>
+                <span id="combo-display" class="text-lg font-bold text-amber-400">0</span>
+            </div>
+            <div>
+                <span class="text-xs text-slate-400">SCORE:</span>
+                <span id="score-display" class="text-lg font-bold text-cyan-400">0</span>
+            </div>
+        </div>
+
+        <!-- アクションゲーム・コンベアエリア (明るいグレー背景) -->
+        <main id="game-area" class="flex-1 relative overflow-hidden conveyor-bg conveyor-paused flex flex-col justify-end">
+            
+            <!-- 背景：ネオジムキャラクター (CharaNd_game1.png) -->
+            <div class="absolute inset-0 flex items-center justify-center pointer-events-none z-0 opacity-80">
+                <img id="chara-nd" src="CharaNd_game1.png" alt="Nd Character" class="max-h-[85%] object-contain transition-all duration-200">
+            </div>
+
+            <!-- 落下ライン警示 -->
+            <div class="absolute bottom-[90px] w-full h-3 warning-line opacity-80 z-0"></div>
+            <div class="absolute bottom-[80px] left-2 text-[10px] text-red-600 font-black tracking-widest z-0">
+                ▲ RECOVERY ZONE ▲
+            </div>
+
+            <!-- ドロップされるアイテムコンテナ -->
+            <div id="item-container" class="absolute inset-0 pointer-events-none z-10"></div>
+
+            <!-- スタート/オーバー オーバーレイ -->
+            <div id="start-overlay" class="absolute inset-0 bg-slate-950/90 backdrop-blur-sm z-30 flex flex-col items-center justify-center p-5 text-center">
+                <div class="w-32 h-32 mb-2 flex items-center justify-center">
+                    <img src="Chara0_Nd.png" alt="ネオジム" class="max-h-full max-w-full object-contain drop-shadow-[0_0_15px_rgba(0,255,245,0.4)]">
+                </div>
+                <h1 class="text-xl font-black text-white mb-1 tracking-wide leading-tight">ネオジムの<br><span class="text-cyan-400 font-orbitron text-2xl">METALS SORTING</span></h1>
+                <p class="text-xs text-slate-300 mb-5 leading-relaxed">
+                    流れてくる鉱物を適切な回収カゴへ仕分けよう！<br>
+                    正解で資金・経験値GET！間違えるとペナルティ！
+                </p>
+                <button id="btn-start" class="btn-neon w-full py-3.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-black text-lg rounded-xl shadow-lg border border-cyan-300/40">
+                    ミッション開始
+                </button>
+            </div>
+
+            <div id="result-overlay" class="absolute inset-0 bg-slate-950/90 backdrop-blur-md z-30 flex flex-col items-center justify-center p-5 text-center hidden">
+                <h2 class="text-2xl font-black text-amber-400 mb-1">SORTING COMPLETE!</h2>
+                <p class="text-xs text-slate-400 mb-3">作業結果レポート</p>
+                
+                <div class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 mb-3 text-left space-y-1.5 text-xs">
+                    <div class="flex justify-between">
+                        <span class="text-slate-400">獲得スコア:</span>
+                        <span id="res-score" class="font-bold text-cyan-400 font-orbitron text-sm">0</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-slate-400">正解数 / 失敗数:</span>
+                        <span class="font-bold text-white"><span id="res-correct" class="text-emerald-400">0</span> / <span id="res-wrong" class="text-rose-400">0</span></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-slate-400">最大コンボ:</span>
+                        <span id="res-maxcombo" class="font-bold text-amber-400 font-orbitron">0</span>
+                    </div>
+                    <div class="flex justify-between border-t border-slate-800 pt-1.5">
+                        <span class="text-slate-400">獲得経験値 (EXP):</span>
+                        <span id="res-exp" class="font-bold text-purple-400 font-orbitron">+0 EXP</span>
+                    </div>
+                    <div class="flex justify-between border-t border-slate-800 pt-1.5 text-sm font-bold">
+                        <span class="text-slate-300">獲得報酬 (G):</span>
+                        <span id="res-gold" class="text-yellow-400 font-orbitron">+0 G</span>
+                    </div>
+                </div>
+
+                <button id="btn-restart" class="btn-neon w-full py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-black text-base rounded-xl shadow-lg border border-emerald-300/40 mb-3">
+                    再チャレンジ
+                </button>
+
+                <!-- 図鑑案内メッセージ -->
+                <p class="text-[11px] text-pink-300 font-bold bg-pink-950/60 border border-pink-500/40 p-2 rounded-lg animate-pulse">
+                    💡 これって何？って気になったら右上の「図鑑」で調べてみてね。
+                </p>
+            </div>
+        </main>
+
+        <!-- 回収ボタンエリア (4分類) -->
+        <footer class="bg-slate-950 border-t border-slate-800 p-3 z-20">
+            <div class="grid grid-cols-2 gap-2">
+                <button data-category="base" class="sort-btn btn-neon bg-base border text-white p-3 rounded-xl flex flex-col items-center justify-center shadow-lg active:translate-y-0.5">
+                    <span class="text-xs opacity-80 font-bold mb-0.5">📱 ベースメタル</span>
+                    <span class="text-[10px] text-slate-300">Fe, Cu, Al, Zn など</span>
+                </button>
+                <button data-category="precious" class="sort-btn btn-neon bg-precious border text-slate-950 p-3 rounded-xl flex flex-col items-center justify-center shadow-lg active:translate-y-0.5 font-bold">
+                    <span class="text-xs mb-0.5">💍 貴金属</span>
+                    <span class="text-[10px] text-slate-900/80">Au, Ag, Pt, Pd など</span>
+                </button>
+                <button data-category="rare" class="sort-btn btn-neon bg-rare border text-white p-3 rounded-xl flex flex-col items-center justify-center shadow-lg active:translate-y-0.5">
+                    <span class="text-xs opacity-90 font-bold mb-0.5">🔋 レアメタル</span>
+                    <span class="text-[10px] text-blue-200">Li, Co, Ti, W など</span>
+                </button>
+                <button data-category="earth" class="sort-btn btn-neon bg-earth border text-white p-3 rounded-xl flex flex-col items-center justify-center shadow-lg active:translate-y-0.5">
+                    <span class="text-xs opacity-90 font-bold mb-0.5">🌟 レアアース</span>
+                    <span class="text-[10px] text-purple-200">Nd, Dy, Sc, Y 等 17元素</span>
+                </button>
+            </div>
+        </footer>
+
+    </div>
+
+    <!-- 金属分類図鑑モーダル（全59元素・検索・構造図解） -->
+    <div id="modal-encyclopedia" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-2 sm:p-4 hidden">
+        <div class="bg-slate-900 border-2 border-slate-700 w-full max-w-2xl max-h-[90vh] rounded-2xl flex flex-col overflow-hidden shadow-2xl">
+            
+            <!-- モーダルヘッダー -->
+            <div class="bg-slate-950 px-4 py-3 border-b border-slate-800 flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-book-atlas text-cyan-400 text-lg"></i>
+                    <h2 class="text-base font-bold text-white tracking-wide">金属分類図鑑 (全59元素)</h2>
+                </div>
+                <button id="btn-close-modal" class="text-slate-400 hover:text-white p-1">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+
+            <!-- タブ ＆ 検索バー -->
+            <div class="p-3 bg-slate-900 border-b border-slate-800 space-y-2">
+                <!-- 検索入力 -->
+                <div class="relative">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                    <input type="text" id="search-input" placeholder="元素名・記号・読み・用途で検索..." 
+                           class="w-full bg-slate-950 border border-slate-700 rounded-lg pl-8 pr-3 py-1.5 text-xs text-white focus:outline-none focus:border-cyan-500">
+                </div>
+
+                <!-- 分類切り替えタブ -->
+                <div class="flex gap-1 overflow-x-auto pb-1 text-xs">
+                    <button data-tab="diagram" class="enc-tab bg-cyan-600 text-white px-3 py-1 rounded-md font-bold whitespace-nowrap">包含構造図</button>
+                    <button data-tab="all" class="enc-tab bg-slate-800 text-slate-300 px-3 py-1 rounded-md font-bold whitespace-nowrap">全元素 (59)</button>
+                    <button data-tab="base" class="enc-tab bg-slate-800 text-slate-300 px-3 py-1 rounded-md font-bold whitespace-nowrap">ベース (7)</button>
+                    <button data-tab="precious" class="enc-tab bg-slate-800 text-slate-300 px-3 py-1 rounded-md font-bold whitespace-nowrap">貴金属 (8)</button>
+                    <button data-tab="rare" class="enc-tab bg-slate-800 text-slate-300 px-3 py-1 rounded-md font-bold whitespace-nowrap">レアメタル (27)</button>
+                    <button data-tab="earth" class="enc-tab bg-slate-800 text-slate-300 px-3 py-1 rounded-md font-bold whitespace-nowrap">レアアース (17)</button>
+                </div>
+            </div>
+
+            <!-- モーダルコンテンツ表示領域 -->
+            <div class="flex-1 overflow-y-auto p-3 sm:p-4 space-y-4">
+                
+                <!-- 1. 包含関係概念図エリア -->
+                <div id="tab-diagram" class="space-y-3">
+                    <div class="bg-slate-950 border border-slate-800 p-3 rounded-xl text-xs text-slate-300">
+                        <h3 class="text-cyan-400 font-bold mb-2 text-sm"><i class="fa-solid fa-sitemap mr-1"></i> 金属資源の分類構造概念</h3>
+                        <p class="leading-relaxed text-slate-400 mb-3">
+                            産業で使われる金属（非鉄金属・鉄）は大きく分けられます。「レアメタル」は流通量が少なく希少な31鉱種の総称で、**レアアース（希土類17元素）はそのレアメタルの中の１グループ**として包含されています。
+                        </p>
+
+                        <!-- BOX構造ネスト表示 -->
+                        <div class="space-y-3">
+                            <!-- 全金属概念枠 -->
+                            <div class="border-2 border-dashed border-slate-600 rounded-xl p-3 bg-slate-900/50">
+                                <span class="text-[11px] font-bold text-slate-400 block mb-2">金属資源 (Industrial Metals)</span>
+
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+                                    <!-- ベースメタル -->
+                                    <div class="bg-slate-800 border border-slate-600 rounded-lg p-2">
+                                        <div class="font-bold text-slate-200 flex justify-between items-center">
+                                            <span>📱 ベースメタル</span>
+                                            <span class="text-[10px] bg-slate-700 px-1.5 py-0.5 rounded">7元素</span>
+                                        </div>
+                                        <p class="text-[10px] text-slate-400 mt-1">生産量・消費量が多く、社会インフラの基本となる主要金属。</p>
+                                    </div>
+
+                                    <!-- 貴金属 -->
+                                    <div class="bg-amber-950/40 border border-amber-600/50 rounded-lg p-2">
+                                        <div class="font-bold text-amber-300 flex justify-between items-center">
+                                            <span>💍 貴金属</span>
+                                            <span class="text-[10px] bg-amber-900/60 px-1.5 py-0.5 rounded text-amber-200">8元素</span>
+                                        </div>
+                                        <p class="text-[10px] text-amber-200/70 mt-1">希少で耐食性に優れ、装飾品や高精度電子部品に用いられる。</p>
+                                    </div>
+
+                                    <!-- レアメタル（外枠） -->
+                                    <div class="bg-blue-950/40 border-2 border-blue-500 rounded-lg p-2 md:col-span-1">
+                                        <div class="font-bold text-blue-300 flex justify-between items-center">
+                                            <span>🔋 レアメタル (広義)</span>
+                                            <span class="text-[10px] bg-blue-900 px-1.5 py-0.5 rounded text-blue-200">44元素</span>
+                                        </div>
+                                        <p class="text-[10px] text-blue-200/70 my-1">地球上の存在量が少ないか、採取・精錬が技術的・経済的に困難な金属。</p>
+
+                                        <!-- 内包：レアアース -->
+                                        <div class="mt-2 bg-purple-950/60 border border-purple-400 rounded-md p-2">
+                                            <div class="font-bold text-purple-300 text-[11px] flex justify-between items-center">
+                                                <span>🌟 レアアース (希土類)</span>
+                                                <span class="text-[9px] bg-purple-800 px-1 py-0.5 rounded text-purple-100">17元素</span>
+                                            </div>
+                                            <p class="text-[9px] text-purple-200/80 mt-1">
+                                                スカンジウム(Sc)、イットリウム(Y)、ランタノイド15元素の計17元素。強力な磁石やLED発光体などに必須。
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. 全元素カードグリッド表示エリア -->
+                <div id="element-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <!-- JSにて動的生成 -->
+                </div>
+
+                <!-- 該当なし時メッセージ -->
+                <div id="no-results" class="text-center py-8 text-slate-500 text-xs hidden">
+                    <i class="fa-solid fa-circle-exclamation text-2xl mb-2"></i>
+                    <p>条件に一致する金属が見つかりません</p>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- アプリケーションロジック Script -->
+    <script>
+        // ========================================================
+        // 1. 全59元素の定義データセット
+        // ========================================================
+        const ELEMENTS_DATA = [
+            // --- ベースメタル (7) ---
+            { symbol: 'Fe', name: '鉄', kana: 'てつ', category: 'base', catName: 'ベースメタル', desc: '建築・インフラ・自動車など構造材料の主役。', icon: 'fa-cubes' },
+            { symbol: 'Cu', name: '銅', kana: 'どう', category: 'base', catName: 'ベースメタル', desc: '高い電導性。電線やモータ配線に不可欠。', icon: 'fa-bolt' },
+            { symbol: 'Al', name: 'アルミニウム', kana: 'あるみにうむ', category: 'base', catName: 'ベースメタル', desc: '軽量・高耐久。缶や航空機フレームに使用。', icon: 'fa-box' },
+            { symbol: 'Zn', name: '亜鉛', kana: 'あえん', category: 'base', catName: 'ベースメタル', desc: '鉄のメッキ（防錆）や真鍮合金の原料。', icon: 'fa-shield' },
+            { symbol: 'Pb', name: '鉛', kana: 'なまり', category: 'base', catName: 'ベースメタル', desc: '高密度。バッテリー（鉛蓄電池）や放射線遮蔽。', icon: 'fa-car-battery' },
+            { symbol: 'Ni', name: 'ニッケル', kana: 'にっける', category: 'base', catName: 'ベースメタル', desc: 'ステンレス鋼の添加剤やEV電池正極材。', icon: 'fa-battery-full' },
+            { symbol: 'Sn', name: 'スズ', kana: 'すず', category: 'base', catName: 'ベースメタル', desc: '融点が低い。基板のはんだ付けに欠かせない。', icon: 'fa-microchip' },
+
+            // --- 貴金属 (8) ---
+            { symbol: 'Au', name: '金', kana: 'きん', category: 'precious', catName: '貴金属', desc: '非常に安定。装飾品や超精密電子接点。', icon: 'fa-coins' },
+            { symbol: 'Ag', name: '銀', kana: 'ぎん', category: 'precious', catName: '貴金属', desc: '全金属中最高の導電率。太陽光パネル・写真。', icon: 'fa-sun' },
+            { symbol: 'Pt', name: 'プラチナ', kana: 'ぷらちな', category: 'precious', catName: '貴金属', desc: '排ガス浄化触媒や宝飾品、燃料電池。', icon: 'fa-gem' },
+            { symbol: 'Pd', name: 'パラジウム', kana: 'ぱらじうむ', category: 'precious', catName: '貴金属', desc: 'ガソリン車の排ガス浄化触媒や歯科技工。', icon: 'fa-car' },
+            { symbol: 'Rh', name: 'ロジウム', kana: 'ろじうむ', category: 'precious', catName: '貴金属', desc: '極めて高価。NOx還元触媒やめっき材料。', icon: 'fa-fire' },
+            { symbol: 'Ru', name: 'ルテニウム', kana: 'るてにうむ', category: 'precious', catName: '貴金属', desc: 'ハードディスクの記録層や耐摩耗接点。', icon: 'fa-hard-drive' },
+            { symbol: 'Ir', name: 'イリジウム', kana: 'いりじうむ', category: 'precious', catName: '貴金属', desc: '耐食性最硬クラス。スパークプラグの電極。', icon: 'fa-industry' },
+            { symbol: 'Os', name: 'オスミウム', kana: 'おすみうむ', category: 'precious', catName: '貴金属', desc: '自然界で最も密度の高い元素。万年筆ペン先。', icon: 'fa-pen-nib' },
+
+            // --- レアメタル (27) ---
+            { symbol: 'Li', name: 'リチウム', kana: 'りちうむ', category: 'rare', catName: 'レアメタル', desc: '軽量電池材料。スマホ・EV用リチウムイオン電池。', icon: 'fa-mobile-screen' },
+            { symbol: 'Co', name: 'コバルト', kana: 'こばると', category: 'rare', catName: 'レアメタル', desc: '高温耐性。電池正極材や耐熱超合金。', icon: 'fa-battery-three-quarters' },
+            { symbol: 'Ti', name: 'チタン', kana: 'ちたん', category: 'rare', catName: 'レアメタル', desc: '軽くて強い。航空機体・医療用インプラント。', icon: 'fa-plane' },
+            { symbol: 'W',  name: 'タングステン', kana: 'たんぐすてん', category: 'rare', catName: 'レアメタル', desc: '金属中最高融点。切削工具や電球フィラメント。', icon: 'fa-lightbulb' },
+            { symbol: 'Mn', name: 'マンガン', kana: 'まんがん', category: 'rare', catName: 'レアメタル', desc: '製鋼の脱酸・脱硫剤、乾電池材料。', icon: 'fa-flask' },
+            { symbol: 'Cr', name: 'クロム', kana: 'くろむ', category: 'rare', catName: 'レアメタル', desc: '硬度と耐食性を付与。ステンレス鋼めっき。', icon: 'fa-shield-halved' },
+            { symbol: 'V',  name: 'バナジウム', kana: 'ばなじうむ', category: 'rare', catName: 'レアメタル', desc: '強靭な強度のバナジウム鋼工具、蓄電池。', icon: 'fa-wrench' },
+            { symbol: 'Mo', name: 'モリブデン', kana: 'もりぶでん', category: 'rare', catName: 'レアメタル', desc: '高温強度を保つ特殊鋼添加剤、潤滑剤。', icon: 'fa-gear' },
+            { symbol: 'In', name: 'インジウム', kana: 'いんじうむ', category: 'rare', catName: 'レアメタル', desc: '透明導電膜（ITO）として液晶ディスプレイに使用。', icon: 'fa-display' },
+            { symbol: 'Bi', name: 'ビスマス', kana: 'びすます', category: 'rare', catName: 'レアメタル', desc: '低融点合金、鉛代替の環境対応医薬品。', icon: 'fa-prescription-bottle' },
+            { symbol: 'Ta', name: 'タンタル', kana: 'たんたる', category: 'rare', catName: 'レアメタル', desc: '小型で大容量のタンタルコンデンサ（スマホ基板）。', icon: 'fa-laptop' },
+            { symbol: 'Nb', name: 'ニオブ', kana: 'におぶ', category: 'rare', catName: 'レアメタル', desc: '超電導マグネット、パイプライン用高張力鋼。', icon: 'fa-magnet' },
+            { symbol: 'Ge', name: 'ゲルマニウム', kana: 'げるまにうむ', category: 'rare', catName: 'レアメタル', desc: '赤外線光学レンズ、光ファイバーの屈折率調整。', icon: 'fa-network-wired' },
+            { symbol: 'Ga', name: 'ガリウム', kana: 'がりうむ', category: 'rare', catName: 'レアメタル', desc: 'GaN/GaAsパワー半導体や青色LED。', icon: 'fa-wifi' },
+            { symbol: 'Se', name: 'セレン', kana: 'せれん', category: 'rare', catName: 'レアメタル', desc: 'コピー機感光体、ガラスの脱色・着色剤。', icon: 'fa-copy' },
+            { symbol: 'Te', name: 'テルル', kana: 'てるる', category: 'rare', catName: 'レアメタル', desc: '熱電変換素子（温度差発電）、CD/DVD記録層。', icon: 'fa-compact-disc' },
+            { symbol: 'Sb', name: 'アンチモン', kana: 'あんちもん', category: 'rare', catName: 'レアメタル', desc: 'プラスチック難燃剤、蓄電池の電極添加。', icon: 'fa-fire-extinguisher' },
+            { symbol: 'Be', name: 'ベリリウム', kana: 'べりりうむ', category: 'rare', catName: 'レアメタル', desc: '超軽量かつ高剛性。宇宙望遠鏡ミラーやコネクタ。', icon: 'fa-satellite' },
+            { symbol: 'B',  name: 'ホウ素', kana: 'ほうそ', category: 'rare', catName: 'レアメタル', desc: '耐熱ガラス（ハリオ等）やネオジム磁石材料。', icon: 'fa-wine-glass' },
+            { symbol: 'Rb', name: 'ルビジウム', kana: 'るびじうむ', category: 'rare', catName: 'レアメタル', desc: '原子時計の周波数標準、特殊ガラス。', icon: 'fa-stopwatch' },
+            { symbol: 'Sr', name: 'ストロンチウム', kana: 'すとろんちうむ', category: 'rare', catName: 'レアメタル', desc: '赤色花火の発色剤、フェライト磁石。', icon: 'fa-volcano' },
+            { symbol: 'Zr', name: 'ジルコニウム', kana: 'じるこにうむ', category: 'rare', catName: 'レアメタル', desc: '中性子吸収が少なく原子炉被覆管に採用。', icon: 'fa-radiation' },
+            { symbol: 'Hf', name: 'ハフニウム', kana: 'はふにうむ', category: 'rare', catName: 'レアメタル', desc: '先端CPUの門絶縁膜、原子力制御棒。', icon: 'fa-microchip' },
+            { symbol: 'Re', name: 'レニウム', kana: 'れにうむ', category: 'rare', catName: 'レアメタル', desc: 'ジェットエンジンのタービン刃用耐熱超合金。', icon: 'fa-plane-departure' },
+            { symbol: 'Tl', name: 'タリウム', kana: 'たりうむ', category: 'rare', catName: 'レアメタル', desc: '高屈折率レンズ、医療用画像診断用トレーサー。', icon: 'fa-glasses' },
+            { symbol: 'Cs', name: 'セシウム', kana: 'せしうむ', category: 'rare', catName: 'レアメタル', desc: '国際単位系における「1秒」の基準となる原子時計。', icon: 'fa-clock' },
+
+            // --- レアアース 17元素 ---
+            { symbol: 'Sc', name: 'スカンジウム', kana: 'すかんじうむ', category: 'earth', catName: 'レアアース', desc: 'アルミ添加で強度飛躍。高級スポーツ用品・燃料電池。', icon: 'fa-bicycle' },
+            { symbol: 'Y',  name: 'イットリウム', kana: 'いっとりうむ', category: 'earth', catName: 'レアアース', desc: '赤色蛍光体、超電導体材料、人工ダイヤ。', icon: 'fa-tv' },
+            { symbol: 'La', name: 'ランタン', kana: 'らんたん', category: 'earth', catName: 'レアアース', desc: 'ニッケル水素電池のアノード、一眼レフカメラレンズ。', icon: 'fa-camera' },
+            { symbol: 'Ce', name: 'セリウム', kana: 'せりうむ', category: 'earth', catName: 'レアアース', desc: 'ガラス精密研磨材（スマホ画面仕上げ）、排ガス触媒。', icon: 'fa-sparkles' },
+            { symbol: 'Pr', name: 'プラセオジム', kana: 'ぷらせおじむ', category: 'earth', catName: 'レアアース', desc: '強力磁石の補強、黄色のガラス・陶磁器着色。', icon: 'fa-palette' },
+            { symbol: 'Nd', name: 'ネオジム', kana: 'ねおじむ', category: 'earth', catName: 'レアアース', desc: '最強の永久磁石。EVモーター・風力発電機に必須。', icon: 'fa-car-side' },
+            { symbol: 'Pm', name: 'プロメチウム', kana: 'ぷろめちうむ', category: 'earth', catName: 'レアアース', desc: '全位数が放射性。宇宙探査機用原子力電池。', icon: 'fa-atom' },
+            { symbol: 'Sm', name: 'サマリウム', kana: 'さまりうむ', category: 'earth', catName: 'レアアース', desc: '高温に強いサマリウムコバルト磁石。', icon: 'fa-temperature-high' },
+            { symbol: 'Eu', name: 'ユウロピウム', kana: 'ゆうろぴうむ', category: 'earth', catName: 'レアアース', desc: '赤色・青色発光体。偽札防止インク。', icon: 'fa-money-bill-wave' },
+            { symbol: 'Gd', name: 'ガドリニウム', kana: 'がどりにうむ', category: 'earth', catName: 'レアアース', desc: 'MRI造影剤、光磁気ディスク材料。', icon: 'fa-hospital' },
+            { symbol: 'Tb', name: 'テルビウム', kana: 'てるびうむ', category: 'earth', catName: 'レアアース', desc: '緑色発光体、磁気ひずみ素子（超音波振動）。', icon: 'fa-wave-square' },
+            { symbol: 'Dy', name: 'ジスプロシウム', kana: 'じすぷろしうむ', category: 'earth', catName: 'レアアース', desc: 'ネオジム磁石の耐熱性を向上させる重要添加剤。', icon: 'fa-temperature-low' },
+            { symbol: 'Ho', name: 'ホルミウム', kana: 'ほるみうむ', category: 'earth', catName: 'レアアース', desc: '全元素中最大の磁気モーメント。医療用レーザー。', icon: 'fa-staff-snake' },
+            { symbol: 'Er', name: 'エルビウム', kana: 'えるびうむ', category: 'earth', catName: 'レアアース', desc: '光ファイバー中継器（光増幅器）、歯科用レーザー。', icon: 'fa-tooth' },
+            { symbol: 'Tm', name: 'ツリウム', kana: 'つりうむ', category: 'earth', catName: 'レアアース', desc: 'ポータブルX線装置の線源、特殊レーザー。', icon: 'fa-x-ray' },
+            { symbol: 'Yb', name: 'イッテルビウム', kana: 'いってるびうむ', category: 'earth', catName: 'レアアース', desc: '高出力ファイバーレーザー（金属加工機）。', icon: 'fa-scissors' },
+            { symbol: 'Lu', name: 'ルテチウム', kana: 'るてちうむ', category: 'earth', catName: 'レアアース', desc: 'PETスキャナ（がん診断機器）のシンチレータ。', icon: 'fa-notes-medical' }
+        ];
+
+        // ========================================================
+        // 2. Web Audio API サウンドシステム ＆ SE_seikai.mp3 制御
+        // ========================================================
+        class SoundSystem {
+            constructor() {
+                this.ctx = null;
+                this.enabled = false;
+                this.bgmTimer = null;
+                this.seSeikaiEl = document.getElementById('se-seikai');
+            }
+
+            init() {
+                if (!this.ctx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    this.ctx = new AudioContext();
+                }
+                if (this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            }
+
+            playOk() {
+                if (!this.enabled) return;
+                if (this.seSeikaiEl) {
+                    this.seSeikaiEl.currentTime = 0;
+                    this.seSeikaiEl.play().catch(() => this.playSynthOk());
+                } else {
+                    this.playSynthOk();
+                }
+            }
+
+            playSynthOk() {
+                this.init();
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(587.33, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(880, this.ctx.currentTime + 0.15);
+                gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.15);
+            }
+
+            playNg() {
+                if (!this.enabled) return;
+                this.init();
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(180, this.ctx.currentTime);
+                osc.frequency.linearRampToValueAtTime(110, this.ctx.currentTime + 0.2);
+                gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.2);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.2);
+            }
+
+            playClick() {
+                if (!this.enabled) return;
+                this.init();
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(400, this.ctx.currentTime);
+                gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.05);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.05);
+            }
+
+            startBGM() {
+                if (!this.enabled) return;
+                this.init();
+                this.stopBGM();
+                let step = 0;
+                const notes = [261.63, 329.63, 392.00, 523.25];
+                this.bgmTimer = setInterval(() => {
+                    if (!this.enabled) return;
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(notes[step % notes.length], this.ctx.currentTime);
+                    gain.gain.setValueAtTime(0.03, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.2);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + 0.2);
+                    step++;
+                }, 250);
+            }
+
+            stopBGM() {
+                if (this.bgmTimer) {
+                    clearInterval(this.bgmTimer);
+                    this.bgmTimer = null;
+                }
+            }
+        }
+
+        const sound = new SoundSystem();
+
+        // ========================================================
+        // 3. アプリ状態管理 (localStorage 連携)
+        // ========================================================
+        const STORAGE_KEY = 'rareEarthGameState';
+
+        let state = {
+            gold: 0,
+            level: 1,
+            exp: 0
+        };
+
+        function loadState() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    state = { ...state, ...JSON.parse(saved) };
+                }
+            } catch(e) {
+                console.error("Storage load error", e);
+            }
+            updateUIState();
+        }
+
+        function saveState() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+            } catch(e) {
+                console.error("Storage save error", e);
+            }
+        }
+
+        function addRewards(goldAdd, expAdd) {
+            state.gold = Math.max(0, state.gold + goldAdd);
+            state.exp += expAdd;
+
+            const reqExp = state.level * 100;
+            if (state.exp >= reqExp) {
+                state.exp -= reqExp;
+                state.level++;
+                createFloatingText('LEVEL UP!!', 'text-amber-300 text-lg', 150, 200);
+            }
+            saveState();
+            updateUIState();
+        }
+
+        function updateUIState() {
+            document.getElementById('gold-display').innerHTML = `<i class="fa-solid fa-coins mr-1"></i>${state.gold.toLocaleString()} G`;
+            document.getElementById('level-display').textContent = `Lv.${state.level}`;
+            const reqExp = state.level * 100;
+            const pct = Math.min(100, (state.exp / reqExp) * 100);
+            document.getElementById('exp-bar').style.width = `${pct}%`;
+        }
+
+        // ========================================================
+        // 4. アクションゲームコアロジック
+        // ========================================================
+        let gameActive = false;
+        let gameTime = 60;
+        let score = 0;
+        let combo = 0;
+        let maxCombo = 0;
+        let correctCount = 0;
+        let wrongCount = 0;
+        let gameInterval = null;
+        let spawnTimeout = null;
+        let fallingItems = [];
+        let reactionIndex = 0;
+        let resetNdTimer = null;
+
+        const gameArea = document.getElementById('game-area');
+        const itemContainer = document.getElementById('item-container');
+        const charaNdEl = document.getElementById('chara-nd');
+        const encBtnEl = document.getElementById('btn-encyclopedia');
+
+        function startGame() {
+            sound.init();
+            sound.startBGM();
+            gameActive = true;
+            gameTime = 60;
+            score = 0;
+            combo = 0;
+            maxCombo = 0;
+            correctCount = 0;
+            wrongCount = 0;
+            fallingItems = [];
+
+            if (charaNdEl) charaNdEl.src = 'CharaNd_game1.png';
+            if (encBtnEl) encBtnEl.classList.remove('blink-enc');
+
+            itemContainer.innerHTML = '';
+            document.getElementById('start-overlay').classList.add('hidden');
+            document.getElementById('result-overlay').classList.add('hidden');
+            gameArea.classList.remove('conveyor-paused');
+
+            updateGameStats();
+
+            gameInterval = setInterval(() => {
+                gameTime--;
+                document.getElementById('timer-display').textContent = gameTime;
+                if (gameTime <= 0) {
+                    endGame();
+                }
+            }, 1000);
+
+            spawnLoop();
+        }
+
+        function spawnLoop() {
+            if (!gameActive) return;
+
+            spawnMineral();
+
+            const nextTime = Math.floor(Math.random() * 400) + 1400;
+            spawnTimeout = setTimeout(spawnLoop, nextTime);
+        }
+
+        function spawnMineral() {
+            const data = ELEMENTS_DATA[Math.floor(Math.random() * ELEMENTS_DATA.length)];
+            const id = 'item-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
+
+            const posX = Math.floor(Math.random() * 220) + 30; 
+
+            const el = document.createElement('div');
+            el.id = id;
+            
+            el.className = `mineral-chip chip-unified rounded-2xl p-2.5 w-28 text-center flex flex-col items-center justify-center font-bold`;
+            el.style.left = `${posX}px`;
+            el.style.top = `-70px`;
+
+            el.innerHTML = `
+                <div class="flex items-center gap-1">
+                    <i class="fa-solid ${data.icon} text-xs text-cyan-400"></i>
+                    <span class="font-orbitron text-base font-black tracking-wide">${data.symbol}</span>
+                </div>
+                <div class="text-[11px] truncate w-full mt-0.5 text-slate-200">${data.name}</div>
+            `;
+
+            itemContainer.appendChild(el);
+
+            const itemObj = {
+                id,
+                element: el,
+                data,
+                y: -70,
+                speed: 1.0 // 超ゆっくり思考できる一定の落下速度
+            };
+
+            fallingItems.push(itemObj);
+        }
+
+        function updatePhysics() {
+            if (gameActive) {
+                const areaHeight = gameArea.clientHeight;
+                const deadLineY = areaHeight - 80;
+
+                for (let i = fallingItems.length - 1; i >= 0; i--) {
+                    const item = fallingItems[i];
+                    item.y += item.speed;
+                    item.element.style.top = `${item.y}px`;
+
+                    if (item.y > deadLineY) {
+                        handleSort(item, null, true);
+                    }
+                }
+            }
+            requestAnimationFrame(updatePhysics);
+        }
+
+        function triggerNdReaction() {
+            if (!charaNdEl) return;
+            
+            reactionIndex = (reactionIndex === 0) ? 1 : 0;
+            const nextImg = reactionIndex === 1 ? 'CharaNd_game2.png' : 'CharaNd_game3.png';
+            
+            charaNdEl.src = nextImg;
+            charaNdEl.classList.remove('nd-happy');
+            void charaNdEl.offsetWidth;
+            charaNdEl.classList.add('nd-happy');
+
+            if (resetNdTimer) clearTimeout(resetNdTimer);
+            resetNdTimer = setTimeout(() => {
+                if (charaNdEl) charaNdEl.src = 'CharaNd_game1.png';
+            }, 1000);
+        }
+
+        function handleSort(targetItem, selectedCategory, isMiss = false) {
+            if (!targetItem) return;
+
+            fallingItems = fallingItems.filter(i => i.id !== targetItem.id);
+
+            const data = targetItem.data;
+            const isCorrect = !isMiss && (data.category === selectedCategory);
+
+            if (isCorrect) {
+                sound.playOk();
+                triggerNdReaction();
+
+                correctCount++;
+                combo++;
+                if (combo > maxCombo) maxCombo = combo;
+
+                // ★ 30倍G設定 ★
+                let rewardG = 60;
+                if (data.category === 'base') rewardG = 30;
+                else if (data.category === 'precious') rewardG = 90;
+                else if (data.category === 'rare') rewardG = 60;
+                else if (data.category === 'earth') rewardG = 120;
+
+                const gainedScore = 100 + (combo * 10);
+                score += gainedScore;
+
+                addRewards(rewardG, 0); // EXPは終了時にまとめて集計
+
+                createFloatingText(`+${gainedScore} (${data.symbol})`, 'text-emerald-400', targetItem.element.offsetLeft, targetItem.y);
+            } else {
+                sound.playNg();
+                wrongCount++;
+                combo = 0;
+
+                addRewards(-30, 0);
+
+                const msg = isMiss ? 'MISS!' : 'WRONG!';
+                createFloatingText(msg, 'text-rose-500', targetItem.element.offsetLeft, targetItem.y);
+            }
+
+            targetItem.element.style.transform = 'scale(1.3)';
+            targetItem.element.style.opacity = '0';
+            setTimeout(() => {
+                if (targetItem.element.parentNode) {
+                    targetItem.element.parentNode.removeChild(targetItem.element);
+                }
+            }, 100);
+
+            updateGameStats();
+        }
+
+        function getLowestItem() {
+            if (fallingItems.length === 0) return null;
+            return fallingItems.reduce((lowest, current) => (current.y > lowest.y ? current : lowest), fallingItems[0]);
+        }
+
+        function updateGameStats() {
+            document.getElementById('score-display').textContent = score;
+            document.getElementById('combo-display').textContent = combo;
+        }
+
+        function createFloatingText(text, colorClass, x, y) {
+            const el = document.createElement('div');
+            el.className = `floating-text ${colorClass} text-sm`;
+            el.textContent = text;
+            el.style.left = `${Math.max(10, Math.min(260, x))}px`;
+            el.style.top = `${y}px`;
+            gameArea.appendChild(el);
+            setTimeout(() => el.remove(), 800);
+        }
+
+        function endGame() {
+            gameActive = false;
+            sound.stopBGM();
+            clearInterval(gameInterval);
+            clearTimeout(spawnTimeout);
+
+            gameArea.classList.add('conveyor-paused');
+
+            const totalQuestions = correctCount + wrongCount;
+            const accuracy = totalQuestions > 0 ? (correctCount / totalQuestions) : 0;
+
+            // ★ 新EXP仕様判定 ★
+            let earnedExp = 50; // 1回プレイ完了で +50
+            if (accuracy >= 0.5) earnedExp += 200; // 半分以上正解で +200
+            if (wrongCount === 0 && correctCount > 0) earnedExp += 1000; // 全問正解で +1000
+
+            // 30倍金G集計
+            let totalG = correctCount * 45;
+            if (wrongCount === 0 && correctCount > 0) {
+                totalG += 300; // コンプリートボーナス
+            }
+
+            addRewards(totalG, earnedExp);
+
+            document.getElementById('res-score').textContent = score;
+            document.getElementById('res-correct').textContent = correctCount;
+            document.getElementById('res-wrong').textContent = wrongCount;
+            document.getElementById('res-maxcombo').textContent = maxCombo;
+            document.getElementById('res-exp').textContent = `+${earnedExp} EXP`;
+            document.getElementById('res-gold').textContent = `+${totalG.toLocaleString()} G`;
+
+            document.getElementById('result-overlay').classList.remove('hidden');
+
+            // 右上「図鑑」ボタンを点滅強調
+            if (encBtnEl) encBtnEl.classList.add('blink-enc');
+        }
+
+        // ========================================================
+        // 5. 金属分類図鑑 モーダル機能
+        // ========================================================
+        function renderEncyclopedia(filterTab = 'diagram', searchQuery = '') {
+            const grid = document.getElementById('element-grid');
+            const diagram = document.getElementById('tab-diagram');
+            const noResults = document.getElementById('no-results');
+
+            if (filterTab === 'diagram' && !searchQuery) {
+                diagram.classList.remove('hidden');
+                grid.classList.add('hidden');
+                noResults.classList.add('hidden');
+                return;
+            }
+
+            diagram.classList.add('hidden');
+            grid.classList.remove('hidden');
+            grid.innerHTML = '';
+
+            const q = searchQuery.toLowerCase().trim();
+
+            const filtered = ELEMENTS_DATA.filter(item => {
+                const matchTab = (filterTab === 'all' || filterTab === 'diagram') || (item.category === filterTab);
+                const matchQuery = !q || 
+                    item.name.toLowerCase().includes(q) ||
+                    item.symbol.toLowerCase().includes(q) ||
+                    item.kana.includes(q) ||
+                    item.desc.includes(q);
+
+                return matchTab && matchQuery;
+            });
+
+            if (filtered.length === 0) {
+                noResults.classList.remove('hidden');
+                return;
+            }
+            noResults.classList.add('hidden');
+
+            filtered.forEach(item => {
+                let badgeClass = 'bg-slate-700 text-slate-300';
+                if (item.category === 'precious') badgeClass = 'bg-amber-900/80 text-amber-300 border border-amber-600/50';
+                if (item.category === 'rare') badgeClass = 'bg-blue-900/80 text-blue-300 border border-blue-500/50';
+                if (item.category === 'earth') badgeClass = 'bg-purple-900/80 text-purple-300 border border-purple-500/50';
+
+                const card = document.createElement('div');
+                card.className = 'bg-slate-950 border border-slate-800 rounded-xl p-3 flex flex-col justify-between hover:border-slate-600 transition';
+                card.innerHTML = `
+                    <div>
+                        <div class="flex justify-between items-start mb-1.5">
+                            <div class="flex items-center gap-2">
+                                <div class="w-8 h-8 rounded-lg bg-slate-900 border border-slate-700 flex items-center justify-center font-orbitron font-bold text-cyan-400 text-sm">
+                                    ${item.symbol}
+                                </div>
+                                <div>
+                                    <h4 class="text-xs font-bold text-white">${item.name}</h4>
+                                    <span class="text-[9px] text-slate-400 block">${item.kana}</span>
+                                </div>
+                            </div>
+                            <span class="text-[9px] px-1.5 py-0.5 rounded font-bold ${badgeClass}">
+                                ${item.catName}
+                            </span>
+                        </div>
+                        <p class="text-[11px] text-slate-300 leading-relaxed">${item.desc}</p>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // ========================================================
+        // 6. イベントリスナー & 初期化
+        // ========================================================
+        document.addEventListener('DOMContentLoaded', () => {
+            loadState();
+            requestAnimationFrame(updatePhysics);
+
+            document.getElementById('btn-start').addEventListener('click', startGame);
+            document.getElementById('btn-restart').addEventListener('click', startGame);
+
+            document.querySelectorAll('.sort-btn').forEach(btn => {
+                btn.addEventListener('pointerdown', (e) => {
+                    e.preventDefault();
+                    if (!gameActive) return;
+                    const cat = btn.getAttribute('data-category');
+                    const lowest = getLowestItem();
+                    if (lowest) {
+                        handleSort(lowest, cat, false);
+                    }
+                });
+            });
+
+            window.addEventListener('keydown', (e) => {
+                if (!gameActive) return;
+                const lowest = getLowestItem();
+                if (!lowest) return;
+
+                if (e.key === '1') handleSort(lowest, 'base');
+                if (e.key === '2') handleSort(lowest, 'precious');
+                if (e.key === '3') handleSort(lowest, 'rare');
+                if (e.key === '4') handleSort(lowest, 'earth');
+            });
+
+            const soundBtn = document.getElementById('btn-sound');
+            soundBtn.addEventListener('click', () => {
+                sound.enabled = !sound.enabled;
+                if (sound.enabled) {
+                    sound.init();
+                    soundBtn.innerHTML = `<i class="fa-solid fa-volume-high text-cyan-400"></i>`;
+                    if (gameActive) sound.startBGM();
+                } else {
+                    sound.stopBGM();
+                    soundBtn.innerHTML = `<i class="fa-solid fa-volume-xmark text-red-400"></i>`;
+                }
+            });
+
+            const modal = document.getElementById('modal-encyclopedia');
+            document.getElementById('btn-encyclopedia').addEventListener('click', () => {
+                sound.playClick();
+                if (encBtnEl) encBtnEl.classList.remove('blink-enc');
+                modal.classList.remove('hidden');
+                renderEncyclopedia('diagram', '');
+            });
+            document.getElementById('btn-close-modal').addEventListener('click', () => {
+                sound.playClick();
+                modal.classList.add('hidden');
+            });
+
+            let currentTab = 'diagram';
+            document.querySelectorAll('.enc-tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    sound.playClick();
+                    document.querySelectorAll('.enc-tab').forEach(t => {
+                        t.classList.remove('bg-cyan-600', 'text-white');
+                        t.classList.add('bg-slate-800', 'text-slate-300');
+                    });
+                    tab.classList.remove('bg-slate-800', 'text-slate-300');
+                    tab.classList.add('bg-cyan-600', 'text-white');
+
+                    currentTab = tab.getAttribute('data-tab');
+                    const searchVal = document.getElementById('search-input').value;
+                    renderEncyclopedia(currentTab, searchVal);
+                });
+            });
+
+            document.getElementById('search-input').addEventListener('input', (e) => {
+                const query = e.target.value;
+                renderEncyclopedia(currentTab, query);
+            });
+        });
+    </script>
+</body>
+</html>
