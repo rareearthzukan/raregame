@@ -95,6 +95,15 @@
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
         }
 
+        /* ゆっくり点滅アニメーション */
+        @keyframes slowBlink {
+            0%, 100% { opacity: 0.2; transform: scale(0.98); }
+            50% { opacity: 1; transform: scale(1.02); }
+        }
+        .animate-slow-blink {
+            animation: slowBlink 1.8s ease-in-out infinite;
+        }
+
         /* ネオジムキャラリアクションアニメーション */
         @keyframes ndReact {
             0% { transform: scale(1); }
@@ -148,20 +157,15 @@
 
     <!-- 外部音声SE -->
     <audio id="se-seikai" src="SE_seikai.mp3" preload="auto"></audio>
+    <audio id="se-hakusyu" src="SE_hakusyu.mp3" preload="auto"></audio>
 
-    <!-- メインコンテナ（画面枠にピッタリフィットするレスポンシブ設計） -->
+    <!-- メインコンテナ -->
     <div class="w-full max-w-[440px] h-full max-h-[100dvh] cyber-panel sm:rounded-3xl overflow-hidden flex flex-col relative border-0 sm:border-4 border-slate-700 shadow-2xl">
         
-        <!-- ヘッダー (ステータス・設定) -->
+        <!-- ヘッダー (Lv, G表示を削除してシンプル化) -->
         <header class="bg-slate-900 border-b border-slate-700 px-3 py-2 flex justify-between items-center z-20 flex-shrink-0">
-            <div>
-                <div class="text-[10px] sm:text-xs text-slate-400 font-bold flex items-center gap-1">
-                    <i class="fa-solid font-orbitron text-cyan-400 fa-magnet"></i> METALS SORTING
-                </div>
-                <div class="flex items-center gap-2 mt-0.5">
-                    <span id="level-display" class="bg-cyan-900/80 text-cyan-300 text-[10px] sm:text-xs px-2 py-0.5 rounded font-orbitron border border-cyan-500/30">Lv.1</span>
-                    <span id="gold-display" class="text-yellow-400 font-orbitron text-xs sm:text-sm font-bold"><i class="fa-solid fa-coins mr-1"></i>0 G</span>
-                </div>
+            <div class="text-xs sm:text-sm text-cyan-400 font-bold flex items-center gap-1.5 font-orbitron">
+                <i class="fa-solid fa-magnet text-cyan-400"></i> METALS SORTING
             </div>
             
             <div class="flex items-center gap-2">
@@ -210,12 +214,20 @@
 
             <!-- 落下ライン警示 -->
             <div class="absolute bottom-[65px] w-full h-2.5 warning-line opacity-80 z-0"></div>
-            <div class="absolute bottom-[52px] left-2 text-[9px] text-red-600 font-black tracking-widest z-0">
+            <div class="absolute bottom-[50px] left-2 text-[9px] text-red-600 font-black tracking-widest z-0">
                 ▲ RECOVERY ZONE ▲
             </div>
 
             <!-- ドロップされるアイテムコンテナ -->
             <div id="item-container" class="absolute inset-0 pointer-events-none z-10"></div>
+
+            <!-- ボタン案内ガイダンス（赤枠エリア：スタート後一定時間点滅表示） -->
+            <div id="button-guide" class="absolute bottom-[8px] left-0 right-0 z-20 flex justify-center pointer-events-none hidden">
+                <div class="bg-slate-950/90 border-2 border-cyan-400/80 text-cyan-300 font-extrabold text-sm sm:text-base px-4 py-1.5 rounded-full shadow-[0_0_15px_rgba(0,255,245,0.5)] animate-slow-blink flex items-center gap-1.5">
+                    <i class="fa-solid fa-circle-arrow-down text-cyan-400"></i>
+                    <span>【ボタン】を押してください。</span>
+                </div>
+            </div>
 
             <!-- スタート / オーバーレイ -->
             <div id="start-overlay" class="absolute inset-0 bg-slate-950/90 backdrop-blur-sm z-30 flex flex-col items-center justify-center p-4 text-center">
@@ -269,24 +281,24 @@
             </div>
         </main>
 
-        <!-- 回収ボタンエリア (4分類・画面下部にピッタリ固定) -->
+        <!-- 回収ボタンエリア (文字サイズを大きく変更) -->
         <footer class="bg-slate-950 border-t border-slate-800 p-2 sm:p-2.5 z-20 flex-shrink-0">
             <div class="grid grid-cols-2 gap-1.5 sm:gap-2">
-                <button data-category="base" class="sort-btn btn-neon bg-base border text-white py-2 sm:py-2.5 px-1 rounded-xl flex flex-col items-center justify-center shadow-md">
-                    <span class="text-xs font-bold mb-0.5">📱 ベースメタル</span>
-                    <span class="text-[9px] text-slate-300">Fe, Cu, Al, Zn など</span>
+                <button data-category="base" class="sort-btn btn-neon bg-base border text-white py-2.5 sm:py-3 px-1 rounded-xl flex flex-col items-center justify-center shadow-md">
+                    <span class="text-sm sm:text-base font-black mb-0.5 tracking-wide">📱 ベースメタル</span>
+                    <span class="text-[10px] text-slate-300">Fe, Cu, Al, Zn など</span>
                 </button>
-                <button data-category="precious" class="sort-btn btn-neon bg-precious border text-slate-950 py-2 sm:py-2.5 px-1 rounded-xl flex flex-col items-center justify-center shadow-md font-bold">
-                    <span class="text-xs mb-0.5">💍 貴金属</span>
-                    <span class="text-[9px] text-slate-900/80">Au, Ag, Pt, Pd など</span>
+                <button data-category="precious" class="sort-btn btn-neon bg-precious border text-slate-950 py-2.5 sm:py-3 px-1 rounded-xl flex flex-col items-center justify-center shadow-md font-black">
+                    <span class="text-sm sm:text-base mb-0.5 tracking-wide">💍 貴金属</span>
+                    <span class="text-[10px] text-slate-900/90 font-bold">Au, Ag, Pt, Pd など</span>
                 </button>
-                <button data-category="rare" class="sort-btn btn-neon bg-rare border text-white py-2 sm:py-2.5 px-1 rounded-xl flex flex-col items-center justify-center shadow-md">
-                    <span class="text-xs font-bold mb-0.5">🔋 レアメタル</span>
-                    <span class="text-[9px] text-blue-200">Li, Co, Ti, W など</span>
+                <button data-category="rare" class="sort-btn btn-neon bg-rare border text-white py-2.5 sm:py-3 px-1 rounded-xl flex flex-col items-center justify-center shadow-md">
+                    <span class="text-sm sm:text-base font-black mb-0.5 tracking-wide">🔋 レアメタル</span>
+                    <span class="text-[10px] text-blue-100">Li, Co, Ti, W など</span>
                 </button>
-                <button data-category="earth" class="sort-btn btn-neon bg-earth border text-white py-2 sm:py-2.5 px-1 rounded-xl flex flex-col items-center justify-center shadow-md">
-                    <span class="text-xs font-bold mb-0.5">🌟 レアアース</span>
-                    <span class="text-[9px] text-purple-200">Nd, Dy, Sc, Y 等 17元素</span>
+                <button data-category="earth" class="sort-btn btn-neon bg-earth border text-white py-2.5 sm:py-3 px-1 rounded-xl flex flex-col items-center justify-center shadow-md">
+                    <span class="text-sm sm:text-base font-black mb-0.5 tracking-wide">🌟 レアアース</span>
+                    <span class="text-[10px] text-purple-100">Nd, Dy, Sc, Y 等 17元素</span>
                 </button>
             </div>
         </footer>
@@ -427,7 +439,7 @@
             { symbol: 'In', name: 'インジウム', kana: 'いんじうむ', category: 'rare', catName: 'レアメタル', desc: '透明導電膜（ITO）として液晶ディスプレイに使用。', icon: 'fa-display' },
             { symbol: 'Bi', name: 'ビスマス', kana: 'びすます', category: 'rare', catName: 'レアメタル', desc: '低融点合金、鉛代替の環境対応医薬品。', icon: 'fa-prescription-bottle' },
             { symbol: 'Ta', name: 'タンタル', kana: 'たんたる', category: 'rare', catName: 'レアメタル', desc: '小型で大容量のタンタルコンデンサ（スマホ基板）。', icon: 'fa-laptop' },
-            { symbol: 'Nb', name: 'ニオブ', kana: 'におぶ', category: 'rare', catName: 'レアメタル', desc: '超電導マグネット、パイプライン用高張力鋼。', icon: 'fa-magnet' },
+            { symbol: 'Nb', name: 'におぶ', kana: 'におぶ', category: 'rare', catName: 'レアメタル', desc: '超電導マグネット、パイプライン用高張力鋼。', icon: 'fa-magnet' },
             { symbol: 'Ge', name: 'ゲルマニウム', kana: 'げるまにうむ', category: 'rare', catName: 'レアメタル', desc: '赤外線光学レンズ、光ファイバーの屈折率調整。', icon: 'fa-network-wired' },
             { symbol: 'Ga', name: 'ガリウム', kana: 'がりうむ', category: 'rare', catName: 'レアメタル', desc: 'GaN/GaAsパワー半導体や青色LED。', icon: 'fa-wifi' },
             { symbol: 'Se', name: 'セレン', kana: 'せれん', category: 'rare', catName: 'レアメタル', desc: 'コピー機感光体、ガラスの脱色・着色剤。', icon: 'fa-copy' },
@@ -463,12 +475,14 @@
             { symbol: 'Lu', name: 'ルテチウム', kana: 'るてちうむ', category: 'earth', catName: 'レアアース', desc: 'PETスキャナ（がん診断機器）のシンチレータ。', icon: 'fa-notes-medical' }
         ];
 
+        /* サウンドシステム（音量を約2〜3倍にアップ＆クリア時拍手SE追加） */
         class SoundSystem {
             constructor() {
                 this.ctx = null;
-                this.enabled = false;
+                this.enabled = true; // デフォルトで有効化
                 this.bgmTimer = null;
                 this.seSeikaiEl = document.getElementById('se-seikai');
+                this.seHakusyuEl = document.getElementById('se-hakusyu');
             }
             init() {
                 if (!this.ctx) {
@@ -480,6 +494,7 @@
             playOk() {
                 if (!this.enabled) return;
                 if (this.seSeikaiEl) {
+                    this.seSeikaiEl.volume = 1.0;
                     this.seSeikaiEl.currentTime = 0;
                     this.seSeikaiEl.play().catch(() => this.playSynthOk());
                 } else this.playSynthOk();
@@ -491,7 +506,7 @@
                 osc.type = 'sine';
                 osc.frequency.setValueAtTime(587.33, this.ctx.currentTime);
                 osc.frequency.exponentialRampToValueAtTime(880, this.ctx.currentTime + 0.15);
-                gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+                gain.gain.setValueAtTime(0.6, this.ctx.currentTime); // 音量アップ
                 gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
                 osc.connect(gain);
                 gain.connect(this.ctx.destination);
@@ -505,7 +520,7 @@
                 osc.type = 'sawtooth';
                 osc.frequency.setValueAtTime(180, this.ctx.currentTime);
                 osc.frequency.linearRampToValueAtTime(110, this.ctx.currentTime + 0.2);
-                gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+                gain.gain.setValueAtTime(0.7, this.ctx.currentTime); // 音量アップ
                 gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.2);
                 osc.connect(gain);
                 gain.connect(this.ctx.destination);
@@ -518,11 +533,19 @@
                 const gain = this.ctx.createGain();
                 osc.type = 'triangle';
                 osc.frequency.setValueAtTime(400, this.ctx.currentTime);
-                gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+                gain.gain.setValueAtTime(0.3, this.ctx.currentTime); // 音量アップ
                 gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.05);
                 osc.connect(gain);
                 gain.connect(this.ctx.destination);
                 osc.start(); osc.stop(this.ctx.currentTime + 0.05);
+            }
+            playHakusyu() {
+                if (!this.enabled) return;
+                if (this.seHakusyuEl) {
+                    this.seHakusyuEl.volume = 1.0;
+                    this.seHakusyuEl.currentTime = 0;
+                    this.seHakusyuEl.play().catch(() => {});
+                }
             }
             startBGM() {
                 if (!this.enabled) return;
@@ -535,7 +558,7 @@
                     const gain = this.ctx.createGain();
                     osc.type = 'sine';
                     osc.frequency.setValueAtTime(notes[step % notes.length], this.ctx.currentTime);
-                    gain.gain.setValueAtTime(0.03, this.ctx.currentTime);
+                    gain.gain.setValueAtTime(0.08, this.ctx.currentTime); // BGM音量も微増
                     gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.2);
                     osc.connect(gain);
                     gain.connect(this.ctx.destination);
@@ -578,20 +601,19 @@
         }
 
         function updateUIState() {
-            document.getElementById('gold-display').innerHTML = `<i class="fa-solid fa-coins mr-1"></i>${state.gold.toLocaleString()} G`;
-            document.getElementById('level-display').textContent = `Lv.${state.level}`;
             const reqExp = state.level * 100;
             const pct = Math.min(100, (state.exp / reqExp) * 100);
             document.getElementById('exp-bar').style.width = `${pct}%`;
         }
 
         let gameActive = false, gameTime = 60, score = 0, combo = 0, maxCombo = 0, correctCount = 0, wrongCount = 0;
-        let gameInterval = null, spawnTimeout = null, fallingItems = [], reactionIndex = 0, resetNdTimer = null;
+        let gameInterval = null, spawnTimeout = null, fallingItems = [], reactionIndex = 0, resetNdTimer = null, guideTimer = null;
 
         const gameArea = document.getElementById('game-area');
         const itemContainer = document.getElementById('item-container');
         const charaNdEl = document.getElementById('chara-nd');
         const encBtnEl = document.getElementById('btn-encyclopedia');
+        const guideEl = document.getElementById('button-guide');
 
         function startGame() {
             sound.init(); sound.startBGM();
@@ -605,6 +627,15 @@
             document.getElementById('result-overlay').classList.add('hidden');
             gameArea.classList.remove('conveyor-paused');
 
+            // 「↓【ボタン】を押してください。」 ガイド表示開始（5秒後に自動的に消去）
+            if (guideEl) {
+                guideEl.classList.remove('hidden');
+                if (guideTimer) clearTimeout(guideTimer);
+                guideTimer = setTimeout(() => {
+                    hideGuide();
+                }, 5500);
+            }
+
             updateGameStats();
 
             gameInterval = setInterval(() => {
@@ -614,6 +645,11 @@
             }, 1000);
 
             spawnLoop();
+        }
+
+        function hideGuide() {
+            if (guideEl) guideEl.classList.add('hidden');
+            if (guideTimer) clearTimeout(guideTimer);
         }
 
         function spawnLoop() {
@@ -685,6 +721,9 @@
 
         function handleSort(targetItem, selectedCategory, isMiss = false) {
             if (!targetItem) return;
+
+            hideGuide(); // ボタン操作がされたらガイドを消去
+
             fallingItems = fallingItems.filter(i => i.id !== targetItem.id);
 
             const data = targetItem.data;
@@ -746,8 +785,12 @@
         function endGame() {
             gameActive = false;
             sound.stopBGM();
+            hideGuide();
             clearInterval(gameInterval); clearTimeout(spawnTimeout);
             gameArea.classList.add('conveyor-paused');
+
+            // 👏 ゲームクリア拍手SEの再生
+            sound.playHakusyu();
 
             const totalQuestions = correctCount + wrongCount;
             const accuracy = totalQuestions > 0 ? (correctCount / totalQuestions) : 0;
@@ -864,6 +907,9 @@
             });
 
             const soundBtn = document.getElementById('btn-sound');
+            // 初期状態をON表示に設定
+            soundBtn.innerHTML = `<i class="fa-solid fa-volume-high text-cyan-400"></i>`;
+
             soundBtn.addEventListener('click', () => {
                 sound.enabled = !sound.enabled;
                 if (sound.enabled) {
