@@ -362,7 +362,6 @@
     .result-title.success { color: #2e7d32; }
     .result-title.miss { color: #c62828; }
 
-    /* ★ ツリウムの笑顔（CharaTm_game1.png）を大きく表示するためのスタイル */
     .result-img-wrapper {
       position: relative;
       margin: 10px 0;
@@ -372,7 +371,7 @@
     }
 
     .result-img {
-      width: 260px; /* 大幅に拡大 */
+      width: 260px;
       height: 260px;
       object-fit: contain;
       filter: drop-shadow(0 8px 12px rgba(0,0,0,0.15));
@@ -429,7 +428,6 @@
       text-align: center;
     }
 
-    /* ボタン群ナビゲーション */
     .action-btn-group {
       display: flex;
       gap: 10px;
@@ -438,7 +436,6 @@
       width: 100%;
     }
 
-    /* レスポンシブ対応 */
     @media (max-width: 800px) {
       .game-area {
         grid-template-columns: 1fr;
@@ -464,13 +461,12 @@
 <body>
 
 <div class="container">
-  <!-- タイトル表示 -->
   <div class="game-title-header">【ツリウムの「お名前呼んで」ゲーム】</div>
 
   <!-- オープニングモーダル -->
   <div id="openingModal" class="dialog-overlay">
     <div class="dialog-box">
-      <img src="Chara0_Tm.png" alt="ツリウム" class="dialog-img" id="openingImg">
+      <img src="chara0_Tm.png" alt="ツリウム" class="dialog-img" id="openingImg">
       <div class="dialog-text">
         「・・・ところでボクの名前って覚えてくれたかな・・・？みんなの名前はわかるかな？」<br><br>
         🎮 <b>あそびかた</b><br>
@@ -488,10 +484,7 @@
   </header>
 
   <div id="gamePlayArea" class="game-area" style="display:none;">
-    <!-- キャラクター一覧エリア (ドロップ先) -->
     <div class="charas-grid" id="charasGrid"></div>
-
-    <!-- 名札ドラッグエリア -->
     <div class="names-container">
       <div style="font-size: 0.85rem; font-weight: bold; color: #64748b; margin-bottom: 6px; text-align: center;">名札一覧</div>
       <div class="names-grid" id="namesGrid"></div>
@@ -528,7 +521,6 @@
       </div>
     </div>
 
-    <!-- 各種遷移ボタン -->
     <div class="action-btn-group">
       <button class="btn" onclick="resetGame()">🔄 もういちど遊ぶ</button>
       <a href="home.html" class="btn btn-secondary">🏠 homeに戻る</a>
@@ -538,7 +530,6 @@
 </div>
 
 <script>
-  // --- データ定義 (17元素) ---
   const ELEMENTS = [
     { symbol: 'Sc', name: 'スカンジウム' },
     { symbol: 'Y',  name: 'イットリウム' },
@@ -559,7 +550,7 @@
     { symbol: 'Lu', name: 'ルテチウム' }
   ];
 
-  const LIMIT_TIME = 90; // 制限時間 (秒)
+  const LIMIT_TIME = 90;
   let timer = null;
   let timeRemaining = LIMIT_TIME;
   let correctMatches = 0;
@@ -567,7 +558,6 @@
   let activeTouchClone = null;
   let touchOffset = { x: 0, y: 0 };
 
-  // 音声関連
   const audioSeikai = new Audio('mini_seikai.mp3');
 
   function playSound(type) {
@@ -578,7 +568,6 @@
     }
   }
 
-  // フォールバック用効果音合成
   function playSynthSound(isCorrect) {
     try {
       const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -606,7 +595,6 @@
     } catch(e) {}
   }
 
-  // ダミーSVGプレースホルダー作成
   function createPlaceholderSVG(symbol) {
     return `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="%23e2e8f0"/><circle cx="35" cy="40" r="5" fill="%23333"/><circle cx="65" cy="40" r="5" fill="%23333"/><path d="M 35 65 Q 50 75 65 65" stroke="%23333" stroke-width="3" fill="none"/><text x="50" y="25" font-family="sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="%235c6bc0">${symbol}</text></svg>`;
   }
@@ -647,7 +635,6 @@
     }, 1000);
   }
 
-  // リタイア処理
   function retireGame() {
     if (confirm('ゲームをリタイアして home に戻りますか？')) {
       clearInterval(timer);
@@ -679,7 +666,8 @@
 
       const img = document.createElement('img');
       img.className = 'chara-img';
-      img.src = `Chara0_${elem.symbol}.png`;
+      // 小文字の chara0_ に設定
+      img.src = `chara0_${elem.symbol}.png`;
       img.onerror = () => { img.src = createPlaceholderSVG(elem.symbol); };
 
       imgWrapper.appendChild(img);
@@ -833,6 +821,7 @@
     if (isSuccess) {
       titleEl.innerText = 'CLEAR!!';
       titleEl.className = 'result-title success';
+      // クリア成功時は大文字Cの CharaTm_game1.png を使用
       imgEl.src = 'CharaTm_game1.png';
       imgEl.classList.add('big-smile');
       imgEl.onerror = () => { imgEl.src = createPlaceholderSVG('Tm'); };
@@ -845,7 +834,8 @@
     } else {
       titleEl.innerText = 'MISS...';
       titleEl.className = 'result-title miss';
-      imgEl.src = 'Chara0_Tm.png';
+      // MISS時は小文字の chara0_Tm.png を使用
+      imgEl.src = 'chara0_Tm.png';
       imgEl.classList.remove('big-smile');
       imgEl.onerror = () => { imgEl.src = createPlaceholderSVG('Tm'); };
       msgEl.innerText = 'ざんねん…制限時間になっちゃった。';
@@ -859,7 +849,7 @@
   function resetGame() {
     document.getElementById('openingModal').style.display = 'flex';
     document.getElementById('resultScreen').style.display = 'none';
-    document.getElementById('openingImg').src = 'Chara0_Tm.png';
+    document.getElementById('openingImg').src = 'chara0_Tm.png';
   }
 </script>
 
