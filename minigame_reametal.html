@@ -162,7 +162,7 @@
     <!-- メインコンテナ -->
     <div class="w-full max-w-[440px] h-full max-h-[100dvh] cyber-panel sm:rounded-3xl overflow-hidden flex flex-col relative border-0 sm:border-4 border-slate-700 shadow-2xl">
         
-        <!-- ヘッダー (Lv, G表示を削除してシンプル化) -->
+        <!-- ヘッダー -->
         <header class="bg-slate-900 border-b border-slate-700 px-3 py-2 flex justify-between items-center z-20 flex-shrink-0">
             <div class="text-xs sm:text-sm text-cyan-400 font-bold flex items-center gap-1.5 font-orbitron">
                 <i class="fa-solid fa-magnet text-cyan-400"></i> METALS SORTING
@@ -244,6 +244,7 @@
                 </button>
             </div>
 
+            <!-- リザルト画面 -->
             <div id="result-overlay" class="absolute inset-0 bg-slate-950/90 backdrop-blur-md z-30 flex flex-col items-center justify-center p-4 text-center hidden">
                 <h2 class="text-xl sm:text-2xl font-black text-amber-400 mb-1">SORTING COMPLETE!</h2>
                 <p class="text-[11px] text-slate-400 mb-2">作業結果レポート</p>
@@ -272,8 +273,18 @@
                 </div>
 
                 <button id="btn-restart" class="btn-neon w-full max-w-xs py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-black text-sm rounded-xl shadow-lg border border-emerald-300/40 mb-2">
-                    再チャレンジ
+                    🔄 再チャレンジ
                 </button>
+
+                <!-- ナビゲーションボタン (ホームに戻る / マップに戻る) -->
+                <div class="flex gap-2 w-full max-w-xs mb-3">
+                    <button onclick="location.href='home.html'" class="btn-neon flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-cyan-500/40 text-xs font-bold rounded-xl shadow-md">
+                        🏠 ホームに戻る
+                    </button>
+                    <button onclick="location.href='map.html'" class="btn-neon flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-emerald-500/40 text-xs font-bold rounded-xl shadow-md">
+                        🗺️ マップに戻る
+                    </button>
+                </div>
 
                 <p class="text-[10px] text-pink-300 font-bold bg-pink-950/60 border border-pink-500/40 p-2 rounded-lg animate-pulse max-w-xs">
                     💡 これって何？って気になったら右上の「図鑑」で調べてみてね。
@@ -281,9 +292,9 @@
             </div>
         </main>
 
-        <!-- 回収ボタンエリア (文字サイズを大きく変更) -->
-        <footer class="bg-slate-950 border-t border-slate-800 p-2 sm:p-2.5 z-20 flex-shrink-0">
-            <div class="grid grid-cols-2 gap-1.5 sm:gap-2">
+        <!-- 回収ボタンエリア (約5mmほど上へ移動：pb-4 sm:pb-5 / mb-1 を配置) -->
+        <footer class="bg-slate-950 border-t border-slate-800 p-2 sm:p-2.5 pb-4 sm:pb-5 z-20 flex-shrink-0">
+            <div class="grid grid-cols-2 gap-1.5 sm:gap-2 mb-1">
                 <button data-category="base" class="sort-btn btn-neon bg-base border text-white py-2.5 sm:py-3 px-1 rounded-xl flex flex-col items-center justify-center shadow-md">
                     <span class="text-sm sm:text-base font-black mb-0.5 tracking-wide">📱 ベースメタル</span>
                     <span class="text-[10px] text-slate-300">Fe, Cu, Al, Zn など</span>
@@ -475,11 +486,11 @@
             { symbol: 'Lu', name: 'ルテチウム', kana: 'るてちうむ', category: 'earth', catName: 'レアアース', desc: 'PETスキャナ（がん診断機器）のシンチレータ。', icon: 'fa-notes-medical' }
         ];
 
-        /* サウンドシステム（音量を約2〜3倍にアップ＆クリア時拍手SE追加） */
+        /* サウンドシステム */
         class SoundSystem {
             constructor() {
                 this.ctx = null;
-                this.enabled = true; // デフォルトで有効化
+                this.enabled = true;
                 this.bgmTimer = null;
                 this.seSeikaiEl = document.getElementById('se-seikai');
                 this.seHakusyuEl = document.getElementById('se-hakusyu');
@@ -506,7 +517,7 @@
                 osc.type = 'sine';
                 osc.frequency.setValueAtTime(587.33, this.ctx.currentTime);
                 osc.frequency.exponentialRampToValueAtTime(880, this.ctx.currentTime + 0.15);
-                gain.gain.setValueAtTime(0.6, this.ctx.currentTime); // 音量アップ
+                gain.gain.setValueAtTime(0.6, this.ctx.currentTime);
                 gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
                 osc.connect(gain);
                 gain.connect(this.ctx.destination);
@@ -520,7 +531,7 @@
                 osc.type = 'sawtooth';
                 osc.frequency.setValueAtTime(180, this.ctx.currentTime);
                 osc.frequency.linearRampToValueAtTime(110, this.ctx.currentTime + 0.2);
-                gain.gain.setValueAtTime(0.7, this.ctx.currentTime); // 音量アップ
+                gain.gain.setValueAtTime(0.7, this.ctx.currentTime);
                 gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.2);
                 osc.connect(gain);
                 gain.connect(this.ctx.destination);
@@ -533,7 +544,7 @@
                 const gain = this.ctx.createGain();
                 osc.type = 'triangle';
                 osc.frequency.setValueAtTime(400, this.ctx.currentTime);
-                gain.gain.setValueAtTime(0.3, this.ctx.currentTime); // 音量アップ
+                gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
                 gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.05);
                 osc.connect(gain);
                 gain.connect(this.ctx.destination);
@@ -542,7 +553,7 @@
             playHakusyu() {
                 if (!this.enabled) return;
                 if (this.seHakusyuEl) {
-                    this.seHakusyuEl.volume = 1.0;
+                    this.seHakusyuEl.volume = 0.3; // 👏 拍手SEの音量を小さめに調整 (30%)
                     this.seHakusyuEl.currentTime = 0;
                     this.seHakusyuEl.play().catch(() => {});
                 }
@@ -558,7 +569,7 @@
                     const gain = this.ctx.createGain();
                     osc.type = 'sine';
                     osc.frequency.setValueAtTime(notes[step % notes.length], this.ctx.currentTime);
-                    gain.gain.setValueAtTime(0.08, this.ctx.currentTime); // BGM音量も微増
+                    gain.gain.setValueAtTime(0.08, this.ctx.currentTime);
                     gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.2);
                     osc.connect(gain);
                     gain.connect(this.ctx.destination);
@@ -627,7 +638,7 @@
             document.getElementById('result-overlay').classList.add('hidden');
             gameArea.classList.remove('conveyor-paused');
 
-            // 「↓【ボタン】を押してください。」 ガイド表示開始（5秒後に自動的に消去）
+            // 「↓【ボタン】を押してください。」 ガイド表示開始（5.5秒後に自動消去）
             if (guideEl) {
                 guideEl.classList.remove('hidden');
                 if (guideTimer) clearTimeout(guideTimer);
@@ -722,7 +733,7 @@
         function handleSort(targetItem, selectedCategory, isMiss = false) {
             if (!targetItem) return;
 
-            hideGuide(); // ボタン操作がされたらガイドを消去
+            hideGuide(); // ボタン操作でガイドを即消去
 
             fallingItems = fallingItems.filter(i => i.id !== targetItem.id);
 
@@ -789,7 +800,7 @@
             clearInterval(gameInterval); clearTimeout(spawnTimeout);
             gameArea.classList.add('conveyor-paused');
 
-            // 👏 ゲームクリア拍手SEの再生
+            // 👏 音量を小さく調整した拍手SEを再生
             sound.playHakusyu();
 
             const totalQuestions = correctCount + wrongCount;
@@ -907,7 +918,6 @@
             });
 
             const soundBtn = document.getElementById('btn-sound');
-            // 初期状態をON表示に設定
             soundBtn.innerHTML = `<i class="fa-solid fa-volume-high text-cyan-400"></i>`;
 
             soundBtn.addEventListener('click', () => {
