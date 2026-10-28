@@ -2,14 +2,13 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>ツリウムの「お名前呼んで」ゲーム</title>
   <style>
     :root {
       --primary-color: #5c6bc0;
       --accent-color: #ffca28;
       --bg-color: #f0f4f8;
-      --card-bg: #ffffff;
       --text-color: #333333;
     }
 
@@ -22,7 +21,7 @@
 
     body {
       margin: 0;
-      padding: 10px;
+      padding: 4px;
       font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
       background-color: var(--bg-color);
       color: var(--text-color);
@@ -30,11 +29,12 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+      overflow-x: hidden;
     }
 
     .container {
       width: 100%;
-      max-width: 1200px;
+      max-width: 1000px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -42,12 +42,11 @@
 
     /* タイトルヘッダー */
     .game-title-header {
-      font-size: 1.5rem;
+      font-size: 1.1rem;
       font-weight: bold;
       color: var(--primary-color);
-      margin: 5px 0 10px 0;
+      margin: 2px 0 4px 0;
       text-align: center;
-      text-shadow: 1px 1px 2px rgba(0,0,0,0.05);
     }
 
     /* オープニング / ダイアログ */
@@ -59,40 +58,34 @@
       justify-content: center;
       align-items: center;
       z-index: 1000;
-      padding: 20px;
+      padding: 15px;
     }
 
     .dialog-box {
       background: #fff;
-      border-radius: 20px;
-      padding: 25px;
-      max-width: 520px;
+      border-radius: 16px;
+      padding: 18px;
+      max-width: 450px;
       width: 100%;
       text-align: center;
       box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-      animation: popIn 0.3s ease-out;
-    }
-
-    @keyframes popIn {
-      0% { transform: scale(0.8); opacity: 0; }
-      100% { transform: scale(1); opacity: 1; }
     }
 
     .dialog-img {
-      width: 130px;
-      height: 130px;
+      width: 110px;
+      height: 110px;
       object-fit: contain;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
     }
 
     .dialog-text {
-      font-size: 1.05rem;
-      line-height: 1.6;
-      margin-bottom: 20px;
+      font-size: 0.95rem;
+      line-height: 1.5;
+      margin-bottom: 15px;
       background: #f7f9fc;
-      padding: 15px;
-      border-radius: 12px;
-      border: 2px solid #e2e8f0;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid #e2e8f0;
       text-align: left;
     }
 
@@ -101,61 +94,50 @@
       background-color: #4cae50;
       color: white;
       border: none;
-      padding: 10px 24px;
-      font-size: 1.1rem;
+      padding: 8px 20px;
+      font-size: 1rem;
       font-weight: bold;
-      border-radius: 25px;
+      border-radius: 20px;
       cursor: pointer;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-      transition: all 0.2s;
+      box-shadow: 0 3px 5px rgba(0,0,0,0.1);
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
+      gap: 4px;
       text-decoration: none;
-    }
-
-    .btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 8px rgba(0,0,0,0.15);
     }
 
     .btn-retire {
       background-color: #ef5350;
-      font-size: 0.9rem;
-      padding: 6px 14px;
-      border-radius: 18px;
+      font-size: 0.8rem;
+      padding: 4px 10px;
+      border-radius: 14px;
     }
 
-    .btn-secondary {
-      background-color: #5c6bc0;
-    }
+    .btn-secondary { background-color: #5c6bc0; }
+    .btn-sub { background-color: #78909c; }
 
-    .btn-sub {
-      background-color: #78909c;
-    }
-
-    /* ゲームヘッダー */
+    /* ゲームヘッダー（コンパクト） */
     header {
       width: 100%;
       display: flex;
       justify-content: space-between;
       align-items: center;
       background: white;
-      padding: 8px 16px;
-      border-radius: 12px;
-      margin-bottom: 10px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      padding: 4px 12px;
+      border-radius: 8px;
+      margin-bottom: 6px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
 
     .timer-bar {
-      font-size: 1.1rem;
+      font-size: 0.95rem;
       font-weight: bold;
       color: #e53935;
     }
 
     .progress-info {
-      font-size: 1.05rem;
+      font-size: 0.95rem;
       font-weight: bold;
       color: var(--primary-color);
     }
@@ -163,45 +145,31 @@
     /* メインエリア */
     .game-area {
       width: 100%;
-      display: grid;
-      grid-template-columns: 1fr 340px;
-      gap: 15px;
-      align-items: start;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
 
-    /* キャラクターエリア (ドロップ先) */
+    /* キャラクターエリア (枠なしで詰めて配置) */
     .charas-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(115px, 1fr));
-      gap: 10px;
-      background: rgba(255, 255, 255, 0.7);
-      padding: 12px;
-      border-radius: 15px;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 6px 4px;
+      width: 100%;
+      padding: 4px;
     }
 
     .chara-card {
-      background: var(--card-bg);
-      border-radius: 12px;
-      border: 2px dashed #cbd5e1;
-      height: 145px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: space-between;
-      padding: 6px;
+      justify-content: flex-start;
       position: relative;
-      transition: all 0.2s;
-    }
-
-    .chara-card.matched {
-      border-style: solid;
-      border-color: #4caf50;
-      background-color: #f0fdf4;
     }
 
     .chara-img-wrapper {
-      width: 75px;
-      height: 75px;
+      width: 55px;
+      height: 55px;
       position: relative;
       display: flex;
       align-items: center;
@@ -217,17 +185,17 @@
     /* 吹き出し (不正解時) */
     .speech-bubble {
       position: absolute;
-      top: -22px;
+      top: -18px;
       background: #ff5252;
       color: white;
-      padding: 2px 6px;
-      border-radius: 8px;
-      font-size: 0.75rem;
+      padding: 1px 5px;
+      border-radius: 6px;
+      font-size: 0.7rem;
       font-weight: bold;
       white-space: nowrap;
       box-shadow: 0 2px 4px rgba(0,0,0,0.2);
       opacity: 0;
-      transform: translateY(10px);
+      transform: translateY(6px);
       transition: all 0.2s;
       pointer-events: none;
       z-index: 10;
@@ -236,10 +204,10 @@
     .speech-bubble::after {
       content: '';
       position: absolute;
-      bottom: -5px;
+      bottom: -4px;
       left: 50%;
       transform: translateX(-50%);
-      border-width: 5px 5px 0;
+      border-width: 4px 4px 0;
       border-style: solid;
       border-color: #ff5252 transparent;
       display: block;
@@ -254,59 +222,78 @@
 
     @keyframes shake {
       0%, 100% { transform: translateX(0); }
-      20%, 60% { transform: translateX(-5px); }
-      40%, 80% { transform: translateX(5px); }
+      20%, 60% { transform: translateX(-4px); }
+      40%, 80% { transform: translateX(4px); }
     }
 
-    /* 名札スロット (ドロップエリア) */
+    /* 名札スロット (ドロップ位置) */
     .slot-area {
       width: 100%;
-      height: 38px;
-      border-radius: 6px;
+      height: 26px;
+      margin-top: 2px;
+      border-radius: 4px;
       display: flex;
       align-items: center;
       justify-content: center;
+      border: 1px dashed #cbd5e1;
+      background: rgba(255,255,255,0.5);
     }
 
-    /* 名札エリア (ドラッグ元) */
+    .chara-card.matched .slot-area {
+      border-style: solid;
+      border-color: #4caf50;
+      background-color: #e8f5e9;
+    }
+
+    /* 名札エリア (トレイ化・横スクロール対応で画面に収める) */
     .names-container {
       background: white;
-      padding: 12px;
-      border-radius: 15px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-      max-height: 75vh;
-      overflow-y: auto;
+      padding: 8px;
+      border-radius: 12px;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+      width: 100%;
+    }
+
+    .names-container-title {
+      font-size: 0.75rem;
+      font-weight: bold;
+      color: #64748b;
+      margin-bottom: 4px;
+      text-align: center;
     }
 
     .names-grid {
       display: flex;
-      flex-direction: column;
-      gap: 6px;
+      flex-wrap: wrap;
+      gap: 5px;
+      justify-content: center;
+      max-height: 150px;
+      overflow-y: auto;
     }
 
     .name-tag {
       background: #ffffff;
-      border: 2px solid var(--primary-color);
-      border-radius: 6px;
-      padding: 5px 10px;
-      font-size: 0.9rem;
+      border: 1.5px solid var(--primary-color);
+      border-radius: 5px;
+      padding: 3px 6px;
+      font-size: 0.75rem;
       font-weight: bold;
       color: var(--primary-color);
       cursor: grab;
-      box-shadow: 0 2px 3px rgba(0,0,0,0.08);
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 4px;
       touch-action: none;
       user-select: none;
+      white-space: nowrap;
     }
 
     .name-tag .symbol {
       background: var(--primary-color);
       color: white;
-      padding: 1px 5px;
-      border-radius: 4px;
-      font-size: 0.8rem;
+      padding: 0px 4px;
+      border-radius: 3px;
+      font-size: 0.7rem;
     }
 
     .name-tag.dragging {
@@ -317,13 +304,14 @@
       cursor: default;
       box-shadow: none;
       border-color: #4caf50;
-      background-color: #e8f5e9;
+      background-color: transparent;
       color: #2e7d32;
       width: 100%;
       height: 100%;
       justify-content: center;
-      font-size: 0.85rem;
-      padding: 2px;
+      font-size: 0.7rem;
+      padding: 0;
+      border: none;
     }
     .name-tag.placed .symbol {
       background-color: #2e7d32;
@@ -336,7 +324,7 @@
       z-index: 1000;
       opacity: 0.9;
       transform: scale(1.05);
-      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
     }
 
     /* 結果画面 */
@@ -345,53 +333,47 @@
       flex-direction: column;
       align-items: center;
       background: white;
-      padding: 25px;
-      border-radius: 20px;
+      padding: 20px;
+      border-radius: 16px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.15);
       width: 100%;
-      max-width: 600px;
+      max-width: 500px;
       text-align: center;
     }
 
     .result-title {
-      font-size: 2rem;
+      font-size: 1.8rem;
       font-weight: bold;
-      margin-bottom: 5px;
+      margin-bottom: 4px;
     }
 
     .result-title.success { color: #2e7d32; }
     .result-title.miss { color: #c62828; }
 
     .result-img-wrapper {
-      position: relative;
-      margin: 10px 0;
+      margin: 6px 0;
       display: flex;
       justify-content: center;
       align-items: center;
     }
 
     .result-img {
-      width: 260px;
-      height: 260px;
+      width: 220px;
+      height: 220px;
       object-fit: contain;
-      filter: drop-shadow(0 8px 12px rgba(0,0,0,0.15));
-      transition: transform 0.3s ease;
-    }
-
-    .result-img.big-smile {
-      transform: scale(1.05);
+      filter: drop-shadow(0 6px 10px rgba(0,0,0,0.12));
     }
 
     .rewards-box {
       background: #f8fafc;
-      border: 2px solid #e2e8f0;
-      border-radius: 12px;
-      padding: 12px;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 10px;
       width: 100%;
-      margin: 10px 0 15px 0;
+      margin: 8px 0 12px 0;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 6px;
     }
 
     .rewards-row {
@@ -407,22 +389,22 @@
     }
 
     .reward-label {
-      font-size: 0.85rem;
+      font-size: 0.75rem;
       color: #64748b;
     }
 
     .reward-val {
-      font-size: 1.2rem;
+      font-size: 1.05rem;
       font-weight: bold;
       color: #d97706;
     }
 
     .item-reward-box {
       background: #fffbeb;
-      border: 1.5px dashed #f59e0b;
-      border-radius: 8px;
-      padding: 8px;
-      font-size: 0.9rem;
+      border: 1px dashed #f59e0b;
+      border-radius: 6px;
+      padding: 6px;
+      font-size: 0.8rem;
       font-weight: bold;
       color: #b45309;
       text-align: center;
@@ -430,30 +412,33 @@
 
     .action-btn-group {
       display: flex;
-      gap: 10px;
+      gap: 8px;
       flex-wrap: wrap;
       justify-content: center;
       width: 100%;
     }
 
-    @media (max-width: 800px) {
-      .game-area {
-        grid-template-columns: 1fr;
+    /* スマホ・幅狭画面での列数調整 */
+    @media (max-width: 600px) {
+      .charas-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px 4px;
       }
-      .names-container {
-        max-height: none;
+      .chara-img-wrapper {
+        width: 60px;
+        height: 60px;
+      }
+      .slot-area {
+        height: 24px;
       }
       .names-grid {
-        flex-direction: row;
-        flex-wrap: wrap;
-        justify-content: center;
+        max-height: 120px;
       }
+    }
+
+    @media (max-width: 400px) {
       .charas-grid {
         grid-template-columns: repeat(3, 1fr);
-      }
-      .result-img {
-        width: 200px;
-        height: 200px;
       }
     }
   </style>
@@ -461,6 +446,7 @@
 <body>
 
 <div class="container">
+  <!-- タイトル表示 -->
   <div class="game-title-header">【ツリウムの「お名前呼んで」ゲーム】</div>
 
   <!-- オープニングモーダル -->
@@ -470,7 +456,7 @@
       <div class="dialog-text">
         「・・・ところでボクの名前って覚えてくれたかな・・・？みんなの名前はわかるかな？」<br><br>
         🎮 <b>あそびかた</b><br>
-        右側の名札をドラッグ（またはスワイプ）して、同じ元素キャラクターの上のスペースに置いてね！全員正解させよう！
+        下にある名札をドラッグ（またはスワイプ）して、同じ元素キャラクターの下の枠の中に置いてね！
       </div>
       <button class="btn" onclick="startGame()">スタート！</button>
     </div>
@@ -480,13 +466,16 @@
   <header id="gameHeader" style="display:none;">
     <div class="progress-info">せいかい: <span id="correctCount">0</span> / 17</div>
     <div class="timer-bar">のこり時間: <span id="timeLeft">90</span>秒</div>
-    <button class="btn btn-retire" onclick="retireGame()">🏠 リタイア（homeに戻る）</button>
+    <button class="btn btn-retire" onclick="retireGame()">🏠 リタイア</button>
   </header>
 
   <div id="gamePlayArea" class="game-area" style="display:none;">
+    <!-- キャラクター一覧エリア (枠なしで詰め込み表示) -->
     <div class="charas-grid" id="charasGrid"></div>
+
+    <!-- 名札ドラッグエリア -->
     <div class="names-container">
-      <div style="font-size: 0.85rem; font-weight: bold; color: #64748b; margin-bottom: 6px; text-align: center;">名札一覧</div>
+      <div class="names-container-title">▼ 名札を選んでキャラクターに運んでね ▼</div>
       <div class="names-grid" id="namesGrid"></div>
     </div>
   </div>
@@ -497,7 +486,7 @@
     <div class="result-img-wrapper">
       <img id="resultImg" class="result-img" src="" alt="結果">
     </div>
-    <div id="resultMessage" style="margin-bottom: 8px; font-weight: bold; font-size: 1.05rem;"></div>
+    <div id="resultMessage" style="margin-bottom: 6px; font-weight: bold; font-size: 0.95rem;"></div>
     
     <div class="rewards-box">
       <div class="rewards-row">
@@ -516,7 +505,7 @@
       </div>
       <div id="itemRewardContainer" style="display: none;">
         <div class="item-reward-box">
-          🎁 獲得アイテム：元素詰め合わせＢＯＸ（全種類の元素×１０個）
+          🎁 獲得アイテム：元素詰め合わせＢＯＸ（全種類の元素×１0個）
         </div>
       </div>
     </div>
@@ -611,7 +600,7 @@
   function startGame() {
     document.getElementById('openingModal').style.display = 'none';
     document.getElementById('gameHeader').style.display = 'flex';
-    document.getElementById('gamePlayArea').style.display = 'grid';
+    document.getElementById('gamePlayArea').style.display = 'flex';
     document.getElementById('resultScreen').style.display = 'none';
 
     correctMatches = 0;
@@ -666,7 +655,6 @@
 
       const img = document.createElement('img');
       img.className = 'chara-img';
-      // 小文字の chara0_ に設定
       img.src = `chara0_${elem.symbol}.png`;
       img.onerror = () => { img.src = createPlaceholderSVG(elem.symbol); };
 
@@ -821,9 +809,7 @@
     if (isSuccess) {
       titleEl.innerText = 'CLEAR!!';
       titleEl.className = 'result-title success';
-      // クリア成功時は大文字Cの CharaTm_game1.png を使用
       imgEl.src = 'CharaTm_game1.png';
-      imgEl.classList.add('big-smile');
       imgEl.onerror = () => { imgEl.src = createPlaceholderSVG('Tm'); };
       msgEl.innerText = 'すごーい！全員のお名前完璧に覚えてくれたんだね！';
 
@@ -834,9 +820,7 @@
     } else {
       titleEl.innerText = 'MISS...';
       titleEl.className = 'result-title miss';
-      // MISS時は小文字の chara0_Tm.png を使用
       imgEl.src = 'chara0_Tm.png';
-      imgEl.classList.remove('big-smile');
       imgEl.onerror = () => { imgEl.src = createPlaceholderSVG('Tm'); };
       msgEl.innerText = 'ざんねん…制限時間になっちゃった。';
 
