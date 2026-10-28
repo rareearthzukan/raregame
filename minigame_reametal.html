@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>ネオジムのMETALS SORTING & 金属分類図鑑</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -15,13 +15,19 @@
             user-select: none;
             -webkit-user-select: none;
             box-sizing: border-box;
-            touch-action: manipulation;
+            touch-action: none; /* スワイプによる画面のグラつきを防止 */
         }
-        body {
-            font-family: 'Zen Kaku Gothic New', sans-serif;
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            height: 100dvh;
+            overflow: hidden; /* スクロール完全禁止 */
+            overscroll-behavior: none;
             background-color: #0b0f19;
+            font-family: 'Zen Kaku Gothic New', sans-serif;
             color: #e2e8f0;
-            overflow-x: hidden;
         }
         .font-orbitron {
             font-family: 'Orbitron', sans-serif;
@@ -34,7 +40,7 @@
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
         }
 
-        /* 明るいグレー基調のベルトループ背景（キャラの切り抜きを自然に見せる） */
+        /* 明るいグレー基調のベルトループ背景 */
         .conveyor-bg {
             background: repeating-linear-gradient(
                 0deg,
@@ -69,18 +75,19 @@
             transition: all 0.15s ease;
             position: relative;
             overflow: hidden;
+            touch-action: manipulation;
         }
         .btn-neon:active {
             transform: scale(0.95);
         }
 
-        /* カテゴリカラー（ボタン専用） */
+        /* カテゴリカラー */
         .bg-base { background: linear-gradient(135deg, #475569, #334155); border-color: #94a3b8; }
         .bg-precious { background: linear-gradient(135deg, #eab308, #ca8a04); border-color: #fef08a; text-shadow: 0 1px 2px rgba(0,0,0,0.6); }
         .bg-rare { background: linear-gradient(135deg, #2563eb, #1d4ed8); border-color: #93c5fd; }
         .bg-earth { background: linear-gradient(135deg, #9333ea, #7e22ce); border-color: #f0abfc; }
 
-        /* 鉱物チップ用：全元素で統一されたダークシアンメタリックデザイン */
+        /* 鉱物チップ */
         .chip-unified {
             background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
             border: 2px solid #00fff5;
@@ -98,7 +105,7 @@
             animation: ndReact 0.5s ease-out;
         }
 
-        /* 右上「図鑑」ボタンの点滅強調 */
+        /* 右上「図鑑」ボタンの点滅 */
         @keyframes blinkCircle {
             0%, 100% {
                 box-shadow: 0 0 0 0 rgba(236, 72, 153, 0);
@@ -117,10 +124,10 @@
             color: #f472b6 !important;
         }
 
-        /* 浮遊テキストアニメーション */
+        /* 浮遊テキスト */
         @keyframes floatUp {
             0% { opacity: 1; transform: translateY(0) scale(1); }
-            100% { opacity: 0; transform: translateY(-50px) scale(1.3); }
+            100% { opacity: 0; transform: translateY(-40px) scale(1.2); }
         }
         .floating-text {
             position: absolute;
@@ -130,106 +137,106 @@
             z-index: 50;
         }
 
-        /* 落下鉱物スタイル */
+        /* 落下鉱物 */
         .mineral-chip {
             position: absolute;
             transition: transform 0.05s linear;
         }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-2 sm:p-4">
+<body class="w-full h-full flex items-center justify-center p-0 sm:p-2">
 
     <!-- 外部音声SE -->
     <audio id="se-seikai" src="SE_seikai.mp3" preload="auto"></audio>
 
-    <!-- メインコンテナ（スマホ枠風設計） -->
-    <div class="w-full max-w-[400px] h-[760px] cyber-panel rounded-3xl overflow-hidden flex flex-col relative border-4 border-slate-700 shadow-2xl">
+    <!-- メインコンテナ（画面枠にピッタリフィットするレスポンシブ設計） -->
+    <div class="w-full max-w-[440px] h-full max-h-[100dvh] cyber-panel sm:rounded-3xl overflow-hidden flex flex-col relative border-0 sm:border-4 border-slate-700 shadow-2xl">
         
         <!-- ヘッダー (ステータス・設定) -->
-        <header class="bg-slate-900 border-b border-slate-700 p-3 flex justify-between items-center z-20">
+        <header class="bg-slate-900 border-b border-slate-700 px-3 py-2 flex justify-between items-center z-20 flex-shrink-0">
             <div>
-                <div class="text-xs text-slate-400 font-bold flex items-center gap-1">
+                <div class="text-[10px] sm:text-xs text-slate-400 font-bold flex items-center gap-1">
                     <i class="fa-solid font-orbitron text-cyan-400 fa-magnet"></i> METALS SORTING
                 </div>
                 <div class="flex items-center gap-2 mt-0.5">
-                    <span id="level-display" class="bg-cyan-900/80 text-cyan-300 text-xs px-2 py-0.5 rounded font-orbitron border border-cyan-500/30">Lv.1</span>
-                    <span id="gold-display" class="text-yellow-400 font-orbitron text-sm font-bold"><i class="fa-solid fa-coins mr-1"></i>0 G</span>
+                    <span id="level-display" class="bg-cyan-900/80 text-cyan-300 text-[10px] sm:text-xs px-2 py-0.5 rounded font-orbitron border border-cyan-500/30">Lv.1</span>
+                    <span id="gold-display" class="text-yellow-400 font-orbitron text-xs sm:text-sm font-bold"><i class="fa-solid fa-coins mr-1"></i>0 G</span>
                 </div>
             </div>
             
             <div class="flex items-center gap-2">
                 <!-- 図鑑ボタン -->
-                <button id="btn-encyclopedia" class="bg-slate-800 hover:bg-slate-700 text-cyan-400 border border-cyan-500/50 p-2 rounded-xl text-xs flex items-center gap-1 transition">
-                    <i class="fa-solid fa-book-atlas text-sm"></i>
+                <button id="btn-encyclopedia" class="btn-neon bg-slate-800 hover:bg-slate-700 text-cyan-400 border border-cyan-500/50 px-2.5 py-1.5 rounded-xl text-xs flex items-center gap-1 transition">
+                    <i class="fa-solid fa-book-atlas text-xs sm:text-sm"></i>
                     <span class="font-bold">図鑑</span>
                 </button>
                 <!-- 音声切り替え -->
-                <button id="btn-sound" class="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-600 p-2 rounded-xl text-xs w-9 h-9 flex items-center justify-center">
+                <button id="btn-sound" class="btn-neon bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-600 p-1.5 rounded-xl text-xs w-8 h-8 flex items-center justify-center">
                     <i class="fa-solid fa-volume-xmark text-red-400"></i>
                 </button>
             </div>
         </header>
 
         <!-- 経験値バー -->
-        <div class="w-full bg-slate-950 h-1.5 relative overflow-hidden">
+        <div class="w-full bg-slate-950 h-1 relative overflow-hidden flex-shrink-0">
             <div id="exp-bar" class="bg-gradient-to-r from-cyan-500 to-blue-500 h-full w-0% transition-all duration-300"></div>
         </div>
 
         <!-- タイム＆スコアパネル -->
-        <div class="bg-slate-900/90 px-4 py-2 border-b border-slate-800 flex justify-between items-center z-10 font-orbitron">
-            <div class="flex items-center gap-2">
-                <i class="fa-solid fa-clock text-rose-500 text-sm"></i>
-                <span class="text-xs text-slate-400">TIME:</span>
-                <span id="timer-display" class="text-lg font-bold text-white">60</span><span class="text-xs text-slate-400">s</span>
+        <div class="bg-slate-900/90 px-3 py-1.5 border-b border-slate-800 flex justify-between items-center z-10 font-orbitron flex-shrink-0 text-xs">
+            <div class="flex items-center gap-1">
+                <i class="fa-solid fa-clock text-rose-500 text-xs"></i>
+                <span class="text-[10px] text-slate-400">TIME:</span>
+                <span id="timer-display" class="text-base font-bold text-white">60</span><span class="text-[10px] text-slate-400">s</span>
             </div>
-            <div class="flex items-center gap-2">
-                <i class="fa-solid fa-bolt text-amber-400 text-sm"></i>
-                <span class="text-xs text-slate-400">COMBO:</span>
-                <span id="combo-display" class="text-lg font-bold text-amber-400">0</span>
+            <div class="flex items-center gap-1">
+                <i class="fa-solid fa-bolt text-amber-400 text-xs"></i>
+                <span class="text-[10px] text-slate-400">COMBO:</span>
+                <span id="combo-display" class="text-base font-bold text-amber-400">0</span>
             </div>
             <div>
-                <span class="text-xs text-slate-400">SCORE:</span>
-                <span id="score-display" class="text-lg font-bold text-cyan-400">0</span>
+                <span class="text-[10px] text-slate-400">SCORE:</span>
+                <span id="score-display" class="text-base font-bold text-cyan-400">0</span>
             </div>
         </div>
 
-        <!-- アクションゲーム・コンベアエリア (明るいグレー背景) -->
-        <main id="game-area" class="flex-1 relative overflow-hidden conveyor-bg conveyor-paused flex flex-col justify-end">
+        <!-- アクションゲーム・コンベアエリア -->
+        <main id="game-area" class="flex-1 min-h-0 relative overflow-hidden conveyor-bg conveyor-paused flex flex-col justify-end">
             
-            <!-- 背景：ネオジムキャラクター (CharaNd_game1.png) -->
+            <!-- 背景：ネオジムキャラクター -->
             <div class="absolute inset-0 flex items-center justify-center pointer-events-none z-0 opacity-80">
                 <img id="chara-nd" src="CharaNd_game1.png" alt="Nd Character" class="max-h-[85%] object-contain transition-all duration-200">
             </div>
 
             <!-- 落下ライン警示 -->
-            <div class="absolute bottom-[90px] w-full h-3 warning-line opacity-80 z-0"></div>
-            <div class="absolute bottom-[80px] left-2 text-[10px] text-red-600 font-black tracking-widest z-0">
+            <div class="absolute bottom-[65px] w-full h-2.5 warning-line opacity-80 z-0"></div>
+            <div class="absolute bottom-[52px] left-2 text-[9px] text-red-600 font-black tracking-widest z-0">
                 ▲ RECOVERY ZONE ▲
             </div>
 
             <!-- ドロップされるアイテムコンテナ -->
             <div id="item-container" class="absolute inset-0 pointer-events-none z-10"></div>
 
-            <!-- スタート/オーバー オーバーレイ -->
-            <div id="start-overlay" class="absolute inset-0 bg-slate-950/90 backdrop-blur-sm z-30 flex flex-col items-center justify-center p-5 text-center">
-                <div class="w-32 h-32 mb-2 flex items-center justify-center">
+            <!-- スタート / オーバーレイ -->
+            <div id="start-overlay" class="absolute inset-0 bg-slate-950/90 backdrop-blur-sm z-30 flex flex-col items-center justify-center p-4 text-center">
+                <div class="w-24 h-24 sm:w-28 sm:h-28 mb-2 flex items-center justify-center">
                     <img src="Chara0_Nd.png" alt="ネオジム" class="max-h-full max-w-full object-contain drop-shadow-[0_0_15px_rgba(0,255,245,0.4)]">
                 </div>
-                <h1 class="text-xl font-black text-white mb-1 tracking-wide leading-tight">ネオジムの<br><span class="text-cyan-400 font-orbitron text-2xl">METALS SORTING</span></h1>
-                <p class="text-xs text-slate-300 mb-5 leading-relaxed">
+                <h1 class="text-lg sm:text-xl font-black text-white mb-1 tracking-wide leading-tight">ネオジムの<br><span class="text-cyan-400 font-orbitron text-xl sm:text-2xl">METALS SORTING</span></h1>
+                <p class="text-xs text-slate-300 mb-4 leading-relaxed">
                     流れてくる鉱物を適切な回収カゴへ仕分けよう！<br>
                     正解で資金・経験値GET！間違えるとペナルティ！
                 </p>
-                <button id="btn-start" class="btn-neon w-full py-3.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-black text-lg rounded-xl shadow-lg border border-cyan-300/40">
+                <button id="btn-start" class="btn-neon w-full max-w-xs py-3 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-black text-base rounded-xl shadow-lg border border-cyan-300/40">
                     ミッション開始
                 </button>
             </div>
 
-            <div id="result-overlay" class="absolute inset-0 bg-slate-950/90 backdrop-blur-md z-30 flex flex-col items-center justify-center p-5 text-center hidden">
-                <h2 class="text-2xl font-black text-amber-400 mb-1">SORTING COMPLETE!</h2>
-                <p class="text-xs text-slate-400 mb-3">作業結果レポート</p>
+            <div id="result-overlay" class="absolute inset-0 bg-slate-950/90 backdrop-blur-md z-30 flex flex-col items-center justify-center p-4 text-center hidden">
+                <h2 class="text-xl sm:text-2xl font-black text-amber-400 mb-1">SORTING COMPLETE!</h2>
+                <p class="text-[11px] text-slate-400 mb-2">作業結果レポート</p>
                 
-                <div class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 mb-3 text-left space-y-1.5 text-xs">
+                <div class="w-full max-w-xs bg-slate-900 border border-slate-700 rounded-xl p-3 mb-3 text-left space-y-1 text-xs">
                     <div class="flex justify-between">
                         <span class="text-slate-400">獲得スコア:</span>
                         <span id="res-score" class="font-bold text-cyan-400 font-orbitron text-sm">0</span>
@@ -242,138 +249,129 @@
                         <span class="text-slate-400">最大コンボ:</span>
                         <span id="res-maxcombo" class="font-bold text-amber-400 font-orbitron">0</span>
                     </div>
-                    <div class="flex justify-between border-t border-slate-800 pt-1.5">
+                    <div class="flex justify-between border-t border-slate-800 pt-1">
                         <span class="text-slate-400">獲得経験値 (EXP):</span>
                         <span id="res-exp" class="font-bold text-purple-400 font-orbitron">+0 EXP</span>
                     </div>
-                    <div class="flex justify-between border-t border-slate-800 pt-1.5 text-sm font-bold">
+                    <div class="flex justify-between border-t border-slate-800 pt-1 text-xs font-bold">
                         <span class="text-slate-300">獲得報酬 (G):</span>
                         <span id="res-gold" class="text-yellow-400 font-orbitron">+0 G</span>
                     </div>
                 </div>
 
-                <button id="btn-restart" class="btn-neon w-full py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-black text-base rounded-xl shadow-lg border border-emerald-300/40 mb-3">
+                <button id="btn-restart" class="btn-neon w-full max-w-xs py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-black text-sm rounded-xl shadow-lg border border-emerald-300/40 mb-2">
                     再チャレンジ
                 </button>
 
-                <!-- 図鑑案内メッセージ -->
-                <p class="text-[11px] text-pink-300 font-bold bg-pink-950/60 border border-pink-500/40 p-2 rounded-lg animate-pulse">
+                <p class="text-[10px] text-pink-300 font-bold bg-pink-950/60 border border-pink-500/40 p-2 rounded-lg animate-pulse max-w-xs">
                     💡 これって何？って気になったら右上の「図鑑」で調べてみてね。
                 </p>
             </div>
         </main>
 
-        <!-- 回収ボタンエリア (4分類) -->
-        <footer class="bg-slate-950 border-t border-slate-800 p-3 z-20">
-            <div class="grid grid-cols-2 gap-2">
-                <button data-category="base" class="sort-btn btn-neon bg-base border text-white p-3 rounded-xl flex flex-col items-center justify-center shadow-lg active:translate-y-0.5">
-                    <span class="text-xs opacity-80 font-bold mb-0.5">📱 ベースメタル</span>
-                    <span class="text-[10px] text-slate-300">Fe, Cu, Al, Zn など</span>
+        <!-- 回収ボタンエリア (4分類・画面下部にピッタリ固定) -->
+        <footer class="bg-slate-950 border-t border-slate-800 p-2 sm:p-2.5 z-20 flex-shrink-0">
+            <div class="grid grid-cols-2 gap-1.5 sm:gap-2">
+                <button data-category="base" class="sort-btn btn-neon bg-base border text-white py-2 sm:py-2.5 px-1 rounded-xl flex flex-col items-center justify-center shadow-md">
+                    <span class="text-xs font-bold mb-0.5">📱 ベースメタル</span>
+                    <span class="text-[9px] text-slate-300">Fe, Cu, Al, Zn など</span>
                 </button>
-                <button data-category="precious" class="sort-btn btn-neon bg-precious border text-slate-950 p-3 rounded-xl flex flex-col items-center justify-center shadow-lg active:translate-y-0.5 font-bold">
+                <button data-category="precious" class="sort-btn btn-neon bg-precious border text-slate-950 py-2 sm:py-2.5 px-1 rounded-xl flex flex-col items-center justify-center shadow-md font-bold">
                     <span class="text-xs mb-0.5">💍 貴金属</span>
-                    <span class="text-[10px] text-slate-900/80">Au, Ag, Pt, Pd など</span>
+                    <span class="text-[9px] text-slate-900/80">Au, Ag, Pt, Pd など</span>
                 </button>
-                <button data-category="rare" class="sort-btn btn-neon bg-rare border text-white p-3 rounded-xl flex flex-col items-center justify-center shadow-lg active:translate-y-0.5">
-                    <span class="text-xs opacity-90 font-bold mb-0.5">🔋 レアメタル</span>
-                    <span class="text-[10px] text-blue-200">Li, Co, Ti, W など</span>
+                <button data-category="rare" class="sort-btn btn-neon bg-rare border text-white py-2 sm:py-2.5 px-1 rounded-xl flex flex-col items-center justify-center shadow-md">
+                    <span class="text-xs font-bold mb-0.5">🔋 レアメタル</span>
+                    <span class="text-[9px] text-blue-200">Li, Co, Ti, W など</span>
                 </button>
-                <button data-category="earth" class="sort-btn btn-neon bg-earth border text-white p-3 rounded-xl flex flex-col items-center justify-center shadow-lg active:translate-y-0.5">
-                    <span class="text-xs opacity-90 font-bold mb-0.5">🌟 レアアース</span>
-                    <span class="text-[10px] text-purple-200">Nd, Dy, Sc, Y 等 17元素</span>
+                <button data-category="earth" class="sort-btn btn-neon bg-earth border text-white py-2 sm:py-2.5 px-1 rounded-xl flex flex-col items-center justify-center shadow-md">
+                    <span class="text-xs font-bold mb-0.5">🌟 レアアース</span>
+                    <span class="text-[9px] text-purple-200">Nd, Dy, Sc, Y 等 17元素</span>
                 </button>
             </div>
         </footer>
 
     </div>
 
-    <!-- 金属分類図鑑モーダル（全59元素・検索・構造図解） -->
-    <div id="modal-encyclopedia" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-2 sm:p-4 hidden">
-        <div class="bg-slate-900 border-2 border-slate-700 w-full max-w-2xl max-h-[90vh] rounded-2xl flex flex-col overflow-hidden shadow-2xl">
+    <!-- 金属分類図鑑モーダル -->
+    <div id="modal-encyclopedia" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-2 hidden">
+        <div class="bg-slate-900 border-2 border-slate-700 w-full max-w-2xl h-full max-h-[92dvh] rounded-2xl flex flex-col overflow-hidden shadow-2xl">
             
             <!-- モーダルヘッダー -->
-            <div class="bg-slate-950 px-4 py-3 border-b border-slate-800 flex justify-between items-center">
+            <div class="bg-slate-950 px-3 py-2.5 border-b border-slate-800 flex justify-between items-center flex-shrink-0">
                 <div class="flex items-center gap-2">
-                    <i class="fa-solid fa-book-atlas text-cyan-400 text-lg"></i>
-                    <h2 class="text-base font-bold text-white tracking-wide">金属分類図鑑 (全59元素)</h2>
+                    <i class="fa-solid fa-book-atlas text-cyan-400 text-base"></i>
+                    <h2 class="text-xs sm:text-sm font-bold text-white tracking-wide">金属分類図鑑 (全59元素)</h2>
                 </div>
                 <button id="btn-close-modal" class="text-slate-400 hover:text-white p-1">
-                    <i class="fa-solid fa-xmark text-xl"></i>
+                    <i class="fa-solid fa-xmark text-lg"></i>
                 </button>
             </div>
 
             <!-- タブ ＆ 検索バー -->
-            <div class="p-3 bg-slate-900 border-b border-slate-800 space-y-2">
-                <!-- 検索入力 -->
+            <div class="p-2.5 bg-slate-900 border-b border-slate-800 space-y-2 flex-shrink-0">
                 <div class="relative">
                     <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
                     <input type="text" id="search-input" placeholder="元素名・記号・読み・用途で検索..." 
-                           class="w-full bg-slate-950 border border-slate-700 rounded-lg pl-8 pr-3 py-1.5 text-xs text-white focus:outline-none focus:border-cyan-500">
+                           class="w-full bg-slate-950 border border-slate-700 rounded-lg pl-8 pr-3 py-1.5 text-xs text-white focus:outline-none focus:border-cyan-500" style="touch-action:auto">
                 </div>
 
-                <!-- 分類切り替えタブ -->
-                <div class="flex gap-1 overflow-x-auto pb-1 text-xs">
-                    <button data-tab="diagram" class="enc-tab bg-cyan-600 text-white px-3 py-1 rounded-md font-bold whitespace-nowrap">包含構造図</button>
-                    <button data-tab="all" class="enc-tab bg-slate-800 text-slate-300 px-3 py-1 rounded-md font-bold whitespace-nowrap">全元素 (59)</button>
-                    <button data-tab="base" class="enc-tab bg-slate-800 text-slate-300 px-3 py-1 rounded-md font-bold whitespace-nowrap">ベース (7)</button>
-                    <button data-tab="precious" class="enc-tab bg-slate-800 text-slate-300 px-3 py-1 rounded-md font-bold whitespace-nowrap">貴金属 (8)</button>
-                    <button data-tab="rare" class="enc-tab bg-slate-800 text-slate-300 px-3 py-1 rounded-md font-bold whitespace-nowrap">レアメタル (27)</button>
-                    <button data-tab="earth" class="enc-tab bg-slate-800 text-slate-300 px-3 py-1 rounded-md font-bold whitespace-nowrap">レアアース (17)</button>
+                <div class="flex gap-1 overflow-x-auto pb-1 text-[11px]" style="touch-action:pan-x">
+                    <button data-tab="diagram" class="enc-tab bg-cyan-600 text-white px-2.5 py-1 rounded-md font-bold whitespace-nowrap">包含構造図</button>
+                    <button data-tab="all" class="enc-tab bg-slate-800 text-slate-300 px-2.5 py-1 rounded-md font-bold whitespace-nowrap">全元素 (59)</button>
+                    <button data-tab="base" class="enc-tab bg-slate-800 text-slate-300 px-2.5 py-1 rounded-md font-bold whitespace-nowrap">ベース (7)</button>
+                    <button data-tab="precious" class="enc-tab bg-slate-800 text-slate-300 px-2.5 py-1 rounded-md font-bold whitespace-nowrap">貴金属 (8)</button>
+                    <button data-tab="rare" class="enc-tab bg-slate-800 text-slate-300 px-2.5 py-1 rounded-md font-bold whitespace-nowrap">レアメタル (27)</button>
+                    <button data-tab="earth" class="enc-tab bg-slate-800 text-slate-300 px-2.5 py-1 rounded-md font-bold whitespace-nowrap">レアアース (17)</button>
                 </div>
             </div>
 
             <!-- モーダルコンテンツ表示領域 -->
-            <div class="flex-1 overflow-y-auto p-3 sm:p-4 space-y-4">
+            <div class="flex-1 overflow-y-auto p-3 space-y-3" style="touch-action:pan-y">
                 
                 <!-- 1. 包含関係概念図エリア -->
                 <div id="tab-diagram" class="space-y-3">
                     <div class="bg-slate-950 border border-slate-800 p-3 rounded-xl text-xs text-slate-300">
-                        <h3 class="text-cyan-400 font-bold mb-2 text-sm"><i class="fa-solid fa-sitemap mr-1"></i> 金属資源の分類構造概念</h3>
-                        <p class="leading-relaxed text-slate-400 mb-3">
-                            産業で使われる金属（非鉄金属・鉄）は大きく分けられます。「レアメタル」は流通量が少なく希少な31鉱種の総称で、**レアアース（希土類17元素）はそのレアメタルの中の１グループ**として包含されています。
+                        <h3 class="text-cyan-400 font-bold mb-2 text-xs sm:text-sm"><i class="fa-solid fa-sitemap mr-1"></i> 金属資源の分類構造概念</h3>
+                        <p class="leading-relaxed text-slate-400 mb-3 text-[11px]">
+                            産業で使われる金属は大きく分けられます。「レアメタル」は流通量が少なく希少な鉱種の総称で、**レアアース（希土類17元素）はそのレアメタルの中の１グループ**として包含されています。
                         </p>
 
-                        <!-- BOX構造ネスト表示 -->
-                        <div class="space-y-3">
-                            <!-- 全金属概念枠 -->
-                            <div class="border-2 border-dashed border-slate-600 rounded-xl p-3 bg-slate-900/50">
-                                <span class="text-[11px] font-bold text-slate-400 block mb-2">金属資源 (Industrial Metals)</span>
+                        <div class="space-y-2">
+                            <div class="border-2 border-dashed border-slate-600 rounded-xl p-2.5 bg-slate-900/50">
+                                <span class="text-[10px] font-bold text-slate-400 block mb-1.5">金属資源 (Industrial Metals)</span>
 
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
-                                    <!-- ベースメタル -->
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
                                     <div class="bg-slate-800 border border-slate-600 rounded-lg p-2">
-                                        <div class="font-bold text-slate-200 flex justify-between items-center">
+                                        <div class="font-bold text-slate-200 flex justify-between items-center text-[11px]">
                                             <span>📱 ベースメタル</span>
-                                            <span class="text-[10px] bg-slate-700 px-1.5 py-0.5 rounded">7元素</span>
+                                            <span class="text-[9px] bg-slate-700 px-1 py-0.5 rounded">7元素</span>
                                         </div>
-                                        <p class="text-[10px] text-slate-400 mt-1">生産量・消費量が多く、社会インフラの基本となる主要金属。</p>
+                                        <p class="text-[9px] text-slate-400 mt-1">生産量・消費量が多く、インフラの基本となる主要金属。</p>
                                     </div>
 
-                                    <!-- 貴金属 -->
                                     <div class="bg-amber-950/40 border border-amber-600/50 rounded-lg p-2">
-                                        <div class="font-bold text-amber-300 flex justify-between items-center">
+                                        <div class="font-bold text-amber-300 flex justify-between items-center text-[11px]">
                                             <span>💍 貴金属</span>
-                                            <span class="text-[10px] bg-amber-900/60 px-1.5 py-0.5 rounded text-amber-200">8元素</span>
+                                            <span class="text-[9px] bg-amber-900/60 px-1 py-0.5 rounded text-amber-200">8元素</span>
                                         </div>
-                                        <p class="text-[10px] text-amber-200/70 mt-1">希少で耐食性に優れ、装飾品や高精度電子部品に用いられる。</p>
+                                        <p class="text-[9px] text-amber-200/70 mt-1">希少で耐食性に優れ、宝飾品や精密電子部品に用いられる。</p>
                                     </div>
 
-                                    <!-- レアメタル（外枠） -->
-                                    <div class="bg-blue-950/40 border-2 border-blue-500 rounded-lg p-2 md:col-span-1">
-                                        <div class="font-bold text-blue-300 flex justify-between items-center">
-                                            <span>🔋 レアメタル (広義)</span>
-                                            <span class="text-[10px] bg-blue-900 px-1.5 py-0.5 rounded text-blue-200">44元素</span>
+                                    <div class="bg-blue-950/40 border-2 border-blue-500 rounded-lg p-2">
+                                        <div class="font-bold text-blue-300 flex justify-between items-center text-[11px]">
+                                            <span>🔋 レアメタル</span>
+                                            <span class="text-[9px] bg-blue-900 px-1 py-0.5 rounded text-blue-200">44元素</span>
                                         </div>
-                                        <p class="text-[10px] text-blue-200/70 my-1">地球上の存在量が少ないか、採取・精錬が技術的・経済的に困難な金属。</p>
+                                        <p class="text-[9px] text-blue-200/70 my-1">存在量が少ないか、採取・精錬が困難な希少金属。</p>
 
-                                        <!-- 内包：レアアース -->
-                                        <div class="mt-2 bg-purple-950/60 border border-purple-400 rounded-md p-2">
-                                            <div class="font-bold text-purple-300 text-[11px] flex justify-between items-center">
-                                                <span>🌟 レアアース (希土類)</span>
+                                        <div class="mt-1.5 bg-purple-950/60 border border-purple-400 rounded-md p-1.5">
+                                            <div class="font-bold text-purple-300 text-[10px] flex justify-between items-center">
+                                                <span>🌟 レアアース</span>
                                                 <span class="text-[9px] bg-purple-800 px-1 py-0.5 rounded text-purple-100">17元素</span>
                                             </div>
-                                            <p class="text-[9px] text-purple-200/80 mt-1">
-                                                スカンジウム(Sc)、イットリウム(Y)、ランタノイド15元素の計17元素。強力な磁石やLED発光体などに必須。
+                                            <p class="text-[9px] text-purple-200/80 mt-0.5">
+                                                Sc, Y, ランタノイド15元素の計17元素。強力磁石やLEDに必須。
                                             </p>
                                         </div>
                                     </div>
@@ -383,14 +381,11 @@
                     </div>
                 </div>
 
-                <!-- 2. 全元素カードグリッド表示エリア -->
-                <div id="element-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                    <!-- JSにて動的生成 -->
-                </div>
+                <!-- 2. 全元素カードグリッド -->
+                <div id="element-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
 
-                <!-- 該当なし時メッセージ -->
                 <div id="no-results" class="text-center py-8 text-slate-500 text-xs hidden">
-                    <i class="fa-solid fa-circle-exclamation text-2xl mb-2"></i>
+                    <i class="fa-solid fa-circle-exclamation text-xl mb-1"></i>
                     <p>条件に一致する金属が見つかりません</p>
                 </div>
 
@@ -398,11 +393,8 @@
         </div>
     </div>
 
-    <!-- アプリケーションロジック Script -->
+    <!-- JavaScript -->
     <script>
-        // ========================================================
-        // 1. 全59元素の定義データセット
-        // ========================================================
         const ELEMENTS_DATA = [
             // --- ベースメタル (7) ---
             { symbol: 'Fe', name: '鉄', kana: 'てつ', category: 'base', catName: 'ベースメタル', desc: '建築・インフラ・自動車など構造材料の主役。', icon: 'fa-cubes' },
@@ -471,9 +463,6 @@
             { symbol: 'Lu', name: 'ルテチウム', kana: 'るてちうむ', category: 'earth', catName: 'レアアース', desc: 'PETスキャナ（がん診断機器）のシンチレータ。', icon: 'fa-notes-medical' }
         ];
 
-        // ========================================================
-        // 2. Web Audio API サウンドシステム ＆ SE_seikai.mp3 制御
-        // ========================================================
         class SoundSystem {
             constructor() {
                 this.ctx = null;
@@ -481,27 +470,20 @@
                 this.bgmTimer = null;
                 this.seSeikaiEl = document.getElementById('se-seikai');
             }
-
             init() {
                 if (!this.ctx) {
                     const AudioContext = window.AudioContext || window.webkitAudioContext;
                     this.ctx = new AudioContext();
                 }
-                if (this.ctx.state === 'suspended') {
-                    this.ctx.resume();
-                }
+                if (this.ctx.state === 'suspended') this.ctx.resume();
             }
-
             playOk() {
                 if (!this.enabled) return;
                 if (this.seSeikaiEl) {
                     this.seSeikaiEl.currentTime = 0;
                     this.seSeikaiEl.play().catch(() => this.playSynthOk());
-                } else {
-                    this.playSynthOk();
-                }
+                } else this.playSynthOk();
             }
-
             playSynthOk() {
                 this.init();
                 const osc = this.ctx.createOscillator();
@@ -513,10 +495,8 @@
                 gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
                 osc.connect(gain);
                 gain.connect(this.ctx.destination);
-                osc.start();
-                osc.stop(this.ctx.currentTime + 0.15);
+                osc.start(); osc.stop(this.ctx.currentTime + 0.15);
             }
-
             playNg() {
                 if (!this.enabled) return;
                 this.init();
@@ -529,10 +509,8 @@
                 gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.2);
                 osc.connect(gain);
                 gain.connect(this.ctx.destination);
-                osc.start();
-                osc.stop(this.ctx.currentTime + 0.2);
+                osc.start(); osc.stop(this.ctx.currentTime + 0.2);
             }
-
             playClick() {
                 if (!this.enabled) return;
                 this.init();
@@ -544,14 +522,11 @@
                 gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.05);
                 osc.connect(gain);
                 gain.connect(this.ctx.destination);
-                osc.start();
-                osc.stop(this.ctx.currentTime + 0.05);
+                osc.start(); osc.stop(this.ctx.currentTime + 0.05);
             }
-
             startBGM() {
                 if (!this.enabled) return;
-                this.init();
-                this.stopBGM();
+                this.init(); this.stopBGM();
                 let step = 0;
                 const notes = [261.63, 329.63, 392.00, 523.25];
                 this.bgmTimer = setInterval(() => {
@@ -564,62 +539,39 @@
                     gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.2);
                     osc.connect(gain);
                     gain.connect(this.ctx.destination);
-                    osc.start();
-                    osc.stop(this.ctx.currentTime + 0.2);
+                    osc.start(); osc.stop(this.ctx.currentTime + 0.2);
                     step++;
                 }, 250);
             }
-
             stopBGM() {
-                if (this.bgmTimer) {
-                    clearInterval(this.bgmTimer);
-                    this.bgmTimer = null;
-                }
+                if (this.bgmTimer) { clearInterval(this.bgmTimer); this.bgmTimer = null; }
             }
         }
 
         const sound = new SoundSystem();
-
-        // ========================================================
-        // 3. アプリ状態管理 (localStorage 連携)
-        // ========================================================
         const STORAGE_KEY = 'rareEarthGameState';
-
-        let state = {
-            gold: 0,
-            level: 1,
-            exp: 0
-        };
+        let state = { gold: 0, level: 1, exp: 0 };
 
         function loadState() {
             try {
                 const saved = localStorage.getItem(STORAGE_KEY);
-                if (saved) {
-                    state = { ...state, ...JSON.parse(saved) };
-                }
-            } catch(e) {
-                console.error("Storage load error", e);
-            }
+                if (saved) state = { ...state, ...JSON.parse(saved) };
+            } catch(e) {}
             updateUIState();
         }
 
         function saveState() {
-            try {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-            } catch(e) {
-                console.error("Storage save error", e);
-            }
+            try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
         }
 
         function addRewards(goldAdd, expAdd) {
             state.gold = Math.max(0, state.gold + goldAdd);
             state.exp += expAdd;
-
             const reqExp = state.level * 100;
             if (state.exp >= reqExp) {
                 state.exp -= reqExp;
                 state.level++;
-                createFloatingText('LEVEL UP!!', 'text-amber-300 text-lg', 150, 200);
+                createFloatingText('LEVEL UP!!', 'text-amber-300 text-base', 120, 150);
             }
             saveState();
             updateUIState();
@@ -633,21 +585,8 @@
             document.getElementById('exp-bar').style.width = `${pct}%`;
         }
 
-        // ========================================================
-        // 4. アクションゲームコアロジック
-        // ========================================================
-        let gameActive = false;
-        let gameTime = 60;
-        let score = 0;
-        let combo = 0;
-        let maxCombo = 0;
-        let correctCount = 0;
-        let wrongCount = 0;
-        let gameInterval = null;
-        let spawnTimeout = null;
-        let fallingItems = [];
-        let reactionIndex = 0;
-        let resetNdTimer = null;
+        let gameActive = false, gameTime = 60, score = 0, combo = 0, maxCombo = 0, correctCount = 0, wrongCount = 0;
+        let gameInterval = null, spawnTimeout = null, fallingItems = [], reactionIndex = 0, resetNdTimer = null;
 
         const gameArea = document.getElementById('game-area');
         const itemContainer = document.getElementById('item-container');
@@ -655,16 +594,8 @@
         const encBtnEl = document.getElementById('btn-encyclopedia');
 
         function startGame() {
-            sound.init();
-            sound.startBGM();
-            gameActive = true;
-            gameTime = 60;
-            score = 0;
-            combo = 0;
-            maxCombo = 0;
-            correctCount = 0;
-            wrongCount = 0;
-            fallingItems = [];
+            sound.init(); sound.startBGM();
+            gameActive = true; gameTime = 60; score = 0; combo = 0; maxCombo = 0; correctCount = 0; wrongCount = 0; fallingItems = [];
 
             if (charaNdEl) charaNdEl.src = 'CharaNd_game1.png';
             if (encBtnEl) encBtnEl.classList.remove('blink-enc');
@@ -679,9 +610,7 @@
             gameInterval = setInterval(() => {
                 gameTime--;
                 document.getElementById('timer-display').textContent = gameTime;
-                if (gameTime <= 0) {
-                    endGame();
-                }
+                if (gameTime <= 0) endGame();
             }, 1000);
 
             spawnLoop();
@@ -689,9 +618,7 @@
 
         function spawnLoop() {
             if (!gameActive) return;
-
             spawnMineral();
-
             const nextTime = Math.floor(Math.random() * 400) + 1400;
             spawnTimeout = setTimeout(spawnLoop, nextTime);
         }
@@ -700,40 +627,34 @@
             const data = ELEMENTS_DATA[Math.floor(Math.random() * ELEMENTS_DATA.length)];
             const id = 'item-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
 
-            const posX = Math.floor(Math.random() * 220) + 30; 
+            const areaWidth = gameArea.clientWidth || 320;
+            const posX = Math.floor(Math.random() * Math.max(10, areaWidth - 110)) + 10;
 
             const el = document.createElement('div');
             el.id = id;
-            
-            el.className = `mineral-chip chip-unified rounded-2xl p-2.5 w-28 text-center flex flex-col items-center justify-center font-bold`;
+            el.className = `mineral-chip chip-unified rounded-xl p-2 w-24 sm:w-28 text-center flex flex-col items-center justify-center font-bold`;
             el.style.left = `${posX}px`;
-            el.style.top = `-70px`;
+            el.style.top = `-65px`;
 
             el.innerHTML = `
                 <div class="flex items-center gap-1">
                     <i class="fa-solid ${data.icon} text-xs text-cyan-400"></i>
-                    <span class="font-orbitron text-base font-black tracking-wide">${data.symbol}</span>
+                    <span class="font-orbitron text-sm sm:text-base font-black tracking-wide">${data.symbol}</span>
                 </div>
-                <div class="text-[11px] truncate w-full mt-0.5 text-slate-200">${data.name}</div>
+                <div class="text-[10px] truncate w-full mt-0.5 text-slate-200">${data.name}</div>
             `;
 
             itemContainer.appendChild(el);
 
-            const itemObj = {
-                id,
-                element: el,
-                data,
-                y: -70,
-                speed: 1.0 // 超ゆっくり思考できる一定の落下速度
-            };
-
-            fallingItems.push(itemObj);
+            fallingItems.push({
+                id, element: el, data, y: -65, speed: 1.0
+            });
         }
 
         function updatePhysics() {
             if (gameActive) {
                 const areaHeight = gameArea.clientHeight;
-                const deadLineY = areaHeight - 80;
+                const deadLineY = areaHeight - 65;
 
                 for (let i = fallingItems.length - 1; i >= 0; i--) {
                     const item = fallingItems[i];
@@ -750,11 +671,8 @@
 
         function triggerNdReaction() {
             if (!charaNdEl) return;
-            
             reactionIndex = (reactionIndex === 0) ? 1 : 0;
-            const nextImg = reactionIndex === 1 ? 'CharaNd_game2.png' : 'CharaNd_game3.png';
-            
-            charaNdEl.src = nextImg;
+            charaNdEl.src = reactionIndex === 1 ? 'CharaNd_game2.png' : 'CharaNd_game3.png';
             charaNdEl.classList.remove('nd-happy');
             void charaNdEl.offsetWidth;
             charaNdEl.classList.add('nd-happy');
@@ -767,7 +685,6 @@
 
         function handleSort(targetItem, selectedCategory, isMiss = false) {
             if (!targetItem) return;
-
             fallingItems = fallingItems.filter(i => i.id !== targetItem.id);
 
             const data = targetItem.data;
@@ -776,12 +693,9 @@
             if (isCorrect) {
                 sound.playOk();
                 triggerNdReaction();
-
-                correctCount++;
-                combo++;
+                correctCount++; combo++;
                 if (combo > maxCombo) maxCombo = combo;
 
-                // ★ 30倍G設定 ★
                 let rewardG = 60;
                 if (data.category === 'base') rewardG = 30;
                 else if (data.category === 'precious') rewardG = 90;
@@ -790,27 +704,20 @@
 
                 const gainedScore = 100 + (combo * 10);
                 score += gainedScore;
-
-                addRewards(rewardG, 0); // EXPは終了時にまとめて集計
+                addRewards(rewardG, 0);
 
                 createFloatingText(`+${gainedScore} (${data.symbol})`, 'text-emerald-400', targetItem.element.offsetLeft, targetItem.y);
             } else {
                 sound.playNg();
-                wrongCount++;
-                combo = 0;
-
+                wrongCount++; combo = 0;
                 addRewards(-30, 0);
-
-                const msg = isMiss ? 'MISS!' : 'WRONG!';
-                createFloatingText(msg, 'text-rose-500', targetItem.element.offsetLeft, targetItem.y);
+                createFloatingText(isMiss ? 'MISS!' : 'WRONG!', 'text-rose-500', targetItem.element.offsetLeft, targetItem.y);
             }
 
-            targetItem.element.style.transform = 'scale(1.3)';
+            targetItem.element.style.transform = 'scale(1.2)';
             targetItem.element.style.opacity = '0';
             setTimeout(() => {
-                if (targetItem.element.parentNode) {
-                    targetItem.element.parentNode.removeChild(targetItem.element);
-                }
+                if (targetItem.element.parentNode) targetItem.element.parentNode.removeChild(targetItem.element);
             }, 100);
 
             updateGameStats();
@@ -828,9 +735,9 @@
 
         function createFloatingText(text, colorClass, x, y) {
             const el = document.createElement('div');
-            el.className = `floating-text ${colorClass} text-sm`;
+            el.className = `floating-text ${colorClass} text-xs sm:text-sm`;
             el.textContent = text;
-            el.style.left = `${Math.max(10, Math.min(260, x))}px`;
+            el.style.left = `${Math.max(10, Math.min(220, x))}px`;
             el.style.top = `${y}px`;
             gameArea.appendChild(el);
             setTimeout(() => el.remove(), 800);
@@ -839,24 +746,18 @@
         function endGame() {
             gameActive = false;
             sound.stopBGM();
-            clearInterval(gameInterval);
-            clearTimeout(spawnTimeout);
-
+            clearInterval(gameInterval); clearTimeout(spawnTimeout);
             gameArea.classList.add('conveyor-paused');
 
             const totalQuestions = correctCount + wrongCount;
             const accuracy = totalQuestions > 0 ? (correctCount / totalQuestions) : 0;
 
-            // ★ 新EXP仕様判定 ★
-            let earnedExp = 50; // 1回プレイ完了で +50
-            if (accuracy >= 0.5) earnedExp += 200; // 半分以上正解で +200
-            if (wrongCount === 0 && correctCount > 0) earnedExp += 1000; // 全問正解で +1000
+            let earnedExp = 50;
+            if (accuracy >= 0.5) earnedExp += 200;
+            if (wrongCount === 0 && correctCount > 0) earnedExp += 1000;
 
-            // 30倍金G集計
             let totalG = correctCount * 45;
-            if (wrongCount === 0 && correctCount > 0) {
-                totalG += 300; // コンプリートボーナス
-            }
+            if (wrongCount === 0 && correctCount > 0) totalG += 300;
 
             addRewards(totalG, earnedExp);
 
@@ -868,14 +769,9 @@
             document.getElementById('res-gold').textContent = `+${totalG.toLocaleString()} G`;
 
             document.getElementById('result-overlay').classList.remove('hidden');
-
-            // 右上「図鑑」ボタンを点滅強調
             if (encBtnEl) encBtnEl.classList.add('blink-enc');
         }
 
-        // ========================================================
-        // 5. 金属分類図鑑 モーダル機能
-        // ========================================================
         function renderEncyclopedia(filterTab = 'diagram', searchQuery = '') {
             const grid = document.getElementById('element-grid');
             const diagram = document.getElementById('tab-diagram');
@@ -893,7 +789,6 @@
             grid.innerHTML = '';
 
             const q = searchQuery.toLowerCase().trim();
-
             const filtered = ELEMENTS_DATA.filter(item => {
                 const matchTab = (filterTab === 'all' || filterTab === 'diagram') || (item.category === filterTab);
                 const matchQuery = !q || 
@@ -901,7 +796,6 @@
                     item.symbol.toLowerCase().includes(q) ||
                     item.kana.includes(q) ||
                     item.desc.includes(q);
-
                 return matchTab && matchQuery;
             });
 
@@ -918,12 +812,12 @@
                 if (item.category === 'earth') badgeClass = 'bg-purple-900/80 text-purple-300 border border-purple-500/50';
 
                 const card = document.createElement('div');
-                card.className = 'bg-slate-950 border border-slate-800 rounded-xl p-3 flex flex-col justify-between hover:border-slate-600 transition';
+                card.className = 'bg-slate-950 border border-slate-800 rounded-xl p-2.5 flex flex-col justify-between hover:border-slate-600 transition';
                 card.innerHTML = `
                     <div>
-                        <div class="flex justify-between items-start mb-1.5">
+                        <div class="flex justify-between items-start mb-1">
                             <div class="flex items-center gap-2">
-                                <div class="w-8 h-8 rounded-lg bg-slate-900 border border-slate-700 flex items-center justify-center font-orbitron font-bold text-cyan-400 text-sm">
+                                <div class="w-7 h-7 rounded-lg bg-slate-900 border border-slate-700 flex items-center justify-center font-orbitron font-bold text-cyan-400 text-xs">
                                     ${item.symbol}
                                 </div>
                                 <div>
@@ -931,20 +825,17 @@
                                     <span class="text-[9px] text-slate-400 block">${item.kana}</span>
                                 </div>
                             </div>
-                            <span class="text-[9px] px-1.5 py-0.5 rounded font-bold ${badgeClass}">
+                            <span class="text-[8px] px-1.5 py-0.5 rounded font-bold ${badgeClass}">
                                 ${item.catName}
                             </span>
                         </div>
-                        <p class="text-[11px] text-slate-300 leading-relaxed">${item.desc}</p>
+                        <p class="text-[10px] text-slate-300 leading-relaxed">${item.desc}</p>
                     </div>
                 `;
                 grid.appendChild(card);
             });
         }
 
-        // ========================================================
-        // 6. イベントリスナー & 初期化
-        // ========================================================
         document.addEventListener('DOMContentLoaded', () => {
             loadState();
             requestAnimationFrame(updatePhysics);
@@ -958,9 +849,7 @@
                     if (!gameActive) return;
                     const cat = btn.getAttribute('data-category');
                     const lowest = getLowestItem();
-                    if (lowest) {
-                        handleSort(lowest, cat, false);
-                    }
+                    if (lowest) handleSort(lowest, cat, false);
                 });
             });
 
@@ -968,7 +857,6 @@
                 if (!gameActive) return;
                 const lowest = getLowestItem();
                 if (!lowest) return;
-
                 if (e.key === '1') handleSort(lowest, 'base');
                 if (e.key === '2') handleSort(lowest, 'precious');
                 if (e.key === '3') handleSort(lowest, 'rare');
