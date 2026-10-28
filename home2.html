@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="format-detection" content="telephone=no">
+<title>レアアース・クラフト - マイホーム</title>
+<style>
+:root{--maxw:720px;--bg:#0f172a;--card:#1e293b;--text:#f8fafc;--line:#334155;--accent:#3b82f6;--item:#0f172a;--onaccent:#fff;--wall:#334155;--base:#000;--floor:#1e293b;--door:#64748b;--door2:#475569;--knob:#cbd5e1;--garden:transparent}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{height:100%;font-size:clamp(14px,min(calc(12px + 1.1vw),3.2vh),21px);-webkit-text-size-adjust:100%;touch-action:manipulation}
+body{margin:0;height:100%;overflow:hidden;overscroll-behavior:none;background:#0b1224;color:var(--text,#1e293b);
+  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",Meiryo,sans-serif;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+::-webkit-scrollbar{width:.6rem;height:.6rem}
+::-webkit-scrollbar-thumb{background:var(--accent,#3b82f6);border-radius:1rem}
+.phone{position:fixed;inset:0;width:100%;max-width:var(--maxw);margin:0 auto;display:flex;flex-direction:column;overflow:hidden;
+  background:var(--bg);color:var(--text);padding-left:env(safe-area-inset-left,0);padding-right:env(safe-area-inset-right,0);
+  box-shadow:0 0 0 1px var(--line),0 0 40px rgba(0,0,0,.6);transition:background .3s}
+@media (orientation:landscape) and (min-width:700px){:root{--maxw:1200px}}
+
+.header{display:flex;justify-content:space-between;align-items:center;flex-shrink:0;background:var(--card);border-bottom:2px solid var(--line);
+  padding:calc(.4rem + env(safe-area-inset-top,0)) .6rem .4rem;font-size:.78rem;font-weight:bold}
+.bgm-btn{background:transparent;border:1px solid var(--line);color:var(--text);border-radius:1rem;padding:.25rem .6rem;min-height:1.8rem;font-size:.75rem;cursor:pointer;font-family:inherit}
+.bgm-btn.muted{border-color:#e94560;color:#e94560}
+.status{display:flex;gap:.4rem;padding:.4rem .6rem;flex-shrink:0;border-bottom:1px solid var(--line);background:var(--card)}
+.badge{flex:1;text-align:center;border:1px solid var(--line);border-radius:.5rem;padding:.25rem;font-size:.7rem;font-weight:bold;color:var(--accent)}
+
+.content{flex:1;min-height:0;display:flex;flex-direction:column;gap:.6rem;padding:.6rem .7rem;overflow-y:auto;overscroll-behavior:contain}
+@media (orientation:landscape) and (min-width:700px){
+  .content{display:grid;grid-template-columns:1.2fr 1fr;align-items:stretch}
+  .menu{min-height:0}
+}
+.card{background:var(--card);border:1px solid var(--line);border-radius:.7rem;padding:.5rem .6rem;font-size:.8rem}
+
+.stage{position:relative;width:100%;aspect-ratio:4/3.2;overflow:hidden;border-radius:.8rem;flex-shrink:0;
+  border:.18rem solid var(--line);box-shadow:inset 0 0 2.5rem rgba(0,0,0,.18);container-type:inline-size}
+.layer{position:absolute;inset:0}
+.wall{height:64%;background:var(--wall)}
+.wall::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 25% 20%,rgba(255,255,230,.35),transparent 55%)}
+.win{position:absolute;left:10%;top:16%;width:24%;height:36%;border:.28rem solid var(--base);border-radius:.3rem .3rem 0 0;z-index:1;
+  background:linear-gradient(var(--base),var(--base)) 50% 0/.2rem 100% no-repeat,linear-gradient(var(--base),var(--base)) 0 50%/100% .2rem no-repeat,linear-gradient(180deg,#bfe3f7,#eaf7ff);
+  box-shadow:0 .25rem .8rem rgba(0,0,0,.15)}
+.floor{position:absolute;left:0;right:0;top:64%;bottom:0;background:var(--floor);border-top:.35rem solid var(--base);box-shadow:inset 0 .8rem 1rem -.5rem rgba(0,0,0,.28)}
+#garden{display:none;background:var(--garden)}
+#objs{z-index:5}
+.door{position:absolute;left:60%;bottom:0;width:19%;height:74%;background:var(--door);border:.25rem solid var(--base);border-bottom:0;border-radius:.3rem .3rem 0 0;box-shadow:inset 0 0 0 .35rem var(--door2),.2rem 0 .6rem rgba(0,0,0,.18);z-index:1;display:none}
+.door::after{content:"";position:absolute;right:10%;top:55%;width:.55rem;height:.55rem;border-radius:50%;background:var(--knob);box-shadow:0 .1rem .2rem rgba(0,0,0,.35)}
+.flat .wall::after{display:none}.flat .floor{box-shadow:none}
+
+/* オブジェクトのスタイル（小さい家具もタッチできるように反応エリアを拡張） */
+.obj{position:absolute;transform:translate(-50%,-100%);touch-action:none;cursor:grab;z-index:5;min-width:36px;min-height:36px;display:flex;align-items:flex-end;justify-content:center;padding:4px}
+/* 元素キャラは常に一番手前（最前面） */
+.obj.is-chara{z-index:120 !important}
+.obj:active{cursor:grabbing;filter:brightness(1.05)}
+.obj img{width:100%;height:auto;display:block;pointer-events:none;filter:drop-shadow(0 .3rem .4rem rgba(0,0,0,.28))}
+.obj .ph{display:flex;flex-direction:column;align-items:center;font-size:7cqw;line-height:1.1;text-align:center;filter:drop-shadow(0 .2rem .3rem rgba(0,0,0,.3))}
+.obj .ph small{font-size:.55rem;background:rgba(0,0,0,.55);color:#fff;border-radius:.4rem;padding:0 .3rem}
+
+.chara-badge{position:absolute;top:-10px;right:-10px;background:#10b981;color:#fff;font-size:.55rem;padding:2px 5px;border-radius:10px;font-weight:bold;border:1px solid #fff;box-shadow:0 2px 4px rgba(0,0,0,.3);pointer-events:none}
+
+.controls{position:absolute;top:.4rem;left:.4rem;right:.4rem;z-index:10;display:flex;justify-content:space-between;align-items:center;gap:.3rem;flex-wrap:wrap;
+  background:var(--card);border:1px solid var(--line);border-radius:.6rem;padding:.25rem .4rem;opacity:.94}
+.controls b{font-size:.7rem}.dirs{margin-left:auto;display:flex;gap:.2rem}
+.dir{background:transparent;border:1px solid var(--line);color:var(--text);border-radius:.4rem;min-width:1.7rem;min-height:1.6rem;font-size:.68rem;font-weight:bold;cursor:pointer;font-family:inherit}
+.dir.on{background:var(--accent);color:var(--onaccent);border-color:var(--accent)}
+
+.menu{flex:1;display:flex;flex-direction:column;min-height:16rem}
+.tabs{display:flex;gap:.2rem;margin-bottom:.4rem;flex-shrink:0}
+.tab{flex:1;min-height:2rem;background:transparent;border:1px solid var(--line);color:var(--text);border-radius:.5rem;font-size:.68rem;font-weight:bold;cursor:pointer;font-family:inherit;padding:0}
+.tab.on{background:var(--accent);color:var(--onaccent);border-color:var(--accent)}
+.list{flex:1;min-height:12rem;display:none;flex-direction:column;gap:.4rem;overflow-y:auto}
+.list.on{display:flex}
+
+.item{display:flex;align-items:center;gap:.5rem;border:1px solid var(--line);border-radius:.6rem;padding:.4rem .5rem;background:var(--item);cursor:pointer;transition:background .2s}
+.item:hover{background:rgba(59,130,246,0.1)}
+.item.own{opacity:.85}
+.item .thumb{width:2.2rem;height:2.2rem;border-radius:.4rem;border:1px solid var(--line);flex-shrink:0;overflow:hidden;background:#0b1224;display:flex;align-items:center;justify-content:center;position:relative}
+.item .thumb img{width:100%;height:100%;object-fit:contain;display:block}
+.item .thumb .emoji-ph{font-size:1.2rem;line-height:1;display:none}
+.item .nm{flex:1;font-weight:bold;font-size:.78rem}
+.item .nm small{display:block;font-weight:normal;font-size:.65rem;opacity:.7}
+
+.swatch{width:2.2rem;height:2.2rem;border-radius:.4rem;border:1px solid var(--line);flex-shrink:0;overflow:hidden;display:flex;flex-direction:column}
+.swatch i{flex:1.4}.swatch i+i{flex:1}
+.btn{background:var(--accent);color:var(--onaccent);border:none;border-radius:.6rem;min-height:2rem;padding:.3rem .8rem;font-size:.72rem;font-weight:bold;cursor:pointer;font-family:inherit}
+.btn:active{transform:scale(.96)}
+.btn.done{background:#10b981;color:#fff;cursor:default}
+.guide{display:flex;gap:.5rem;align-items:flex-start;border:1px solid var(--line);border-radius:.7rem;padding:.4rem;font-size:.7rem;line-height:1.45}
+.guide img{width:2.6rem;height:2.6rem;border-radius:50%;object-fit:contain;background:#fff;flex-shrink:0}
+textarea{width:100%;height:5rem;font-size:.65rem;border:1px solid var(--line);border-radius:.5rem;padding:.4rem;resize:none;background:var(--item);color:var(--text);font-family:inherit;-webkit-user-select:text;user-select:text}
+
+.nav{display:flex;gap:.3rem;flex-shrink:0;background:var(--card);border-top:2px solid var(--line);padding:.4rem .5rem calc(.4rem + env(safe-area-inset-bottom,0))}
+.nav div{flex:1;min-height:3rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.1rem;border:1px solid var(--line);border-radius:.7rem;font-size:.72rem;font-weight:bold;cursor:pointer;opacity:.75}
+.nav div.on{opacity:1;color:var(--accent);border-color:var(--accent)}
+.nav span{font-size:1.15rem;line-height:1}
+
+#toast{position:fixed;left:50%;bottom:calc(5rem + env(safe-area-inset-bottom,0));transform:translate(-50%,1rem);background:#1e293b;color:#fff;border-radius:1.5rem;padding:.5rem 1rem;font-size:.75rem;font-weight:bold;z-index:300;opacity:0;pointer-events:none;transition:.3s;white-space:nowrap}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+
+.overlay{position:fixed;inset:0;display:none;justify-content:center;align-items:center;background:rgba(10,15,30,.7);z-index:200;padding:1rem}
+.modal{background:#1e293b;color:#fff;border:2px solid var(--accent,#3b82f6);border-radius:1rem;padding:1.1rem;width:100%;max-width:24rem;text-align:center}
+.modal h3{margin:0 0 .4rem;font-size:1rem}.modal p,.modal .mdesc{margin:0 0 .8rem;font-size:.8rem;line-height:1.5;text-align:left}
+.modal .row{display:flex;gap:.5rem;margin-top:.8rem}.modal .row .btn{flex:1}
+</style>
+</head>
+<body>
+<audio id="bgm" src="BGM_room.ogg" loop preload="auto"></audio>
+<audio id="se-unlock" src="itemget.mp3" preload="auto"></audio>
+<audio id="se-gogogo" src="gogogo.mp3" preload="auto"></audio>
+
+<div class="phone" id="phone">
+  <div class="header">
+    <span>✈️ <span id="miles">0</span> マイル</span>
+    <span>💰 <span id="money">0</span> G</span>
+    <span>🌟 Lv.<span id="level">1</span></span>
+    <button id="bgm-btn" class="bgm-btn" onclick="toggleBGM()">🎵 ON</button>
+  </div>
+  <div class="status">
+    <div class="badge">🏠 居心地 Lv.<span id="roomLevel">1</span></div>
+    <div class="badge">✨ 精製ボーナス +<span id="bonus">0</span>%</div>
+  </div>
+
+  <div class="content">
+    <div class="stage" id="stage">
+      <div class="controls">
+        <b id="dirTitle">北の壁</b>
+        <div class="dirs" style="margin-left:0"><button class="dir" id="undoBtn" onclick="undo()" title="元に戻す">↶</button><button class="dir" id="redoBtn" onclick="redo()" title="やり直す">↷</button><button class="dir" onclick="resetRoom()" title="リセット">🗑️</button></div>
+        <div class="dirs" id="dirBtns"></div>
+      </div>
+      <div id="indoor">
+        <div class="layer wall"><div class="win" id="win"></div><div class="door" id="door"></div></div>
+        <div class="floor"></div>
+      </div>
+      <div class="layer" id="garden"></div>
+      <div class="layer" id="objs"></div>
+    </div>
+
+    <div class="card menu">
+      <div class="tabs" id="tabs"></div>
+      <div class="list on" id="L-shop"></div>
+      <div class="list" id="L-display"></div>
+      <div class="list" id="L-theme"></div>
+      <div class="list" id="L-music"></div>
+      <div class="list" id="L-save">
+        <div class="guide"><img src="chara0_Y.png" alt="イットリウム" onerror="this.style.visibility='hidden'">
+          <div><b>【イットリウムからのアドバイス】</b><br>普段は<b>自動で保存</b>されるよ！別の端末で遊ぶときや万が一のときだけ「コードコピー」を押してメモ帳に保存してね。</div></div>
+        <textarea id="saveCode" placeholder="ここにセーブコードが表示されます / 貼り付けます"></textarea>
+        <div style="display:flex;gap:.4rem">
+          <button class="btn" style="flex:1" onclick="exportSave()">📋 コードコピー</button>
+          <button class="btn" style="flex:1;background:#10b981;color:#fff" onclick="importSave()">📥 コード復元</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav">
+    <div onclick="location.href='map.html'"><span>🗺️</span>マップ</div>
+    <div onclick="location.href='seisei.html'"><span>🧪</span>精製</div>
+    <div onclick="location.href='factory.html'"><span>🏭</span>工場</div>
+    <div onclick="location.href='zukan.html'"><span>📖</span>図鑑</div>
+    <div class="on"><span>🏠</span>ホーム</div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<div class="overlay" id="modal"><div class="modal"><h3 id="mTitle"></h3><div id="mDesc" class="mdesc"></div>
+  <div class="row" id="mRows"><button class="btn" style="background:#94a3b8;color:#fff" onclick="closeModal()">キャンセル</button><button class="btn" id="mOk" style="background:#ef4444;color:#fff">OK</button></div></div></div>
+
+<script>
+try { ['gesturestart','gesturechange','gestureend'].forEach(e=>document.addEventListener(e,x=>x.preventDefault())); } catch(e){}
+
+const IMG_DIR = '';
+const furnitureMaster = {};
+
+const IMG_PREFIX='kagu_';
+const MILE_ROWS=[
+  // 1枚目の画像（インテリア・家電・お庭系）
+  ['antique_clock','アンティーク大時計','🕰️',2500,1.2,24,80],
+  ['art_statue','芸術の石像','🗿',2000,1.0,22,82],
+  ['bbq','BBQグリル','🍖',1500,0.8,26,86],
+  ['chess_table','チェステーブル','♟️',1800,0.9,28,88],
+  ['espresso','エスプレッソマシン','☕',1200,0.6,18,84],
+  ['massage_chair','マッサージチェア','💆',3000,1.5,32,90],
+  ['robo_cleaner','ロボット掃除機','🤖',800,0.4,14,92],
+  ['smart_fridge','スマート冷蔵庫','🧊',3500,1.6,28,82],
+  ['telescope','天体望遠鏡','🔭',2200,1.1,24,78],
+  ['trophy_case','トロフィーケース','🏆',2000,1.0,26,82],
+  ['dai_stand','ダイニングセット','🍽️',600,0.4,32,90],
+  ['desk_stand','デスク＆チェアセット','💻',700,0.4,30,88],
+  ['happa_stand','スタンドグリーン','🪴',400,0.3,16,84],
+  ['hon_stand','ウッド本棚','📚',500,0.4,22,84],
+  ['kagami_stand','スタンドミラー','🪞',350,0.3,16,86],
+  ['kuma_stand','テディベア','🧸',300,0.2,16,90],
+  ['low_stand','ローテーブル','🪵',450,0.3,24,90],
+  ['mat_stand','ラウンドラグマット','🟫',350,0.3,32,94],
+  ['niwaki_stand','庭木ポット','🌳',400,0.3,22,82],
+  ['niwakiY_stand','ガーデンツリー','🌳',800,0.6,34,84],
+  ['system_stand','システムキッチン','🍳',1200,0.8,36,80],
+
+  // 2枚目の画像（研究室・ラボ系アイテム）
+  ['reagent_shelf_lab','試薬棚','🧪',800,0.5,24,82],
+  ['balance_lab','電子天秤','⚖️',500,0.3,16,84],
+  ['bench_lab','実験ベンチ','🔬',1000,0.7,32,86],
+  ['cart_lab','実験用ワゴン','🛒',600,0.4,22,86],
+  ['centrifuge_lab','遠心分離機','🌀',900,0.6,20,84],
+  ['cleanbench_lab','クリーンベンチ','🔬',1500,1.0,34,80],
+  ['counter_lab','実験カウンター','🧪',1100,0.7,32,86],
+  ['glassware_lab','ガラス器具セット','🧪',400,0.3,18,84],
+  ['incubator_lab','インキュベーター','🧊',1300,0.8,26,82],
+  ['kaiseki_lab','解析分析装置','💻',2000,1.2,30,82],
+  ['microscope_lab','顕微鏡デスク','🔬',1200,0.7,28,86],
+  ['monitor_lab','大型モニター','🖥️',1000,0.6,28,78],
+  ['oven_lab','乾燥・加熱オーブン','🔥',900,0.5,24,82],
+  ['pc_lab','ラボ用PCデスク','🖥️',1400,0.8,30,86],
+  ['stirrer_lab','ピペット・スターラー','🧪',700,0.4,22,84],
+  ['stool_lab','ラボ用スツール','🪑',250,0.2,14,90],
+  ['strage_box_lab','ストレージボックス','📦',350,0.2,18,88],
+  ['tana_lab','ラボ用キャビネット','🗄️',900,0.5,24,82],
+  ['testtube_rack_lab','試験管スタンド','🧪',300,0.2,16,86],
+  ['trash_lab','ペダル式ダストボックス','🗑️',150,0.1,12,90],
+  ['whiteboard_lab','ホワイトボード','📋',500,0.3,28,76]
+];
+
+// ファイル名から自動的にマスターデータを組み立てる処理
+MILE_ROWS.forEach(r=>furnitureMaster[r[0]]={name:r[1],emoji:r[2],cost:r[3],bonus:r[4],size:r[5],x:50,y:r[6],img:IMG_PREFIX+r[0]+'.png'});
+
+// 家具マスターは下の GOLD_ROWS で定義します。
+const GOLD_ROWS=[
+  ['bbq','BBQグリル','🍖',10000,0.1,14,88],['robo_cleaner','ロボット掃除機','🤖',12000,0.1,9,92],['chess_table','チェステーブル','♟️',15000,0.1,16,88],
+  ['trophy_case','トロフィーケース','🏆',18000,0.2,14,86],['espresso','エスプレッソマシン','☕',20000,0.1,10,76],['vinyl','レコードプレーヤー','💿',25000,0.2,14,80],
+  ['telescope','天体望遠鏡','🔭',30000,0.3,14,88],['art_statue','彫刻','🗿',40000,0.2,12,88],['antique_clock','アンティーク大時計','🕰️',45000,0.2,12,86],
+  ['smart_fridge','スマート冷蔵庫','🧊',55000,0.2,16,84],['massage_chair','マッサージチェア','💆',60000,0.2,18,88],['persian_rug','ペルシャ絨毯','🧶',65000,0.2,36,94],
+  ['wine_cellar','ワインセラー','🍷',70000,0.2,14,86],['sofa_lux','高級レザーソファ','🛋️',80000,0.4,36,92],['library','書斎の大書棚','📚',85000,0.3,32,86],
+  ['bed_king','キングサイズベッド','🛏️',90000,0.3,40,92],['aquarium_xl','大型水槽','🐟',100000,0.3,30,84],['chandelier','シャンデリア','🕯️',120000,0.3,22,40],
+  ['pool_table','ビリヤード台','🎱',130000,0.3,38,90],['fountain','庭の噴水','⛲',140000,0.3,26,86],['bar_counter','ホームバー','🍸',150000,0.3,36,88],
+  ['greenhouse','温室','🌱',160000,0.3,40,86],['kitchen_island','アイランドキッチン','🍳',180000,0.4,38,90],['fireplace','暖炉','🔥',200000,0.4,26,84],
+  ['golf_sim','ゴルフシミュレーター','⛳',220000,0.3,40,90],['home_theater','ホームシアター','🎬',250000,0.5,42,88],['sauna','ホームサウナ','🧖',300000,0.4,32,88],
+  ['jacuzzi','ジャグジー','🛁',350000,0.4,34,90],['grand_piano','グランドピアノ','🎹',500000,0.5,40,90],['rare_crystal','レアアース結晶ディスプレイ','💎',500000,0.5,16,80],
+];
+MILE_ROWS.forEach(r=>furnitureMaster[r[0]]={name:r[1],emoji:r[2],cost:r[3],bonus:r[4],size:r[5],x:50,y:r[6],img:IMG_PREFIX+r[0]+'.png'});
+GOLD_ROWS.forEach(r=>furnitureMaster[r[0]]={name:r[1],emoji:r[2],gold:r[3],cost:0,bonus:r[4],size:r[5],x:50,y:r[6],img:IMG_PREFIX+r[0]+'.png'});
+
+const recipes = [
+  {id:'lighter',name:'ライター（石）',img:'seihin_raita.png',emoji:'🔥'},
+  {id:'headphones',name:'高音質ヘッドホン',img:'seihin_hedohon.png',emoji:'🎧'},
+  {id:'led',name:'省エネLEDライト',img:'seihin_led.png',emoji:'💡'},
+  {id:'neodymium_magnet',name:'ネオジム磁石',img:'seihin_neojimu.png',emoji:'🧲'},
+  {id:'pc',name:'次世代ノートパソコン',img:'seihin_pasokon.png',emoji:'💻'}
+];
+const PROD_SIZE = 12;
+
+const bgmMaster = {
+  room:{name:'ホーム基本BGM',file:'BGM_home.ogg'}, room2:{name:'ホームBGM-かわいい',file:'BGM_home_cute.ogg'},
+  room3:{name:'ホームBGM-やすらぎ',file:'BGM_home_natural.ogg'}, room4:{name:'ホームBGM-スローテンポ',file:'BGM_home_piano.ogg'},
+  seisei:{name:'元素精製プラントBGM',file:'BGM_seisei.ogg'}, factory:{name:'製造工場BGM',file:'BGM_koujyo.ogg'},
+  mine:{name:'採掘場BGM (陸上)',file:'BGM_mine.ogg'}, siwake:{name:'リサイクル工場BGM',file:'BGM_siwake.ogg'},
+  hinan:{name:'緊急避難訓練BGM',file:'BGM_hinan.ogg'}, map:{name:'世界マップBGM',file:'BGM_map.ogg'}
+};
+
+const GARDEN_DEFAULT = `radial-gradient(ellipse 14% 6% at 20% 14%,#fff 60%,transparent 62%),radial-gradient(ellipse 18% 7% at 72% 22%,#fff 60%,transparent 62%),repeating-linear-gradient(90deg,#f5e9d3 0 1.4%,#e9d7b6 1.4% 1.8%) 0 52%/100% 12% no-repeat,linear-gradient(180deg,#7cc4ef 0%,#d8f0fb 52%,#7fcf6b 52%,#4aa84a 100%)`;
+const wallBg = (c,pat,wain,rail)=>`linear-gradient(180deg,transparent 74%,${rail} 74% 77%,${wain} 77%),${pat},${c}`;
+const planks = (a,b,seam)=>`repeating-linear-gradient(90deg,${seam} 0 .1rem,transparent .1rem 2rem),linear-gradient(180deg,${a},${b})`;
+const planksH=(a,b,seam)=>`repeating-linear-gradient(180deg,${seam} 0 .1rem,transparent .1rem 2rem),linear-gradient(180deg,${a},${b})`;
+const tiles  = (a,b)=>`conic-gradient(${a} 25%,${b} 0 50%,${a} 0 75%,${b} 0) 0 0/16% 38%`;
+
+const themesMaster = {
+  natural:{name:'🌿 ナチュラル（白木と生成り）', wall:wallBg('#f3ead9','repeating-linear-gradient(90deg,rgba(255,255,255,.45) 0 1.1rem,transparent 1.1rem 2.2rem)','#e4d3b4','#fffaf0'),
+    base:'#fffaf0', floor:planks('#d9b382','#c4965f','rgba(90,55,20,.28)'), floorH:planksH('#d9b382','#c4965f','rgba(90,55,20,.28)'), bg:'#f6f1e7', card:'#fffdf8', text:'#4a3f33', line:'#e0d3bd', accent:'#6f9a6b', item:'#faf5ea', onaccent:'#fff'},
+  wood:{name:'☕ ウッド＆カフェ', wall:wallBg('#e9dcc6','radial-gradient(rgba(120,80,40,.07) 2px,transparent 2.5px) 0 0/.9rem .9rem','#3f5a4a','#c9a24d'),
+    base:'#2f4538', floor:planks('#9a5f36','#7a4524','rgba(30,15,5,.4)'), floorH:planksH('#9a5f36','#7a4524','rgba(30,15,5,.4)'), bg:'#f3ead8', card:'#fffaf0', text:'#4a3525', line:'#d9c4a4', accent:'#3f5a4a', item:'#f6edd9', onaccent:'#fff'},
+  pink:{name:'🌸 さくらピンク', wall:wallBg('#fde8ec','linear-gradient(transparent,transparent)','#f9c9d4','#fff'),
+    base:'#fff', floor:planks('#f1d2b8','#e0b896','rgba(140,80,60,.22)'), floorH:planksH('#f1d2b8','#e0b896','rgba(140,80,60,.22)'), bg:'#fff4f6', card:'#fff', text:'#7a3b4b', line:'#f6cdd6', accent:'#e0728f', item:'#fff0f3', onaccent:'#fff'},
+  blue:{name:'🌊 ミント＆スカイ', wall:wallBg('#e3f4ee','linear-gradient(rgba(255,255,255,.5) .15rem,transparent .15rem) 0 0/1.4rem 1.4rem,linear-gradient(90deg,rgba(255,255,255,.5) .15rem,transparent .15rem) 0 0/1.4rem 1.4rem','#b9e1d6','#fff'),
+    base:'#fff', floor:tiles('#f4efe4','#d5e8e2'), bg:'#eef8f4', card:'#fff', text:'#2c5a52', line:'#c5e4da', accent:'#3fa38e', item:'#f0faf6', onaccent:'#fff'},
+  cyber:{name:'⚡ サイバーネオン', wall:wallBg('#141a33','linear-gradient(rgba(0,255,245,.12) .08rem,transparent .08rem) 0 0/1.4rem 1.4rem,linear-gradient(90deg,rgba(0,255,245,.12) .08rem,transparent .08rem) 0 0/1.4rem 1.4rem','#1c2548','#00fff5'),
+    base:'#00c9c0', floor:planks('#2a3358','#161c38','rgba(0,255,245,.25)'), floorH:planksH('#2a3358','#161c38','rgba(0,255,245,.25)'), bg:'#0f1a3a', card:'#16213e', text:'#e6f7ff', line:'#1f6f84', accent:'#00fff5', item:'#0f1830', onaccent:'#0f3460'},
+  monotone:{name:'🎱 モノトーンシック', wall:wallBg('#d8d8da','repeating-linear-gradient(90deg,rgba(0,0,0,.05) 0 .12rem,transparent .12rem .9rem)','#4a4a50','#fafafa'),
+    base:'#2a2a2e', floor:planks('#8a7f74','#6d635a','rgba(0,0,0,.35)'), floorH:planksH('#8a7f74','#6d635a','rgba(0,0,0,.35)'), bg:'#ececee', card:'#fafafa', text:'#27272a', line:'#cfcfd4', accent:'#27272a', item:'#f2f2f4', onaccent:'#fff'},
+  lab:{name:'🔬 研究室（無機質）', wall:wallBg('#eef2f4','linear-gradient(rgba(120,140,150,.28) .06rem,transparent .06rem) 0 0/2rem 2rem,linear-gradient(90deg,rgba(120,140,150,.28) .06rem,transparent .06rem) 0 0/2rem 2rem','#aab4bb','#dfe5e8'),
+    base:'#7b868d', floor:tiles('#cfd6da','#bcc5ca'),
+    garden:'repeating-linear-gradient(45deg,rgba(70,80,90,.4) 0 .08rem,transparent .08rem .7rem) 0 34%/100% 20% no-repeat,repeating-linear-gradient(-45deg,rgba(70,80,90,.4) 0 .08rem,transparent .08rem .7rem) 0 34%/100% 20% no-repeat,repeating-linear-gradient(90deg,rgba(0,0,0,.2) 0 .1rem,transparent .1rem 20%) 0 100%/100% 42% no-repeat,linear-gradient(180deg,#aeb6bd 0%,#d2d7db 58%,#8e949a 58%,#6f757b 100%)',
+    bg:'#e9eef0', card:'#fff', text:'#26343b', line:'#c3ccd1', accent:'#2b7a9b', item:'#f3f6f7', onaccent:'#fff'},
+  candy:{name:'🍰 おかしの家', wall:wallBg('#fff0f5','linear-gradient(rgba(255,150,180,.25) 50%,transparent 50%) 0 0/1.6rem 1.6rem,linear-gradient(90deg,rgba(255,150,180,.25) 50%,transparent 50%) 0 0/1.6rem 1.6rem','#7b4a3a','#ffe3a8'),
+    base:'#ffe3a8', floor:tiles('#fff6e6','#f4b6c8'),
+    garden:'linear-gradient(180deg,#ffd3e4 0%,#fff0f6 54%,#b9f0cf 54%,#8fdcb0 100%)',
+    bg:'#fff6ee', card:'#fff', text:'#6b3a2e', line:'#f3cfc0', accent:'#e8688a', item:'#fff3ea', onaccent:'#fff'},
+  space:{name:'🌌 宇宙ステーション', wall:'radial-gradient(#fff .06rem,transparent .1rem) 0 0/2.3rem 2.3rem,radial-gradient(rgba(180,200,255,.8) .05rem,transparent .09rem) 1.1rem 1.4rem/3.1rem 3.1rem,#0c1030',
+    base:'#8b9cff', floor:'linear-gradient(180deg,#2c3566,#141a3d)',
+    garden:'radial-gradient(circle at 78% 22%,#fff6c9 0 5%,transparent 5.5%),linear-gradient(180deg,#050816 0%,#1a1f4d 54%,#8a8fa8 54%,#5c6078 100%)',
+    bg:'#0b0f2a', card:'#151b40', text:'#e8ecff', line:'#34408a', accent:'#8b9cff', item:'#10153a', onaccent:'#0b0f2a'},
+  plain:{name:'⬜ 無地（真っ白）', wall:'#ffffff', base:'#ffffff', floor:'#ffffff', garden:'#ffffff', flat:true,
+    bg:'#f7f7f7', card:'#ffffff', text:'#333333', line:'#dddddd', accent:'#555555', item:'#fafafa', onaccent:'#ffffff'}
+};
+const DECOR={
+  natural:{door:'#c9a06b',door2:'#b78a52',knob:'#fff8e6'},
+  wood:{door:'#6b4328',door2:'#573520',knob:'#e0b44c'},
+  pink:{door:'#ffffff',door2:'#fbd0da',knob:'#e0728f'},
+  blue:{door:'#f4efe4',door2:'#cfe8e0',knob:'#3fa38e'},
+  cyber:{garden:'linear-gradient(180deg,#000 0%,#000 56%,#2b2b30 56%,#2b2b30 100%)',door:'#1c2548',door2:'#0f1630',knob:'#00fff5'},
+  monotone:{door:'#2f2f33',door2:'#1f1f23',knob:'#d4d4d8'},
+  candy:{door:'#6e4030',door2:'#5a3326',knob:'#ffd27a'},
+  space:{win:false,door:'#2a3470',door2:'#1d2556',knob:'#e8ecff'},
+  lab:{win:false,doorDir:0,door:'linear-gradient(#d4ecf7,#d4ecf7) 50% 16%/46% 28% no-repeat,#8d99a1',door2:'#6f7c85',knob:'#d9dee2'},
+  plain:{win:false}
+};
+Object.keys(DECOR).forEach(k=>Object.assign(themesMaster[k],DECOR[k]));
+const dirNames = ['北の壁','東の壁','南の壁','西の壁','🌿 お庭'];
+const dirLabels = ['北','東','南','西','🌿'];
+
+/* ═════════ 状態管理 ═════════ */
+let gameState = {};
+try {
+  gameState = JSON.parse(localStorage.getItem('rareEarthGameState')) || {};
+} catch(e) { gameState = {}; }
+const defaults = {
+  miles:500, level:1, money:1500, mudStock:5, products:{}, homeFurnishings:[], placedItems:[],
+  currentTheme:'natural', currentBgm:'room', charaOwned:[], charaTasks:{}, tutorialShown6:false
+};
+Object.keys(defaults).forEach(k=>{ if(gameState[k]===undefined) gameState[k]=defaults[k]; });
+const save = ()=>{ try{ localStorage.setItem('rareEarthGameState',JSON.stringify(gameState)); }catch(e){} };
+const $ = id=>document.getElementById(id);
+let dir = 0, tab = 'shop';
+
+const bgm=$('bgm'), bgmBtn=$('bgm-btn'); 
+if(bgm) bgm.volume=.3;
+let isMuted = false;
+try { isMuted = localStorage.getItem('bgmMutedHome')==='true'; } catch(e){}
+
+function updateBgmSource(){ try{ if(bgm) bgm.src=(bgmMaster[gameState.currentBgm]||bgmMaster.room).file; }catch(e){} }
+function updateBgmUI(){ if(!bgmBtn) return; bgmBtn.innerText=isMuted?'🔇 OFF':'🎵 ON'; bgmBtn.className='bgm-btn'+(isMuted?' muted':''); }
+function toggleBGM(){ 
+  isMuted=!isMuted; 
+  try{ localStorage.setItem('bgmMutedHome',isMuted); }catch(e){}
+  updateBgmUI(); 
+  if(bgm){ if(isMuted) bgm.pause(); else bgm.play().catch(()=>{}); }
+}
+function unlock(){ if(bgm) bgm.play().then(()=>['click','touchstart'].forEach(e=>document.removeEventListener(e,unlock))).catch(()=>{}); }
+
+let curTheme=null;
+function scene(){
+  try {
+    const t=curTheme||themesMaster.natural;
+    const winEl=$('win'), doorEl=$('door'), phoneEl=$('phone'), stageEl=$('stage');
+    if(winEl) winEl.style.display=(dir===2&&t.win!==false)?'block':'none';
+    if(doorEl) doorEl.style.display=(t.door&&dir===(t.doorDir===undefined?1:t.doorDir))?'block':'none';
+    if(phoneEl) phoneEl.style.setProperty('--floor',((dir===1||dir===3)&&t.floorH)?t.floorH:t.floor);
+    if(stageEl) stageEl.classList.toggle('flat',!!t.flat);
+  } catch(e){}
+}
+function applyTheme(k){
+  try {
+    const t=themesMaster[k]||themesMaster.natural, pEl=$('phone');
+    if(!pEl) return;
+    const s=pEl.style;
+    ['wall','base','floor','bg','card','text','line','accent','item','onaccent'].forEach(p=>s.setProperty('--'+p,t[p]||''));
+    s.setProperty('--garden',t.garden||GARDEN_DEFAULT);
+    ['door','door2','knob'].forEach(p=>s.setProperty('--'+p,t[p]||'none'));
+    curTheme=t; scene();
+  } catch(e){}
+}
+
+function toast(m){ const t=$('toast'); if(!t) return; t.innerText=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2000); }
+function askModal(title,desc,ok,fn,no){
+  try {
+    const mT=$('mTitle'), mD=$('mDesc'), mR=$('mRows'), mO=$('modal');
+    if(mT) mT.innerText=title; if(mD) mD.innerHTML=desc;
+    if(mR) mR.innerHTML=`<button class="btn" style="background:#94a3b8;color:#fff" onclick="closeModal()">${no||'キャンセル'}</button><button class="btn" id="mOk" style="background:#ef4444;color:#fff">${ok}</button>`;
+    const mOkBtn=$('mOk'); if(mOkBtn) mOkBtn.onclick=()=>{closeModal();fn&&fn();};
+    if(mO) mO.style.display='flex';
+  } catch(e){}
+}
+function closeModal(){ const mO=$('modal'); if(mO) mO.style.display='none'; }
+
+function buildControls(){
+  try {
+    const db=$('dirBtns'); if(db) db.innerHTML=dirLabels.map((l,i)=>`<button class="dir" id="dir${i}" onclick="changeDirection(${i})">${l}</button>`).join('');
+    const tabs={shop:'🛒ショップ',display:'📦配置',theme:'🎨テイスト',music:'🎵音楽',save:'💾セーブ'};
+    const tb=$('tabs'); if(tb) tb.innerHTML=Object.keys(tabs).map(k=>`<button class="tab" id="tab-${k}" onclick="switchTab('${k}')">${tabs[k]}</button>`).join('');
+  } catch(e){}
+}
+function changeDirection(d){
+  dir=d; const dt=$('dirTitle'); if(dt) dt.innerText=dirNames[d];
+  for(let i=0;i<5;i++){ const dBtn=$('dir'+i); if(dBtn) dBtn.classList.toggle('on',i===d); }
+  const ind=$('indoor'), gar=$('garden');
+  if(ind) ind.style.display=d===4?'none':'block'; if(gar) gar.style.display=d===4?'block':'none';
+  scene(); renderRoom();
+}
+function switchTab(t){
+  tab=t;
+  ['shop','display','theme','music','save'].forEach(k=>{
+    const lk=$('L-'+k), tbk=$('tab-'+k);
+    if(lk) lk.classList.toggle('on',k===t);
+    if(tbk) tbk.classList.toggle('on',k===t);
+  });
+}
+function updateUI(){
+  try {
+    checkTaskCompletions();
+    const mil=$('miles'), lev=$('money'), lvl=$('level'), rlvl=$('roomLevel'), bon=$('bonus');
+    if(mil) mil.innerText=(gameState.miles||0).toLocaleString();
+    if(lvl) lvl.innerText=gameState.level||1;
+    if(lev) lev.innerText=(gameState.money||0).toLocaleString();
+    let b=0;
+    (gameState.placedItems||[]).forEach(i=>{ if(i.type==='furn'&&furnitureMaster[i.id]) b+=furnitureMaster[i.id].bonus; if(i.type==='prod') b+=.2; });
+    if(bon) bon.innerText=b.toFixed(1);
+    if(rlvl) rlvl.innerText=Math.floor(1+b/1.5);
+    renderShop(); renderDisplay(); renderTheme(); renderMusic(); renderRoom();
+  } catch(e){}
+}
+
+/* ═════════════════════════════════════════════════════════════
+   ★ キャラクター17名定義・パラメーター ★
+   ═════════════════════════════════════════════════════════════ */
+const CHARA_PREFIX='chara0_', CHARA_SIZE=20;
+const CHARAS={
+  Sc:{name:'スカンジウム', type:'prod',   mH:2.0, mQ:12, rH:2.5, rQ:6,  pH:3.0, pQ:2, desc:'バランス型。製品製造もそつなくこなす器用な子。'},
+  Y:{name:'イットリウム',   type:'mine',   mH:1.5, mQ:18, rH:3.0, rQ:6,  pH:4.0, pQ:2, desc:'好奇心旺盛で元気！掘削スピードに自信あり。'},
+  La:{name:'ランタン',       type:'refine', mH:2.5, mQ:12, rH:1.8, rQ:9,  pH:3.5, pQ:2, desc:'おっとり優しく、緻密な精製作業が得意。'},
+  Ce:{name:'セリウム',       type:'refine', mH:2.2, mQ:14, rH:2.0, rQ:8,  pH:3.5, pQ:2, desc:'リーダーシップがあり、安定した精製品質を生む。'},
+  Pr:{name:'プラセオジム',   type:'mine',   mH:1.6, mQ:17, rH:2.8, rQ:6,  pH:4.0, pQ:2, desc:'目立ちたがり屋でエネルギッシュに泥を掘り出す。'},
+  Nd:{name:'ネオジム',       type:'mine',   mH:1.4, mQ:20, rH:3.0, rQ:6,  pH:3.8, pQ:2, desc:'強力な磁力のように引き付ける力で大量掘削！'},
+  Pm:{name:'プロメチウム',   type:'refine', mH:2.6, mQ:10, rH:1.9, rQ:9,  pH:3.6, pQ:2, desc:'内向的で研究熱心。精製度を高めるのが得意。'},
+  Sm:{name:'サマリウム',     type:'refine', mH:2.4, mQ:12, rH:2.1, rQ:8,  pH:3.5, pQ:2, desc:'冷静沈着。ミスなく確実に精製を進める。'},
+  Eu:{name:'ユウロピウム',   type:'prod',   mH:2.2, mQ:13, rH:2.5, rQ:7,  pH:2.8, pQ:3, desc:'華やかな発光製品を作るのが得意なクリエイター。'},
+  Gd:{name:'ガドリニウム',   type:'mine',   mH:1.8, mQ:16, rH:2.6, rQ:7,  pH:3.6, pQ:2, desc:'どっしりとした安定感でコツコツ掘削する。'},
+  Tb:{name:'テルビウム',     type:'mine',   mH:1.5, mQ:19, rH:2.9, rQ:6,  pH:3.7, pQ:2, desc:'活動的で、スピーディーな資源回収をお約束！'},
+  Dy:{name:'ジスプロシウム', type:'prod',   mH:2.0, mQ:14, rH:2.4, rQ:8,  pH:2.5, pQ:3, desc:'ハイテク製品の製造に不可欠な高性能ワーカー。'},
+  Ho:{name:'ホルミウム',     type:'refine', mH:2.5, mQ:11, rH:2.0, rQ:8,  pH:3.6, pQ:2, desc:'音楽や美を愛し、丁寧な精製で高い成果を上げる。'},
+  Er:{name:'エルビウム',     type:'refine', mH:2.3, mQ:13, rH:1.7, rQ:10, pH:3.4, pQ:2, desc:'最高峰の精製スペシャリスト。光通信や美容レーザーでも大活躍！'},
+  Tm:{name:'ツリウム',       type:'mine',   mH:1.7, mQ:16, rH:2.7, rQ:7,  pH:3.8, pQ:2, desc:'真面目にコツコツと掘削作業をこなす頑張り屋。'},
+  Yb:{name:'イッテルビウム', type:'refine', mH:2.4, mQ:12, rH:2.2, rQ:8,  pH:3.5, pQ:2, desc:'落ち着いた雰囲気で確実に精製をこなす。'},
+  Lu:{name:'ルテチウム',     type:'prod',   mH:2.1, mQ:13, rH:2.5, rQ:7,  pH:2.7, pQ:3, desc:'最後を飾るシャープな切れ味で製品製造をサポート。'}
+};
+
+function charaCount(lv){ return Math.min(17, lv<3?1:lv<5?2:lv<8?3:4+Math.floor((lv-8)/3)); }
+function nextCharaText(){
+  const n=charaCount(gameState.level||1); if(n>=17) return '🎉 全キャラクターが揃いました！';
+  let lv=(gameState.level||1)+1; while(charaCount(lv)<=n) lv++; return `🔒 次のキャラクターは Lv.${lv} で登場！`;
+}
+
+function syncCrafted(){
+  if(!gameState.crafted) gameState.crafted={}; let ch=false; const p=gameState.products||{};
+  recipes.forEach(r=>{ if(p[r.id]>0&&!gameState.crafted[r.id]){ gameState.crafted[r.id]=true; ch=true; } });
+  if(ch) save();
+}
+
+function ensureCharas(){
+  try {
+    const ids=Object.keys(CHARAS), want=charaCount(gameState.level||1);
+    if(!Array.isArray(gameState.charaOwned)) gameState.charaOwned=[];
+    if(!gameState.placedItems) gameState.placedItems=[];
+    
+    let added=0;
+    while(gameState.charaOwned.length<want){
+      const rest=ids.filter(i=>!gameState.charaOwned.includes(i)); if(!rest.length) break;
+      let id;
+      if(!gameState.charaOwned.includes('Er') && rest.includes('Er')) {
+        id = 'Er';
+      } else {
+        id = rest[Math.floor(Math.random()*rest.length)];
+      }
+      gameState.charaOwned.push(id);
+      gameState.placedItems.push({type:'chara',id,dir:0,s:1,x:25+Math.random()*50,y:90}); added++;
+    }
+    if(added){ save(); setTimeout(()=>toast('🎉 新しい仲間がお部屋に来たよ！'),600); }
+
+    if((gameState.level||1) >= 6 && !gameState.tutorialShown6) {
+      gameState.tutorialShown6 = true; save();
+      setTimeout(() => {
+        askModal('🏠 イットリウム＆初期メンバーからの声かけ！',
+          `「プレイヤーさん、Lv.6おめでとう！私のお部屋や庭に配置して話しかけてくれたら、いつでも<b>『お仕事』</b>や<b>『お話し』</b>ができるよ！」`,
+          'わかった！', null, '');
+      }, 1000);
+    }
+  } catch(e){}
+}
+
+/* ═════════ キャラクター対話・お仕事モーダル ═════════ */
+function openCharaTaskModal(id){
+  const c = CHARAS[id]; if(!c) return;
+  if(!gameState.charaTasks) gameState.charaTasks={};
+  const task = gameState.charaTasks[id], now = Date.now();
+
+  if(task && task.endTime > now){
+    const leftMin = Math.ceil((task.endTime - now)/60000);
+    askModal(`⏳ ${c.name}はお仕事中です`,
+      `<div style="text-align:center"><p>${c.desc}</p>` +
+      `<p style="color:#00fff5; font-weight:bold">現在のお仕事: ${task.type==='mine'?'⛏️ 掘削':task.type==='refine'?'🧪 精製':'🏭 製品製造'}</p>` +
+      `<p>残り時間: 約 <b>${leftMin}分</b></p></div>`,
+      '閉じる', null, '');
+    return;
+  }
+
+  if(task && task.endTime <= now && !task.claimed){ claimTaskReward(id); return; }
+
+  const canProd = (gameState.level||1) >= 12;
+  const html = `
+    <div style="font-size:0.8rem">
+      <p style="margin:0 0 6px">${c.desc}</p>
+      <div style="background:rgba(0,0,0,0.3); padding:8px; border-radius:6px; margin-bottom:8px">
+        <b>【得意分野】</b> ${c.type==='mine'?'⛏️ 掘削特化':c.type==='refine'?'🧪 精製特化':'🏭 製造バランス型'}<br>
+        • 掘削: ${c.mH}時間で <b>${c.mQ}個</b> の泥収集<br>
+        • 精製: ${c.rH}時間で <b>${c.rQ}個</b> のレアアース精製<br>
+        • 製造(Lv.12~): ${c.pH}時間で <b>${c.pQ}個</b> の製品制作 ${canProd?'':'<span style="color:#f87171">(🔒Lv12未開放)</span>'}
+      </div>
+      <p style="text-align:center; font-weight:bold; color:#ffde59; margin:4px 0">何をしましょうか？</p>
+      <div style="display:flex; gap:4px; flex-direction:column">
+        <button class="btn" style="background:#8b5cf6; font-size:0.8rem; margin-bottom:4px" onclick="talkChara('${id}')">🗣️ お話する</button>
+        <button class="btn" style="background:#3b82f6" onclick="startCharaTask('${id}','mine')">⛏️ 掘削を頼む (${c.mH}時間 / ${c.mQ}個)</button>
+        <button class="btn" style="background:#10b981" onclick="startCharaTask('${id}','refine')">🧪 精製を頼む (${c.rH}時間 / ${c.rQ}個)</button>
+        <button class="btn" style="background:${canProd?'#eab308':'#475569'}" ${canProd?'':'disabled'} onclick="startCharaTask('${id}','prod')">🏭 製品製造を頼む (${c.pH}時間 / ${c.pQ}個)</button>
+      </div>
+    </div>
+  `;
+  askModal(`🧑 ${c.name}`, html, '閉じる', null, '');
+}
+
+/* キャラクター会話機能（Nd, Tm を追加） */
+function talkChara(id){
+  const c = CHARAS[id];
+  if(!c) return;
+
+  if(id === 'Nd'){
+    const html = `
+      <div style="font-size:0.8rem; text-align:left; line-height:1.5">
+        <p>「やあ！ボクはネオジムだよ！<b>最強の永久磁石</b>として、モーターや発電機、イヤホンの中でグイグイ引き寄せるパワーを出しているんだ！」</p>
+        <p>「磁力で金属を見分けて回収する<b>『METALS SORTING』</b>ゲームで一緒にあそんでみない？」</p>
+        <div style="display:flex; flex-direction:column; gap:6px; margin-top:10px">
+          <button class="btn" style="background:#0284c7; font-weight:bold; font-size:0.82rem; color:#fff" onclick="location.href='minigame_reametal.html'">🧲 ネオジムのMETALS SORTINGで遊ぶ</button>
+          <button class="btn" style="background:#3b82f6" onclick="askModal('💡 ネオジム解説', 'ネオジム(Nd)は非常に強い永久磁石（ネオジム磁石）を作る主役のレアアース！電気自動車(EV)の強力なモーターや風力発電機、ハイエンドスピーカーなどに不可欠な存在だよ！', '戻る', ()=>talkChara('Nd'), '')">📖 ネオジムについて詳しく知る</button>
+        </div>
+      </div>
+    `;
+    askModal(`✨ ネオジムとの会話`, html, '閉じる', null, '');
+
+  } else if(id === 'Tm'){
+    const html = `
+      <div style="font-size:0.8rem; text-align:left; line-height:1.5">
+        <p>「こんにちは……ツリウムです。僕はとても希少だけど、ポータブルX線や特殊レーザーで静かに役に立つのが好きなんだ。」</p>
+        <p>「レアアースの元素記号や読み方を楽しく学べる<b>『よんで！レアアース』</b>かるたゲームで遊んでみませんか？」</p>
+        <div style="display:flex; flex-direction:column; gap:6px; margin-top:10px">
+          <button class="btn" style="background:#10b981; font-weight:bold; font-size:0.82rem; color:#fff" onclick="location.href='minigame_yonde.html'">📖 ツリウムのよんで！レアアースを遊ぶ</button>
+          <button class="btn" style="background:#3b82f6" onclick="askModal('💡 ツリウム解説', 'ツリウム(Tm)は全レアアースの中で特に希少な元素の一つ。小型のポータブルX線照射装置や、外科手術用レーザーの光源として、医療現場で人の命を救っているんだよ！', '戻る', ()=>talkChara('Tm'), '')">📖 ツリウムについて詳しく知る</button>
+        </div>
+      </div>
+    `;
+    askModal(`✨ ツリウムとの会話`, html, '閉じる', null, '');
+
+  } else if(id === 'Er'){
+    const html = `
+      <div style="font-size:0.8rem; text-align:left; line-height:1.5">
+        <p>「フフ、私とお話ししたいの？光ファイバーで世界中の通信を増幅するのも得意だけど、私といえばやっぱり美肌レーザー（エルビウムYAGレーザー）や光の増幅技術ね！」</p>
+        <p>「私のミニゲーム<b>『美肌ブロック崩し』</b>で遊んでいく？」</p>
+        <div style="display:flex; flex-direction:column; gap:6px; margin-top:10px">
+          <button class="btn" style="background:#ec4899; font-weight:bold; font-size:0.82rem" onclick="location.href='erbium_breakout.html'">🎮 美肌ブロック崩しを遊ぶ</button>
+          <button class="btn" style="background:#3b82f6" onclick="askModal('💡 エルビウム解説', 'エルビウム(Er)は、光ファイバー増幅器(EDFA)に欠かせない元素！波長1550nmの光を増幅して長距離通信を支えたり、皮膚の水分に吸収されやすいレーザーとして美容・皮膚科医療で広く使われているよ。', '戻る', ()=>talkChara('Er'), '')">📖 エルビウムについて詳しく知る</button>
+        </div>
+      </div>
+    `;
+    askModal(`✨ エルビウムとの会話`, html, '閉じる', null, '');
+
+  } else if(id === 'Ce'){
+    const html = `
+      <div style="font-size:0.8rem; text-align:left; line-height:1.5">
+        <p>「こんにちは！セリウムだよ。<b>環境を守るお掃除職人</b>として、排ガスの浄化や液晶の研磨が得意なんだ！フットワークが軽くて、世界を美しく保つの情熱家だよ。」</p>
+        <p>「主な活躍の場は、<b>自動車触媒、液晶研磨材、ライター石</b>などなど！光やガラスを磨き上げるのも私の得意分野なんだ。」</p>
+        <p>「どう？私と一緒に、集めた宝石を使ってキラキラの万華鏡を作ってみない？」</p>
+        <div style="display:flex; flex-direction:column; gap:6px; margin-top:10px">
+          <button class="btn" style="background:#eab308; color:#000; font-weight:bold; font-size:0.82rem" onclick="location.href='kaleidoscope.html'">💎 セリウムのキラメキ万華鏡を遊ぶ</button>
+          <button class="btn" style="background:#3b82f6" onclick="askModal('💡 セリウム解説', 'セリウム(Ce)はレアアースの中で最も埋蔵量が多く、ガラスや宝石の鏡面仕上げ研磨剤（酸化セリウム）や、自動車の排ガスをクリーンにする触媒、ライターの火花を散らす石（ミッシュメタル）など、私たちの暮らしを足元から支える環境の守り手だよ！', '戻る', ()=>talkChara('Ce'), '')">📖 セリウムについて詳しく知る</button>
+        </div>
+      </div>
+    `;
+    askModal(`✨ セリウムとの会話`, html, '閉じる', null, '');
+
+  } else if(id === 'Y'){
+    const html = `
+      <div style="font-size:0.8rem; text-align:left; line-height:1.5">
+        <p>「こんにちは！イットリウムだよ。好奇心旺盛で元気いっぱいの私と一緒なら、どんな診断も楽しくなりそう！」</p>
+        <p>「私の<b>『レアアース性格診断』</b>をやっていかない？12問の質問に答えると、あなたにぴったりの元素キャラがわかるよ！」</p>
+        <div style="display:flex; flex-direction:column; gap:6px; margin-top:10px">
+          <button class="btn" style="background:#10b981; font-weight:bold; font-size:0.82rem" onclick="openGameUranai()">🔮 性格診断をはじめる</button>
+          <button class="btn" style="background:#3b82f6" onclick="askModal('💡 イットリウム解説', 'イットリウム(Y)は、色鮮やかなLEDの赤色蛍光体や超伝導材料、セラミックスなど、ハイテク製品や身の回りの鮮やかな色彩を支える頼もしい元素だよ！', '戻る', ()=>talkChara('Y'), '')">📖 イットリウムについて詳しく知る</button>
+        </div>
+      </div>
+    `;
+    askModal(`✨ イットリウムとの会話`, html, '閉じる', null, '');
+
+  } else if(id === 'Ho'){
+    const html = `
+      <div style="font-size:0.8rem; text-align:left; line-height:1.5">
+        <p>「……ホルミウムだ。<b>レーザーの精密な輝き</b>を司る。磁気や光を自在に制御するのが、私の役割……言葉は多く必要ない。」</p>
+        <p>「主な活躍の場は、<b>医療用レーザー、強力な磁石、光ファイバー</b>……静かに、しかし確実に仕事をこなす。」</p>
+        <p>「……試してみるか？レーザーを反射させ、標的を射抜く私のビリヤードを。」</p>
+        <div style="display:flex; flex-direction:column; gap:6px; margin-top:10px">
+          <button class="btn" style="background:#eab308; color:#000; font-weight:bold; font-size:0.82rem" onclick="location.href='ho_billiards.html'">🎱 ホルミウムのレーザービリヤードを遊ぶ</button>
+          <button class="btn" style="background:#3b82f6" onclick="askModal('💡 ホルミウム解説', 'ホルミウム(Ho)は強い磁性を持つ元素で、医療用レーザー機器（ホミウムヤグレーザー）や光ファイバーアンプ、特殊な合金などに使われているよ。高エネルギーの光を制御する隠れた実力者なんだ！', '戻る', ()=>talkChara('Ho'), '')">📖 ホルミウムについて詳しく知る</button>
+        </div>
+      </div>
+    `;
+    askModal(`✨ ホルミウムとの会話`, html, '閉じる', null, '');
+
+  } else if(id === 'La'){
+    const html = `
+      <div style="font-size:0.8rem; text-align:left; line-height:1.5">
+        <p>「やあ、ようこそ！ボクはランタンだよ。<b>レアアースグループの頼れるリーダー</b>として、みんなを支えたりまとめたりするのが大好きなんだ！遠慮しないで何でも相談してね。」</p>
+        <p>「ボクは<b>ハイブリッドカーの電池、カメラの高性能レンズ、石油の精製触媒</b>など、色んな場所でみんなのお手伝いをしているんだよ。」</p>
+        <p>「さあ、仲間たちの特徴をしっかり覚えて、みんなを正しく分類する仕分けゲームに挑戦してみよう！」</p>
+        <div style="display:flex; flex-direction:column; gap:6px; margin-top:10px">
+          <button class="btn" style="background:#eab308; color:#000; font-weight:bold; font-size:0.82rem" onclick="location.href='rare_earths_sorting_game.html'">📦 ランタンのレアアース仕分けゲームを遊ぶ</button>
+          <button class="btn" style="background:#3b82f6" onclick="askModal('💡 ランタン解説', 'ランタン(La)は「ランタノイド」と呼ばれるレアアースグループの代表格！ニッケル水素電池の材料や、カメラの屈折率の高い高級ガラスレンズ、石油の分解触媒など、幅広い技術の土台を支えているよ！', '戻る', ()=>talkChara('La'), '')">📖 ランタンについて詳しく知る</button>
+        </div>
+      </div>
+    `;
+    askModal(`✨ ランタンとの会話`, html, '閉じる', null, '');
+
+  } else if(id === 'Yb'){
+    const html = `
+      <div style="font-size:0.8rem; text-align:left; line-height:1.5">
+        <p>「やあ……僕がイッテルビウムだよ。<b>精密な光と時のコントロール</b>が得意なんだ。静かな環境で、正確な作業をこなすのが落ち着くんだよね。」</p>
+        <p>「高精度な<b>光格子時計や加工用レーザー、歪みセンサー</b>などで力を発揮しているよ。」</p>
+        <p>「僕と一緒に、一瞬の時間をピッタリ計るタイマーゲームで遊んでみないかい？」</p>
+        <div style="display:flex; flex-direction:column; gap:6px; margin-top:10px">
+          <button class="btn" style="background:#eab308; color:#000; font-weight:bold; font-size:0.82rem" onclick="location.href='ybtimer.html'">⏱️ イッテルビウムのジャストタイマーを遊ぶ</button>
+          <button class="btn" style="background:#3b82f6" onclick="askModal('💡 イッテルビウム解説', 'イッテルビウム(Yb)は、次世代の超高精度な「光格子時計」の原子として注目されている元素！強力なファイバーレーザーや、地震・圧力の検知センサーなど、極めて精密な分野で大活躍しているよ！', '戻る', ()=>talkChara('Yb'), '')">📖 イッテルビウムについて詳しく知る</button>
+        </div>
+      </div>
+    `;
+    askModal(`✨ イッテルビウムとの会話`, html, '閉じる', null, '');
+
+  } else {
+    const html = `
+      <div style="font-size:0.82rem; text-align:center; padding:10px 0">
+        <p>「こんにちは！${c.name}だよ。いつでもお部屋で声をかけてね！一緒にお仕事がんばろう！」</p>
+      </div>
+    `;
+    askModal(`💬 ${c.name}`, html, '閉じる', null, '');
+  }
+}
+
+function startCharaTask(id, type){
+  const c = CHARAS[id]; if(!c) return;
+  let hours = type==='mine'? c.mH : type==='refine'? c.rH : c.pH;
+  const durationMs = hours * 3600 * 1000; 
+  if(!gameState.charaTasks) gameState.charaTasks={};
+  gameState.charaTasks[id] = { type, startTime: Date.now(), endTime: Date.now() + durationMs, claimed: false, hours };
+  save(); closeModal();
+  toast(`✨ ${c.name}が ${type==='mine'?'掘削':type==='refine'?'精製':'製品製造'} に出発しました！`);
+  updateUI();
+}
+
+function checkTaskCompletions(){}
+
+function claimTaskReward(id){
+  const c = CHARAS[id]; if(!c || !gameState.charaTasks) return;
+  const task = gameState.charaTasks[id]; if(!task) return;
+
+  const isFever = Math.random() < 0.10;
+  const mult = isFever ? (1.5 + Math.random()*0.5) : 1.0;
+  let baseQ = task.type==='mine'? c.mQ : task.type==='refine'? c.rQ : c.pQ;
+  let finalQ = Math.round(baseQ * mult);
+
+  if(task.type === 'mine'){ gameState.mudStock = (gameState.mudStock || 0) + finalQ; }
+  else if(task.type === 'refine'){ gameState.money = (gameState.money || 0) + finalQ * 250; }
+  else {
+    const rId = recipes[Math.floor(Math.random()*recipes.length)].id;
+    if(!gameState.products) gameState.products={};
+    gameState.products[rId] = (gameState.products[rId] || 0) + finalQ;
+  }
+
+  delete gameState.charaTasks[id];
+  save(); closeModal();
+
+  if(isFever){
+    askModal(`🔥 大成功！大生産フィーバー発生！！`,
+      `<div style="text-align:center"><p style="font-size:2rem">🎉✨</p>` +
+      `<p><b>${c.name}</b> の作業が大フィーバー！通常より大量の成果物を持ち帰りました！</p>` +
+      `<p style="color:#ffde59; font-size:1.1rem; font-weight:bold">+ ${finalQ} 獲得！</p></div>`,
+      'やったね！', null, '');
+  } else {
+    toast(`🎉 ${c.name}がお仕事を完了して帰ってきました！(+${finalQ})`);
+  }
+  updateUI();
+}
+
+function renderRoom(){
+  try {
+    const box=$('objs'); if(!box) return; box.innerHTML='';
+    (gameState.placedItems||[]).forEach((it,idx)=>{
+      if(it.dir!==dir) return;
+      let name,src,emoji,size,isChara=false, charaId='';
+      if(it.type==='furn'){ const f=furnitureMaster[it.id]; if(!f) return; name=f.name; src=f.img; emoji=f.emoji; size=f.size; }
+      else if(it.type==='chara'){
+        const c=CHARAS[it.id]; if(!c) return; name=c.name; src=CHARA_PREFIX+it.id+'.png'; emoji='🧪'; size=CHARA_SIZE; isChara=true; charaId=it.id;
+      } else { const r=recipes.find(r=>r.id===it.id)||{}; name=r.name||'製品'; src=r.img; emoji=r.emoji; size=PROD_SIZE; }
+      it.s=it.s||1;
+      const el=document.createElement('div'); 
+      
+      /* 元素キャラの場合は is-chara クラスを付与し、常に一番手前に表示 */
+      el.className='obj' + (isChara ? ' is-chara' : '');
+      el.style.cssText=`left:${it.x}%;top:${it.y}%;width:${size*it.s}%`;
+      const im=document.createElement('img'); im.src=IMG_DIR+src; im.alt=name;
+      im.onerror=()=>{ im.remove(); el.innerHTML=`<div class="ph">${emoji||'📦'}<small>${name}</small></div>`; };
+      el.appendChild(im);
+
+      if(isChara){
+        const task = gameState.charaTasks ? gameState.charaTasks[charaId] : null;
+        const now = Date.now();
+        let badgeText = '💬 お仕事', badgeBg = '#3b82f6';
+        if(task){
+          if(task.endTime <= now){ badgeText = '✨ 完了！'; badgeBg = '#f59e0b'; }
+          else { badgeText = '⏳ 作業中'; badgeBg = '#64748b'; }
+        }
+        const badge = document.createElement('div');
+        badge.className = 'chara-badge'; badge.style.background = badgeBg; badge.innerText = badgeText;
+        el.appendChild(badge);
+      }
+
+      drag(el,it,idx,name,size,isChara,charaId); box.appendChild(el);
+    });
+  } catch(e){}
+}
+
+/* ═════════ ドラッグ・操作ダイアログ・マウスホイール対応 ═════════ */
+function drag(el,it,idx,name,size,isChara,charaId){
+  const P=new Map(); let moved=false,tot=0,pre='',d0=1,s0=1,wp='',wt;
+  const dist=()=>{ const a=[...P.values()]; return Math.max(1,Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y)); };
+  const setW=()=>{ el.style.width=size*it.s+'%'; };
+  const clamp=v=>Math.max(.3,Math.min(3,v));
+
+  /* ダブルクリック / 長押し時の操作ダイアログ（PC拡大縮小救済機能） */
+  const openOptionModal=()=>{
+    if(isChara){ openCharaTaskModal(charaId); return; }
+    const html = `
+      <div style="font-size:0.8rem; text-align:center">
+        <p style="margin-bottom:12px"><b>「${name}」</b>のレイアウト変更</p>
+        <div style="display:flex; justify-content:center; gap:8px; margin-bottom:12px">
+          <button class="btn" style="background:#3b82f6" onclick="changeSizeScale(${idx},-0.25)">🔍 縮小 (-)</button>
+          <button class="btn" style="background:#3b82f6" onclick="changeSizeScale(${idx},0.25)">🔍 拡大 (+)</button>
+        </div>
+        <div style="display:flex; justify-content:center; gap:8px; margin-bottom:12px">
+          <button class="btn" style="background:#8b5cf6" onclick="bringToFront(${idx})">🔝 最前列に置く</button>
+          <button class="btn" style="background:#ef4444" onclick="removePlacedItem(${idx})">📦 片付ける</button>
+        </div>
+      </div>
+    `;
+    askModal('アイテム操作', html, '閉じる', null, '');
+  };
+
+  el.addEventListener('dblclick', (e)=>{ e.preventDefault(); openOptionModal(); });
+
+  el.addEventListener('pointerdown',e=>{ 
+    e.preventDefault(); 
+    el.setPointerCapture(e.pointerId); 
+    P.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(P.size===1){ moved=false; tot=0; pre=cur(); } 
+    else if(P.size===2){ d0=dist(); s0=it.s; moved=true; } 
+  });
+
+  el.addEventListener('pointermove',e=>{
+    const p=P.get(e.pointerId); if(!p) return;
+    const dx=e.clientX-p.x, dy=e.clientY-p.y; p.x=e.clientX; p.y=e.clientY;
+    if(P.size>=2){ it.s=clamp(s0*dist()/d0); setW(); return; }
+    tot+=Math.abs(dx)+Math.abs(dy); if(tot>6) moved=true;
+    const stageEl = $('stage'); if(!stageEl) return;
+    const r=stageEl.getBoundingClientRect();
+    it.x=Math.max(0,Math.min(100,it.x+dx/r.width*100)); it.y=Math.max(10,Math.min(100,it.y+dy/r.height*100));
+    el.style.left=it.x+'%'; el.style.top=it.y+'%';
+  });
+
+  const up=e=>{
+    if(!P.delete(e.pointerId)||P.size>0) return;
+    if(moved){ if(cur()!==pre){ hist(pre); save(); } return; }
+    if(isChara){ openCharaTaskModal(charaId); }
+    else { openOptionModal(); }
+  };
+
+  el.addEventListener('pointerup',up); el.addEventListener('pointercancel',up);
+
+  /* PC向け：マウスホイールでの直感的なサイズ変更（拡大・縮小） */
+  el.addEventListener('wheel',e=>{ 
+    e.preventDefault(); 
+    if(!wp) wp=cur();
+    it.s=clamp(it.s*(e.deltaY<0?1.08:.92)); 
+    setW();
+    clearTimeout(wt); 
+    wt=setTimeout(()=>{ if(cur()!==wp){ hist(wp); save(); } wp=''; },400); 
+  },{passive:false});
+}
+
+function changeSizeScale(idx, delta){
+  if(!gameState.placedItems || !gameState.placedItems[idx]) return;
+  hist();
+  const it = gameState.placedItems[idx];
+  it.s = Math.max(0.3, Math.min(3.0, (it.s || 1) + delta));
+  save(); closeModal(); updateUI();
+  toast('✨ サイズを変更しました');
+}
+
+function bringToFront(idx){
+  if(!gameState.placedItems || !gameState.placedItems[idx]) return;
+  hist();
+  const item = gameState.placedItems.splice(idx, 1)[0];
+  gameState.placedItems.push(item);
+  save(); closeModal(); updateUI();
+  toast('🔝 最前列に移動しました');
+}
+
+function removePlacedItem(idx){
+  if(!gameState.placedItems || !gameState.placedItems[idx]) return;
+  hist();
+  const item = gameState.placedItems[idx];
+  let name = 'アイテム';
+  if(item.type==='furn' && furnitureMaster[item.id]) name = furnitureMaster[item.id].name;
+  gameState.placedItems.splice(idx, 1);
+  save(); closeModal(); updateUI();
+  toast(`📦 『${name}』を片付けました`);
+}
+
+function row(thumb, name, sub, btnObj){
+  const btnHtml = btnObj.html || '';
+  const ownClass = btnObj.own ? 'own' : '';
+  return `<div class="item ${ownClass}">${thumb}<div class="nm">${name}${sub?`<small>${sub}</small>`:''}</div>${btnHtml}</div>`;
+}
+
+function shopRow(id, f, own){
+  const price = f.gold ? `${f.gold.toLocaleString()}G` : `${f.cost}マイル`;
+  const thumbHtml = `
+    <div class="thumb">
+      <img src="${IMG_DIR}${f.img}" alt="${f.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+      <span class="emoji-ph">${f.emoji||'📦'}</span>
+    </div>`;
+  const btnHtml = own ? '<button class="btn done" onclick="event.stopPropagation()">所持済</button>' : `<button class="btn" onclick="event.stopPropagation(); buy('${id}')">購入</button>`;
+  return `<div class="item ${own?'own':''}" onclick="openPreview('${id}')">${thumbHtml}<div class="nm">${f.name}<small>${price} ／ ボーナス +${f.bonus}%</small></div>${btnHtml}</div>`;
+}
+
+let shopMode='mile';
+function setShopMode(m){ shopMode=m; renderShop(); }
+function renderShop(){
+  const L=$('L-shop'); if(!L) return;
+  const top=L.scrollTop;
+  const bar=`<div style="display:flex;gap:.3rem;flex-shrink:0"><button class="tab ${shopMode==='mile'?'on':''}" onclick="setShopMode('mile')">✈️ マイルで買う</button><button class="tab ${shopMode==='gold'?'on':''}" onclick="setShopMode('gold')">💰 Gで買う</button></div>`;
+  L.innerHTML = bar + Object.keys(furnitureMaster).filter(id=>!!furnitureMaster[id].gold===(shopMode==='gold')).map(id=>{
+    const f=furnitureMaster[id], own=(gameState.homeFurnishings||[]).includes(id);
+    return shopRow(id, f, own);
+  }).join('');
+  L.scrollTop=top;
+}
+
+function openPreview(id){
+  const f = furnitureMaster[id]; if(!f) return;
+  const own = (gameState.homeFurnishings||[]).includes(id);
+  const price = f.gold ? `${f.gold.toLocaleString()} G` : `${f.cost} マイル`;
+  
+  const html = `
+    <div style="text-align:center">
+      <div style="width:7rem;height:7rem;margin:0 auto 0.6rem;background:#0b1224;border:2px solid var(--line);border-radius:.8rem;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden">
+        <img src="${IMG_DIR}${f.img}" alt="${f.name}" style="max-width:90%;max-height:90%;object-fit:contain" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+        <span style="font-size:3rem;display:none">${f.emoji||'📦'}</span>
+      </div>
+      <p style="font-size:0.85rem;margin:0 0 4px">価格: <b>${price}</b></p>
+      <p style="font-size:0.8rem;color:#38bdf8;margin:0 0 10px">居心地ボーナス: <b>+${f.bonus}%</b></p>
+      <p style="font-size:0.75rem;opacity:0.8;margin:0 0 10px">お部屋に配置すると居心地レベルが上がり、精製や報酬がアップします！</p>
+    </div>
+  `;
+
+  if(own){
+    askModal(`📦 ${f.name} (所持済み)`, html, '閉じる', null, '');
+  } else {
+    askModal(`🛒 ${f.name} の購入確認`, html, '購入する', ()=>{ buy(id); }, 'キャンセル');
+  }
+}
+
+function buy(id){
+  const f=furnitureMaster[id]; if(!f) return;
+  if(f.gold){ if((gameState.money||0)<f.gold){ toast('⚠️ ゴールドが足りません！'); return; } gameState.money-=f.gold; }
+  else { if((gameState.miles||0)<f.cost){ toast('⚠️ マイルが足りません！'); return; } gameState.miles-=f.cost; }
+  if(!gameState.homeFurnishings) gameState.homeFurnishings=[];
+  if(!gameState.homeFurnishings.includes(id)) gameState.homeFurnishings.push(id);
+  save();
+  const seU=$('se-unlock'); if(seU){ seU.currentTime=0; seU.play().catch(()=>{}); }
+  toast(`🎉 『${f.name}』を購入！`); updateUI();
+}
+
+function renderDisplay(){
+  const L=$('L-display'); if(!L) return;
+  let h = '';
+  (gameState.charaOwned||[]).forEach(id=>{
+    const c = CHARAS[id]; if(!c) return;
+    const thumb = `<div class="thumb"><img src="${CHARA_PREFIX}${id}.png" alt="${c.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"><span class="emoji-ph">🧪</span></div>`;
+    h += row(thumb, `🧑 ${c.name}`, c.desc, {html:`<button class="btn" style="background:#8b5cf6;color:#fff" onclick="place('chara','${id}')">配置</button>`});
+  });
+
+  (gameState.homeFurnishings||[]).forEach(id=>{
+    const f = furnitureMaster[id]; if(!f) return;
+    const thumb = `<div class="thumb"><img src="${IMG_DIR}${f.img}" alt="${f.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"><span class="emoji-ph">${f.emoji||'📦'}</span></div>`;
+    h += row(thumb, f.name, `ボーナス +${f.bonus}%`, {html:`<button class="btn" onclick="place('furn','${id}')">配置</button>`});
+  });
+
+  recipes.forEach(r=>{
+    const n = (gameState.products||{})[r.id] || 0;
+    if(gameState.crafted && gameState.crafted[r.id]){
+      const thumb = `<div class="thumb"><img src="${IMG_DIR}${r.img}" alt="${r.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"><span class="emoji-ph">${r.emoji||'📦'}</span></div>`;
+      h += row(thumb, r.name, n>0 ? `在庫:${n}` : '製造済み', {html:`<button class="btn" style="background:#eab308;color:#fff" onclick="place('prod','${r.id}')">配置</button>`});
+    }
+  });
+
+  L.innerHTML = h + `<div style="text-align:center;opacity:.7;padding:.5rem;font-size:.7rem">${nextCharaText()}</div>`;
+}
+
+function place(type,id){
+  const f=furnitureMaster[id]; hist();
+  if(!gameState.placedItems) gameState.placedItems=[];
+  gameState.placedItems.push({type,id,dir,s:1,x:(f?f.x:30+Math.random()*40),y:(f?f.y:(type==='chara'?90:80))});
+  save(); const seG=$('nyu2'); if(seG){ seG.currentTime=0; seG.play().catch(()=>{}); }
+  toast('✨ 配置！ドラッグで移動・ホイールやタップ操作で拡大縮小'); updateUI();
+}
+
+function renderTheme(){
+  const L=$('L-theme'); if(!L) return;
+  if((gameState.level||1)<3){ L.innerHTML='<div style="text-align:center;opacity:.7;padding:1rem;font-size:.75rem">🔒 Lv.3 到達でテイスト変更が解放されます！</div>'; return; }
+  L.innerHTML=Object.keys(themesMaster).map(k=>{ const t=themesMaster[k], cur=gameState.currentTheme===k;
+    const sw=`<div class="swatch"><i style="background:${t.wall}"></i><i style="background:${t.floor}"></i></div>`;
+    return row(sw,t.name,'',{own:cur,html:cur?'<button class="btn done">適用中</button>':`<button class="btn" onclick="setTheme('${k}')">変更</button>`}); }).join('');
+}
+function setTheme(k){ gameState.currentTheme=k; save(); applyTheme(k); updateUI(); toast('🎨 テイストを変更しました！'); }
+
+function renderMusic(){
+  const L=$('L-music'); if(!L) return;
+  if((gameState.level||1)<5){ L.innerHTML='<div style="text-align:center;opacity:.7;padding:1rem;font-size:.75rem">🔒 Lv.5 到達でジュークボックスが解放されます！</div>'; return; }
+  L.innerHTML=Object.keys(bgmMaster).map(k=>{ const cur=gameState.currentBgm===k;
+    return row('',`🎵 ${bgmMaster[k].name}`,'',{own:cur,html:cur?'<button class="btn done">再生中</button>':`<button class="btn" onclick="setBgm('${k}')">再生</button>`}); }).join('');
+}
+function setBgm(k){ gameState.currentBgm=k; save(); updateBgmSource(); if(!isMuted && bgm) bgm.play().catch(()=>{}); updateUI(); toast(`🎶 「${bgmMaster[k].name}」に変更`); }
+
+function exportSave(){
+  try{ const enc=btoa(unescape(encodeURIComponent(localStorage.getItem('rareEarthGameState')||JSON.stringify(gameState))));
+    const ta=$('saveCode'); if(ta){ ta.value=enc; ta.select(); }
+    navigator.clipboard.writeText(enc).then(()=>toast('📋 コピーしました！')).catch(()=>toast('📋 生成しました（手動でコピーしてね）'));
+  }catch(e){ toast('⚠️ エクスポートに失敗しました'); }
+}
+function importSave(){
+  const ta=$('saveCode'), c=ta?ta.value.trim():'';
+  if(!c){ toast('⚠️ 復元コードを入力してください'); return; }
+  askModal('セーブデータの復元','現在のデータが上書きされます。よろしいですか？','復元する',()=>{
+    try{ const p=JSON.parse(decodeURIComponent(escape(atob(c)))); if(!p||typeof p!=='object') throw 0;
+      localStorage.setItem('rareEarthGameState',JSON.stringify(p)); gameState=p;
+      Object.keys(defaults).forEach(k=>{ if(gameState[k]===undefined) gameState[k]=defaults[k]; });
+      applyTheme(gameState.currentTheme); updateBgmSource(); ensureCharas(); syncCrafted(); updateUI(); toast('✨ 復元しました！');
+    }catch(e){ toast('⚠️ 無効なセーブコードです'); } });
+}
+
+let past=[], future=[];
+const cur=()=>JSON.stringify(gameState.placedItems||[]);
+function hist(s){ past.push(s||cur()); if(past.length>50) past.shift(); future=[]; histBtns(); }
+function histBtns(){
+  const uB=$('undoBtn'), rB=$('redoBtn');
+  if(uB) uB.disabled=!past.length; if(rB) rB.disabled=!future.length;
+}
+function restore(s){ gameState.placedItems=JSON.parse(s); save(); updateUI(); histBtns(); }
+function undo(){ if(!past.length) return; future.push(cur()); restore(past.pop()); }
+function redo(){ if(!future.length) return; past.push(cur()); restore(future.pop()); }
+function resetRoom(){
+  askModal('お部屋のリセット','本当にリセットしてよいですか？\n置いた家具・製品・キャラをすべて片付けます。','はい',()=>{ hist(); gameState.placedItems=[]; save(); updateUI(); toast('🧹 リセットしました'); },'いいえ');
+}
+
+window.addEventListener('load',()=>{
+  try {
+    buildControls(); switchTab('shop'); changeDirection(0);
+    updateBgmSource(); updateBgmUI(); applyTheme(gameState.currentTheme||'natural'); ensureCharas(); syncCrafted(); updateUI(); histBtns();
+    if(!isMuted && bgm) bgm.play().catch(()=>['click','touchstart'].forEach(e=>document.addEventListener(e,unlock)));
+  } catch(e){}
+});
+</script>
+<script src="uranai.js"></script>
+</body>
+</html>
