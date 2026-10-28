@@ -49,13 +49,16 @@ body{margin:0;height:100%;overflow:hidden;overscroll-behavior:none;background:#0
 .door::after{content:"";position:absolute;right:10%;top:55%;width:.55rem;height:.55rem;border-radius:50%;background:var(--knob);box-shadow:0 .1rem .2rem rgba(0,0,0,.35)}
 .flat .wall::after{display:none}.flat .floor{box-shadow:none}
 
-.obj{position:absolute;transform:translate(-50%,-100%);touch-action:none;cursor:grab;z-index:5}
+/* オブジェクトのスタイル（小さい家具もタッチできるように反応エリアを拡張） */
+.obj{position:absolute;transform:translate(-50%,-100%);touch-action:none;cursor:grab;z-index:5;min-width:36px;min-height:36px;display:flex;align-items:flex-end;justify-content:center;padding:4px}
+/* 元素キャラは常に一番手前（最前面） */
+.obj.is-chara{z-index:120 !important}
 .obj:active{cursor:grabbing;filter:brightness(1.05)}
 .obj img{width:100%;height:auto;display:block;pointer-events:none;filter:drop-shadow(0 .3rem .4rem rgba(0,0,0,.28))}
 .obj .ph{display:flex;flex-direction:column;align-items:center;font-size:7cqw;line-height:1.1;text-align:center;filter:drop-shadow(0 .2rem .3rem rgba(0,0,0,.3))}
 .obj .ph small{font-size:.55rem;background:rgba(0,0,0,.55);color:#fff;border-radius:.4rem;padding:0 .3rem}
 
-.chara-badge{position:absolute;top:-10px;right:-10px;background:#10b981;color:#fff;font-size:.55rem;padding:2px 5px;border-radius:10px;font-weight:bold;border:1px solid #fff;box-shadow:0 2px 4px rgba(0,0,0,.3)}
+.chara-badge{position:absolute;top:-10px;right:-10px;background:#10b981;color:#fff;font-size:.55rem;padding:2px 5px;border-radius:10px;font-weight:bold;border:1px solid #fff;box-shadow:0 2px 4px rgba(0,0,0,.3);pointer-events:none}
 
 .controls{position:absolute;top:.4rem;left:.4rem;right:.4rem;z-index:10;display:flex;justify-content:space-between;align-items:center;gap:.3rem;flex-wrap:wrap;
   background:var(--card);border:1px solid var(--line);border-radius:.6rem;padding:.25rem .4rem;opacity:.94}
@@ -189,7 +192,6 @@ const MILE_ROWS=[
   ['fan','扇風機','🌀',350,0.4,10,86],['bookshelf','本棚','📚',500,0.5,16,86],['kotatsu','こたつ','🔥',600,0.5,26,92],
   ['wardrobe','クローゼット','🚪',700,0.6,20,86],['bed','ベッド','🛏️',900,0.9,34,90],['aquarium','水槽','🐠',1200,1.0,20,84],
   ['gaming_pc','ゲーミングPC','🖥️',1800,1.6,18,80],['piano','ピアノ','🎹',2000,1.5,30,88],
-  // 追加したマイル購入家具（18種）
   ['light_natural', 'ぬくもりフロアランプ', '💡', 250, 0.2, 12, 86],
   ['tana_natural', 'ナチュラルオープンシェルフ', '🗄️', 350, 0.3, 20, 86],
   ['isu_natural', '北欧デザインチェア', '🪑', 180, 0.2, 14, 88],
@@ -393,7 +395,7 @@ function updateUI(){
 }
 
 /* ═════════════════════════════════════════════════════════════
-   ★ キャラクター17名定義・パラメータ・お仕事システム ★
+   ★ キャラクター17名定義・パラメーター ★
    ═════════════════════════════════════════════════════════════ */
 const CHARA_PREFIX='chara0_', CHARA_SIZE=20;
 const CHARAS={
@@ -499,12 +501,38 @@ function openCharaTaskModal(id){
   askModal(`🧑 ${c.name}`, html, '閉じる', null, '');
 }
 
-/* キャラクター会話機能 */
+/* キャラクター会話機能（Nd, Tm を追加） */
 function talkChara(id){
   const c = CHARAS[id];
   if(!c) return;
 
-  if(id === 'Er'){
+  if(id === 'Nd'){
+    const html = `
+      <div style="font-size:0.8rem; text-align:left; line-height:1.5">
+        <p>「やあ！ボクはネオジムだよ！<b>最強の永久磁石</b>として、モーターや発電機、イヤホンの中でグイグイ引き寄せるパワーを出しているんだ！」</p>
+        <p>「磁力で金属を見分けて回収する<b>『METALS SORTING』</b>ゲームで一緒にあそんでみない？」</p>
+        <div style="display:flex; flex-direction:column; gap:6px; margin-top:10px">
+          <button class="btn" style="background:#0284c7; font-weight:bold; font-size:0.82rem; color:#fff" onclick="location.href='minigame_reametal.html'">🧲 ネオジムのMETALS SORTINGで遊ぶ</button>
+          <button class="btn" style="background:#3b82f6" onclick="askModal('💡 ネオジム解説', 'ネオジム(Nd)は非常に強い永久磁石（ネオジム磁石）を作る主役のレアアース！電気自動車(EV)の強力なモーターや風力発電機、ハイエンドスピーカーなどに不可欠な存在だよ！', '戻る', ()=>talkChara('Nd'), '')">📖 ネオジムについて詳しく知る</button>
+        </div>
+      </div>
+    `;
+    askModal(`✨ ネオジムとの会話`, html, '閉じる', null, '');
+
+  } else if(id === 'Tm'){
+    const html = `
+      <div style="font-size:0.8rem; text-align:left; line-height:1.5">
+        <p>「こんにちは……ツリウムです。僕はとても希少だけど、ポータブルX線や特殊レーザーで静かに役に立つのが好きなんだ。」</p>
+        <p>「レアアースの元素記号や読み方を楽しく学べる<b>『よんで！レアアース』</b>かるたゲームで遊んでみませんか？」</p>
+        <div style="display:flex; flex-direction:column; gap:6px; margin-top:10px">
+          <button class="btn" style="background:#10b981; font-weight:bold; font-size:0.82rem; color:#fff" onclick="location.href='minigame_yonde.html'">📖 ツリウムのよんで！レアアースを遊ぶ</button>
+          <button class="btn" style="background:#3b82f6" onclick="askModal('💡 ツリウム解説', 'ツリウム(Tm)は全レアアースの中で特に希少な元素の一つ。小型のポータブルX線照射装置や、外科手術用レーザーの光源として、医療現場で人の命を救っているんだよ！', '戻る', ()=>talkChara('Tm'), '')">📖 ツリウムについて詳しく知る</button>
+        </div>
+      </div>
+    `;
+    askModal(`✨ ツリウムとの会話`, html, '閉じる', null, '');
+
+  } else if(id === 'Er'){
     const html = `
       <div style="font-size:0.8rem; text-align:left; line-height:1.5">
         <p>「フフ、私とお話ししたいの？光ファイバーで世界中の通信を増幅するのも得意だけど、私といえばやっぱり美肌レーザー（エルビウムYAGレーザー）や光の増幅技術ね！」</p>
@@ -544,7 +572,7 @@ function talkChara(id){
     `;
     askModal(`✨ イットリウムとの会話`, html, '閉じる', null, '');
 
-} else if(id === 'Ho'){
+  } else if(id === 'Ho'){
     const html = `
       <div style="font-size:0.8rem; text-align:left; line-height:1.5">
         <p>「……ホルミウムだ。<b>レーザーの精密な輝き</b>を司る。磁気や光を自在に制御するのが、私の役割……言葉は多く必要ない。」</p>
@@ -652,7 +680,10 @@ function renderRoom(){
         const c=CHARAS[it.id]; if(!c) return; name=c.name; src=CHARA_PREFIX+it.id+'.png'; emoji='🧪'; size=CHARA_SIZE; isChara=true; charaId=it.id;
       } else { const r=recipes.find(r=>r.id===it.id)||{}; name=r.name||'製品'; src=r.img; emoji=r.emoji; size=PROD_SIZE; }
       it.s=it.s||1;
-      const el=document.createElement('div'); el.className='obj';
+      const el=document.createElement('div'); 
+      
+      /* 元素キャラの場合は is-chara クラスを付与し、常に一番手前に表示 */
+      el.className='obj' + (isChara ? ' is-chara' : '');
       el.style.cssText=`left:${it.x}%;top:${it.y}%;width:${size*it.s}%`;
       const im=document.createElement('img'); im.src=IMG_DIR+src; im.alt=name;
       im.onerror=()=>{ im.remove(); el.innerHTML=`<div class="ph">${emoji||'📦'}<small>${name}</small></div>`; };
@@ -676,13 +707,42 @@ function renderRoom(){
   } catch(e){}
 }
 
+/* ═════════ ドラッグ・操作ダイアログ・マウスホイール対応 ═════════ */
 function drag(el,it,idx,name,size,isChara,charaId){
   const P=new Map(); let moved=false,tot=0,pre='',d0=1,s0=1,wp='',wt;
   const dist=()=>{ const a=[...P.values()]; return Math.max(1,Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y)); };
   const setW=()=>{ el.style.width=size*it.s+'%'; };
   const clamp=v=>Math.max(.3,Math.min(3,v));
-  el.addEventListener('pointerdown',e=>{ e.preventDefault(); el.setPointerCapture(e.pointerId); P.set(e.pointerId,{x:e.clientX,y:e.clientY});
-    if(P.size===1){ moved=false; tot=0; pre=cur(); } else if(P.size===2){ d0=dist(); s0=it.s; moved=true; } });
+
+  /* ダブルクリック / 長押し時の操作ダイアログ（PC拡大縮小救済機能） */
+  const openOptionModal=()=>{
+    if(isChara){ openCharaTaskModal(charaId); return; }
+    const html = `
+      <div style="font-size:0.8rem; text-align:center">
+        <p style="margin-bottom:12px"><b>「${name}」</b>のレイアウト変更</p>
+        <div style="display:flex; justify-content:center; gap:8px; margin-bottom:12px">
+          <button class="btn" style="background:#3b82f6" onclick="changeSizeScale(${idx},-0.25)">🔍 縮小 (-)</button>
+          <button class="btn" style="background:#3b82f6" onclick="changeSizeScale(${idx},0.25)">🔍 拡大 (+)</button>
+        </div>
+        <div style="display:flex; justify-content:center; gap:8px; margin-bottom:12px">
+          <button class="btn" style="background:#8b5cf6" onclick="bringToFront(${idx})">🔝 最前列に置く</button>
+          <button class="btn" style="background:#ef4444" onclick="removePlacedItem(${idx})">📦 片付ける</button>
+        </div>
+      </div>
+    `;
+    askModal('アイテム操作', html, '閉じる', null, '');
+  };
+
+  el.addEventListener('dblclick', (e)=>{ e.preventDefault(); openOptionModal(); });
+
+  el.addEventListener('pointerdown',e=>{ 
+    e.preventDefault(); 
+    el.setPointerCapture(e.pointerId); 
+    P.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(P.size===1){ moved=false; tot=0; pre=cur(); } 
+    else if(P.size===2){ d0=dist(); s0=it.s; moved=true; } 
+  });
+
   el.addEventListener('pointermove',e=>{
     const p=P.get(e.pointerId); if(!p) return;
     const dx=e.clientX-p.x, dy=e.clientY-p.y; p.x=e.clientX; p.y=e.clientY;
@@ -693,16 +753,54 @@ function drag(el,it,idx,name,size,isChara,charaId){
     it.x=Math.max(0,Math.min(100,it.x+dx/r.width*100)); it.y=Math.max(10,Math.min(100,it.y+dy/r.height*100));
     el.style.left=it.x+'%'; el.style.top=it.y+'%';
   });
+
   const up=e=>{
     if(!P.delete(e.pointerId)||P.size>0) return;
     if(moved){ if(cur()!==pre){ hist(pre); save(); } return; }
     if(isChara){ openCharaTaskModal(charaId); }
-    else { askModal('レイアウト変更',`「${name}」をお部屋から片付けますか？`,'片付ける',()=>{ hist(); gameState.placedItems.splice(idx,1); save(); updateUI(); toast('📦 片付けました'); }); }
+    else { openOptionModal(); }
   };
+
   el.addEventListener('pointerup',up); el.addEventListener('pointercancel',up);
-  el.addEventListener('wheel',e=>{ e.preventDefault(); if(!wp) wp=cur();
-    it.s=clamp(it.s*(e.deltaY<0?1.08:.93)); setW();
-    clearTimeout(wt); wt=setTimeout(()=>{ if(cur()!==wp){ hist(wp); save(); } wp=''; },400); },{passive:false});
+
+  /* PC向け：マウスホイールでの直感的なサイズ変更（拡大・縮小） */
+  el.addEventListener('wheel',e=>{ 
+    e.preventDefault(); 
+    if(!wp) wp=cur();
+    it.s=clamp(it.s*(e.deltaY<0?1.08:.92)); 
+    setW();
+    clearTimeout(wt); 
+    wt=setTimeout(()=>{ if(cur()!==wp){ hist(wp); save(); } wp=''; },400); 
+  },{passive:false});
+}
+
+function changeSizeScale(idx, delta){
+  if(!gameState.placedItems || !gameState.placedItems[idx]) return;
+  hist();
+  const it = gameState.placedItems[idx];
+  it.s = Math.max(0.3, Math.min(3.0, (it.s || 1) + delta));
+  save(); closeModal(); updateUI();
+  toast('✨ サイズを変更しました');
+}
+
+function bringToFront(idx){
+  if(!gameState.placedItems || !gameState.placedItems[idx]) return;
+  hist();
+  const item = gameState.placedItems.splice(idx, 1)[0];
+  gameState.placedItems.push(item);
+  save(); closeModal(); updateUI();
+  toast('🔝 最前列に移動しました');
+}
+
+function removePlacedItem(idx){
+  if(!gameState.placedItems || !gameState.placedItems[idx]) return;
+  hist();
+  const item = gameState.placedItems[idx];
+  let name = 'アイテム';
+  if(item.type==='furn' && furnitureMaster[item.id]) name = furnitureMaster[item.id].name;
+  gameState.placedItems.splice(idx, 1);
+  save(); closeModal(); updateUI();
+  toast(`📦 『${name}』を片付けました`);
 }
 
 function row(thumb, name, sub, btnObj){
@@ -801,7 +899,7 @@ function place(type,id){
   if(!gameState.placedItems) gameState.placedItems=[];
   gameState.placedItems.push({type,id,dir,s:1,x:(f?f.x:30+Math.random()*40),y:(f?f.y:(type==='chara'?90:80))});
   save(); const seG=$('nyu2'); if(seG){ seG.currentTime=0; seG.play().catch(()=>{}); }
-  toast('✨ 配置！ドラッグで移動・2本指で拡大縮小'); updateUI();
+  toast('✨ 配置！ドラッグで移動・ホイールやタップ操作で拡大縮小'); updateUI();
 }
 
 function renderTheme(){
