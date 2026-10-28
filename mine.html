@@ -270,6 +270,7 @@
     .modal-title { font-size: 1.05rem; font-weight: bold; color: #ffde59; margin-bottom: .4rem; }
     .modal-desc { font-size: .88rem; color: #f1f5f9; margin-bottom: .8rem; line-height: 1.55; white-space: pre-line; }
     @keyframes popup { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+    .area-odds { font-size: .72rem; color: #ffde59; text-align: center; line-height: 1.4; margin: .15rem 0 .3rem; font-weight: bold; }
   </style>
 </head>
 <body>
@@ -320,6 +321,7 @@
       <div class="col-main">
         <div class="area-title" id="current-area-title">【 エリア名 】</div>
         <div class="area-description" id="area-feature-text">エリアの特徴説明</div>
+        <div class="area-odds" id="area-odds"></div>
 
         <!-- 風景画像BOX：画像全体を表示。🔍 または画像タップで拡大ビューア -->
         <div class="area-visual-box">
@@ -413,6 +415,7 @@
     </div>
   </div>
 
+  <script src="areaconfig.js"></script>
   <script>
     // ピンチ／ダブルタップによる意図しない拡大・表示ブレを防止（iOS Safari 対策含む）
     ['gesturestart', 'gesturechange', 'gestureend'].forEach(ev =>
@@ -614,6 +617,8 @@
     };
 
     const currentSpot = spotConfig[spotId] || spotConfig['baiyun'];
+    // 産地設定（areaconfig.js）：採掘量・宝石の産地・出やすい元素
+    const areaKey = RE.AREAS[spotId] ? spotId : 'baiyun';
 
     // BGM切り替え設定
     const bgm = document.getElementById('bgm-mine');
@@ -685,6 +690,7 @@
       document.getElementById('mud').innerText = gameState.mudStock;
       document.getElementById('current-area-title').innerText = `【 ${currentSpot.name} 】`;
       document.getElementById('area-feature-text').innerText = currentSpot.desc;
+      document.getElementById('area-odds').innerText = RE.areaOddsText(areaKey);
       document.getElementById('mine-cost').innerText = currentSpot.cost;
       document.getElementById('area-img').src = currentSpot.img;
       document.getElementById('anim-img').src = currentSpot.anim;
@@ -715,12 +721,12 @@
       }
 
       // 💎 3%の確率で「きれいな鉱物」発生判定
-      const isRareJewel = Math.random() < 0.03;
+      const isRareJewel = Math.random() < RE.AREAS[areaKey].gemRate;
       let obtainedJewel = null;
 
       if (isRareJewel) {
-        const randomIndex = Math.floor(Math.random() * gemsMaster.length);
-        obtainedJewel = gemsMaster[randomIndex];
+        // 産地の石が出やすい（レアアース・プリズム鉱は沖ノ鳥島だけ）
+        obtainedJewel = RE.rollGem(areaKey, gemsMaster);
         
         // 🔒 図鑑と確実に同期するための堅牢な保存（配列＆オブジェクト両方に登録）
         if (!gameState.jewels) gameState.jewels = [];
@@ -740,8 +746,9 @@
         seFutsu.play().catch(e => console.log('音声再生エラー:', e));
       }
 
-      const gained = Math.floor(Math.random() * 2) + 1;
-      gameState.mudStock += gained;
+      // 採掘量はエリアごとに違う。掘削物は「産地つき」で貯まる
+      const gained = RE.rollYield(areaKey);
+      RE.addMud(gameState, spotId in RE.AREAS ? spotId : areaKey, gained);
       gameState.lastMinedSpot = spotId;
 
       // 採掘EXP獲得 (1回につき25EXP)
@@ -776,7 +783,7 @@
     function showFirstJewelModal(jewel) {
       document.getElementById('popup-jewel-name').innerText = jewel.name;
       document.getElementById('popup-jewel-img').src = jewel.img;
-      document.getElementById('popup-jewel-desc').innerText = jewel.desc;
+      document.getElementById('popup-jewel-desc').innerText = jewel.desc + ' 【産地：' + RE.gemHomeName(jewel.id) + '】';
       document.getElementById('firstJewelModal').style.display = 'flex';
     }
 
