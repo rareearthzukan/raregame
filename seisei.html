@@ -260,6 +260,38 @@
     .modal-title { font-size: 1.05rem; font-weight: bold; color: #ffde59; margin-bottom: .4rem; }
     .modal-desc { font-size: .88rem; color: #f1f5f9; margin-bottom: .8rem; line-height: 1.55; white-space: pre-line; }
     @keyframes popup { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+    /* まとめ精製ボタン・カード演出 */
+    .refine-row { display: flex; gap: .4rem; width: 100%; }
+    .refine-row .btn { margin-top: .4rem; font-size: .78rem; line-height: 1.3; padding: .4rem .3rem; background: #8e44ad; box-shadow: 0 3px 10px rgba(142, 68, 173, 0.4); }
+    .btn.btn-locked { background: #3a4560 !important; color: #9aa5bd; box-shadow: none; }
+    .rc-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: .35rem; margin: .5rem 0; }
+    .rc-card {
+      position: relative; background: #fff; border: 2px solid #94a3b8; border-radius: .5rem; padding: .25rem .15rem;
+      display: flex; flex-direction: column; align-items: center; color: #0f3460;
+      animation: cardIn .45s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+    }
+    .cols-3 .rc-card { width: 30%; }
+    .cols-5 .rc-card { width: 18%; }
+    .rc-card img { width: 100%; aspect-ratio: 1 / 1; object-fit: contain; }
+    .rc-sym { font-size: .85rem; font-weight: bold; line-height: 1.1; }
+    .rc-name { font-size: .55rem; line-height: 1.15; overflow-wrap: anywhere; }
+    .rc-rare { border-color: #ffde59; box-shadow: 0 0 8px rgba(255, 222, 89, 0.8); }
+    .rc-chance { border-color: #ff9f1a; animation: cardIn .45s both, chancePulse 1s ease-in-out .6s infinite alternate; }
+    .rc-badge { position: absolute; top: -.5rem; right: -.35rem; font-size: .9rem; }
+    @keyframes cardIn { 0% { transform: scale(0.3) rotateY(90deg); opacity: 0; } 100% { transform: scale(1) rotateY(0); opacity: 1; } }
+    @keyframes chancePulse { from { box-shadow: 0 0 2px #ff9f1a; } to { box-shadow: 0 0 12px #ff9f1a; } }
+    /* 産地の配合バー・産地表示 */
+    .mud-mix { width: 100%; background: rgba(15, 23, 42, 0.75); border: 1px solid #00fff5; border-radius: .6rem; padding: .35rem .5rem; margin-top: .4rem; font-size: .7rem; color: #f1f5f9; }
+    .mix-title { font-weight: bold; color: #ffde59; margin-bottom: .2rem; }
+    .mix-bar { display: flex; height: .55rem; border-radius: .3rem; overflow: hidden; background: #334155; }
+    .mix-bar span { display: block; height: 100%; }
+    .mix-legend { display: flex; flex-wrap: wrap; gap: .15rem .5rem; margin-top: .25rem; }
+    .mix-chip { display: inline-flex; align-items: center; gap: .2rem; }
+    .mix-flag, .origin-flag { width: .9rem; height: .65rem; object-fit: cover; border-radius: 1px; }
+    .mix-top { margin-top: .2rem; color: #dcdde1; }
+    .origin-chip { position: absolute; left: .4rem; bottom: .4rem; z-index: 25; display: flex; align-items: center; gap: .25rem; background: rgba(15, 23, 42, 0.85); color: #fff; border: 1px solid #00fff5; border-radius: .8rem; padding: .15rem .5rem; font-size: .7rem; font-weight: bold; }
+    .rc-flag { position: absolute; left: .1rem; top: .1rem; width: 1rem; height: .7rem; object-fit: cover; border-radius: 1px; box-shadow: 0 0 2px rgba(0,0,0,.6); }
   </style>
 </head>
 <body>
@@ -326,12 +358,18 @@
             <div class="chara-img-wrap">
               <img class="chara-avatar-img" id="chara-img" src="seisei.png" alt="精製プラント" onerror="this.src='chara0_Y.png'" onclick="openViewer()">
               <button type="button" class="zoom-btn" onclick="openViewer()" aria-label="画像を拡大表示">🔍</button>
+              <div class="origin-chip" id="origin-chip" style="display:none"></div>
             </div>
             <div class="chara-name-tag" id="chara-name">🏭 プラント待機中</div>
             <div class="speech-bubble" id="chara-speech">精製ボタンを押すと、元素が抽出されます</div>
           </div>
 
-          <button class="btn" onclick="refineElement()"><span id="refineBtnText">✨ 精製する (コスト: 50G / 掘削物1個)</span></button>
+          <div class="mud-mix" id="mud-mix"></div>
+          <button class="btn" onclick="refineElement(1)"><span id="refineBtnText">✨ 精製する (コスト: 50G / 掘削物1個)</span></button>
+          <div class="refine-row">
+            <button class="btn" id="refine5Btn" onclick="refineElement(5)"><span id="refine5Text"></span></button>
+            <button class="btn" id="refine10Btn" onclick="refineElement(10)"><span id="refine10Text"></span></button>
+          </div>
         </div>
 
         <div class="card card-inv">
@@ -396,6 +434,7 @@
     </div>
   </div>
 
+  <script src="areaconfig.js"></script>
   <script>
     ['gesturestart', 'gesturechange', 'gestureend'].forEach(ev =>
       document.addEventListener(ev, e => e.preventDefault())
@@ -516,14 +555,8 @@
       document.getElementById('exp').innerText = (gameState.exp || 0).toLocaleString();
       document.getElementById('mud').innerText = gameState.mudStock;
 
-      // 現在のレベルに応じた倍率を取得し、コストと獲得数を動的に反映
-      const mults = getLevelMultipliers(gameState.level || 1);
-      const btnTextEl = document.getElementById('refineBtnText');
-      if (btnTextEl) {
-        const costMoney = 50 * mults.itemMult;
-        const costMud = 1 * mults.itemMult;
-        btnTextEl.innerText = `✨ 精製する (コスト: ${costMoney}G / 掘削物${costMud}個)`;
-      }
+      updateRefineButtons();
+      updateMudMix();
 
       const invBox = document.getElementById('inventory-box');
       invBox.innerHTML = '';
@@ -556,216 +589,229 @@
       return pool[Math.floor(Math.random() * pool.length)];
     }
 
-    // レベルに応じた生産倍率とEXP倍率を計算する関数
-    // 実際に適用される倍率：支払い済み(実施済み)の節目のうち、
-    // 現在レベル以下のものの最大値を採用する（見送った節目の倍率は適用されない）
-    function getLevelMultipliers(lvl) {
-      const paid = gameState.paidMilestones || {};
-      let itemMult = 1;
-      let expMult = 1;
-      Object.keys(paid).forEach(k => {
-        const m = Number(k);
-        if (!paid[k] || m > lvl) return;
-        const r = getMilestoneMultipliers(m);
-        itemMult = Math.max(itemMult, r.itemMult);
-        expMult = Math.max(expMult, r.expMult);
-      });
-      return { itemMult, expMult };
+    // ═══ 工場の自動アップグレード（費用なし）═══
+    // Lv7 で「5個まとめ精製」、Lv15 で「10個まとめ精製」が自動で解放され、
+    // 施設担当のイッテルビウムが報告に来る。お金は必要ない。
+    const REFINE_MODES = {
+      1:  { cost: 50,  mud: 1,  unlockLv: 1,  hinanRate: 0.015, label: '精製する' },
+      5:  { cost: 150, mud: 5,  unlockLv: 7,  hinanRate: 0.03,  label: '5個まとめて精製' },
+      10: { cost: 300, mud: 10, unlockLv: 15, hinanRate: 0.03,  label: '10個まとめて精製' }
+    };
+    const HIGHLOW_RATE_SINGLE = 0.10;   // 単発のハイ＆ロー発生率
+    const HIGHLOW_RATE_PER_5  = 0.50;   // 5個ぶんあたりの発生率（単発の×5）。10個なら5個ぶんを2回判定
+    const ER_EVENT_RATE = 0.12;         // カード1枚あたり（Lv15以上）
+    const HO_EVENT_RATE = 0.08;         // カード1枚あたり
+    const BASE_EXP_PER_ITEM = 150;      // 元素1個あたりの獲得EXP
+
+    const FACTORY_REPORTS = [
+      { lv: 7,
+        title: '工場が自動アップグレード！',
+        text: 'レベル7に到達したので、工場を自動でアップグレードしました。費用はいただきません！\n\n✨ 新機能：5個まとめて精製（150G）\n5つの元素がカードになって出てきます。まとめて精製すると、特別なイベントも起きやすくなりますよ。' },
+      { lv: 15,
+        title: '工場がさらにアップグレード！',
+        text: 'レベル15に到達したので、工場をさらに自動アップグレードしました。今回も費用はいただきません！\n\n✨ 新機能：10個まとめて精製（300G）\n10枚のカードが一度に出てきます。' }
+    ];
+
+    function isModeUnlocked(n) {
+      return (gameState.level || 1) >= REFINE_MODES[n].unlockLv;
     }
 
-    // 節目レベルそのものの倍率テーブル（提案文の表示と、実施後の効果に使用）
-    function getMilestoneMultipliers(lvl) {
-      let itemMult = 1;
-      let expMult = 1;
-      const rem = lvl % 10;
-      if (lvl >= 10) {
-        if (rem === 0) {
-          // 下一桁0：アップグレード（元素数量が大幅アップ）
-          if (lvl === 10) itemMult = 2;
-          else if (lvl === 20) itemMult = 5;
-          else if (lvl === 30) itemMult = 10;
-          else if (lvl === 40) itemMult = 20;
-          else if (lvl === 50) itemMult = 40;
-          else itemMult = 40 + (lvl - 50) * 5;
-        } else if (rem === 5) {
-          // 下一桁5：メンテナンス（EXP獲得効率が大幅アップ）
-          if (lvl === 15) expMult = 3;
-          else if (lvl === 25) expMult = 7;
-          else if (lvl === 35) expMult = 12;
-          else if (lvl === 45) expMult = 20;
-          else expMult = 20 + (lvl - 45) * 5;
-          itemMult = Math.floor(lvl / 3);
+    function updateRefineButtons() {
+      const lv = gameState.level || 1;
+      [5, 10].forEach(n => {
+        const cfg = REFINE_MODES[n];
+        const btn = document.getElementById('refine' + n + 'Btn');
+        const txt = document.getElementById('refine' + n + 'Text');
+        if (!btn || !txt) return;
+        if (lv >= cfg.unlockLv) {
+          btn.classList.remove('btn-locked');
+          txt.innerHTML = `🎴 ${n}個まとめて<br>${cfg.cost}G / 掘削物${cfg.mud}個`;
+        } else {
+          btn.classList.add('btn-locked');
+          txt.innerHTML = `🔒 ${n}個まとめて<br>Lv${cfg.unlockLv}で解放`;
+        }
+      });
+    }
+
+    // 掘削物の産地配合バー（出やすい元素の目安つき）
+    function updateMudMix() {
+      const box = document.getElementById('mud-mix');
+      if (!box) return;
+      const comp = RE.composition(gameState);
+      if (!comp.length) {
+        box.innerHTML = '<div class="mix-title">⛏️ 掘削物がありません。マップで掘りに行こう</div>';
+        return;
+      }
+      const bar = comp.map(c => `<span style="width:${c.pct}%;background:${RE.AREAS[c.id] ? RE.AREAS[c.id].color : '#7f8c8d'}"></span>`).join('');
+      const legend = comp.slice(0, 3).map(c => `<span class="mix-chip">${RE.flagHTML(c.id, 'mix-flag')}${RE.areaShort(c.id)} ${Math.round(c.pct)}%</span>`).join('')
+        + (comp.length > 3 ? '<span class="mix-chip">ほか</span>' : '');
+      const top = RE.expectedElements(gameState, 3).map(k => elementsMaster[k].name).join('・');
+      box.innerHTML = `<div class="mix-title">⛏️ 掘削物の産地</div><div class="mix-bar">${bar}</div><div class="mix-legend">${legend}</div><div class="mix-top">出やすい元素：${top}</div>`;
+    }
+
+    // 未報告のアップグレードがあればイッテルビウムの報告を出す（出したら true）
+    function checkFactoryReports() {
+      if (!gameState.factoryReports) gameState.factoryReports = {};
+      const lv = gameState.level || 1;
+      for (const r of FACTORY_REPORTS) {
+        if (lv >= r.lv && !gameState.factoryReports[r.lv]) {
+          gameState.factoryReports[r.lv] = true;
+          localStorage.setItem('rareEarthGameState', JSON.stringify(gameState));
+          showFactoryReport(r);
+          return true;
         }
       }
-      return { itemMult, expMult };
+      return false;
     }
 
-    // ═══ 設備投資（関門型）═══
-    // レベルが節目(10, 15, 20…)に達したら、その設備投資を実施するまで精製できない。
-    // 未実施の節目が複数ある場合は、低い順に1件ずつ提案する。
-    // 払えないときは、リサイクル工場で資金を稼ぐよう案内する。
-
-    // 節目1回あたりの費用
-    function getMilestoneCost(l) {
-      if (l === 10) return 1500;
-      let c = l * 250;
-      if (l % 10 === 0) c *= 1.5;
-      return Math.floor(c);
-    }
-
-    // 現在レベル以下で、まだ実施していない最も低い節目（なければ null）
-    function getNextUnpaidMilestone(lvl) {
-      const paid = gameState.paidMilestones || {};
-      for (let l = 10; l <= lvl; l += 5) {
-        if (!paid[l]) return l;
-      }
-      return null;
-    }
-
-    // 精製前のチェック：未実施の設備投資があれば提案を出して true を返す（精製は止まる）
-    function checkMilestoneEvent(lvl) {
-      const next = getNextUnpaidMilestone(lvl);
-      if (next === null) return false;
-      showMilestoneModal(next);
-      return true;
-    }
-
-    function showMilestoneModal(ms) {
-      const isUpgrade = (ms % 10 === 0);
-      const title = isUpgrade ? `施設レベル ${ms} アップグレード` : `施設レベル ${ms} 定期メンテナンス`;
-      const costG = getMilestoneCost(ms);
-      const mult = getMilestoneMultipliers(ms);
-      const canPay = gameState.money >= costG;
-
-      const effectText = isUpgrade
-        ? `プラントの大型アップグレードを行うことで、精製される元素の数量が【${mult.itemMult}倍】に増加します。`
-        : `オーバーホールを実施することで、獲得EXP効率が【${mult.expMult}倍】に向上します。`;
-      const intro = isUpgrade
-        ? `レベル${ms}に到達しましたね。`
-        : `レベル${ms}に伴う定期点検の時間です。`;
-      const needText = `この設備を整えるまで、精製を続けることはできません。`;
-      const costText = canPay
-        ? `費用として ${costG.toLocaleString()} G が必要です。実施しますか？`
-        : `費用として ${costG.toLocaleString()} G が必要ですが、資金が足りないようです。リサイクル工場で資金を稼いできてください。`;
-
-      const desc = `施設担当のイッテルビウムです。\n${intro}\n${effectText}\n${needText}\n${costText}`;
-
-      const buttons = canPay
-        ? `<button class="btn" style="margin-top:0; background:#333; color:#aaa;" onclick="closeMinigameModal()">あとで</button>
-           <button class="btn" style="margin-top:0; background:#00fff5; color:#0f3460;" onclick="executeMilestone(${ms})">🛠️ 実施する</button>`
-        : `<button class="btn" style="margin-top:0; background:#333; color:#aaa;" onclick="closeMinigameModal()">閉じる</button>
-           <button class="btn" style="margin-top:0; background:#00fff5; color:#0f3460;" onclick="goToRecycle()">♻️ 工場へ行く</button>`;
-
-      const modal = document.getElementById('minigameModal');
+    function showFactoryReport(r) {
+      const se = document.getElementById('se-hakusyu');
+      if (se) { se.currentTime = 0; se.play().catch(e => {}); }
       const content = document.getElementById('modal-content-inner');
-
       content.innerHTML = `
-        <div style="font-size: 0.95rem; font-weight: bold; color: #ffde59; margin-bottom: 0.4rem;">⚙️ ${title}</div>
-
+        <div style="font-size: 0.95rem; font-weight: bold; color: #ffde59; margin-bottom: 0.4rem;">⚙️ ${r.title}</div>
         <div style="background: #ffffff; border: 2px solid #ffde59; border-radius: 0.5rem; padding: 0.4rem; margin-bottom: 0.5rem; text-align: center;">
           <img src="chara0_Yb.png" style="width: 5rem; height: 5rem; object-fit: contain;" alt="イッテルビウム" onerror="this.src='chara0_Y.png'">
         </div>
-
-        <div style="font-size: 0.8rem; color: #f1f5f9; background: rgba(15,23,42,0.8); border: 1px solid #00fff5; border-radius: 0.5rem; padding: 0.5rem; margin-bottom: 0.7rem; text-align: left; line-height: 1.4; font-weight: 500; white-space: pre-line;">
-          ${desc}
-        </div>
-
-        <div style="font-size: 0.75rem; color: #dcdde1; margin-bottom: 0.7rem;">
-          所持金: ${gameState.money.toLocaleString()} G / 必要費用: ${costG.toLocaleString()} G
-        </div>
-
-        <div style="display: flex; gap: 0.5rem;">
-          ${buttons}
-        </div>
+        <div style="font-size: 0.8rem; color: #f1f5f9; background: rgba(15,23,42,0.8); border: 1px solid #00fff5; border-radius: 0.5rem; padding: 0.5rem; margin-bottom: 0.7rem; text-align: left; line-height: 1.5; font-weight: 500; white-space: pre-line;">施設担当のイッテルビウムです。\n${r.text}</div>
+        <button class="btn" style="margin-top:0; background:#00fff5; color:#0f3460;" onclick="afterFactoryReport()">確認</button>
       `;
-      modal.style.display = 'flex';
-    }
-
-    function executeMilestone(ms) {
-      const costG = getMilestoneCost(ms);
-      if (gameState.money < costG) {
-        // 画面を開いたあとに資金が変わった場合の保険：提案を出し直す
-        showMilestoneModal(ms);
-        return;
-      }
-
-      // 費用支払い音 (SE_baikyaku.mp3)
-      const seBaikyaku = document.getElementById('se-baikyaku');
-      if (seBaikyaku) { seBaikyaku.currentTime = 0; seBaikyaku.play().catch(e => {}); }
-
-      gameState.money -= costG;
-      if (!gameState.paidMilestones) gameState.paidMilestones = {};
-      gameState.paidMilestones[ms] = true;
-
-      // 完了音 (SE_hakusyu.mp3)
-      setTimeout(() => {
-        const seHakusyu = document.getElementById('se-hakusyu');
-        if (seHakusyu) { seHakusyu.currentTime = 0; seHakusyu.play().catch(e => {}); }
-      }, 300);
-
-      const modal = document.getElementById('minigameModal');
-      const content = document.getElementById('modal-content-inner');
-      const isUpgrade = (ms % 10 === 0);
-      const mult = getMilestoneMultipliers(ms);
-      const hasNext = getNextUnpaidMilestone(gameState.level || 1) !== null;
-
-      content.innerHTML = `
-        <div style="font-size: 1.1rem; font-weight: bold; color: #ffde59; margin-bottom: 0.4rem;">✨ 処理が完了しました</div>
-        <div style="font-size: 0.82rem; color: #f1f5f9; margin-bottom: 0.8rem; line-height: 1.4;">
-          施設担当のイッテルビウムです。<br>
-          ${isUpgrade ? `アップグレードにより精製効率が ${mult.itemMult}倍 になりました` : `メンテナンスにより獲得EXP効率が ${mult.expMult}倍 に向上しました`}
-          ${hasNext ? '<br>続けて、次の設備のご相談があります。' : ''}
-        </div>
-        <button class="btn" style="margin-top:0; background:#00fff5; color:#0f3460;" onclick="afterMilestone()">${hasNext ? '次へ' : '確認'}</button>
-      `;
-      modal.style.display = 'flex';
-
-      localStorage.setItem('rareEarthGameState', JSON.stringify(gameState));
+      document.getElementById('minigameModal').style.display = 'flex';
       updateUI();
     }
 
-    // 実施後の「確認／次へ」：未実施の節目が残っていれば続けて提案する
-    function afterMilestone() {
+    // 報告が複数たまっている場合は続けて報告する
+    function afterFactoryReport() {
       closeMinigameModal();
-      const next = getNextUnpaidMilestone(gameState.level || 1);
-      if (next !== null) showMilestoneModal(next);
+      setTimeout(checkFactoryReports, 150);
     }
 
-    function executeNormalRefine(targetKey, multiplier = 1) {
-      const picked = elementsMaster[targetKey];
-      
-      // レベルごとの倍率適用
-      const mults = getLevelMultipliers(gameState.level || 1);
-      const finalCount = multiplier * mults.itemMult;
-      const baseExp = 150;
-      const finalExp = Math.floor(baseExp * mults.expMult);
+    function showLockedModal(n) {
+      const cfg = REFINE_MODES[n];
+      const content = document.getElementById('modal-content-inner');
+      content.innerHTML = `
+        <div style="background: #ffffff; border: 2px solid #ffde59; border-radius: 0.5rem; padding: 0.4rem; margin-bottom: 0.5rem; text-align: center;">
+          <img src="chara0_Yb.png" style="width: 4.5rem; height: 4.5rem; object-fit: contain;" alt="イッテルビウム" onerror="this.src='chara0_Y.png'">
+        </div>
+        <div style="font-size: 0.82rem; color: #f1f5f9; margin-bottom: 0.8rem; line-height: 1.5;">
+          施設担当のイッテルビウムです。<br>
+          レベル${cfg.unlockLv}になると、工場が自動でアップグレードされて<br>「${cfg.label}」が使えるようになります。<br>
+          <span style="color:#dcdde1;">（いまのレベル：${gameState.level || 1}）</span>
+        </div>
+        <button class="btn" style="margin-top:0;" onclick="closeMinigameModal()">閉じる</button>
+      `;
+      document.getElementById('minigameModal').style.display = 'flex';
+    }
 
-      gameState.elements[targetKey] = (gameState.elements[targetKey] || 0) + finalCount;
-      gameState.exp = (gameState.exp || 0) + finalExp;
-
+    // メイン画面のキャラ表示を更新
+    function updateMainDisplay(key, nameText, areaId) {
+      const chip = document.getElementById('origin-chip');
+      if (chip) {
+        if (areaId) { chip.innerHTML = RE.originHTML(areaId); chip.style.display = 'flex'; }
+        else { chip.style.display = 'none'; }
+      }
+      const picked = elementsMaster[key];
       const imgEl = document.getElementById('chara-img');
       imgEl.src = picked.img;
       imgEl.alt = picked.name;
-      
-      let multText = finalCount > 1 ? ` 【${finalCount}個獲得 (+${finalExp} EXP)】` : ` 【0個】`;
-      document.getElementById('chara-name').innerText = `✨ ${picked.name} (${targetKey}) を精製${multText}`;
+      document.getElementById('chara-name').innerText = nameText;
       document.getElementById('chara-speech').innerText = picked.speech;
-
       imgEl.classList.remove('pop-anim');
-      void imgEl.offsetWidth; 
+      void imgEl.offsetWidth;
       imgEl.classList.add('pop-anim');
+    }
 
+    // 元素を所持品に加える（ハイ＆ローの結果反映にも使用）
+    function grantElement(key, count) {
+      gameState.elements[key] = (gameState.elements[key] || 0) + count;
+      updateMainDisplay(key, `✨ ${elementsMaster[key].name} (${key}) を精製 【${count}個獲得】`, hlArea);
+      hlArea = null;
       localStorage.setItem('rareEarthGameState', JSON.stringify(gameState));
       updateUI();
     }
 
-    function showShortageModal(type) {
+    // ═══ 精製後イベントの順番待ち（ハイ＆ロー → エルビウム／ホルミウム）═══
+    let pendingEvents = [];
+    let hlArea = null;   // ハイ＆ローの対象カードの産地
+    function runNextEvent() {
+      const ev = pendingEvents.shift();
+      if (!ev) return;
+      if (ev.type === 'hinan') showHinanModal();
+      else if (ev.type === 'highlow') { hlArea = ev.area || null; showHighLowMinigame(ev.key); }
+      else if (ev.type === 'er') showErBreakoutModal();
+      else if (ev.type === 'ho') showHoBilliardsModal();
+    }
+    function finishEvent() {
+      closeMinigameModal();
+      setTimeout(runNextEvent, 150);
+    }
+
+    // ハイ＆ローの対象になるカード（チャンスカード）を抽選して、その番号を返す
+    function rollHighLowCards(n) {
+      let count = 0;
+      if (n === 1) {
+        if (Math.random() < HIGHLOW_RATE_SINGLE) count = 1;
+      } else {
+        for (let b = 0; b < n / 5; b++) {
+          if (Math.random() < HIGHLOW_RATE_PER_5) count++;
+        }
+      }
+      const idx = Array.from({ length: n }, (_, i) => i);
+      for (let i = idx.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [idx[i], idx[j]] = [idx[j], idx[i]];
+      }
+      return idx.slice(0, count);
+    }
+
+    // エルビウム／ホルミウムのイベント抽選（出た枚数が多いほど起きやすい）
+    function rollSideEvent(cards) {
+      const lv = gameState.level || 1;
+      const erN = lv >= 15 ? cards.filter(k => k === 'Er').length : 0;
+      const hoN = cards.filter(k => k === 'Ho').length;
+      const erHit = erN > 0 && Math.random() < 1 - Math.pow(1 - ER_EVENT_RATE, erN);
+      const hoHit = hoN > 0 && Math.random() < 1 - Math.pow(1 - HO_EVENT_RATE, hoN);
+      if (erHit && hoHit) return Math.random() < 0.5 ? 'er' : 'ho';
+      return erHit ? 'er' : (hoHit ? 'ho' : null);
+    }
+
+    // まとめ精製のカード演出
+    function showRefineCards(cards, chanceIdx, areas) {
+      const n = cards.length;
+      const counts = {};
+      let cardsHtml = '';
+      cards.forEach((k, i) => {
+        const m = elementsMaster[k];
+        const isChance = chanceIdx.includes(i);
+        if (!isChance) counts[k] = (counts[k] || 0) + 1;
+        cardsHtml += `<div class="rc-card ${m.type === 'heavy' ? 'rc-rare' : ''} ${isChance ? 'rc-chance' : ''}" style="animation-delay:${(i * 0.12).toFixed(2)}s">
+          ${isChance ? '<div class="rc-badge">⭐</div>' : ''}
+          ${areas ? RE.flagHTML(areas[i], 'rc-flag') : ''}
+          <img src="${m.img}" alt="${m.name}" onerror="this.style.visibility='hidden'">
+          <div class="rc-sym">${m.symbol}</div>
+          <div class="rc-name">${m.name}</div>
+        </div>`;
+      });
+      const summary = Object.keys(counts).map(k => `${elementsMaster[k].name}×${counts[k]}`).join('　');
+      const chanceNote = chanceIdx.length
+        ? `<div style="color:#ffde59; font-weight:bold; margin-top:.3rem;">⭐ ${chanceIdx.length}枚はハイ＆ローで入手数が決まるよ！</div>`
+        : '';
+      const content = document.getElementById('modal-content-inner');
+      content.innerHTML = `
+        <div style="font-size: 1rem; font-weight: bold; color: #ffde59; margin-bottom: 0.2rem;">✨ ${n}個まとめて精製 完了！</div>
+        <div class="rc-grid ${n > 5 ? 'cols-5' : 'cols-3'}">${cardsHtml}</div>
+        <div style="font-size: 0.74rem; color: #dcdde1; line-height: 1.5; margin-bottom: 0.6rem;">${summary}${chanceNote}</div>
+        <button class="btn" style="margin-top:0; background:#00fff5; color:#0f3460;" onclick="finishEvent()">${pendingEvents.length ? 'つづける ▶' : 'OK'}</button>
+      `;
+      document.getElementById('minigameModal').style.display = 'flex';
+    }
+
+    function showShortageModal(type, n = 1) {
       const modal = document.getElementById('minigameModal');
       const content = document.getElementById('modal-content-inner');
 
-      const mults = getLevelMultipliers(gameState.level || 1);
-      const requiredMoney = 50 * mults.itemMult;
-      const requiredMud = 1 * mults.itemMult;
+      const requiredMoney = REFINE_MODES[n].cost;
+      const requiredMud = REFINE_MODES[n].mud;
 
       const isMudOnlyShortage = (gameState.mudStock < requiredMud && gameState.money >= requiredMoney);
 
@@ -792,6 +838,10 @@
         bubbleText = "掘削物も資金も不足しているよ！まずはリサイクル工場かマップで準備を整えよう！";
         descText = "マップで掘削物を探すか、工場で資金を集めてください。";
         actionBtnHTML = `<button class="btn" style="margin-top:0; background:#00fff5; color:#0f3460;" onclick="goToRecycle()">♻️ 工場へ行く</button>`;
+      }
+
+      if (n > 1 && gameState.mudStock >= 1 && gameState.money >= 50) {
+        descText += '<br>（1個ずつなら、いまでも精製できます）';
       }
 
       content.innerHTML = `
@@ -831,56 +881,64 @@
       setTimeout(() => { location.href = 'map.html'; }, 200);
     }
 
-    function refineElement() {
-      // 設備投資（関門）：節目レベルの設備を実施するまで精製できない
-      if (checkMilestoneEvent(gameState.level || 1)) {
-        return;
-      }
+    function refineElement(n = 1) {
+      // 工場アップグレードの報告が未確認なら、先にイッテルビウムの報告を見せる
+      if (checkFactoryReports()) return;
 
-      const mults = getLevelMultipliers(gameState.level || 1);
-      const requiredMoney = 50 * mults.itemMult;
-      const requiredMud = 1 * mults.itemMult;
+      const cfg = REFINE_MODES[n];
+      if (!cfg) return;
+      if (!isModeUnlocked(n)) { showLockedModal(n); return; }
 
-      if (gameState.mudStock < requiredMud) {
-        showShortageModal('mud');
-        return;
-      }
-      if (gameState.money < requiredMoney) {
-        showShortageModal('money');
-        return;
-      }
+      if (gameState.mudStock < cfg.mud) { showShortageModal('mud', n); return; }
+      if (gameState.money < cfg.cost)   { showShortageModal('money', n); return; }
 
       const soundId = Math.random() < 0.5 ? 'se-nyu1' : 'se-nyu2';
       const se = document.getElementById(soundId);
       if (se) { se.currentTime = 0; se.play().catch(e => {}); }
 
-      gameState.money -= requiredMoney;
-      gameState.mudStock -= requiredMud;
+      gameState.money -= cfg.cost;
 
-      const targetKey = getRandomElementKey();
+      // 掘削物の産地配合から n 個を引き、その産地の出現率で元素を1個ずつ抽選
+      const cardAreas = RE.drawFromBag(gameState, cfg.mud);
+      gameState.mudStock -= cfg.mud;
+      const cards = cardAreas.map(a => RE.rollElement(a));
 
-      // 1. 避難訓練 (1.5% - 半減)
-      if (Math.random() < 0.015) {
-        executeNormalRefine(targetKey, 1);
-        showHinanModal();
-        return;
+      // イベント抽選：避難訓練が最優先。それ以外はハイ＆ローとエルビウム／ホルミウムが独立に起きる
+      pendingEvents = [];
+      let chanceIdx = [];
+      if (Math.random() < cfg.hinanRate) {
+        pendingEvents.push({ type: 'hinan' });
+      } else {
+        chanceIdx = rollHighLowCards(n);
+        chanceIdx.forEach(i => pendingEvents.push({ type: 'highlow', key: cards[i], area: cardAreas[i] }));
+        const side = rollSideEvent(cards);
+        if (side) pendingEvents.push({ type: side });
       }
 
-      // 2. ハイ＆ロー (10%)
-      if (Math.random() < 0.10) {
-        showHighLowMinigame(targetKey);
-        return;
-      }
+      // 入手処理（チャンスカードは、ハイ＆ローの結果が出るまで保留）
+      cards.forEach((k, i) => {
+        if (!chanceIdx.includes(i)) gameState.elements[k] = (gameState.elements[k] || 0) + 1;
+      });
+      const exp = BASE_EXP_PER_ITEM * n;
+      gameState.exp = (gameState.exp || 0) + exp;
+      localStorage.setItem('rareEarthGameState', JSON.stringify(gameState));
+      updateUI();
 
-      // 3. 通常精製
-      executeNormalRefine(targetKey, 1);
+      const shownIdx = Math.max(0, cards.findIndex((k, i) => !chanceIdx.includes(i)));
+      const shown = cards[shownIdx];
 
-      if (targetKey === 'Er' && (gameState.level || 1) >= 15 && Math.random() < 0.12) {
-        setTimeout(showErBreakoutModal, 300);
-      } else if (targetKey === 'Ho' && Math.random() < 0.08) {
-        setTimeout(showHoBilliardsModal, 500);
+      if (n === 1) {
+        if (chanceIdx.length === 0) {
+          updateMainDisplay(shown, `✨ ${elementsMaster[shown].name} (${shown}) を精製 【1個獲得 (+${exp} EXP)】`, cardAreas[0]);
+        }
+        setTimeout(runNextEvent, 300);
+      } else {
+        updateMainDisplay(shown, `✨ ${n}個まとめて精製 【+${exp} EXP】`, null);
+        showRefineCards(cards, chanceIdx, cardAreas);
       }
     }
+
+    window.addEventListener('load', () => setTimeout(checkFactoryReports, 400));
 
     function showErBreakoutModal() {
       const modal = document.getElementById('minigameModal');
@@ -1178,7 +1236,7 @@
       let isWin = (playerGuessHigh === isActualHigh);
 
       let mult = isWin ? 10 : 0;
-      executeNormalRefine(targetKey, mult);
+      grantElement(targetKey, mult);
 
       if (isWin) {
         const itemGetSe = document.getElementById('se-itemget');
@@ -1219,7 +1277,7 @@
           </div>
         </div>
 
-        <button class="btn" style="margin-top:0.3rem;" onclick="closeMinigameModal()">閉じる</button>
+        <button class="btn" style="margin-top:0.3rem;" onclick="finishEvent()">${pendingEvents.length ? 'つづける ▶' : '閉じる'}</button>
       `;
     }
 
