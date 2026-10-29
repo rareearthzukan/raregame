@@ -114,6 +114,44 @@
       justify-content: space-between; align-items: center; gap: .5rem; border: 1px solid #cbd5e1; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
     .recipe-item.craftable { background-color: #d1fae5; border-color: #10b981; }
+    .recipe-item.crafted{
+  border:3px solid #ffd700;
+  background:linear-gradient(
+    135deg,
+    #fffbea,
+    #fff7cc
+  );
+}
+
+.recipe-item.uncrafted{
+  border:3px dashed #64748b;
+}
+
+.recipe-badge{
+  display:inline-block;
+  padding:2px 8px;
+  border-radius:999px;
+  font-size:.65rem;
+  font-weight:bold;
+  margin-right:6px;
+}
+
+.badge-new{
+  background:#ef4444;
+  color:white;
+  animation:pulseNew 1.4s infinite;
+}
+
+.badge-done{
+  background:#10b981;
+  color:white;
+}
+
+@keyframes pulseNew{
+  0%{transform:scale(1);}
+  50%{transform:scale(1.08);}
+  100%{transform:scale(1);}
+}
     .recipe-info { flex: 1; min-width: 0; }
     .recipe-name { font-weight: bold; font-size: .82rem; color: #0f3460; line-height: 1.35; }
     .recipe-cost { font-size: .7rem; color: #64748b; margin-top: .1rem; line-height: 1.4; }
@@ -500,6 +538,9 @@
     const allKeys = ['Y', 'La', 'Ce', 'Pr', 'Nd', 'Pm', 'Sm', 'Eu', 'Gd', 'Tb', 'Dy', 'Ho', 'Er', 'Tm', 'Yb', 'Lu', 'Sc'];
     if (!gameState.elements) gameState.elements = {};
     if (!gameState.products) gameState.products = {};
+    if (!gameState.craftedProducts) {
+  gameState.craftedProducts = {};
+}
     
     allKeys.forEach(k => {
       if (gameState.elements[k] === undefined) gameState.elements[k] = 0;
@@ -765,6 +806,21 @@
         summaryBox.appendChild(chip);
       });
 
+      const discovered = Object.keys(gameState.craftedProducts).length;
+      const totalRecipes = recipes.length;
+      document.querySelector(
+        '.card-head .card-title'
+      ).innerHTML = `
+        🏭 製品製造＆小口売却
+        <br>
+        <span style="
+          font-size:0.75rem;
+          color:#ffde59;
+        ">
+          発見率 ${discovered}/${totalRecipes}
+        </span>
+      `;
+
       const recipeList = document.getElementById('recipe-list');
       recipeList.innerHTML = '';
 
@@ -774,11 +830,26 @@
           unlockedCount++;
           const stock = gameState.products[recipe.id] || 0;
           const craftable = canCraft(recipe);
+          const crafted = gameState.craftedProducts[recipe.id];
+          
           const item = document.createElement('div');
-          item.className = craftable ? 'recipe-item craftable' : 'recipe-item';
+          item.className = `
+            recipe-item
+            ${craftable ? ' craftable' : ''}
+            ${crafted ? ' crafted' : ' uncrafted'}
+          `;
           item.innerHTML = `
             <div class="recipe-info">
-              <div class="recipe-name">${recipe.icon} ${recipe.name} (所持:${stock}) [Lv.${recipe.minLevel}]</div>
+              <div class="recipe-name">
+                ${crafted
+                  ? '<span class="recipe-badge badge-done">✅完成済</span>'
+                  : '<span class="recipe-badge badge-new">🆕NEW</span>'
+                }
+                ${recipe.icon}
+                ${recipe.name}
+                (所持:${stock})
+                [Lv.${recipe.minLevel}]
+              </div>
               <div class="recipe-cost">必要素材: ${recipe.desc} / 買取:${recipe.reward.toLocaleString()}G</div>
             </div>
             <div class="btn-group">
@@ -806,6 +877,54 @@
     function closeInfoModal() {
       document.getElementById('infoModal').style.display = 'none';
     }
+    function showStoryEvent(title,image,text){
+
+  const modal=document.createElement('div');
+
+  modal.className='modal-overlay';
+
+  modal.style.zIndex='9999';
+
+  modal.innerHTML=`
+  <div class="modal-content"
+       style="max-width:700px;">
+
+    <img src="${image}"
+         style="
+         width:100%;
+         border-radius:12px;
+         margin-bottom:12px;">
+
+    <div class="modal-title">
+      ${title}
+    </div>
+
+    <div class="modal-desc"
+         style="
+         text-align:left;
+         max-height:50vh;
+         overflow:auto;">
+      ${text}
+    </div>
+
+    <button class="btn"
+      onclick="this.closest('.modal-overlay').remove()">
+      閉じる
+    </button>
+
+  </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  const se =
+  document.getElementById('se-itemget');
+
+  if(se){
+    se.currentTime=0;
+    se.play().catch(()=>{});
+  }
+}
 
     let currentPreviewRecipe = null;
     function showProductPreview(recipe) {
@@ -891,6 +1010,116 @@
 
       const totalProduced = Math.max(1, 1 + bonusCount);
       gameState.products[recipe.id] += totalProduced;
+      if(
+ recipe.id==="sunglasses"
+ &&
+ !gameState.craftedProducts.sunglasses
+){
+
+ gameState.craftedProducts.sunglasses=true;
+
+ showStoryEvent(
+ "🕶️ 偏光サングラス完成！",
+ "CharaPrEr_ive1.jpg",
+ `
+ プラセオジムとエルビウム。
+
+ 海外の「資源開発企業」を視察するため、
+ 遠い国へやってきました！
+
+ 視察の合間に、
+ 海辺の遊歩道をお散歩中。
+
+ 空は青く、
+ 海はキラキラ、
+ 日差しはまぶしいほど！
+
+ さて、
+ ここはどこの国でしょう？
+
+ ヒントは、
+ 海岸のすぐそばにそびえる山々と、
+ 南国らしい陽気な風景。
+
+ <br><br>
+
+ <b>プラセオジム：</b>
+ 「うわぁ、日差しが強いね！
+ 偏光サングラスの実力を試すには絶好の場所だ！」
+
+ <br><br>
+
+ <b>エルビウム：</b>
+ 「海面のギラギラした反射も、
+ これなら見やすくなるね。
+ 新製品、大成功かも！」
+
+ <br><br>
+
+ <b>プラセオジム：</b>
+ 「ふふふ、
+ 景色までいつもより美しく見える気がするよ！」
+
+ <br><br>
+
+ <b>エルビウム：</b>
+ 「それはサングラスのおかげ？
+ それとも、
+ 旅行が楽しいからかな？」
+
+ <br><br>
+
+ ✨二人の視察旅行はまだまだ続きます！
+ `
+ );
+
+}
+
+if(
+ recipe.id==="catalyst"
+ &&
+ !gameState.craftedProducts.catalyst
+){
+
+ gameState.craftedProducts.catalyst=true;
+
+ showStoryEvent(
+ "🏭 ガソリン精製触媒 製造成功！",
+ "CharaCe_ive1.jpg",
+ `
+ 🏭 ガソリン精製触媒、製造成功！
+
+ <br><br>
+
+ 大きな石油精製プラントで、
+ セリウム(Ce)が
+ 新しい触媒の製造に成功しました！
+
+ <br><br>
+
+ 触媒は、
+ 化学反応を助ける大切な材料。
+
+ <br><br>
+
+ <b>セリウム：</b>
+
+ 「やったー！
+ ついに完成したよ！
+
+ これで石油精製の技術が、
+ また一歩前進するね！」
+
+ <br><br>
+
+ ヘルメットをきゅっとかぶり直して、
+
+ セリウムは工場の仲間たちに
+ 完成を報告するのでした。
+ `
+ );
+
+}
 
       const earnedExp = totalProduced * 50;
       addExp(earnedExp);
@@ -976,6 +1205,117 @@
 
       const totalProduced = Math.max(1, 1 + bonusCount);
       gameState.products[recipe.id] += totalProduced;
+      if(
+ recipe.id==="sunglasses"
+ &&
+ !gameState.craftedProducts.sunglasses
+){
+
+ gameState.craftedProducts.sunglasses=true;
+
+ showStoryEvent(
+ "🕶️ 偏光サングラス完成！",
+ "CharaPrEr_ive1.jpg",
+ `
+ プラセオジムとエルビウム。
+
+ 海外の「資源開発企業」を視察するため、
+ 遠い国へやってきました！
+
+ 視察の合間に、
+ 海辺の遊歩道をお散歩中。
+
+ 空は青く、
+ 海はキラキラ、
+ 日差しはまぶしいほど！
+
+ さて、
+ ここはどこの国でしょう？
+
+ ヒントは、
+ 海岸のすぐそばにそびえる山々と、
+ 南国らしい陽気な風景。
+
+ <br><br>
+
+ <b>プラセオジム：</b>
+ 「うわぁ、日差しが強いね！
+ 偏光サングラスの実力を試すには絶好の場所だ！」
+
+ <br><br>
+
+ <b>エルビウム：</b>
+ 「海面のギラギラした反射も、
+ これなら見やすくなるね。
+ 新製品、大成功かも！」
+
+ <br><br>
+
+ <b>プラセオジム：</b>
+ 「ふふふ、
+ 景色までいつもより美しく見える気がするよ！」
+
+ <br><br>
+
+ <b>エルビウム：</b>
+ 「それはサングラスのおかげ？
+ それとも、
+ 旅行が楽しいからかな？」
+
+ <br><br>
+
+ ✨二人の視察旅行はまだまだ続きます！
+ `
+ );
+
+}
+
+if(
+ recipe.id==="catalyst"
+ &&
+ !gameState.craftedProducts.catalyst
+){
+
+ gameState.craftedProducts.catalyst=true;
+
+ showStoryEvent(
+ "🏭 ガソリン精製触媒 製造成功！",
+ "CharaCe_ive1.jpg",
+ `
+ 🏭 ガソリン精製触媒、製造成功！
+
+ <br><br>
+
+ 大きな石油精製プラントで、
+ セリウム(Ce)が
+ 新しい触媒の製造に成功しました！
+
+ <br><br>
+
+ 触媒は、
+ 化学反応を助ける大切な材料。
+
+ <br><br>
+
+ <b>セリウム：</b>
+
+ 「やったー！
+ ついに完成したよ！
+
+ これで石油精製の技術が、
+ また一歩前進するね！」
+
+ <br><br>
+
+ ヘルメットをきゅっとかぶり直して、
+
+ セリウムは工場の仲間たちに
+ 完成を報告するのでした。
+ `
+ );
+
+}
+
       gameState.money += extraMoneyBonus;
 
       const earnedExp = (totalProduced * 50) + (isInsideTarget ? 100 : 20);
