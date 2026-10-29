@@ -505,7 +505,7 @@
       </div>
       <div id="itemRewardContainer" style="display: none;">
         <div class="item-reward-box">
-          🎁 獲得アイテム：元素詰め合わせＢＯＸ（全種類の元素×１0個）
+          🎁 獲得アイテム：元素詰め合わせＢＯＸ（全種類の元素×１0個）<br>＋ ツリウム×５
         </div>
       </div>
     </div>
@@ -816,7 +816,14 @@
       const bonusG = Math.max(100, (LIMIT_TIME - timeSpent) * 50);
       goldEl.innerText = `${bonusG} G`;
       expEl.innerText = '+100';
-      itemRewardContainer.style.display = 'block';
+      if (!rewardClaimed) {
+    rewardClaimed = true;
+    const el = {};
+    ['Sc','Y','La','Ce','Pr','Nd','Pm','Sm','Eu','Gd','Tb','Dy','Ho','Er','Tm','Yb','Lu'].forEach(k => el[k] = 10);
+    el.Tm += 5;
+    grantReward(bonusG, 100, el);
+}
+itemRewardContainer.style.display = 'block';
     } else {
       titleEl.innerText = 'MISS...';
       titleEl.className = 'result-title miss';
@@ -826,11 +833,24 @@
 
       goldEl.innerText = '0 G';
       expEl.innerText = '+50';
-      itemRewardContainer.style.display = 'none';
+      if (!rewardClaimed) { rewardClaimed = true; grantReward(0, 50, null); }
+itemRewardContainer.style.display = 'none';
     }
   }
 
-  function resetGame() {
+  let rewardClaimed = false;
+function grantReward(g,e,elem){
+  let gs={};try{gs=JSON.parse(localStorage.getItem('rareEarthGameState'))||{}}catch(x){}
+  if(gs.money==null)gs.money=1500;
+  if(gs.level==null){gs.level=1;if(gs.mudStock==null)gs.mudStock=5}
+  gs.money+=g;
+  if(elem){gs.elements=gs.elements||{};for(const k in elem)gs.elements[k]=(gs.elements[k]||0)+elem[k]}
+  let lv=gs.level,ex=(gs.exp||0)+e;while(ex>=lv*100){ex-=lv*100;lv++}
+  gs.level=lv;gs.exp=ex;
+  try{localStorage.setItem('rareEarthGameState',JSON.stringify(gs))}catch(x){}
+}
+function resetGame() {
+  rewardClaimed = false;
     document.getElementById('openingModal').style.display = 'flex';
     document.getElementById('resultScreen').style.display = 'none';
     document.getElementById('openingImg').src = 'chara0_Tm.png';

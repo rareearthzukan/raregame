@@ -584,7 +584,7 @@
 
         const sound = new SoundSystem();
         const STORAGE_KEY = 'rareEarthGameState';
-        let state = { gold: 0, level: 1, exp: 0 };
+        let state = { money: 1500, level: 1, exp: 0 };
 
         function loadState() {
             try {
@@ -599,7 +599,7 @@
         }
 
         function addRewards(goldAdd, expAdd) {
-            state.gold = Math.max(0, state.gold + goldAdd);
+            state.money = Math.max(0, (state.money || 0) + goldAdd);
             state.exp += expAdd;
             const reqExp = state.level * 100;
             if (state.exp >= reqExp) {

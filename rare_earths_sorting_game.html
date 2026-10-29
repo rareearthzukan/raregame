@@ -713,6 +713,7 @@
 
       const rewardG = correctCount * 100;
       const rewardEXP = correctCount * 50;
+    try { grantReward(rewardG, rewardEXP, null); } catch (e) {}
 
       // 指定された改行と赤字強調（スカンジウム・ランタン）のセリフ
       const lanthanumTalk = `<br><br>💡 <b>「ちなみに、<span class="highlight-red">スカンジウム</span>は軽・重のどちらにもぴったり当てはまらない特別な元素なんだよ！<br>あとね、重レアアースはとっても希少で採るのも大変だから、お値段がすごく高価（プレミアム）なんだ！<br><br>それに比べて僕、<span class="highlight-red">ランタン</span>は地球上にたくさんあってリーズナブル！カメラのレンズやハイブリッドカーの電池でも大活躍してる、とっても身近で頼もしい存在なんだ〜！」</b>`;
@@ -730,7 +731,17 @@
       document.getElementById('btn-reset').classList.remove('hidden');
     }
 
-    function resetGame() {
+    function grantReward(g,e,elem){
+  let gs={};try{gs=JSON.parse(localStorage.getItem('rareEarthGameState'))||{}}catch(x){}
+  if(gs.money==null)gs.money=1500;
+  if(gs.level==null){gs.level=1;if(gs.mudStock==null)gs.mudStock=5}
+  gs.money+=g;
+  if(elem){gs.elements=gs.elements||{};for(const k in elem)gs.elements[k]=(gs.elements[k]||0)+elem[k]}
+  let lv=gs.level,ex=(gs.exp||0)+e;while(ex>=lv*100){ex-=lv*100;lv++}
+  gs.level=lv;gs.exp=ex;
+  try{localStorage.setItem('rareEarthGameState',JSON.stringify(gs))}catch(x){}
+}
+function resetGame() {
       playSE('se-pochi');
       isGameActive = true;
       document.querySelectorAll('.result-mark').forEach(m => m.remove());
