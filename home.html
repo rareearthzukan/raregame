@@ -389,6 +389,12 @@ function askModal(title,desc,ok,fn,no){
     if(mO) mO.style.display='flex';
   } catch(e){}
 }
+function showGdReward(){
+  const r=gameState.gdRiverLast; if(!r||r.seen) return;
+  r.seen=true; save();
+  askModal('🎁 Gdリバーの報酬','<div style="font-size:.85rem;line-height:1.8;text-align:center">ガドリニウムと一緒にクリア、おつかれさま！<br><b>💰 '+(r.g||0).toLocaleString()+' G</b><br><b>🧪 ガドリニウム ×'+(r.d||0)+'</b><br><b>⭐ '+(r.e||0)+' EXP</b>'+(r.lv?'<br><b>🎉 レベルアップ！ Lv.'+r.lv+'</b>':'')+'</div>','OK',null,'閉じる');
+}
+window.addEventListener('pageshow',e=>{ if(e.persisted) location.reload(); });
 function closeModal(){ const mO=$('modal'); if(mO) mO.style.display='none'; }
 
 function buildControls(){
@@ -647,6 +653,20 @@ function talkChara(id){
       </div>
     `;
     askModal(`✨ イッテルビウムとの会話`, html, '閉じる', null, '');
+
+  } else if(id === 'Gd'){
+    const html = `
+      <div style="font-size:0.8rem; text-align:left; line-height:1.5">
+        <p>「やあ、ガドリニウム(Gd)だよ。<b>MRI検査の造影剤</b>として、体の中の病気を見つけるお手伝いをしているんだ。」</p>
+        <p>「そのままだと体によくないから、<b>キレート</b>という入れ物（浮き輪やベルト）でガッチリ守られて、安全に旅をするんだよ。」</p>
+        <p>「プールの流れに乗って体の外までぷかぷか泳ぐ<b>『Gdリバー』</b>で一緒に遊ばない？クリアすると<b>ゴールド・ガドリニウム・経験値</b>がもらえるよ！」</p>
+        <div style="display:flex; flex-direction:column; gap:6px; margin-top:10px">
+          <button class="btn" style="background:#0ea5e9; color:#fff; font-weight:bold; font-size:0.82rem" onclick="location.href='gd-river.html'">🏊 ガドリニウムのGdリバーを遊ぶ</button>
+          <button class="btn" style="background:#3b82f6" onclick="askModal('💡 ガドリニウム解説', 'ガドリニウム(Gd)は、MRIの造影剤として病気の場所をくっきり写し出したり、原子炉の制御棒として安全を守ったりしているレアアース！体に使うときは、キレートという入れ物でしっかり包んで安全にしているんだよ！', '戻る', ()=>talkChara('Gd'), '')">📖 ガドリニウムについて詳しく知る</button>
+        </div>
+      </div>
+    `;
+    askModal(`✨ ガドリニウムとの会話`, html, '閉じる', null, '');
 
   } else {
     const html = `
@@ -987,7 +1007,7 @@ function resetRoom(){
 window.addEventListener('load',()=>{
   try {
     buildControls(); switchTab('shop'); changeDirection(0);
-    updateBgmSource(); updateBgmUI(); applyTheme(gameState.currentTheme||'natural'); ensureCharas(); syncCrafted(); updateUI(); histBtns();
+    updateBgmSource(); updateBgmUI(); applyTheme(gameState.currentTheme||'natural'); ensureCharas(); syncCrafted(); updateUI(); histBtns(); showGdReward();
     if(!isMuted && bgm) bgm.play().catch(()=>['click','touchstart'].forEach(e=>document.addEventListener(e,unlock)));
   } catch(e){}
 });
