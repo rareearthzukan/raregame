@@ -344,6 +344,15 @@
     @keyframes bump { 0% { transform: scale(1); } 40% { transform: scale(1.6); color: #ffde59; } 100% { transform: scale(1); } }
     #mud.bump { display: inline-block; animation: bump .45s ease-out; }
     @media (prefers-reduced-motion: reduce) { .phone.shake, .phone.shake-big, .btn-go { animation: none; } }
+    /* ═══ 🧑 キャラ登場 ═══ */
+    .cameo { position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 2; pointer-events: none; overflow: hidden; }
+    .cameo-ch { position: absolute; bottom: 0; height: 82%; width: auto; max-width: 40%; object-fit: contain; filter: drop-shadow(0 .2rem .4rem rgba(0,0,0,.7)); }
+    .cameo-bub {
+      position: absolute; top: .5rem; width: fit-content; max-height: calc(100% - 1rem); overflow: hidden;
+      background: #fff; color: #1e293b; border: 2px solid var(--c); border-radius: .7rem; padding: .35rem .55rem;
+      font-size: .76rem; line-height: 1.45; font-weight: bold; box-shadow: 0 .2rem .6rem rgba(0,0,0,.5);
+    }
+    .cameo-bub b { display: inline-block; background: var(--c); color: #0f172a; border-radius: 1rem; padding: 0 .55rem; margin-bottom: .2rem; font-size: .68rem; }
   </style>
 </head>
 <body>
@@ -401,6 +410,7 @@
           <img id="area-img" class="area-visual-img" src="area_cn.png" alt="エリアビジュアル" onclick="openViewer()">
           <div class="tool-overlay" id="tool-icon">🚚🚜</div>
           <button type="button" class="zoom-btn" onclick="openViewer()" aria-label="画像を拡大表示">🔍</button>
+          <div class="cameo" id="cameo"></div>
         </div>
       </div>
 
@@ -685,14 +695,14 @@
     ];
 
     const spotConfig = {
-      'baiyun': { name: '中国 モンゴル自治区 白雲鄂博', cost: 10, desc: '世界最大の軽レアアース鉱山。ランタンやセリウムの生産拠点。', img: 'area_cn.png', anim: 'anime_cn.gif', isSea: false },
+      'baiyun': { name: '中国 内モンゴル自治区 白雲鄂博', cost: 10, desc: '世界最大の軽レアアース鉱山。ランタンやセリウムの生産拠点。', img: 'area_cn.png', anim: 'anime_cn.gif', isSea: false },
       'america': { name: 'アメリカ マウンテンパス鉱山', cost: 30, desc: 'かつて世界のユーロピウム供給を支えた歴史ある名門露天掘り鉱山。', img: 'area_us.png', anim: 'anime_us.gif', isSea: false },
       'mount': { name: 'オーストラリア マウント・ウェルド鉱山', cost: 50, desc: '高品質な磁石向け軽レアアース（ネオジム等）を産出する安定供給地。', img: 'area_au.png', anim: 'anime_au.gif', isSea: false },
       'myanmar': { name: 'ミャンマー イオン吸着鉱床', cost: 100, desc: 'EVや風力発電に不可欠な「重レアアース」が豊富にとれる粘土層鉱床。', img: 'area_mm.png', anim: 'anime_mm.png', isSea: false },
       'africa': { name: '🌍 アフリカ新興鉱床', cost: 150, desc: '脱・中国依存に向けて近年世界中から開発が進む注目のフロンティア。', img: 'area_af.png', anim: 'anime_af.gif', isSea: false },
       'greenland': { name: 'グリーンランド クバネフエルド鉱床', cost: 300, desc: '氷河の下に眠る、世界最大級の未開発レアアース・ウラン複合鉱床。', img: 'area_greenisland.png', anim: 'anime_BIG_GL.gif', isSea: false },
       'tahiti': { name: 'タヒチ 南太平洋・マンガン団塊', cost: 200, desc: '深海底に転がる金属塊。重レアアースやコバルトを含む高価なゾーン。', img: 'area_tahiti.png', anim: 'anime_tahiti.gif', isSea: true },
-      'okinotori': { name: '日本 沖ノ鳥島沖（EEZ海底泥）', cost: 500, desc: '日本の未来を担う！水深数千mの海底に眠る超高濃度レアアース泥。', img: 'area_japan.png', anim: 'anime_cn.gif', isSea: true }
+      'okinotori': { name: '日本 南鳥島沖（EEZ海底泥）', cost: 500, desc: '日本の未来を担う！水深数千mの海底に眠る超高濃度レアアース泥。', img: 'area_japan.png', anim: 'anime_cn.gif', isSea: true }
     };
 
     const currentSpot = spotConfig[spotId] || spotConfig['baiyun'];
@@ -735,26 +745,27 @@
       }
     }
 
+    // 🎵 BGM：自動再生がブロックされても、最初の操作（画面のどこでも）で即再生
+    const UNLOCK_EVENTS = ['pointerup', 'touchend', 'click', 'keydown'];
+    function removeUnlock() { UNLOCK_EVENTS.forEach(ev => document.removeEventListener(ev, unlockAndPlayMine, true)); }
     function unlockAndPlayMine() {
-      if (!isMuted) {
-        bgm.play().then(() => {
-          document.removeEventListener('click', unlockAndPlayMine);
-          document.removeEventListener('touchstart', unlockAndPlayMine);
-          document.removeEventListener('keydown', unlockAndPlayMine);
-        }).catch(() => {});
-      }
+      if (isMuted) return;
+      bgm.muted = false;
+      bgm.play().then(removeUnlock).catch(() => { bgm.muted = true; bgm.play().catch(() => {}); });
     }
-
-    window.addEventListener('load', () => {
-      updateBgmUI();
-      if (!isMuted) {
-        bgm.play().catch(() => {
-          document.addEventListener('click', unlockAndPlayMine);
-          document.addEventListener('touchstart', unlockAndPlayMine);
-          document.addEventListener('keydown', unlockAndPlayMine);
-        });
-      }
-    });
+    function startBgm() {
+      if (isMuted) return;
+      bgm.muted = false;
+      bgm.play().catch(() => {
+        // 無音の自動再生は許可されるので、無音で先に流し、最初の操作で音を出す
+        bgm.muted = true;
+        bgm.play().catch(() => {});
+        UNLOCK_EVENTS.forEach(ev => document.addEventListener(ev, unlockAndPlayMine, true));
+      });
+    }
+    window.addEventListener('load', () => { updateBgmUI(); startBgm(); });
+    window.addEventListener('pageshow', e => { if (e.persisted) startBgm(); });
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) startBgm(); });
 
     function updateUI() {
       document.getElementById('money').innerText = gameState.money.toLocaleString();
@@ -906,6 +917,88 @@
       mud.classList.remove('bump'); void mud.offsetWidth; mud.classList.add('bump');
     }
 
+    // ═══ 🧑 キャラ登場（風景枠にぬーっと現れて一言） ═══
+    // 名前, 色, 前置き, 締め, 自己紹介(|区切り)
+    const CH = {
+      Sc:['スカンジウム','#38bdf8','ふっ、いくよ。','…以上。','アルミに混ぜると、軽くて強い合金になるんだ。航空機やスポーツ用品で活躍してるよ。|名前は北欧のスカンジナビアから。実はとってもレアなんだ、ぼく。'],
+      Y:['イットリウム','#00fff5','ねえ聞いて！','覚えておいてね！','掘った泥は精製プラントで元素に分けるよ。次の工程も忘れずにね！|おカネが足りなくなったら、リサイクル工場（都市鉱山）で稼げるよ。|スウェーデンのイッテルビー村が名前のもと。仲間のTb・Er・Ybも同じ村の名前なんだ。|LEDの白い光や、レーザーにも使われているよ。'],
+      La:['ランタン','#a78bfa','あ、あの…','…です。','名前は「隠れている」という意味です…。ずっと見つからなかったので…。|カメラのレンズや、ハイブリッド車の電池に使われています…地味ですけど…。'],
+      Ce:['セリウム','#fb923c','ねーねー！','だよっ！','レアアースの中でいちばん量が多いのが、あたし！|ガラスをピカピカにみがく研磨剤に使われてるよ。|車の排ガスをきれいにする触媒でも大活躍！'],
+      Pr:['プラセオジム','#4ade80','えっとね〜','なのだ〜。','名前は「緑の双子」。ネオジムとは双子みたいにそっくりなのだ〜。|黄色いガラスや、溶接のめがねにも使われてるのだ〜。'],
+      Nd:['ネオジム','#f87171','おう、聞け！','覚えとけよ！','オレは最強の永久磁石の材料だ！EVのモーターも風力発電もオレ次第！|ネオジム磁石は日本生まれ。1982年に佐川眞人さんが発明したんだぜ！'],
+      Pm:['プロメチウム','#e879f9','…ねえ。','…ふふ。','わたしは自然界にほとんど存在しないの。ずっと放射線を出して崩れていく運命…。|名前はギリシャ神話で火を盗んだプロメテウスから。幻のレアアースよ。'],
+      Sm:['サマリウム','#f59e0b','ふむ。','わかったな。','熱に強いサマリウムコバルト磁石は、高温の現場や宇宙でも頼りにされる。|名前の由来は鉱石のサマルスキー石。人名にちなんだ最初の元素と言われている。'],
+      Eu:['ユウロピウム','#f43f5e','ちょっと！','ね？','赤く光るのがあたしの魅力。昔のカラーテレビの赤はあたしだったのよ。|ユーロ紙幣の偽造防止にも、蛍光でこっそり使われているの。名前もヨーロッパから！'],
+      Gd:['ガドリニウム','#34d399','おやおや、','ですよ。','MRI検査で体の中をはっきり見せる造影剤に使われます。|原子炉の制御にも使われる、頼れる元素です。'],
+      Tb:['テルビウム','#22c55e','…聞け。','…以上だ。','緑色に光る蛍光体になる。昔の蛍光灯の緑はおれだ。|ネオジム磁石の耐熱性を上げる仲間でもある。重レアアースは貴重だ。'],
+      Dy:['ジスプロシウム','#ef4444','べ、別に教えたいわけじゃないけど…','わかった？','名前は「近づきがたい」って意味。ツンとしてるのは名前のせいよ！|ネオジム磁石に混ぜると熱に強くなるの。EVのモーターには必須なんだから！'],
+      Ho:['ホルミウム','#fbbf24','あらあら〜','ねぇ〜。','わたしは磁力がとっても強い元素なのよぉ。|腎臓結石を砕くレーザー治療にも使われてるの。名前はストックホルムから〜。'],
+      Er:['エルビウム','#f472b6','速報です！','以上、速報でした！','海底ケーブルを走る光は、わたしを使った増幅器で元気に届きます！|ネットがつながるのは、光ファイバー通信を支えるわたしのおかげなんです！'],
+      Tm:['ツリウム','#93c5fd','あの…','…すみません。','わたしはプロメチウムを除くと、いちばん数が少ないレアアースなんです…。|名前は北の果て「ツーレ」から。携帯型のX線装置にも使われています。'],
+      Yb:['イッテルビウム','#2dd4bf','ちょうど今ね、','きっちり覚えて。','光格子時計という超高精度の時計に、わたしが使われているよ。|名前はスウェーデンのイッテルビー村から。Y・Tb・Erとは村の仲間さ。'],
+      Lu:['ルテチウム','#c084fc','ボンジュール！','ね、シックでしょ？','わたしはレアアースのトリ、最後の17番目。パリの古い名前ルテチアが名前のもとよ。|がん治療や、PET検査の機器でも活躍しているわ。']
+    };
+    // エリアごとに出やすいキャラ
+    const AREA_FAV = { baiyun:['Ce','La','Nd'], america:['Eu','Sm','Y'], mount:['Nd','Pr','Sm'], myanmar:['Dy','Tb','Ho'], africa:['Sc','Lu','Er'], greenland:['Tm','Gd','Yb'], tahiti:['Er','Pm','Ce'], okinotori:['Yb','Dy','Tb'] };
+    const TIPS = {
+      common: ['レアアースは全部で17元素。スカンジウム、イットリウムと、ランタンからルテチウムまでの仲間だよ。','レアアースの採掘は中国が世界の過半を占め、精製ではさらに大きなシェアを持つと言われているよ。','スマホ、EV、風力発電、ハードディスク。身のまわりの磁石にレアアースが使われているよ。','産地ごとに出やすい元素や宝石が違うよ。マップで産地を切り替えてみよう。','キラッと光る鉱物は図鑑に登録されるよ。コンプリートをめざそう！'],
+      baiyun: ['白雲鄂博は世界最大級のレアアース鉱床。もとは鉄鉱石の鉱山で、レアアースは一緒に採れているよ。','中国は採掘量で世界1位。ここのランタン・セリウム・ネオジムなどの軽レアアースが大きな柱なんだ。','白雲鄂博はモンゴル語で「豊かな山」という意味だよ。','近くの都市は包頭（パオトウ）。「稀土之都」とも呼ばれているよ。','内モンゴルの名物は羊肉料理と、塩味のミルクティー「スーテーツァイ」だよ。'],
+      america: ['マウンテンパスは、米国で数少ない大規模レアアース鉱山。主役はバストネサイトという鉱物だよ。','カラーテレビの赤い光に使うユウロピウムのブームで、1960年代に世界を支えた山なんだ。','2002年にいったん止まり、のちに再開した山。供給を一国に頼るリスクを教えてくれるよ。','カリフォルニア州のモハーベ砂漠の近く。ラスベガスにも近いよ。'],
+      mount: ['マウント・ウェルドは西オーストラリア州。世界でも指折りの高品位なレアアース鉱山だよ。','運営はライナス社。中国以外では最大級のレアアース生産者として知られているよ。','日本の企業や政府系機関もライナス社に出資して、安定調達を支えているんだ。','ご当地グルメは、ミートパイやラミントン（チョコとココナッツのケーキ）だよ。'],
+      myanmar: ['ミャンマー北部のイオン吸着型鉱床では、ジスプロシウムやテルビウムなどの重レアアースが採れるよ。','イオン吸着型は、粘土にくっついた元素を薬液で取り出すんだ。環境への影響が課題だよ。','重レアアースはEVモーターの磁石の耐熱化に必須。だから世界が注目しているんだ。','国内情勢の影響を受けやすく、供給が不安定になりやすいのも課題だよ。','名物は魚のスープ麺「モヒンガー」。街にはきらびやかなパゴダ（仏塔）が並ぶよ。'],
+      africa: ['マラウイ、タンザニア、ナミビアなど、アフリカ各地でレアアースの開発が進んでいるよ。','供給を中国に頼りすぎないよう、各国が新しい産地としてアフリカに注目しているんだ。中国企業も投資しているよ。','緑の旗はアフリカ連合（AU）の旗だよ。星は加盟国をあらわしているんだ。','タンザニアにはキリマンジャロ山、ナミビアには赤い砂丘のナミブ砂漠があるよ。タンザナイトの産地でもあるんだ。'],
+      greenland: ['グリーンランドは世界最大の島。デンマーク王国の自治領で、レアアースの大型鉱床が眠っているよ。','クバネフエルドは、ウランも一緒に含むことが開発のハードルになっているんだ。','氷の下の資源は温暖化で調べやすくなる一方、自然への影響も心配されているよ。','観光の目玉はオーロラと氷河。イルリサットの氷河は世界遺産だよ。'],
+      tahiti: ['タヒチはフランス領ポリネシア。だからフランス国旗が付いているんだよ。','フランスは海外領土のおかげで、世界トップクラスの広さの排他的経済水域（EEZ）を持っているんだ。','太平洋の深海底には、レアアースを含む泥やマンガン団塊が広がっているよ。','名物は、生魚をココナッツミルクとライムであえた「ポワソン・クリュ」だよ。'],
+      okinotori: ['日本の最東端の島、南鳥島の周辺海底で、高濃度のレアアース泥が見つかっているよ。','水深5,000m超の海底から引き上げるのが最大の難関。技術開発と試験が進んでいるんだ。','この泥には重レアアースも多いと考えられていて、「日本の切り札」と期待されているよ。','名前が似ている沖ノ鳥島は日本最南端の島。南鳥島とは別の島だよ！','南鳥島は東京都小笠原村の島。小笠原諸島は世界自然遺産だよ。']
+    };
+    // キャラ×エリアの特別セリフ
+    const SPECIAL = {
+      'Eu@america': 'ここマウンテンパスは、あたしの赤い輝きでカラーTVを光らせた故郷なの！ちょっと誇らしいわ。',
+      'Nd@baiyun': 'この山のネオジムがあれば、最強の磁石が作れるぜ！',
+      'Nd@mount': 'ここはネオジムとプラセオジムが主役の山だぜ！磁石の材料になる！',
+      'Pr@mount': 'ここのネオジムとは双子で出てくるのだ〜。いっしょに磁石になるのだ〜。',
+      'Dy@myanmar': 'べ、別にここの重レアアースが大事ってわけじゃ…EVの磁石に必要なだけなんだから！',
+      'Tb@myanmar': 'ここは、おれたち重レアアースの貴重な産地だ。',
+      'Er@tahiti': '速報です！タヒチの近くの海底にも、わたしの増幅器でつながる海底ケーブルが通っています！',
+      'Tm@greenland': 'わたしの名前は北の果て「ツーレ」から…。グリーンランドの北にも、ツーレという地名があるんです…。',
+      'Yb@okinotori': '日本の南鳥島…。わたしを使う光格子時計も、日本の研究が世界をリードしているよ。',
+      'La@baiyun': 'ここは…わたしたち軽レアアースの本場です…。なんだか緊張します…。'
+    };
+    let cameoBusy = false, lastCh = null;
+    const pickOne = a => a[Math.floor(Math.random() * a.length)];
+    function pickCameo() {
+      const fav = AREA_FAV[spotId] || [], pool = [];
+      Object.keys(CH).filter(k => k !== lastCh).forEach(k => { for (let i = fav.includes(k) ? 4 : 1; i > 0; i--) pool.push(k); });
+      const k = pickOne(pool), c = CH[k], r = Math.random(), sp = SPECIAL[k + '@' + spotId];
+      let text;
+      if (sp && r < .6) text = sp;
+      else if (r < .4) text = pickOne(c[4].split('|'));
+      else text = c[2] + pickOne((TIPS[spotId] || []).concat(TIPS.common)) + c[3];
+      return { k, c, text };
+    }
+    function showCameo() {
+      const box = document.getElementById('cameo');
+      if (cameoBusy || !box || document.hidden) return;
+      if (document.getElementById('imgViewer').classList.contains('open') || document.getElementById('commonLevelUpModal')) return;
+      if (['noMoneyModal', 'firstJewelModal'].some(id => document.getElementById(id).style.display === 'flex')) return;
+      const { k, c, text } = pickCameo();
+      lastCh = k; cameoBusy = true;
+      const left = Math.random() < .5;
+      box.innerHTML = `<img class="cameo-ch" src="chara0_${k}.png" alt="${c[0]}" style="${left ? 'left' : 'right'}:1%"><div class="cameo-bub" style="--c:${c[1]};${left ? 'left:40%;right:3.4rem' : 'left:.5rem;right:40%'}"><b>${c[0]}</b><br>${text}</div>`;
+      const img = box.firstChild, bub = box.lastChild;
+      bub.style.opacity = 0;
+      img.onerror = () => { box.innerHTML = ''; cameoBusy = false; };
+      const hold = 3800 + text.length * 90;
+      img.animate([{ transform: 'translateY(105%)' }, { transform: 'translateY(-3%)', offset: .8 }, { transform: 'translateY(0)' }], { duration: 1100, easing: 'ease-out', fill: 'forwards' });
+      bub.animate([{ opacity: 0, transform: 'scale(.6)' }, { opacity: 1, transform: 'scale(1)' }], { duration: 350, delay: 900, easing: 'cubic-bezier(.2,1.6,.4,1)', fill: 'forwards' });
+      setTimeout(() => {
+        bub.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 250, fill: 'forwards' });
+        img.animate([{ transform: 'translateY(0)' }, { transform: 'translateY(105%)' }], { duration: 800, easing: 'ease-in', fill: 'forwards' })
+          .onfinish = () => { box.innerHTML = ''; cameoBusy = false; };
+      }, 1100 + hold);
+    }
+    function scheduleCameo() { setTimeout(() => { showCameo(); scheduleCameo(); }, 20000 + Math.random() * 20000); }
+
     function mineMud() {
       if (gameState.money < currentSpot.cost) {
         document.getElementById('noMoneyModal').style.display = 'flex';
@@ -986,6 +1079,7 @@
       st.classList.add('pop'); if (isRareJewel) st.classList.add('rare');
 
       playMineFx(gained, isRareJewel, obtainedJewel);
+      if (Math.random() < .12) setTimeout(showCameo, 1800);
     }
 
     function showFirstJewelModal(jewel) {
@@ -1124,6 +1218,8 @@
     vStage.addEventListener('pointercancel', endPointer);
 
     updateUI();
+    setTimeout(showCameo, 6000 + Math.random() * 4000);
+    scheduleCameo();
   </script>
 </body>
 </html>
