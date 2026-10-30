@@ -1,0 +1,1363 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#16213e">
+  <meta name="format-detection" content="telephone=no">
+  <title>レアアース・クラフト - 精製プラント</title>
+  <style>
+    :root { --maxw: 720px; }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    
+    html {
+      height: 100%;
+      font-size: clamp(14px, min(calc(12px + 1.1vw), 3.2vh), 21px);
+      -webkit-text-size-adjust: 100%; text-size-adjust: 100%;
+      touch-action: manipulation;
+    }
+    body {
+      margin: 0; height: 100%; overflow: hidden; overscroll-behavior: none;
+      background: #0b1224; color: #fff; touch-action: manipulation;
+      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", Meiryo, sans-serif;
+      -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
+    }
+
+    /* ─── スクロールバー ─── */
+    ::-webkit-scrollbar { width: 16px; height: 16px; }
+    ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); border-radius: 8px; }
+    ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #00fff5, #3b82f6); border-radius: 8px; border: 3px solid transparent; background-clip: padding-box; }
+
+    .phone {
+      position: fixed; top: 0; bottom: 0; left: 0; right: 0;
+      width: 100%; max-width: var(--maxw); margin: 0 auto;
+      background: #0f3460; display: flex; flex-direction: column; overflow: hidden;
+      padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px);
+      box-shadow: 0 0 0 1px #16213e, 0 0 40px rgba(0,0,0,.6);
+      z-index: 10;
+    }
+    @media (orientation: landscape) and (min-width: 700px) { :root { --maxw: 1200px; } }
+
+    /* ═══ ヘッダー ═══ */
+    .header {
+      background: #16213e; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
+      padding: calc(.4rem + env(safe-area-inset-top, 0px)) .6rem .4rem;
+      font-size: 0.78rem; font-weight: bold; border-bottom: 2px solid #e94560; z-index: 20;
+    }
+    .bgm-btn {
+      background: rgba(0, 0, 0, 0.4); border: 1px solid #00fff5; color: #00fff5;
+      border-radius: 1rem; padding: .25rem .6rem; min-height: 1.8rem; font-size: .75rem; cursor: pointer;
+      display: flex; align-items: center; gap: .2rem; transition: all 0.2s; touch-action: manipulation;
+    }
+    .bgm-btn.muted { border-color: #e94560; color: #e94560; background: rgba(233, 69, 96, 0.2); }
+
+    /* 工程ナビゲーションバー */
+    .koutei-bar {
+      background: rgba(15, 23, 42, 0.9); border-bottom: 1px solid #00fff5;
+      padding: .4rem .25rem; display: flex; justify-content: space-around; align-items: center; flex-shrink: 0; z-index: 20;
+    }
+    .koutei-wrapper { display: flex; flex-direction: column; align-items: center; gap: .15rem; }
+    .koutei-item {
+      width: 2.6rem; height: 2.6rem; background: #000; border: 2px solid transparent;
+      border-radius: .4rem; overflow: hidden; display: flex; align-items: center; justify-content: center;
+    }
+    .koutei-item.active { border-color: #00fff5; box-shadow: 0 0 10px rgba(0, 255, 245, 0.8); animation: kouteiGlow 1.2s infinite alternate; }
+    @keyframes kouteiGlow {
+      from { border-color: #00fff5; box-shadow: 0 0 4px rgba(0,255,245,0.4); }
+      to { border-color: #ffde59; box-shadow: 0 0 12px rgba(255,222,89,0.9); }
+    }
+    .koutei-item img { width: 100%; height: 100%; object-fit: cover; }
+    .koutei-label { font-size: .68rem; color: #94a3b8; font-weight: bold; text-align: center; white-space: nowrap; }
+    .koutei-wrapper:has(.koutei-item.active) .koutei-label { color: #00fff5; }
+
+    .header { flex-wrap: wrap; gap: .1rem .5rem; }
+    .header > span { white-space: nowrap; }
+
+    /* ═══ コンテンツ ═══ */
+    .content {
+      flex: 1; min-height: 0; background: linear-gradient(180deg, #1b4f72 0%, #0f3460 100%);
+      padding: .6rem .7rem; display: flex; flex-direction: column; gap: .55rem;
+      overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; position: relative;
+      z-index: 15;
+    }
+    #refineryMain { display: flex; flex-direction: column; gap: .55rem; flex: 1 0 auto; width: 100%; }
+    .card { background: rgba(22, 33, 62, 0.9); border: 1px solid #00fff5; border-radius: .8rem; padding: .55rem .7rem; font-size: .8rem; }
+    .card-title { font-size: .95rem; font-weight: bold; color: #00fff5; margin-bottom: .4rem; }
+
+    .gacha-result-box {
+      background: #fff; border: 2px solid #ffde59; border-radius: .8rem; padding: .5rem .6rem; text-align: center;
+      display: flex; flex-direction: column; align-items: center; gap: .3rem; position: relative;
+      box-shadow: inset 0 2px 6px rgba(0,0,0,0.1);
+    }
+    .chara-img-wrap { position: relative; width: 100%; aspect-ratio: 4 / 3; max-height: 24vh; flex-shrink: 0; }
+    .chara-avatar-img {
+      display: block; width: 100%; height: 100%; object-fit: contain;
+      filter: drop-shadow(0 3px 5px rgba(0,0,0,0.15));
+    }
+
+    .pop-anim { animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+    
+    /* 位置ブレ防止のための固定高・レイアウト調整 */
+    .chara-name-tag {
+      font-size: .85rem; font-weight: bold; color: #0f3460; width: 100%;
+      height: 2.4em; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .speech-bubble {
+      background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: .6rem; padding: .35rem .5rem; font-size: .78rem;
+      color: #1e293b; width: 100%; height: 3.2em; font-weight: bold; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center; text-align: center;
+      overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    }
+
+    /* ボタン群 */
+    .btn {
+      background: #e94560; color: #fff; border: none; padding: .6rem; min-height: 2.8rem; font-size: .9rem; font-weight: bold;
+      border-radius: .8rem; cursor: pointer; width: 100%; margin-top: .4rem; box-shadow: 0 3px 10px rgba(233, 69, 96, 0.4);
+      transition: transform 0.1s; touch-action: manipulation; font-family: inherit; position: relative; z-index: 25;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn-next-step {
+      background: linear-gradient(135deg, #2ecc71, #27ae60); color: #fff; border: 1px solid #2ecc71; padding: .5rem; min-height: 2.8rem;
+      font-size: .9rem; font-weight: bold; border-radius: .8rem; cursor: pointer; width: 100%; box-shadow: 0 3px 8px rgba(46, 204, 113, 0.4);
+      transition: transform 0.1s; touch-action: manipulation; font-family: inherit; position: relative; z-index: 25;
+    }
+    .btn-next-step:active { transform: scale(0.97); }
+    .btn-recycle-shortcut {
+      background: rgba(0, 255, 245, 0.15); border: 1px solid #00fff5; color: #00fff5; padding: .5rem; min-height: 2.8rem;
+      border-radius: .8rem; cursor: pointer; font-size: .82rem; font-weight: bold; line-height: 1.35; width: 100%;
+      display: flex; align-items: center; justify-content: center; gap: .3rem; transition: all 0.2s; touch-action: manipulation; font-family: inherit; position: relative; z-index: 25;
+    }
+    .btn-recycle-shortcut:active { background: rgba(0, 255, 245, 0.3); transform: scale(0.97); }
+    .action-stack { display: flex; flex-direction: column; gap: .5rem; width: 100%; margin-top: auto; }
+
+    .inventory-list {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: .25rem; font-size: .78rem; max-height: 8rem; overflow-y: auto;
+      background: rgba(15, 23, 42, 0.6); padding: .4rem; border: 1px solid #00fff5; border-radius: .5rem;
+    }
+    .inv-item { padding: .15rem 0; }
+
+    .tb-guide-card {
+      display: flex; align-items: center; gap: .6rem; background: rgba(15, 23, 42, 0.85);
+      border: 1px solid #00fff5; border-radius: .8rem; padding: .45rem .6rem;
+    }
+    .tb-avatar-circle {
+      width: 3.2rem; height: 3.2rem; border-radius: 50%; border: 2px solid #00fff5; object-fit: cover;
+      background: #000; flex-shrink: 0; box-shadow: 0 0 8px rgba(0, 255, 245, 0.4);
+    }
+    .tb-speech-bubble {
+      background: #fff; border: 1px solid #cbd5e1; border-radius: .7rem; padding: .45rem .65rem; font-size: .8rem;
+      color: #1e293b; line-height: 1.45; position: relative; flex: 1; font-weight: 500;
+    }
+    .tb-speech-bubble::before {
+      content: ''; position: absolute; left: -6px; top: 50%; transform: translateY(-50%);
+      border-top: 5px solid transparent; border-bottom: 5px solid transparent; border-right: 6px solid #fff;
+    }
+    .highlight-material { color: #0f3460; background: rgba(0, 255, 245, 0.25); padding: 0 2px; border-radius: 3px; font-weight: bold; }
+    .highlight-product { color: #d35400; background: rgba(255, 222, 89, 0.35); padding: 0 2px; border-radius: 3px; font-weight: bold; }
+
+    /* 避難訓練ミニゲームエリア */
+    #minigameContainer { display: none; flex: 1; flex-direction: column; gap: .5rem; position: relative; }
+    .status-panel {
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: .2rem .6rem;
+      background: rgba(22,33,62,0.8); border: 1px solid #00fff5; padding: .4rem .6rem; border-radius: .5rem; font-size: .78rem;
+    }
+    .message-banner {
+      background: #fff; color: #0f3460; padding: .5rem .7rem; border-radius: .7rem; font-size: .9rem; font-weight: bold;
+      text-align: center; min-height: 2.4rem; display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 2px 8px rgba(0,255,245,0.3); border: 2px solid #00fff5; flex-shrink: 0;
+    }
+    .game-area {
+      width: min(100%, max(14rem, calc(100vh - 19rem))); flex-shrink: 0;
+      background: rgba(15,23,42,0.9); border: 2px solid #00fff5; border-radius: .8rem; padding: .5rem;
+      display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(4, 1fr); gap: .4rem; position: relative;
+    }
+    .card-door {
+      background: #16213e; border: 2px solid #00fff5; border-radius: .5rem; cursor: pointer; touch-action: manipulation;
+      display: flex; align-items: flex-end; justify-content: center; position: relative; overflow: hidden; transition: transform 0.2s; min-width: 0; min-height: 0;
+      aspect-ratio: 3 / 4;
+    }
+    .card-door.flipped { background: #0f3460; border-color: #ffde59; }
+    .card-door img.chara-img { width: 95%; height: 95%; object-fit: contain; object-position: bottom center; display: none; }
+    .card-door.flipped img.chara-img { display: block; }
+    .card-door img.card-back { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; display: block; }
+    .card-door.flipped img.card-back { display: none; }
+
+    @media (orientation: landscape) and (min-width: 700px) {
+      #refineryMain { display: grid; grid-template-columns: 1.2fr 1fr; align-items: start; gap: .7rem; }
+      #refineryMain > .card-gacha { grid-column: 1; grid-row: 1 / span 3; }
+      #refineryMain > .card-inv, #refineryMain > .tb-guide-card, #refineryMain > .action-stack { grid-column: 2; }
+      .chara-img-wrap { max-height: calc(100vh - 25rem); min-height: 12rem; }
+      .inventory-list { max-height: 9rem; }
+    }
+
+
+    /* ═══ 下部フッター（ナビゲーション） ═══ */
+    .nav {
+      flex-shrink: 0; position: relative; z-index: 50; background: #16213e; border-top: 2px solid #1f293d;
+      display: flex; justify-content: space-around; align-items: stretch; gap: .3rem;
+      padding: .4rem .5rem calc(.4rem + env(safe-area-inset-bottom, 0px));
+    }
+    .nav-item {
+      color: #a0aec0; cursor: pointer; text-align: center; background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(0, 255, 245, 0.2); border-radius: .7rem; padding: .3rem .2rem;
+      min-height: 3rem; font-size: .72rem; font-weight: bold; flex: 1;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .1rem;
+      transition: all 0.2s; touch-action: manipulation; z-index: 55;
+    }
+    .nav-ico { font-size: 1.15rem; line-height: 1; display: block; }
+    .nav-item:active { transform: scale(0.95); }
+    .nav-item.active { color: #00fff5; background: rgba(0, 255, 245, 0.15); border-color: #00fff5; box-shadow: 0 0 8px rgba(0, 255, 245, 0.3); }
+
+    /* モーダル */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(10, 15, 30, 0.85); display: flex; justify-content: center; align-items: center;
+      z-index: 200; backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); padding: 1rem;
+    }
+    .modal-content {
+      background: #16213e; border: 2px solid #00fff5; border-radius: 1rem; padding: 1.2rem 1rem;
+      width: 100%; max-width: 22rem; text-align: center; box-shadow: 0 0 20px rgba(0, 255, 245, 0.3);
+      animation: popup 0.3s ease-out; position: relative; z-index: 210;
+    }
+    .modal-title { font-size: 1.05rem; font-weight: bold; color: #ffde59; margin-bottom: .4rem; }
+    .modal-desc { font-size: .88rem; color: #f1f5f9; margin-bottom: .8rem; line-height: 1.55; white-space: pre-line; }
+    @keyframes popup { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+    /* まとめ精製ボタン・カード演出 */
+    .refine-row { display: flex; gap: .4rem; width: 100%; }
+    .refine-row .btn { margin-top: .4rem; font-size: .78rem; line-height: 1.3; padding: .4rem .3rem; background: #8e44ad; box-shadow: 0 3px 10px rgba(142, 68, 173, 0.4); }
+    .btn.btn-locked { background: #3a4560 !important; color: #9aa5bd; box-shadow: none; }
+    .rc-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: .35rem; margin: .5rem 0; }
+    .rc-card {
+      position: relative; background: #fff; border: 2px solid #94a3b8; border-radius: .5rem; padding: .25rem .15rem;
+      display: flex; flex-direction: column; align-items: center; color: #0f3460;
+      animation: cardIn .45s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+    }
+    .cols-3 .rc-card { width: 30%; }
+    .cols-5 .rc-card { width: 18%; }
+    .rc-card img { width: 100%; aspect-ratio: 1 / 1; object-fit: contain; }
+    .rc-sym { font-size: .85rem; font-weight: bold; line-height: 1.1; }
+    .rc-name { font-size: .55rem; line-height: 1.15; overflow-wrap: anywhere; }
+    .rc-rare { border-color: #ffde59; box-shadow: 0 0 8px rgba(255, 222, 89, 0.8); }
+    .rc-chance { border-color: #ff9f1a; animation: cardIn .45s both, chancePulse 1s ease-in-out .6s infinite alternate; }
+    .rc-badge { position: absolute; top: -.5rem; right: -.35rem; font-size: .9rem; }
+    @keyframes cardIn { 0% { transform: scale(0.3) rotateY(90deg); opacity: 0; } 100% { transform: scale(1) rotateY(0); opacity: 1; } }
+    @keyframes chancePulse { from { box-shadow: 0 0 2px #ff9f1a; } to { box-shadow: 0 0 12px #ff9f1a; } }
+    /* 産地の配合バー・産地表示 */
+    .mud-mix { width: 100%; background: rgba(15, 23, 42, 0.75); border: 1px solid #00fff5; border-radius: .6rem; padding: .35rem .5rem; margin-top: .4rem; font-size: .7rem; color: #f1f5f9; }
+    .mix-title { font-weight: bold; color: #ffde59; margin-bottom: .2rem; }
+    .mix-bar { display: flex; height: .55rem; border-radius: .3rem; overflow: hidden; background: #334155; }
+    .mix-bar span { display: block; height: 100%; }
+    .mix-legend { display: flex; flex-wrap: wrap; gap: .15rem .5rem; margin-top: .25rem; }
+    .mix-chip { display: inline-flex; align-items: center; gap: .2rem; }
+    .mix-flag, .origin-flag { width: .9rem; height: .65rem; object-fit: cover; border-radius: 1px; }
+    .mix-top { margin-top: .2rem; color: #dcdde1; }
+    .origin-chip { position: absolute; left: .4rem; bottom: .4rem; z-index: 25; display: flex; align-items: center; gap: .25rem; background: rgba(15, 23, 42, 0.85); color: #fff; border: 1px solid #00fff5; border-radius: .8rem; padding: .15rem .5rem; font-size: .7rem; font-weight: bold; }
+    .rc-flag { position: absolute; left: .1rem; top: .1rem; width: 1rem; height: .7rem; object-fit: cover; border-radius: 1px; box-shadow: 0 0 2px rgba(0,0,0,.6); }
+    /* ═══ 精製演出（1個：キャラ脇 / 5・10個：上端の帯） ═══ */
+    .rfx-one { position: absolute; left: 0; top: 0; right: 0; bottom: 0; z-index: 24; pointer-events: none; }
+    #rfx-band {
+      position: fixed; top: calc(.4rem + env(safe-area-inset-top, 0px)); left: 50%; transform: translateX(-50%);
+      width: min(96%, var(--maxw, 720px)); height: 8.5rem; z-index: 400; pointer-events: none; display: none; overflow: hidden;
+      border: 2px solid #ffde59; border-radius: .8rem; background: rgba(15, 23, 42, .93);
+    }
+    .rfx-spr { position: absolute; left: 0; top: 0; height: auto; will-change: transform; pointer-events: none; filter: drop-shadow(0 4px 6px rgba(0,0,0,.55)); }
+    .rfx-sp { position: absolute; left: 0; top: 0; line-height: 1; pointer-events: none; }
+    .rfx-word {
+      position: absolute; left: 0; top: 0; font-size: 1.15rem; font-weight: 900; color: #ffde59; white-space: nowrap; pointer-events: none;
+      -webkit-text-stroke: .18rem #7a1d2e; paint-order: stroke fill; text-shadow: 0 .15rem 0 #7a1d2e;
+    }
+    .modal-overlay.with-band { padding-top: 9.8rem; }
+  </style>
+</head>
+<body>
+
+  <!-- BGMおよび効果音 -->
+  <audio id="bgm" src="BGM_seisei.ogg" loop preload="auto"></audio>
+  <audio id="bgm-hinan" src="BGM_hinan.ogg" loop preload="auto"></audio>
+  <audio id="se-nyu1" src="nyu1.mp3" preload="auto"></audio>
+  <audio id="se-nyu2" src="nyu2.mp3" preload="auto"></audio>
+  <audio id="se-itemget" src="itemget.mp3" preload="auto"></audio>
+  <audio id="se-fuseikai" src="mini_fuseikai.mp3" preload="auto"></audio>
+  <audio id="se-gogogo" src="gogogo.mp3" preload="auto"></audio>
+  <audio id="se-type" src="SE_gacha.mp3" preload="auto"></audio>
+  <audio id="se-seikai" src="mini_seikai.mp3" preload="auto"></audio>
+  <audio id="se-baikyaku" src="SE_baikyaku.mp3" preload="auto"></audio>
+  <audio id="se-hakusyu" src="SE_hakusyu.mp3" preload="auto"></audio>
+
+  <div class="phone">
+    <!-- ヘッダー -->
+    <div class="header">
+      <span>💰 <span id="money">1,500</span> G</span>
+      <span>🌟 Lv.<span id="level">1</span> (EXP: <span id="exp">0</span>)</span>
+      <span>📦 掘削物: <span id="mud">5</span>個</span>
+      <button id="bgm-btn" class="bgm-btn" onclick="toggleBGM()">🎵 ON</button>
+    </div>
+
+    <!-- 工程ナビゲーションバー -->
+    <div class="koutei-bar">
+      <div class="koutei-wrapper" onclick="goToMap()" style="cursor: pointer;">
+        <div class="koutei-item"><img src="koutei1.png" alt="採掘" onerror="this.style.display='none'"></div>
+        <div class="koutei-label">1.採掘</div>
+      </div>
+      <div class="koutei-wrapper" onclick="goToMap()" style="cursor: pointer;">
+        <div class="koutei-item"><img src="koutei2.png" alt="運搬" onerror="this.style.display='none'"></div>
+        <div class="koutei-label">2.運搬</div>
+      </div>
+      <div class="koutei-wrapper">
+        <div class="koutei-item active"><img src="koutei3.png" alt="精製" onerror="this.style.display='none'"></div>
+        <div class="koutei-label">3.精製</div>
+      </div>
+      <div class="koutei-wrapper">
+        <div class="koutei-item active"><img src="koutei4.png" alt="インゴット" onerror="this.style.display='none'"></div>
+        <div class="koutei-label">4.素材</div>
+      </div>
+      <div class="koutei-wrapper" onclick="goToFactory()" style="cursor: pointer;">
+        <div class="koutei-item"><img src="koutei5.png" alt="製造" onerror="this.style.display='none'"></div>
+        <div class="koutei-label">5.製造</div>
+      </div>
+      <div class="koutei-wrapper" onclick="goToFactory()" style="cursor: pointer;">
+        <div class="koutei-item"><img src="koutei6.png" alt="出荷" onerror="this.style.display='none'"></div>
+        <div class="koutei-label">6.出荷</div>
+      </div>
+    </div>
+
+    <!-- コンテンツエリア -->
+    <div class="content">
+
+      <!-- 通常の精製画面メイン -->
+      <div id="refineryMain">
+        <div class="card card-gacha">
+          <div class="card-title">🧪 元素精製プラント</div>
+
+          <div class="gacha-result-box">
+            <div class="chara-img-wrap">
+              <img class="chara-avatar-img" id="chara-img" src="seisei.png" alt="精製プラント" onerror="this.src='chara0_Y.png'">
+              <div class="origin-chip" id="origin-chip" style="display:none"></div>
+              <div class="rfx-one" id="rfx-one"></div>
+            </div>
+            <div class="chara-name-tag" id="chara-name">🏭 プラント待機中</div>
+            <div class="speech-bubble" id="chara-speech">精製ボタンを押すと、元素が抽出されます</div>
+          </div>
+
+          <div class="mud-mix" id="mud-mix"></div>
+          <button class="btn" onclick="refineElement(1)"><span id="refineBtnText">✨ 精製する (コスト: 50G / 掘削物1個)</span></button>
+          <div class="refine-row">
+            <button class="btn" id="refine5Btn" onclick="refineElement(5)"><span id="refine5Text"></span></button>
+            <button class="btn" id="refine10Btn" onclick="refineElement(10)"><span id="refine10Text"></span></button>
+          </div>
+        </div>
+
+        <div class="card card-inv">
+          <div class="card-title">📦 所持元素コレクション</div>
+          <div class="inventory-list" id="inventory-box"></div>
+        </div>
+
+        <div class="tb-guide-card">
+          <img src="navtb.png" alt="テルビウム" class="tb-avatar-circle" onerror="this.src='chara0_Tb.png'">
+          <div class="tb-speech-bubble">
+            掘削物を精製して<span class="highlight-material">レアアースの素材</span>を作ったら、次はそれらを材料に<span class="highlight-product">工業製品</span>をつくってみよう
+          </div>
+        </div>
+
+        <div class="action-stack">
+          <button class="btn-next-step" onclick="goToFactory()">🏭 製造工場にすすむ</button>
+          <button class="btn-recycle-shortcut" onclick="goToRecycle()">♻️ お金が足りない場合はリサイクル工場で働く</button>
+        </div>
+      </div>
+
+      <!-- 避難訓練ミニゲームエリア -->
+      <div id="minigameContainer">
+        <div class="status-panel">
+          <span>安全確認: <span id="pairs">0</span> / 8組</span>
+          <span>⏱️ 経過: <span id="time">0</span>秒 | ミス: <span id="miss">0</span>回</span>
+        </div>
+
+        <div id="messageBanner" class="message-banner">
+          各エリアのドアを開けて安全を確認しよう
+        </div>
+
+        <!-- 🚪 緊急脱出ボタン -->
+        <button class="btn" style="background:#e94560; margin-top:0; padding:0.4rem; font-size:0.8rem;" onclick="emergencyEscape()">
+          🏃 緊急脱出（マップに戻る ※報酬なし）
+        </button>
+
+        <div class="game-area" id="gameArea"></div>
+      </div>
+    </div>
+
+    <!-- モーダル（共通） -->
+    <div id="minigameModal" class="modal-overlay" style="display: none;">
+      <div class="modal-content" id="modal-content-inner">
+      </div>
+    </div>
+
+    <!-- 下部ナビゲーション -->
+    <div class="nav">
+      <div class="nav-item" onclick="goToMap()"><span class="nav-ico">🗺️</span>マップ</div>
+      <div class="nav-item active" onclick="location.href='seisei.html'"><span class="nav-ico">🧪</span>精製</div>
+      <div class="nav-item" onclick="goToFactory()"><span class="nav-ico">🏭</span>工場</div>
+      <div class="nav-item" onclick="location.href='zukan.html'"><span class="nav-ico">📖</span>図鑑</div>
+      <div class="nav-item" onclick="location.href='home.html'"><span class="nav-ico">🏠</span>ホーム</div>
+    </div>
+  </div>
+
+
+  <script src="areaconfig.js"></script>
+  <script>
+    ['gesturestart', 'gesturechange', 'gestureend'].forEach(ev =>
+      document.addEventListener(ev, e => e.preventDefault())
+    );
+    document.addEventListener('dblclick', e => e.preventDefault());
+    
+    let savedData = JSON.parse(localStorage.getItem('rareEarthGameState'));
+    let gameState = savedData || {
+      money: 1500,
+      level: 1,
+      exp: 0,
+      mudStock: 5,
+      elements: {}
+    };
+
+    if (gameState.exp === undefined) gameState.exp = 0;
+
+    const bgm = document.getElementById('bgm');
+    const bgmHinan = document.getElementById('bgm-hinan');
+    const bgmBtn = document.getElementById('bgm-btn');
+    bgm.volume = 0.3;
+    bgmHinan.volume = 0.3;
+
+    let isMuted = localStorage.getItem('bgmMutedSeisei') === 'true';
+
+    function updateBgmUI() {
+      if (isMuted) {
+        bgm.muted = true;
+        bgmHinan.muted = true;
+        bgmBtn.innerText = '🔇 OFF';
+        bgmBtn.classList.add('muted');
+      } else {
+        bgm.muted = false;
+        bgmHinan.muted = false;
+        bgmBtn.innerText = '🎵 ON';
+        bgmBtn.classList.remove('muted');
+      }
+    }
+
+    function toggleBGM() {
+      isMuted = !isMuted;
+      localStorage.setItem('bgmMutedSeisei', isMuted);
+      updateBgmUI();
+      let activeBgm = document.getElementById('minigameContainer').style.display === 'flex' ? bgmHinan : bgm;
+      if (!isMuted) {
+        activeBgm.play().catch(() => {});
+      } else {
+        bgm.pause();
+        bgmHinan.pause();
+      }
+    }
+
+    function startBgmOnFirstInteraction() {
+      updateBgmUI();
+      if (!isMuted) {
+        bgm.play().then(() => {
+          document.removeEventListener('click', startBgmOnFirstInteraction);
+          document.removeEventListener('touchstart', startBgmOnFirstInteraction);
+        }).catch(err => {});
+      }
+    }
+
+    window.addEventListener('load', () => {
+      updateBgmUI();
+      if (!isMuted) {
+        bgm.play().catch(() => {
+          document.addEventListener('click', startBgmOnFirstInteraction);
+          document.addEventListener('touchstart', startBgmOnFirstInteraction);
+        });
+      }
+    });
+
+    const allKeys = ['Y', 'La', 'Ce', 'Pr', 'Nd', 'Pm', 'Sm', 'Eu', 'Gd', 'Tb', 'Dy', 'Ho', 'Er', 'Tm', 'Yb', 'Lu', 'Sc'];
+    if (!gameState.elements) {
+      gameState.elements = {};
+    }
+    allKeys.forEach(k => {
+      if (gameState.elements[k] === undefined) {
+        gameState.elements[k] = 0;
+      }
+    });
+
+    const elementsMaster = {
+      'Y':  { name: 'イットリウム', symbol: 'Y', img: 'chara0_Y.png', speech: '赤色ディスプレイやセラミックで大活躍しています', type: 'heavy', atomicNumber: 39 },
+      'La': { name: 'ランタン', symbol: 'La', img: 'chara0_La.png', speech: 'カメラのレンズをピカピカにするよ', type: 'light', atomicNumber: 57 },
+      'Ce': { name: 'セリウム', symbol: 'Ce', img: 'chara0_Ce.png', speech: '車の排ガスをキレイにするお仕事はお任せください', type: 'light', atomicNumber: 58 },
+      'Pr': { name: 'プラセオジム', symbol: 'Pr', img: 'chara0_Pr.png', speech: 'ヘッドホンで音楽を聴きながらマイペースに行きます', type: 'light', atomicNumber: 59 },
+      'Nd': { name: 'ネオジム', symbol: 'Nd', img: 'chara0_Nd.png', speech: 'この強力な磁力を、いろんな製品に役立ててね', type: 'light', atomicNumber: 60 },
+      'Pm': { name: 'プロメチウム', symbol: 'Pm', img: 'chara0_Pm.png', speech: '貴重なエネルギー、大切に扱ってください', type: 'heavy', atomicNumber: 61 },
+      'Sm': { name: 'サマリウム', symbol: 'Sm', img: 'chara0_Sm.png', speech: '高温の熱さにも負けない磁石のガードを見せるよ', type: 'light', atomicNumber: 62 },
+      'Eu': { name: 'ユウロピウム', symbol: 'Eu', img: 'chara0_Eu.png', speech: '真っ赤な蛍光体として鮮やかに照らし出します', type: 'heavy', atomicNumber: 63 },
+      'Gd': { name: 'ガドリニウム', symbol: 'Gd', img: 'chara0_Gd.png', speech: '医療用MRIの造影剤や精密検査はお任せあれ', type: 'heavy', atomicNumber: 64 },
+      'Tb': { name: 'テルビウム', symbol: 'Tb', img: 'chara0_Tb.png', speech: '鮮やかな緑の光を放つディスプレイの要さ', type: 'heavy', atomicNumber: 65 },
+      'Dy': { name: 'ジスプロシウム', symbol: 'Dy', img: 'chara0_Dy.png', speech: 'ハイブリッドカーのモーターを支えるタフなやつさ', type: 'heavy', atomicNumber: 66 },
+      'Ho': { name: 'ホルミウム', symbol: 'Ho', img: 'chara0_Ho.png', speech: '正確無比な医療用レーザーをしっかりサポートします', type: 'heavy', atomicNumber: 67 },
+      'Er': { name: 'エルビウム', symbol: 'Er', img: 'chara0_Er.png', speech: '光ファイバーアンプで通信を遠くまで届けます', type: 'heavy', atomicNumber: 68 },
+      'Tm': { name: 'ツリウム', symbol: 'Tm', img: 'chara0_Tm.png', speech: '持ち運べるポータブルX線源として活躍するよ', type: 'heavy', atomicNumber: 69 },
+      'Yb': { name: 'イッテルビウム', symbol: 'Yb', img: 'chara0_Yb.png', speech: '超正確な原子時計で時を刻む最新科学の要です', type: 'heavy', atomicNumber: 70 },
+      'Lu': { name: 'ルテチウム', symbol: 'Lu', img: 'chara0_Lu.png', speech: 'がん診断のPETスキャンで輝く最も重いレアアースよ', type: 'heavy', atomicNumber: 71 },
+      'Sc': { name: 'スカンジウム', symbol: 'Sc', img: 'chara0_Sc.png', speech: '軽くて強い、航空宇宙や合金の未来を切り拓くよ', type: 'light', atomicNumber: 21 }
+    };
+
+    const periodicTableAll = [
+      { name: '水素', symbol: 'H', num: 1 }, { name: 'ヘリウム', symbol: 'He', num: 2 }, { name: '炭素', symbol: 'C', num: 6 }, 
+      { name: '窒素', symbol: 'N', num: 7 }, { name: '酸素', symbol: 'O', num: 8 }, { name: 'ナトリウム', symbol: 'Na', num: 11 }, 
+      { name: 'マグネシウム', symbol: 'Mg', num: 12 }, { name: 'アルミニウム', symbol: 'Al', num: 13 }, { name: 'ケイ素', symbol: 'Si', num: 14 }, 
+      { name: 'リン', symbol: 'P', num: 15 }, { name: '硫黄', symbol: 'S', num: 16 }, { name: '塩素', symbol: 'Cl', num: 17 }, 
+      { name: 'カリウム', symbol: 'K', num: 19 }, { name: 'カルシウム', symbol: 'Ca', num: 20 }, { name: 'チタン', symbol: 'Ti', num: 22 }, 
+      { name: '鉄', symbol: 'Fe', num: 26 }, { name: '銅', symbol: 'Cu', num: 29 }, { name: '亜鉛', symbol: 'Zn', num: 30 }, 
+      { name: 'ガリウム', symbol: 'Ga', num: 31 }, { name: '銀', symbol: 'Ag', num: 47 }, { name: 'スズ', symbol: 'Sn', num: 50 }, 
+      { name: '金', symbol: 'Au', num: 79 }, { name: '水銀', symbol: 'Hg', num: 80 }, { name: '鉛', symbol: 'Pb', num: 82 }, 
+      { name: 'ウラン', symbol: 'U', num: 92 }, { name: 'プルトニウム', symbol: 'Pu', num: 94 }
+    ];
+
+    function updateUI() {
+      document.getElementById('money').innerText = gameState.money.toLocaleString();
+      document.getElementById('level').innerText = gameState.level;
+      document.getElementById('exp').innerText = (gameState.exp || 0).toLocaleString();
+      document.getElementById('mud').innerText = gameState.mudStock;
+
+      updateRefineButtons();
+      updateMudMix();
+
+      const invBox = document.getElementById('inventory-box');
+      invBox.innerHTML = '';
+      
+      let hasItem = false;
+      for (let key in gameState.elements) {
+        if (gameState.elements[key] > 0) {
+          hasItem = true;
+          const div = document.createElement('div');
+          div.className = 'inv-item';
+          div.innerText = `🔹 ${elementsMaster[key].name}: ${gameState.elements[key]}個`;
+          invBox.appendChild(div);
+        }
+      }
+      if (!hasItem) {
+        invBox.innerHTML = '<div style="grid-column: span 2; text-align: center; color: #8a8a8a; padding: 0.375rem 0;">まだ元素がありません。精製しよう</div>';
+      }
+    }
+
+    function getRandomElementKey() {
+      const keys = Object.keys(elementsMaster);
+      let pool = [];
+      keys.forEach(k => {
+        if (elementsMaster[k].type === 'light') {
+          pool.push(k, k, k);
+        } else {
+          pool.push(k);
+        }
+      });
+      return pool[Math.floor(Math.random() * pool.length)];
+    }
+
+    // ═══ 工場の自動アップグレード（費用なし）═══
+    // Lv7 で「5個まとめ精製」、Lv15 で「10個まとめ精製」が自動で解放され、
+    // 施設担当のイッテルビウムが報告に来る。お金は必要ない。
+    const REFINE_MODES = {
+      1:  { cost: 50,  mud: 1,  unlockLv: 1,  hinanRate: 0.015, label: '精製する' },
+      5:  { cost: 150, mud: 5,  unlockLv: 7,  hinanRate: 0.03,  label: '5個まとめて精製' },
+      10: { cost: 300, mud: 10, unlockLv: 15, hinanRate: 0.03,  label: '10個まとめて精製' }
+    };
+    const HIGHLOW_RATE_SINGLE = 0.10;   // 単発のハイ＆ロー発生率
+    const HIGHLOW_RATE_PER_5  = 0.50;   // 5個ぶんあたりの発生率（単発の×5）。10個なら5個ぶんを2回判定
+    const ER_EVENT_RATE = 0.12;         // カード1枚あたり（Lv15以上）
+    const HO_EVENT_RATE = 0.08;         // カード1枚あたり
+    const BASE_EXP_PER_ITEM = 150;      // 元素1個あたりの獲得EXP
+
+    const FACTORY_REPORTS = [
+      { lv: 7,
+        title: '工場が自動アップグレード！',
+        text: 'レベル7に到達したので、工場を自動でアップグレードしました。費用はいただきません！\n\n✨ 新機能：5個まとめて精製（150G）\n5つの元素がカードになって出てきます。まとめて精製すると、特別なイベントも起きやすくなりますよ。' },
+      { lv: 15,
+        title: '工場がさらにアップグレード！',
+        text: 'レベル15に到達したので、工場をさらに自動アップグレードしました。今回も費用はいただきません！\n\n✨ 新機能：10個まとめて精製（300G）\n10枚のカードが一度に出てきます。' }
+    ];
+
+    function isModeUnlocked(n) {
+      return (gameState.level || 1) >= REFINE_MODES[n].unlockLv;
+    }
+
+    function updateRefineButtons() {
+      const lv = gameState.level || 1;
+      [5, 10].forEach(n => {
+        const cfg = REFINE_MODES[n];
+        const btn = document.getElementById('refine' + n + 'Btn');
+        const txt = document.getElementById('refine' + n + 'Text');
+        if (!btn || !txt) return;
+        if (lv >= cfg.unlockLv) {
+          btn.classList.remove('btn-locked');
+          txt.innerHTML = `🎴 ${n}個まとめて<br>${cfg.cost}G / 掘削物${cfg.mud}個`;
+        } else {
+          btn.classList.add('btn-locked');
+          txt.innerHTML = `🔒 ${n}個まとめて<br>Lv${cfg.unlockLv}で解放`;
+        }
+      });
+    }
+
+    // 掘削物の産地配合バー（出やすい元素の目安つき）
+    function updateMudMix() {
+      const box = document.getElementById('mud-mix');
+      if (!box) return;
+      const comp = RE.composition(gameState);
+      if (!comp.length) {
+        box.innerHTML = '<div class="mix-title">⛏️ 掘削物がありません。マップで掘りに行こう</div>';
+        return;
+      }
+      const bar = comp.map(c => `<span style="width:${c.pct}%;background:${RE.AREAS[c.id] ? RE.AREAS[c.id].color : '#7f8c8d'}"></span>`).join('');
+      const legend = comp.slice(0, 3).map(c => `<span class="mix-chip">${RE.flagHTML(c.id, 'mix-flag')}${RE.areaShort(c.id)} ${Math.round(c.pct)}%</span>`).join('')
+        + (comp.length > 3 ? '<span class="mix-chip">ほか</span>' : '');
+      const top = RE.expectedElements(gameState, 3).map(k => elementsMaster[k].name).join('・');
+      box.innerHTML = `<div class="mix-title">⛏️ 掘削物の産地</div><div class="mix-bar">${bar}</div><div class="mix-legend">${legend}</div><div class="mix-top">出やすい元素：${top}</div>`;
+    }
+
+    // 未報告のアップグレードがあればイッテルビウムの報告を出す（出したら true）
+    function checkFactoryReports() {
+      if (!gameState.factoryReports) gameState.factoryReports = {};
+      const lv = gameState.level || 1;
+      for (const r of FACTORY_REPORTS) {
+        if (lv >= r.lv && !gameState.factoryReports[r.lv]) {
+          gameState.factoryReports[r.lv] = true;
+          localStorage.setItem('rareEarthGameState', JSON.stringify(gameState));
+          showFactoryReport(r);
+          return true;
+        }
+      }
+      return false;
+    }
+
+    function showFactoryReport(r) {
+      const se = document.getElementById('se-hakusyu');
+      if (se) { se.currentTime = 0; se.play().catch(e => {}); }
+      const content = document.getElementById('modal-content-inner');
+      content.innerHTML = `
+        <div style="font-size: 0.95rem; font-weight: bold; color: #ffde59; margin-bottom: 0.4rem;">⚙️ ${r.title}</div>
+        <div style="background: #ffffff; border: 2px solid #ffde59; border-radius: 0.5rem; padding: 0.4rem; margin-bottom: 0.5rem; text-align: center;">
+          <img src="chara0_Yb.png" style="width: 5rem; height: 5rem; object-fit: contain;" alt="イッテルビウム" onerror="this.src='chara0_Y.png'">
+        </div>
+        <div style="font-size: 0.8rem; color: #f1f5f9; background: rgba(15,23,42,0.8); border: 1px solid #00fff5; border-radius: 0.5rem; padding: 0.5rem; margin-bottom: 0.7rem; text-align: left; line-height: 1.5; font-weight: 500; white-space: pre-line;">施設担当のイッテルビウムです。\n${r.text}</div>
+        <button class="btn" style="margin-top:0; background:#00fff5; color:#0f3460;" onclick="afterFactoryReport()">確認</button>
+      `;
+      document.getElementById('minigameModal').style.display = 'flex';
+      updateUI();
+    }
+
+    // 報告が複数たまっている場合は続けて報告する
+    function afterFactoryReport() {
+      closeMinigameModal();
+      setTimeout(checkFactoryReports, 150);
+    }
+
+    function showLockedModal(n) {
+      const cfg = REFINE_MODES[n];
+      const content = document.getElementById('modal-content-inner');
+      content.innerHTML = `
+        <div style="background: #ffffff; border: 2px solid #ffde59; border-radius: 0.5rem; padding: 0.4rem; margin-bottom: 0.5rem; text-align: center;">
+          <img src="chara0_Yb.png" style="width: 4.5rem; height: 4.5rem; object-fit: contain;" alt="イッテルビウム" onerror="this.src='chara0_Y.png'">
+        </div>
+        <div style="font-size: 0.82rem; color: #f1f5f9; margin-bottom: 0.8rem; line-height: 1.5;">
+          施設担当のイッテルビウムです。<br>
+          レベル${cfg.unlockLv}になると、工場が自動でアップグレードされて<br>「${cfg.label}」が使えるようになります。<br>
+          <span style="color:#dcdde1;">（いまのレベル：${gameState.level || 1}）</span>
+        </div>
+        <button class="btn" style="margin-top:0;" onclick="closeMinigameModal()">閉じる</button>
+      `;
+      document.getElementById('minigameModal').style.display = 'flex';
+    }
+
+    // メイン画面のキャラ表示を更新
+    function updateMainDisplay(key, nameText, areaId) {
+      const chip = document.getElementById('origin-chip');
+      if (chip) {
+        if (areaId) { chip.innerHTML = RE.originHTML(areaId); chip.style.display = 'flex'; }
+        else { chip.style.display = 'none'; }
+      }
+      const picked = elementsMaster[key];
+      const imgEl = document.getElementById('chara-img');
+      imgEl.src = picked.img;
+      imgEl.alt = picked.name;
+      document.getElementById('chara-name').innerText = nameText;
+      document.getElementById('chara-speech').innerText = picked.speech;
+      imgEl.classList.remove('pop-anim');
+      void imgEl.offsetWidth;
+      imgEl.classList.add('pop-anim');
+    }
+
+    // 元素を所持品に加える（ハイ＆ローの結果反映にも使用）
+    function grantElement(key, count) {
+      gameState.elements[key] = (gameState.elements[key] || 0) + count;
+      updateMainDisplay(key, `✨ ${elementsMaster[key].name} (${key}) を精製 【${count}個獲得】`, hlArea);
+      hlArea = null;
+      localStorage.setItem('rareEarthGameState', JSON.stringify(gameState));
+      updateUI();
+    }
+
+    // ═══ 精製後イベントの順番待ち（ハイ＆ロー → エルビウム／ホルミウム）═══
+    let pendingEvents = [];
+    let hlArea = null;   // ハイ＆ローの対象カードの産地
+    function runNextEvent() {
+      const ev = pendingEvents.shift();
+      if (!ev) return;
+      if (ev.type === 'hinan') showHinanModal();
+      else if (ev.type === 'highlow') { hlArea = ev.area || null; showHighLowMinigame(ev.key); }
+      else if (ev.type === 'er') showErBreakoutModal();
+      else if (ev.type === 'ho') showHoBilliardsModal();
+    }
+    function finishEvent() {
+      rfxClear();
+      closeMinigameModal();
+      setTimeout(runNextEvent, 150);
+    }
+
+    // ハイ＆ローの対象になるカード（チャンスカード）を抽選して、その番号を返す
+    function rollHighLowCards(n) {
+      let count = 0;
+      if (n === 1) {
+        if (Math.random() < HIGHLOW_RATE_SINGLE) count = 1;
+      } else {
+        for (let b = 0; b < n / 5; b++) {
+          if (Math.random() < HIGHLOW_RATE_PER_5) count++;
+        }
+      }
+      const idx = Array.from({ length: n }, (_, i) => i);
+      for (let i = idx.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [idx[i], idx[j]] = [idx[j], idx[i]];
+      }
+      return idx.slice(0, count);
+    }
+
+    // エルビウム／ホルミウムのイベント抽選（出た枚数が多いほど起きやすい）
+    function rollSideEvent(cards) {
+      const lv = gameState.level || 1;
+      const erN = lv >= 15 ? cards.filter(k => k === 'Er').length : 0;
+      const hoN = cards.filter(k => k === 'Ho').length;
+      const erHit = erN > 0 && Math.random() < 1 - Math.pow(1 - ER_EVENT_RATE, erN);
+      const hoHit = hoN > 0 && Math.random() < 1 - Math.pow(1 - HO_EVENT_RATE, hoN);
+      if (erHit && hoHit) return Math.random() < 0.5 ? 'er' : 'ho';
+      return erHit ? 'er' : (hoHit ? 'ho' : null);
+    }
+
+    // ═══ 精製演出（酸化物／インゴット。素材画像は katachi_<元素記号>_oxide|ingot.png、無い元素はYの画像で代用） ═══
+    const rfxT = (x, y, sc = 1, r = 0) => `translate(${x}px, ${y}px) translate(-50%, -50%) scale(${sc}) rotate(${r}deg)`;
+    function rfxImg(host, key, kind, wp) {
+      const i = new Image(); i.className = 'rfx-spr'; i.style.width = wp + '%';
+      i.onerror = () => { i.onerror = null; i.src = `katachi_Y_${kind}.png`; };
+      i.src = `katachi_${key}_${kind}.png`; host.appendChild(i); return i;
+    }
+    function rfxBurst(host, x, y, n) {
+      for (let i = 0; i < n; i++) {
+        const e = document.createElement('span'); e.className = 'rfx-sp'; e.textContent = i % 2 ? '⭐' : '✨';
+        e.style.fontSize = (12 + Math.random() * 10) + 'px'; host.appendChild(e);
+        const a = Math.random() * 6.283, r = 30 + Math.random() * 50;
+        e.animate([{ transform: rfxT(x, y, .3), opacity: 1 }, { transform: rfxT(x + Math.cos(a) * r, y + Math.sin(a) * r - 15, 1, 200), opacity: 1, offset: .6 }, { transform: rfxT(x + Math.cos(a) * r * 1.2, y + Math.sin(a) * r + 8, .4, 360), opacity: 0 }], { duration: 650, easing: 'ease-out' }).onfinish = () => e.remove();
+      }
+    }
+    function rfxRing(host, x, y, c) {
+      const e = document.createElement('div');
+      e.style.cssText = `position:absolute;left:0;top:0;width:60px;height:60px;border:4px solid ${c};border-radius:50%;pointer-events:none`;
+      host.appendChild(e);
+      e.animate([{ transform: rfxT(x, y, .3), opacity: .9 }, { transform: rfxT(x, y, 2.8), opacity: 0 }], { duration: 520, easing: 'ease-out' }).onfinish = () => e.remove();
+    }
+    function rfxGlow(host, x, y) {
+      const e = document.createElement('div');
+      e.style.cssText = `position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at ${x}px ${y}px,#fff,#ffb347 22%,#ff5e3a44 45%,#0000 68%)`;
+      host.appendChild(e);
+      e.animate([{ opacity: 0 }, { opacity: .8, offset: .25 }, { opacity: 0 }], { duration: 320 }).onfinish = () => e.remove();
+    }
+    function rfxWord(host, x, y, t, big) {
+      const e = document.createElement('div'); e.className = 'rfx-word'; e.textContent = t;
+      if (big) e.style.fontSize = '1.9rem'; host.appendChild(e);
+      e.animate([{ transform: rfxT(x, y, .4), opacity: 0 }, { transform: rfxT(x, y - 14, 1.2), opacity: 1, offset: .3 }, { transform: rfxT(x, y - 36, 1), opacity: 0 }], { duration: big ? 1200 : 800, easing: 'ease-out' }).onfinish = () => e.remove();
+    }
+    function rfxPath(pts, hs, wts) {
+      const f = [], W = wts.reduce((a, b) => a + b); let acc = 0;
+      pts.slice(1).forEach((p, i) => {
+        const a = pts[i];
+        for (let k = i ? 1 : 0; k <= 8; k++) { const t = k / 8; f.push({ offset: (acc + wts[i] * t) / W, transform: rfxT(a.x + (p.x - a.x) * t, a.y + (p.y - a.y) * t - 4 * hs[i] * t * (1 - t), 1, a.r + (p.r - a.r) * t) }); }
+        acc += wts[i];
+      });
+      return f;
+    }
+    // 1個：キャラの脇に、酸化物かインゴットがコロンと飛び出る（回転は360度の倍数で正立着地）
+    function rfxOne(key) {
+      const host = document.getElementById('rfx-one'); host.innerHTML = '';
+      const r = host.getBoundingClientRect(), w = r.width, h = r.height, d = Math.random() < .5 ? -1 : 1;
+      const x0 = w / 2 + d * w * .14, y0 = h * .5, gx = w / 2 + d * w * (.28 + Math.random() * .08), gy = h * (.76 + Math.random() * .06);
+      const n = rfxImg(host, key, Math.random() < .5 ? 'oxide' : 'ingot', 17);
+      const pts = [{ x: x0, y: y0, r: 0 }, { x: gx, y: gy, r: d * 360 }, { x: gx + d * w * .04, y: gy, r: d * 360 }, { x: gx + d * w * .06, y: gy, r: d * 360 }];
+      n.animate(rfxPath(pts, [h * .3, h * .1, h * .035], [.5, .3, .2]), { duration: 1000, easing: 'linear', fill: 'forwards' });
+      rfxBurst(host, x0, y0, 3);
+      setTimeout(() => { rfxBurst(host, gx, gy - 12, 3); rfxWord(host, gx, gy - 40, '+1個精製！'); }, 500);
+      clearTimeout(host._t); host._t = setTimeout(() => { host.innerHTML = ''; }, 2300);
+    }
+    // 5・10個：画面上端の帯（モーダルより手前）。結果はランダムで酸化物のまま／インゴットに変身
+    function rfxMulti(cards) {
+      const band = document.getElementById('rfx-band'); band.innerHTML = ''; band.style.display = 'block';
+      document.getElementById('minigameModal').classList.add('with-band');
+      const n = cards.length, gap = n === 5 ? 150 : 85, r = band.getBoundingClientRect(), w = r.width, h = r.height;
+      const slot = i => ({ x: w * (.5 + (i - (n - 1) / 2) * (n > 5 ? .095 : .15)), y: h * .8 });
+      cards.forEach((k, i) => setTimeout(() => {
+        const cx = w / 2, cy = h * .36, ox = rfxImg(band, k, 'oxide', 13), asOxide = Math.random() < .5;
+        const land = el => { const p = slot(i); el.animate([{ transform: rfxT(cx, cy, 1, 0) }, { transform: rfxT(p.x, p.y, .55, 0) }], { duration: 420, delay: 60, easing: 'cubic-bezier(.5,0,.3,1)', fill: 'forwards' }); };
+        ox.animate([{ transform: rfxT(cx, -h * .2, .8, -10), opacity: 0 }, { transform: rfxT(cx, cy, 1, 0), opacity: 1 }], { duration: 420, easing: 'cubic-bezier(.5,0,1,.6)', fill: 'forwards' }).onfinish = () => {
+          if (asOxide) {
+            rfxRing(band, cx, cy, '#fff'); rfxBurst(band, cx, cy, 3);
+            ox.animate([{ transform: rfxT(cx, cy, 1) }, { transform: rfxT(cx, cy, 1.2) }, { transform: rfxT(cx, cy, 1) }], { duration: 250 }).onfinish = () => land(ox);
+            return;
+          }
+          ox.remove(); rfxGlow(band, cx, cy); rfxRing(band, cx, cy, '#ffb347'); rfxBurst(band, cx, cy, 6);
+          const ig = rfxImg(band, k, 'ingot', 13);
+          ig.animate([{ transform: rfxT(cx, cy, .3, -12) }, { transform: rfxT(cx, cy, 1.25, 4), offset: .55 }, { transform: rfxT(cx, cy, 1, 0) }], { duration: 380, easing: 'ease-out', fill: 'forwards' }).onfinish = () => land(ig);
+        };
+      }, i * gap));
+      setTimeout(() => rfxWord(band, w / 2, h * .36, `+${n} 精製!`, true), (n - 1) * gap + 1300);
+    }
+    function rfxClear() {
+      const band = document.getElementById('rfx-band'); band.style.display = 'none'; band.innerHTML = '';
+      document.getElementById('minigameModal').classList.remove('with-band');
+    }
+    new MutationObserver(() => { if (document.getElementById('minigameModal').style.display === 'none') rfxClear(); })
+      .observe(document.getElementById('minigameModal'), { attributes: true, attributeFilter: ['style'] });
+
+    // まとめ精製のカード演出
+    function showRefineCards(cards, chanceIdx, areas) {
+      const n = cards.length;
+      const counts = {};
+      let cardsHtml = '';
+      cards.forEach((k, i) => {
+        const m = elementsMaster[k];
+        const isChance = chanceIdx.includes(i);
+        if (!isChance) counts[k] = (counts[k] || 0) + 1;
+        cardsHtml += `<div class="rc-card ${m.type === 'heavy' ? 'rc-rare' : ''} ${isChance ? 'rc-chance' : ''}" style="animation-delay:${(i * 0.12).toFixed(2)}s">
+          ${isChance ? '<div class="rc-badge">⭐</div>' : ''}
+          ${areas ? RE.flagHTML(areas[i], 'rc-flag') : ''}
+          <img src="${m.img}" alt="${m.name}" onerror="this.style.visibility='hidden'">
+          <div class="rc-sym">${m.symbol}</div>
+          <div class="rc-name">${m.name}</div>
+        </div>`;
+      });
+      const summary = Object.keys(counts).map(k => `${elementsMaster[k].name}×${counts[k]}`).join(' ');
+      const chanceNote = chanceIdx.length
+        ? `<div style="color:#ffde59; font-weight:bold; margin-top:.3rem;">⭐ ${chanceIdx.length}枚はハイ＆ローで入手数が決まるよ！</div>`
+        : '';
+      const content = document.getElementById('modal-content-inner');
+      content.innerHTML = `
+        <div style="font-size: 1rem; font-weight: bold; color: #ffde59; margin-bottom: 0.2rem;">✨ ${n}個まとめて精製 完了！</div>
+        <div class="rc-grid ${n > 5 ? 'cols-5' : 'cols-3'}">${cardsHtml}</div>
+        <div style="font-size: 0.74rem; color: #dcdde1; line-height: 1.5; margin-bottom: 0.6rem;">${summary}${chanceNote}</div>
+        <button class="btn" style="margin-top:0; background:#00fff5; color:#0f3460;" onclick="finishEvent()">${pendingEvents.length ? 'つづける ▶' : 'OK'}</button>
+      `;
+      document.getElementById('minigameModal').style.display = 'flex';
+    }
+
+    function showShortageModal(type, n = 1) {
+      const modal = document.getElementById('minigameModal');
+      const content = document.getElementById('modal-content-inner');
+
+      const requiredMoney = REFINE_MODES[n].cost;
+      const requiredMud = REFINE_MODES[n].mud;
+
+      const isMudOnlyShortage = (gameState.mudStock < requiredMud && gameState.money >= requiredMoney);
+
+      let navImg = "navtb.png";
+      let navName = "テルビウム";
+
+      let bubbleText = "";
+      let titleText = "";
+      let descText = "";
+      let actionBtnHTML = "";
+
+      if (isMudOnlyShortage) {
+        titleText = "掘削物が足りません";
+        bubbleText = "掘削物が足りなくなっちゃったね。資金はまだあるから、MAPに行って掘削物を掘ってこよう！";
+        descText = "マップ（採掘エリア）に戻って新しい掘削物を獲得してください。";
+        actionBtnHTML = `<button class="btn" style="margin-top:0; background:#00fff5; color:#0f3460;" onclick="goToMap()">🗺️ MAPに戻る</button>`;
+      } else if (type === 'money' || gameState.money < requiredMoney) {
+        titleText = "資金が足りません";
+        bubbleText = "精製資金が足りなくなっちゃったみたい…！リサイクル工場（都市鉱山）に行って資金を稼いでこよう！";
+        descText = "リサイクル工場で不用品を分解・精製して資金を確保してください。";
+        actionBtnHTML = `<button class="btn" style="margin-top:0; background:#00fff5; color:#0f3460;" onclick="goToRecycle()">♻️ 工場へ行く</button>`;
+      } else {
+        titleText = "掘削物・資金が足りません";
+        bubbleText = "掘削物も資金も不足しているよ！まずはリサイクル工場かマップで準備を整えよう！";
+        descText = "マップで掘削物を探すか、工場で資金を集めてください。";
+        actionBtnHTML = `<button class="btn" style="margin-top:0; background:#00fff5; color:#0f3460;" onclick="goToRecycle()">♻️ 工場へ行く</button>`;
+      }
+
+      if (n > 1 && gameState.mudStock >= 1 && gameState.money >= 50) {
+        descText += '<br>（1個ずつなら、いまでも精製できます）';
+      }
+
+      content.innerHTML = `
+        <div class="guide-container" style="display:flex; align-items:center; gap:.6rem; background:rgba(22, 33, 62, 0.95); border:1px solid #00fff5; border-radius:.7rem; padding:.5rem; margin-bottom:.5rem; text-align:left;">
+          <img src="${navImg}" alt="${navName}" style="width:3rem; height:3rem; border-radius:50%; border:2px solid #00fff5; object-fit:cover; flex-shrink:0;" onerror="this.src='chara0_Tb.png'">
+          <div style="background:#f8f9fa; border:1px solid #00fff5; border-radius:.6rem; padding:.4rem .55rem; font-size:.8rem; color:#1a1a2e; font-weight:bold; flex:1; line-height:1.4;">
+            ${bubbleText}
+          </div>
+        </div>
+        <div style="font-size: 0.95rem; font-weight: bold; color: #ff4757; margin-bottom: 0.3rem;">⚠️ ${titleText}</div>
+        <div style="font-size: 0.8rem; color: #dcdde1; margin-bottom: 0.8rem; line-height: 1.4;">
+          ${descText}
+        </div>
+        <div style="display: flex; gap: 0.5rem;">
+          <button class="btn" style="margin-top:0; background:#333; color:#aaa;" onclick="closeMinigameModal()">キャンセル</button>
+          ${actionBtnHTML}
+        </div>
+      `;
+      modal.style.display = 'flex';
+    }
+
+    function goToRecycle() {
+      const se = document.getElementById('se-gogogo');
+      if (se) { se.currentTime = 0; se.play().catch(e => {}); }
+      setTimeout(() => { location.href = 'recycle.html'; }, 200);
+    }
+
+    function goToFactory() {
+      const se = document.getElementById('se-gogogo');
+      if (se) { se.currentTime = 0; se.play().catch(e => {}); }
+      setTimeout(() => { location.href = 'factory.html'; }, 200);
+    }
+
+    function goToMap() {
+      const se = document.getElementById('se-gogogo');
+      if (se) { se.currentTime = 0; se.play().catch(e => {}); }
+      setTimeout(() => { location.href = 'map.html'; }, 200);
+    }
+
+    function refineElement(n = 1) {
+      // 工場アップグレードの報告が未確認なら、先にイッテルビウムの報告を見せる
+      if (checkFactoryReports()) return;
+
+      const cfg = REFINE_MODES[n];
+      if (!cfg) return;
+      if (!isModeUnlocked(n)) { showLockedModal(n); return; }
+
+      if (gameState.mudStock < cfg.mud) { showShortageModal('mud', n); return; }
+      if (gameState.money < cfg.cost)   { showShortageModal('money', n); return; }
+
+      const soundId = Math.random() < 0.5 ? 'se-nyu1' : 'se-nyu2';
+      const se = document.getElementById(soundId);
+      if (se) { se.currentTime = 0; se.play().catch(e => {}); }
+
+      gameState.money -= cfg.cost;
+
+      // 掘削物の産地配合から n 個を引き、その産地の出現率で元素を1個ずつ抽選
+      const cardAreas = RE.drawFromBag(gameState, cfg.mud);
+      gameState.mudStock -= cfg.mud;
+      const cards = cardAreas.map(a => RE.rollElement(a));
+
+      // イベント抽選：避難訓練が最優先。それ以外はハイ＆ローとエルビウム／ホルミウムが独立に起きる
+      pendingEvents = [];
+      let chanceIdx = [];
+      if (Math.random() < cfg.hinanRate) {
+        pendingEvents.push({ type: 'hinan' });
+      } else {
+        chanceIdx = rollHighLowCards(n);
+        chanceIdx.forEach(i => pendingEvents.push({ type: 'highlow', key: cards[i], area: cardAreas[i] }));
+        const side = rollSideEvent(cards);
+        if (side) pendingEvents.push({ type: side });
+      }
+
+      // 入手処理（チャンスカードは、ハイ＆ローの結果が出るまで保留）
+      cards.forEach((k, i) => {
+        if (!chanceIdx.includes(i)) gameState.elements[k] = (gameState.elements[k] || 0) + 1;
+      });
+      const exp = BASE_EXP_PER_ITEM * n;
+      gameState.exp = (gameState.exp || 0) + exp;
+      localStorage.setItem('rareEarthGameState', JSON.stringify(gameState));
+      updateUI();
+
+      const shownIdx = Math.max(0, cards.findIndex((k, i) => !chanceIdx.includes(i)));
+      const shown = cards[shownIdx];
+
+      if (n === 1) {
+        if (chanceIdx.length === 0) {
+          updateMainDisplay(shown, `✨ ${elementsMaster[shown].name} (${shown}) を精製 【1個獲得 (+${exp} EXP)】`, cardAreas[0]);
+          rfxOne(shown);
+        }
+        setTimeout(runNextEvent, 300);
+      } else {
+        updateMainDisplay(shown, `✨ ${n}個まとめて精製 【+${exp} EXP】`, null);
+        showRefineCards(cards, chanceIdx, cardAreas);
+        rfxMulti(cards);
+      }
+    }
+
+    window.addEventListener('load', () => setTimeout(checkFactoryReports, 400));
+
+    function showErBreakoutModal() {
+      const modal = document.getElementById('minigameModal');
+      const content = document.getElementById('modal-content-inner');
+      const erData = elementsMaster['Er'];
+
+      content.innerHTML = `
+        <div style="font-size: 1.1rem; font-weight: bold; color: #ffde59; margin-bottom: 0.4rem;">✨ エルビウムの美肌ブロック崩し発生</div>
+        
+        <div style="background: #ffffff; border: 2px solid #ffde59; border-radius: 0.5rem; padding: 0.4rem; margin-bottom: 0.5rem; text-align: center;">
+          <img src="${erData.img}" style="width: 5rem; height: 5rem; object-fit: contain;" alt="${erData.name}" onerror="this.src='chara0_Er.png'">
+        </div>
+
+        <div style="font-size: 0.8rem; color: #f1f5f9; background: rgba(15,23,42,0.8); border: 1px solid #00fff5; border-radius: 0.5rem; padding: 0.5rem; margin-bottom: 0.7rem; text-align: left; line-height: 1.4; font-weight: bold;">
+          「光ファイバーアンプで通信を遠くまで届けるわ。特別に美肌ブロック崩しで遊んでいかない？」
+        </div>
+
+        <div style="display: flex; gap: 0.5rem;">
+          <button class="btn" style="margin-top:0; background:#333; color:#aaa;" onclick="closeMinigameModal()">あとで</button>
+          <button class="btn" style="margin-top:0; background:#00fff5; color:#0f3460;" onclick="startErBreakout()">🎮 チャレンジする</button>
+        </div>
+      `;
+      modal.style.display = 'flex';
+    }
+
+    function startErBreakout() {
+      const se = document.getElementById('se-gogogo');
+      if (se) { se.currentTime = 0; se.play().catch(e => {}); }
+      setTimeout(() => { location.href = 'erbium_breakout.html'; }, 200);
+    }
+
+    function showHoBilliardsModal() {
+      const modal = document.getElementById('minigameModal');
+      const content = document.getElementById('modal-content-inner');
+      const hoData = elementsMaster['Ho'];
+
+      content.innerHTML = `
+        <div style="font-size: 1.1rem; font-weight: bold; color: #ffde59; margin-bottom: 0.4rem;">🎯 ホルミウム・ビリヤード発生</div>
+        
+        <div style="background: #ffffff; border: 2px solid #ffde59; border-radius: 0.5rem; padding: 0.4rem; margin-bottom: 0.5rem; text-align: center;">
+          <img src="${hoData.img}" style="width: 5rem; height: 5rem; object-fit: contain;" alt="${hoData.name}" onerror="this.src='chara0_Ho.png'">
+        </div>
+
+        <div style="font-size: 0.8rem; color: #f1f5f9; background: rgba(15,23,42,0.8); border: 1px solid #00fff5; border-radius: 0.5rem; padding: 0.5rem; margin-bottom: 0.7rem; text-align: left; line-height: 1.4; font-weight: bold;">
+          「正確無比な医療用レーザーをしっかりサポートします。よし、ビリヤードの腕前も披露しちゃうよ」
+        </div>
+
+        <div style="display: flex; gap: 0.5rem;">
+          <button class="btn" style="margin-top:0; background:#333; color:#aaa;" onclick="closeMinigameModal()">あとで</button>
+          <button class="btn" style="margin-top:0; background:#00fff5; color:#0f3460;" onclick="startHoBilliards()">🎮 チャレンジする</button>
+        </div>
+      `;
+      modal.style.display = 'flex';
+    }
+
+    function startHoBilliards() {
+      const se = document.getElementById('se-gogogo');
+      if (se) { se.currentTime = 0; se.play().catch(e => {}); }
+      setTimeout(() => { location.href = 'ho_billiards.html'; }, 200);
+    }
+
+    function showHinanModal() {
+      const modal = document.getElementById('minigameModal');
+      const content = document.getElementById('modal-content-inner');
+
+      content.innerHTML = `
+        <div style="font-size: 1.8rem;">🚨</div>
+        <div style="font-size: 1rem; font-weight: bold; color: #00fff5; margin: 0.3rem 0;">【緊急警報】セキュリティ訓練</div>
+        
+        <div style="font-size: 0.78rem; color: #dcdde1; text-align: left; line-height: 1.4; margin-bottom: 0.4rem; background: rgba(15,23,42,0.8); padding: 0.4rem; border-radius: 0.4rem;">
+          本日は緊急避難訓練を実施します。各エリアに点在しているスタッフのペアを確認し、全員の安全を確保してください。
+        </div>
+
+        <div style="margin: 0.3rem 0; text-align: center;">
+          <img src="chara_Pm.png" alt="案内スタッフ" style="width: 5rem; height: 5rem; object-fit: contain;" onerror="this.src='chara0_Pm.png'">
+        </div>
+
+        <button class="btn" style="background: #00fff5; color: #0f3460; font-size: 0.85rem; padding: 0.6rem; margin-top: 0.4rem;" onclick="startHinanMinigame()">
+          🚀 訓練を開始する
+        </button>
+
+        <div style="margin-top: 0.5rem; text-align: center;">
+          <span style="font-size: 0.72rem; color: #64748b; cursor: pointer; text-decoration: underline; opacity: 0.8; display: inline-block; padding: 0.4rem;" onclick="closeMinigameModal()">
+            …またの機会にします
+          </span>
+        </div>
+      `;
+      modal.style.display = 'flex';
+    }
+
+    let hinanFlippedCards = [];
+    let hinanMatchedPairs = 0;
+    let hinanMissCount = 0;
+    let hinanSeconds = 0;
+    let hinanTimerInterval = null;
+    let hinanIsLocked = false;
+
+    function startHinanMinigame() {
+      closeMinigameModal();
+      document.getElementById('refineryMain').style.display = 'none';
+      document.getElementById('minigameContainer').style.display = 'flex';
+
+      if (!isMuted) {
+        bgm.pause();
+        bgmHinan.currentTime = 0;
+        bgmHinan.play().catch(e => {});
+      }
+
+      hinanSeconds = 0;
+      hinanMatchedPairs = 0;
+      hinanMissCount = 0;
+      document.getElementById('pairs').innerText = hinanMatchedPairs;
+      document.getElementById('time').innerText = hinanSeconds;
+      document.getElementById('miss').innerText = hinanMissCount;
+      document.getElementById('messageBanner').innerText = "各エリアのドアを開けて安全を確認しよう";
+
+      if (hinanTimerInterval) clearInterval(hinanTimerInterval);
+      hinanTimerInterval = setInterval(() => {
+        hinanSeconds++;
+        document.getElementById('time').innerText = hinanSeconds;
+      }, 1000);
+
+      initHinanBoard();
+    }
+
+    function emergencyEscape() {
+      if (hinanTimerInterval) clearInterval(hinanTimerInterval);
+
+      bgmHinan.pause();
+      if (!isMuted) {
+        bgm.currentTime = 0;
+        bgm.play().catch(e => {});
+      }
+
+      location.href = 'map.html';
+    }
+
+    function initHinanBoard() {
+      const gameArea = document.getElementById('gameArea');
+      gameArea.innerHTML = '';
+
+      let shuffledChars = [...allKeys].sort(() => 0.5 - Math.random());
+      let selectedChars = shuffledChars.slice(0, 8);
+
+      let cardArray = [...selectedChars, ...selectedChars];
+      cardArray.sort(() => 0.5 - Math.random());
+
+      cardArray.forEach((charName) => {
+        const card = document.createElement('div');
+        card.className = 'card-door';
+        card.dataset.char = charName;
+
+        card.innerHTML = `
+          <img class="chara-img" src="chara0_${charName}.png" alt="${charName}" onerror="this.src='chara0_Y.png'">
+          <img class="card-back" src="card_back.png" alt="ドア" onerror="this.outerHTML='<div style=\\\'font-size:16px; color:#00fff5;\\\'>🚪</div>'">
+        `;
+
+        card.addEventListener('click', () => flipHinanCard(card));
+        gameArea.appendChild(card);
+      });
+    }
+
+    function flipHinanCard(card) {
+      if (hinanIsLocked) return;
+      if (card.classList.contains('flipped') || card.classList.contains('matched')) return;
+
+      const seType = document.getElementById('se-type');
+      if (seType) { seType.currentTime = 0; seType.play().catch(e => {}); }
+
+      card.classList.add('flipped');
+      hinanFlippedCards.push(card);
+
+      if (hinanFlippedCards.length === 2) {
+        checkHinanMatch();
+      }
+    }
+
+    function checkHinanMatch() {
+      hinanIsLocked = true;
+      const [card1, card2] = hinanFlippedCards;
+      const charName = card1.dataset.char;
+      const charObj = elementsMaster[charName] || { name: charName };
+      const charFullName = charObj.name;
+
+      if (charName === card2.dataset.char) {
+        const seSeikai = document.getElementById('se-seikai');
+        if (seSeikai) { seSeikai.currentTime = 0; seSeikai.play().catch(e => {}); }
+
+        card1.classList.add('matched');
+        card2.classList.add('matched');
+        hinanMatchedPairs++;
+        document.getElementById('pairs').innerText = hinanMatchedPairs;
+        hinanFlippedCards = [];
+        hinanIsLocked = false;
+
+        const templates = [
+          `${charFullName}無事です`,
+          `${charFullName}、ペア確認できました`,
+          `${charFullName}いまいます`,
+          `${charFullName}無事です`
+        ];
+        const randomMsg = templates[Math.floor(Math.random() * templates.length)];
+
+        if (hinanMatchedPairs === 8) {
+          document.getElementById('messageBanner').innerText = "安全ヨシ。お疲れ様でした";
+          if (hinanTimerInterval) clearInterval(hinanTimerInterval);
+          setTimeout(endHinanMinigame, 1500);
+        } else {
+          document.getElementById('messageBanner').innerText = randomMsg;
+        }
+
+      } else {
+        hinanMissCount++;
+        document.getElementById('miss').innerText = hinanMissCount;
+
+        setTimeout(() => {
+          card1.classList.remove('flipped');
+          card2.classList.remove('flipped');
+          hinanFlippedCards = [];
+          hinanIsLocked = false;
+        }, 800);
+      }
+    }
+
+    function endHinanMinigame() {
+      if (hinanTimerInterval) clearInterval(hinanTimerInterval);
+
+      bgmHinan.pause();
+      if (!isMuted) {
+        bgm.currentTime = 0;
+        bgm.play().catch(e => {});
+      }
+
+      let earnedReward = Math.max(400, 1200 - (hinanSeconds * 10) - (hinanMissCount * 30));
+      gameState.money += earnedReward;
+      localStorage.setItem('rareEarthGameState', JSON.stringify(gameState));
+      updateUI();
+
+      const modal = document.getElementById('minigameModal');
+      const content = document.getElementById('modal-content-inner');
+
+      content.innerHTML = `
+        <div style="font-size: 1.8rem;">✨</div>
+        <div style="font-size: 1rem; font-weight: bold; color: #00fff5; margin: 0.3rem 0;">安全確認完了</div>
+        
+        <div style="background: rgba(15,23,42,0.8); border: 1px solid #00fff5; border-radius: 0.5rem; padding: 0.5rem; margin: 0.5rem 0; font-size: 0.78rem; text-align: left; display: flex; flex-direction: column; gap: 0.3rem;">
+          <div style="display: flex; justify-content: space-between;">
+            <span>⏱️ 訓練時間:</span>
+            <span style="color:#00fff5;">${hinanSeconds}秒</span>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span>❌ ミス回数:</span>
+            <span style="color:#ff4757;">${hinanMissCount}回</span>
+          </div>
+          <div style="border-top: 1px dashed #00fff5; margin-top: 2px; padding-top: 0.3rem; font-weight: bold; display: flex; justify-content: space-between;">
+            <span>💰 訓練報酬:</span>
+            <span style="color:#55ff55;">+${earnedReward.toLocaleString()} G</span>
+          </div>
+        </div>
+
+        <button class="btn" style="background: #00fff5; color: #0f3460; font-size: 0.85rem; padding: 0.6rem;" onclick="returnToRefineryMain()">
+          ✨ 精製プラントに戻る
+        </button>
+      `;
+      modal.style.display = 'flex';
+    }
+
+    function returnToRefineryMain() {
+      closeMinigameModal();
+      document.getElementById('minigameContainer').style.display = 'none';
+      document.getElementById('refineryMain').style.display = '';
+      updateUI();
+    }
+
+    function showHighLowMinigame(targetKey) {
+      const baseElement = elementsMaster[targetKey];
+      let compareCandidates = periodicTableAll.filter(e => e.num !== baseElement.atomicNumber);
+      let secretElement = compareCandidates[Math.floor(Math.random() * compareCandidates.length)];
+
+      const modal = document.getElementById('minigameModal');
+      const content = document.getElementById('modal-content-inner');
+
+      content.innerHTML = `
+        <div style="font-size: 1rem; font-weight: bold; color: #ffde59; margin-bottom: 0.4rem;">10倍チャンス・ハイ＆ロー</div>
+        
+        <div style="background: #ffffff; border: 2px solid #ffde59; border-radius: 0.5rem; padding: 0.4rem; margin-bottom: 0.5rem; text-align: center;">
+          <img src="${baseElement.img}" style="width: 4.5rem; height: 4.5rem; object-fit: contain;" alt="${baseElement.name}" onerror="this.src='chara0_Y.png'">
+        </div>
+
+        <div style="font-size: 0.78rem; color: #dcdde1; margin-bottom: 0.5rem; line-height: 1.4;">
+          次に出る元素は<strong>${baseElement.name}</strong>（原子番号：${baseElement.atomicNumber}）より、<br>
+          元素番号が<strong>【高い】</strong>か<strong>【低い】</strong>か？<br><br>
+          <span style="color:#ff4757; font-weight:bold;">※外れたら入手数は0個になります</span>
+        </div>
+
+        <div style="display: flex; gap: 0.5rem; margin-top: 0.3rem;">
+          <button class="btn" style="margin-top:0; background:#27ae60;" onclick="evalHighLow('${targetKey}', ${baseElement.atomicNumber}, '${targetKey}', ${secretElement.num}, '${secretElement.name}', '${secretElement.symbol}', 'high')">⬆️ 高い (High)</button>
+          <button class="btn" style="margin-top:0; background:#c0392b;" onclick="evalHighLow('${targetKey}', ${baseElement.atomicNumber}, '${targetKey}', ${secretElement.num}, '${secretElement.name}', '${secretElement.symbol}', 'low')">⬇️ 低い (Low)</button>
+        </div>
+      `;
+      modal.style.display = 'flex';
+    }
+
+    function evalHighLow(targetKey, baseNum, baseSymbol, secretNum, secretName, secretSymbol, playerGuess) {
+      let isActualHigh = secretNum > baseNum;
+      let playerGuessHigh = (playerGuess === 'high');
+      let isWin = (playerGuessHigh === isActualHigh);
+
+      let mult = isWin ? 10 : 0;
+      grantElement(targetKey, mult);
+
+      if (isWin) {
+        const itemGetSe = document.getElementById('se-itemget');
+        if (itemGetSe) { itemGetSe.currentTime = 0; itemGetSe.play().catch(e => {}); }
+      } else {
+        const fuseikaiSe = document.getElementById('se-fuseikai');
+        if (fuseikaiSe) { fuseikaiSe.currentTime = 0; fuseikaiSe.play().catch(e => {}); }
+      }
+
+      let leftSymbol, leftNum, rightSymbol, rightNum;
+      if (secretNum >= baseNum) {
+        leftSymbol = secretSymbol; leftNum = secretNum;
+        rightSymbol = elementsMaster[baseSymbol].symbol; rightNum = baseNum;
+      } else {
+        leftSymbol = elementsMaster[baseSymbol].symbol; leftNum = baseNum;
+        rightSymbol = secretSymbol; rightNum = secretNum;
+      }
+
+      const content = document.getElementById('modal-content-inner');
+      content.innerHTML = `
+        <div style="font-size: 1.6rem;">${isWin ? '🌟' : '💥'}</div>
+        <div style="font-size: 0.85rem; color: #00fff5; margin: 2px 0; font-weight: bold;">
+          ${secretName}が現れました
+        </div>
+        <div style="font-size: 0.9rem; font-weight: bold; color: ${isWin ? '#ffde59' : '#ff4757'}; margin: 2px 0; line-height: 1.3;">
+          ${isWin ? '正解です。10倍獲得です' : '残念ながらハズレです。<br>今回は0個になります'}
+        </div>
+        
+        <div style="display: flex; justify-content: center; align-items: center; gap: 0.6rem; margin: 0.5rem 0;">
+          <div style="width: 4.3rem; height: 4.3rem; background: #0f3460; border: 2px solid #ffde59; border-radius: 0.5rem; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #ffde59; font-weight: bold;">
+            <span style="font-size:1rem;">${leftSymbol}</span>
+            <span style="font-size:0.75rem; color:#fff;">${leftNum}</span>
+          </div>
+          <div style="font-size:1rem; color:#8a8a8a; font-weight:bold;">VS</div>
+          <div style="width: 3.2rem; height: 3.2rem; background: #0f3460; border: 1.5px solid #00fff5; border-radius: 0.4rem; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #00fff5; font-weight: bold;">
+            <span style="font-size:0.8rem;">${rightSymbol}</span>
+            <span style="font-size:0.65rem; color:#ddd;">${rightNum}</span>
+          </div>
+        </div>
+
+        <button class="btn" style="margin-top:0.3rem;" onclick="finishEvent()">${pendingEvents.length ? 'つづける ▶' : '閉じる'}</button>
+      `;
+    }
+
+    function closeMinigameModal() {
+      document.getElementById('minigameModal').style.display = 'none';
+    }
+
+
+    updateUI();
+  </script>
+  <div id="rfx-band" aria-hidden="true"></div>
+</body>
+</html>
