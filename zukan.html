@@ -402,7 +402,8 @@
     if (!gameState.products) gameState.products = {};
     if (!gameState.houseki) gameState.houseki = {};
     
-    if (Object.keys(gameState.houseki).length === 0) {
+    // テスト用の初期解放（デバッグ時のみ ?debug=1 を付けて開く）
+    if (new URLSearchParams(location.search).get('debug') === '1' && Object.keys(gameState.houseki).length === 0) {
       [1, 2, 6, 7, 3, 18, 13, 10, 5, 8, 9, 4, 37, 20, 26, 12, 11].forEach(id => { gameState.houseki[id] = true; });
     }
 
