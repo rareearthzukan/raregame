@@ -191,7 +191,20 @@
 
     /* ─── モーダル追加分 ─── */
     .modal-title.warn { color: #ff4757; }
-    .modal-btn-row { display: flex; gap: .5rem; margin-top: .7rem; }
+    .modal-btn-row { display: flex; gap: .6rem; margin-top: .7rem; align-items: stretch; }
+    .btn-cancel, .btn-go {
+      min-width: 0; min-height: 3rem; padding: .5rem .4rem; border-radius: .8rem; font-weight: bold;
+      cursor: pointer; touch-action: manipulation; font-family: inherit; margin: 0;
+    }
+    .btn-cancel { flex: 0 1 36%; background: #2b3345; border: 1px solid #64748b; color: #cbd5e1; font-size: .85rem; }
+    .btn-go {
+      flex: 1 1 0; border: none; font-size: 1.02rem; color: #0f3460;
+      background: linear-gradient(135deg, #00fff5, #3b82f6);
+      box-shadow: 0 0 0 0 rgba(0,255,245,.6), 0 3px 10px rgba(0,255,245,.4);
+      animation: goPulse 1.5s ease-in-out infinite;
+    }
+    .btn-cancel:active, .btn-go:active { transform: scale(0.96); }
+    @keyframes goPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(0,255,245,.55), 0 3px 10px rgba(0,255,245,.4); } 50% { box-shadow: 0 0 0 .5rem rgba(0,255,245,0), 0 3px 10px rgba(0,255,245,.4); } }
     .jewel-img { width: 5rem; height: 5rem; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); margin: .3rem 0; }
     .jewel-desc { font-size: .8rem; color: #dcdde1; margin-bottom: .7rem; line-height: 1.5; background: rgba(15,23,42,0.8); padding: .5rem; border-radius: .5rem; text-align: left; }
     .levelup-card {
@@ -271,6 +284,66 @@
     .modal-desc { font-size: .88rem; color: #f1f5f9; margin-bottom: .8rem; line-height: 1.55; white-space: pre-line; }
     @keyframes popup { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
     .area-odds { font-size: .72rem; color: #ffde59; text-align: center; line-height: 1.4; margin: .15rem 0 .3rem; font-weight: bold; }
+    /* ═══ 📱 採掘ボタンドック（常時表示） ═══ */
+    .mine-dock {
+      flex-shrink: 0; position: relative; z-index: 60;
+      padding: .5rem .6rem .15rem; background: linear-gradient(180deg, rgba(15,52,96,0), #0f3460 40%);
+      margin-top: -.4rem;
+    }
+    .btn-mine-big {
+      min-height: 3.4rem; font-size: 1.05rem; letter-spacing: .03em;
+      background: linear-gradient(180deg, #ff6b84, #e94560 55%, #c2304a);
+      box-shadow: 0 4px 0 #8f2238, 0 6px 14px rgba(233,69,96,.5);
+      display: flex; align-items: center; justify-content: center; gap: .4rem; flex-wrap: wrap;
+    }
+    .btn-mine-big:active { transform: translateY(3px); box-shadow: 0 1px 0 #8f2238, 0 2px 6px rgba(233,69,96,.5); }
+    .mine-cost-tag { font-size: .8rem; background: rgba(0,0,0,.28); padding: .1rem .5rem; border-radius: 1rem; }
+
+    /* 縦持ちスマホ：画像を少し小さくし、工程バーを圧縮して一画面に収める */
+    @media (orientation: portrait) { .area-visual-img { max-height: 30vh; } }
+    @media (max-height: 720px) {
+      .koutei-bar { padding: .2rem .25rem; }
+      .koutei-item { width: 2rem; height: 2rem; }
+      .koutei-label { font-size: .6rem; }
+    }
+
+    /* ═══ ✨ 採掘演出 ═══ */
+    #fx-layer { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 150; pointer-events: none; overflow: hidden; }
+    .fx-flash { position: absolute; top: 0; left: 0; right: 0; bottom: 0; opacity: 0; }
+    .fx-ring { position: absolute; width: 6rem; height: 6rem; margin: -3rem 0 0 -3rem; border-radius: 50%; border: .35rem solid #ffde59; opacity: 0; box-shadow: 0 0 1rem currentColor; }
+    .fx-rays {
+      position: absolute; width: 70rem; height: 70rem; margin: -35rem 0 0 -35rem; opacity: 0;
+      background: repeating-conic-gradient(from 0deg, rgba(255,222,89,.7) 0deg 7deg, transparent 7deg 22deg);
+      -webkit-mask-image: radial-gradient(circle, #000 0, transparent 62%); mask-image: radial-gradient(circle, #000 0, transparent 62%);
+    }
+    .fx-p { position: absolute; left: 0; top: 0; object-fit: contain; will-change: transform, opacity; filter: drop-shadow(0 2px 3px rgba(0,0,0,.6)); }
+    .fx-spark { position: absolute; left: 0; top: 0; will-change: transform, opacity; line-height: 1; filter: drop-shadow(0 0 .3rem rgba(255,222,89,.9)); }
+    .fx-text { position: absolute; text-align: center; white-space: nowrap; font-weight: 900; line-height: 1.05; will-change: transform, opacity; }
+    .fx-num {
+      display: block; font-size: 3.8rem; color: #ffde59;
+      -webkit-text-stroke: .2rem #7a1d2e; paint-order: stroke fill;
+      text-shadow: 0 .3rem 0 #7a1d2e, 0 0 1.4rem rgba(255,222,89,.95);
+    }
+    .fx-num small { font-size: .42em; margin-left: .15em; }
+    .fx-num.rare { font-size: 2.5rem; color: #fff; text-shadow: 0 .25rem 0 #7a1d2e, 0 0 1.4rem #ffde59, 0 0 2.4rem #e94560; }
+    .fx-sub { display: block; margin-top: .35rem; font-size: 1.3rem; color: #fff; letter-spacing: .06em; text-shadow: 0 0 .6rem #00fff5, 0 .1rem .3rem #000; }
+    @keyframes fxShake {
+      0%,100% { transform: translate(0,0) rotate(0); }
+      15% { transform: translate(-5px,3px) rotate(-.3deg); } 30% { transform: translate(5px,-3px) rotate(.3deg); }
+      45% { transform: translate(-4px,-2px); } 60% { transform: translate(4px,2px); } 80% { transform: translate(-2px,1px); }
+    }
+    .phone.shake { animation: fxShake .35s ease-out; }
+    .phone.shake-big { animation: fxShake .65s ease-out; }
+    @keyframes statusPop {
+      0% { transform: translateY(-.9rem) scale(.3); opacity: 0; }
+      55% { transform: translateY(-.9rem) scale(1.4); opacity: 1; }
+      100% { transform: translateY(-.9rem) scale(1); opacity: 1; }
+    }
+    .mining-status-text.pop { animation: statusPop .5s cubic-bezier(.2,1.6,.4,1); }
+    .mining-status-text.rare { color: #fff; text-shadow: 0 0 .5rem #ffde59, 0 0 1rem #e94560; }
+    @keyframes bump { 0% { transform: scale(1); } 40% { transform: scale(1.6); color: #ffde59; } 100% { transform: scale(1); } }
+    #mud.bump { display: inline-block; animation: bump .45s ease-out; }
+    @media (prefers-reduced-motion: reduce) { .phone.shake, .phone.shake-big, .btn-go { animation: none; } }
   </style>
 </head>
 <body>
@@ -344,8 +417,6 @@
         </div>
 
         <div class="action-stack">
-          <button class="btn-mine" onclick="mineMud()">⛏️ 資源を採掘する (<span id="mine-cost">10</span>G +EXP)</button>
-
           <div class="tb-guide-card">
             <img src="chara0_Y.png" alt="イットリウム" class="tb-avatar-circle" onerror="this.src='navtb.png'">
             <div class="tb-speech-bubble">
@@ -358,6 +429,11 @@
           <button class="btn-recycle-shortcut" onclick="goToRecycle()">♻️ リサイクル工場（資金稼ぎ）へ行く</button>
         </div>
       </div>
+    </div>
+
+    <!-- ⛏️ 採掘ボタン：スクロールに関係なく常に画面下に固定 -->
+    <div class="mine-dock">
+      <button id="mine-btn" class="btn-mine btn-mine-big" onclick="mineMud()">⛏️ 資源を採掘する<span class="mine-cost-tag"><span id="mine-cost">10</span>G +EXP</span></button>
     </div>
 
     <!-- 下部ナビゲーション -->
@@ -378,8 +454,8 @@
           リサイクル工場（都市鉱山）に行って<br>資金を稼ぎますか？
         </div>
         <div class="modal-btn-row">
-          <button class="btn-back" style="margin-top:0; background:#333; border-color:#888; color:#fff;" onclick="closeNoMoneyModal()">キャンセル</button>
-          <button class="btn-mine" style="margin-top:0; background:#00fff5; color:#0f3460;" onclick="goToRecycleWithSound()">行く！</button>
+          <button class="btn-cancel" onclick="closeNoMoneyModal()">キャンセル</button>
+          <button class="btn-go" onclick="goToRecycleWithSound()">♻️ 行く！</button>
         </div>
       </div>
     </div>
@@ -401,6 +477,9 @@
       </div>
     </div>
   </div>
+
+  <!-- ✨ 採掘演出レイヤー（画面全体・タップ透過） -->
+  <div id="fx-layer" aria-hidden="true"></div>
 
   <!-- 🔍 エリア画像 拡大ビューア -->
   <div id="imgViewer" class="viewer" role="dialog" aria-label="エリア画像の拡大表示">
@@ -703,6 +782,130 @@
       }
     }
 
+    // ═══ ✨ 採掘演出（画面全体に表示） ═══
+    const fxLayer = document.getElementById('fx-layer');
+    const fxReduce = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+    const yieldHistory = [];
+    const MINE_WORDS = ['ザクザク！', 'ガッツリ！', 'ゴロゴロ！', 'ドッシリ！'];
+    const BIG_WORDS = ['ズドーン！', '大量だ！', '大当たり！'];
+
+    function fxOrigin() {
+      const box = document.querySelector('.area-visual-box').getBoundingClientRect();
+      const btn = document.getElementById('mine-btn').getBoundingClientRect();
+      let y = box.top + box.height / 2;
+      // 風景画像が画面外ならボタンの少し上から噴き出す
+      if (box.bottom < 100 || box.top > innerHeight - 160) y = btn.top - 110;
+      return { x: innerWidth / 2, y: Math.max(130, Math.min(innerHeight - 200, y)) };
+    }
+
+    function fxBurst(o, items, count, power, big) {
+      const g = 1700;
+      for (let i = 0; i < count; i++) {
+        const item = items[i % items.length];
+        const isImg = /\.(png|gif|jpg|webp)$/i.test(item);
+        const el = document.createElement(isImg ? 'img' : 'span');
+        if (isImg) { el.className = 'fx-p'; el.src = item; el.onerror = () => el.remove(); const sz = (big ? 2.6 : 2) + Math.random() * 1.2; el.style.width = el.style.height = sz + 'rem'; }
+        else { el.className = 'fx-spark'; el.textContent = item; el.style.fontSize = (1.2 + Math.random() * 1.1) + 'rem'; }
+        fxLayer.appendChild(el);
+        const ang = (-90 + (Math.random() - .5) * (big ? 160 : 115)) * Math.PI / 180;
+        const sp = power * (.55 + Math.random() * .6);
+        const vx = Math.cos(ang) * sp, vy = Math.sin(ang) * sp;
+        const dur = .9 + Math.random() * .5, spin = (Math.random() - .5) * 900, steps = 14, frames = [];
+        for (let k = 0; k <= steps; k++) {
+          const t = k / steps, tt = t * dur;
+          const x = o.x + vx * tt, y = o.y + vy * tt + .5 * g * tt * tt;
+          const sc = t < .1 ? .3 + t * 7 : (t > .8 ? 1 - (t - .8) * 2.5 : 1);
+          frames.push({ offset: t, opacity: t > .85 ? (1 - t) / .15 : 1,
+            transform: `translate(${x}px, ${y}px) translate(-50%, -50%) rotate(${spin * t}deg) scale(${sc})` });
+        }
+        el.animate(frames, { duration: dur * 1000, easing: 'linear', fill: 'forwards' }).onfinish = () => el.remove();
+      }
+    }
+
+    function fxRing(o, color, delay) {
+      const r = document.createElement('div');
+      r.className = 'fx-ring'; r.style.left = o.x + 'px'; r.style.top = o.y + 'px'; r.style.borderColor = color; r.style.color = color;
+      fxLayer.appendChild(r);
+      r.animate([{ transform: 'scale(.2)', opacity: .95 }, { transform: 'scale(5)', opacity: 0 }],
+        { duration: 650, delay: delay || 0, easing: 'ease-out', fill: 'both' }).onfinish = () => r.remove();
+    }
+
+    function fxFlash(o, rare) {
+      const f = document.createElement('div');
+      f.className = 'fx-flash';
+      f.style.background = rare
+        ? `radial-gradient(circle at ${o.x}px ${o.y}px, rgba(255,255,255,.95), rgba(255,222,89,.6) 28%, rgba(233,69,96,.25) 55%, transparent 78%)`
+        : `radial-gradient(circle at ${o.x}px ${o.y}px, rgba(255,255,255,.75), rgba(255,222,89,.3) 35%, transparent 65%)`;
+      fxLayer.appendChild(f);
+      f.animate([{ opacity: 0 }, { opacity: 1, offset: .15 }, { opacity: 0 }], { duration: rare ? 700 : 380, easing: 'ease-out' }).onfinish = () => f.remove();
+    }
+
+    function fxRays(o) {
+      const r = document.createElement('div');
+      r.className = 'fx-rays'; r.style.left = o.x + 'px'; r.style.top = o.y + 'px';
+      fxLayer.appendChild(r);
+      r.animate([{ transform: 'rotate(0deg) scale(.4)', opacity: 0 }, { opacity: 1, offset: .2 }, { transform: 'rotate(80deg) scale(1)', opacity: 0 }],
+        { duration: 1500, easing: 'ease-out' }).onfinish = () => r.remove();
+    }
+
+    function fxText(o, mainHtml, sub, rare) {
+      const t = document.createElement('div');
+      t.className = 'fx-text'; t.style.left = o.x + 'px'; t.style.top = o.y + 'px';
+      t.innerHTML = `<span class="fx-num${rare ? ' rare' : ''}">${mainHtml}</span><span class="fx-sub">${sub}</span>`;
+      fxLayer.appendChild(t);
+      const c = 'translate(-50%, -50%)';
+      t.animate([
+        { transform: `${c} scale(.2) rotate(-10deg)`, opacity: 0 },
+        { transform: `${c} scale(1.55) rotate(4deg)`, opacity: 1, offset: .22 },
+        { transform: `${c} scale(1) rotate(0deg)`, opacity: 1, offset: .38 },
+        { transform: `${c} scale(1.04)`, opacity: 1, offset: .78 },
+        { transform: 'translate(-50%, -130%) scale(1.1)', opacity: 0 }
+      ], { duration: rare ? 1900 : 1350, easing: 'ease-out' }).onfinish = () => t.remove();
+    }
+
+    function fxShake(big) {
+      if (fxReduce) return;
+      const ph = document.querySelector('.phone');
+      ph.classList.remove('shake', 'shake-big'); void ph.offsetWidth;
+      ph.classList.add(big ? 'shake-big' : 'shake');
+      setTimeout(() => ph.classList.remove('shake', 'shake-big'), big ? 700 : 400);
+    }
+
+    function playMineFx(gained, rare, jewel) {
+      if (!fxLayer) return;
+      const n = Number(gained) || 1;
+      const avg = yieldHistory.length ? yieldHistory.reduce((a, b) => a + b, 0) / yieldHistory.length : n;
+      const big = !rare && yieldHistory.length >= 3 && n >= avg * 1.4;
+      yieldHistory.push(n); if (yieldHistory.length > 20) yieldHistory.shift();
+
+      const o = fxOrigin();
+      let count = Math.min(16, 8 + Math.round(Math.log2(n + 1) * 2));
+      if (big) count += 6;
+      if (rare) count = 30;
+      if (fxReduce) count = Math.round(count / 3);
+
+      fxFlash(o, rare);
+      fxRing(o, rare ? '#ffffff' : '#ffde59');
+      if (rare || big) fxRing(o, '#00fff5', 120);
+      if (rare) fxRays(o);
+
+      const items = rare ? [jewel.img, '💎', '✨', '🌟'] : ['kouseki1.png', 'kouseki2.png', '✨'];
+      fxBurst(o, items, count, rare ? 980 : (big ? 900 : 720), rare || big);
+
+      if (rare) {
+        fxText(o, '奇跡の発見！', `💎【${jewel.name}】`, true);
+      } else {
+        const word = big ? BIG_WORDS[Math.floor(Math.random() * BIG_WORDS.length)] : MINE_WORDS[Math.floor(Math.random() * MINE_WORDS.length)];
+        fxText(o, `+${n}<small>個</small>`, big ? `🔥 ${word}` : word, false);
+      }
+
+      fxShake(rare || big);
+      if (navigator.vibrate) { try { navigator.vibrate(rare ? [60, 40, 120] : (big ? [40, 30, 40] : 25)); } catch (e) {} }
+
+      const mud = document.getElementById('mud');
+      mud.classList.remove('bump'); void mud.offsetWidth; mud.classList.add('bump');
+    }
+
     function mineMud() {
       if (gameState.money < currentSpot.cost) {
         document.getElementById('noMoneyModal').style.display = 'flex';
@@ -770,14 +973,19 @@
       void oreImg.offsetWidth;
       oreImg.classList.add('jump-active');
 
+      const st = document.getElementById('mining-status');
       if (isRareJewel) {
-        document.getElementById('mining-status').innerText = `💎 奇跡の発見！\n【${obtainedJewel.name}】`;
+        st.innerText = `💎 奇跡の発見！\n【${obtainedJewel.name}】`;
         setTimeout(() => {
           showFirstJewelModal(obtainedJewel);
-        }, 500);
+        }, 1100);
       } else {
-        document.getElementById('mining-status').innerText = `✨ 資源を\n${gained} 個獲得！`;
+        st.innerText = `✨ 資源を\n${gained} 個獲得！`;
       }
+      st.classList.remove('pop', 'rare'); void st.offsetWidth;
+      st.classList.add('pop'); if (isRareJewel) st.classList.add('rare');
+
+      playMineFx(gained, isRareJewel, obtainedJewel);
     }
 
     function showFirstJewelModal(jewel) {
