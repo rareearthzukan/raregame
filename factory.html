@@ -991,341 +991,38 @@
       showTimingMinigame(recipe);
     }
 
-    function executeDirectCraft(recipe) {
-      let bonusCount = 0;
-      let eventBonusMsg = '';
-
-      const randEvent = Math.random();
-      if (randEvent < 0.12) {
-        bonusCount += 2;
-        eventBonusMsg = '<br><span style="color:#ffde59;">🍰 差し入れ（濃厚プリン）で＋2個追加！</span>';
-      } else if (randEvent < 0.22) {
-        bonusCount += 2;
-        eventBonusMsg = '<br><span style="color:#00fff5;">⚙️ 設備効率アップで＋2個追加！</span>';
+    // ═══ 📖 初回製造イベント（共通） ═══
+    const FIRST_CRAFT_EVENTS = {
+      lighter: {
+        title: "🔥 ライター（石）製造成功！",
+        image: "CharaLa_ive1.jpg",
+        text: `今日はレシピどおりに材料を組み合わせてみたところ、ライターの製造に成功した！<br>できあがったライターを手に、ランタンも大喜び。<br>「やったね！ これでライターが作れるようになったよ！」<br>小さな道具だけど、火を灯すための大切な発明。<br>これから、もっとたくさん作れるようになりそうだ！`
+      },
+      tile: {
+        title: "🎨 カラフルガラス完成！",
+        image: "CharaPr_ive1.jpg",
+        text: `工房の片隅で、プラセオジムが黙々とガラスづくりに取り組んでいる。<br><br>材料の配合を少しずつ変え、色の出方や光の通り方を何度も確かめる。納得がいくまで試作を重ねてきた。<br><br>そして今日、ついにレシピLv.1のカラフルガラスが完成！<br><br>「うん……いい色だ。光の当たり方で表情が変わるのも面白いね」<br><br>できあがったガラスを手に取り、角度を変えながらじっくり眺めるプラセオジム。<br><br>「これを使って、もっと色々な作品を作ってみたいな」<br><br>初めての製造成功に満足しながらも、もう次の作品のアイデアを考え始めているようだ。`
+      },
+      glass: {
+        title: "🛡️ 強じん保護ガラス完成！",
+        image: "CharaCe_ive3.jpg",
+        text: `「見て見て！ ついに強靭（きょうじん）保護ガラスが完成したよ！」<br><br>セリウムはホワイトボードに並べた写真を指さしながら、楽しそうに話し始めた。<br><br>「スマートフォンの画面に使えば、うっかり落としてしまったときにも心強いよね。車の窓や建物のガラス、カメラのレンズだって守れるかもしれない！」<br><br>「へえ……そんなにいろいろなところに使えるんだね」<br><br>ユウロピウムは、写真を一枚ずつ眺めながら感心した様子。<br><br>「そう！ 強いだけじゃなく、透明で美しいことも大切なの。これからどんな製品に応用できるか、考えるだけでワクワクするよ！」<br><br>セリウムの頭の中では、もう新しいアイデアが次々と生まれているようだ。`
+      },
+      headphones: {
+        title: "🎧 高音質ヘッドホン完成！",
+        image: "CharaPrNd_ive1.jpg",
+        text: `ついに高音質ヘッドホンが完成した！<br><br>「おおっ、いい感じだね！ さっそく聴いてみよう！」<br><br>ネオジムはヘッドホンを装着すると、お気に入りのロックを再生。力強いドラムとギターの音に、思わず体でリズムを刻み始めた。<br><br>「やっぱり音楽はこれだよ！ ベースの響きも最高！」<br><br>その様子を見ていたプラセオジムも、ヘッドホンを手に取る。<br><br>「じゃあ、次は僕の好きなジャズを聴いてみようかな」<br><br>流れてきたのは、ピアノとサックスが美しく重なり合う演奏。<br><br>「おお……さっきとは全然違うね。楽器の音がひとつひとつはっきり聴こえる！」<br><br>「そうなんだ。演奏の細かなニュアンスまで伝わってくると、何度聴いても新しい発見があるんだよ」<br><br>「なるほどね！ ぼくは迫力重視だけど、君は音の細かいところまで楽しむんだね」<br><br>「ふふ、音楽の楽しみ方はいろいろあるからね」<br><br>二人はそれぞれお気に入りの曲を持ち寄り、完成したヘッドホンで音楽を楽しんだ。<br><br>どうやら、このヘッドホンは二人のお墨付きになったようだ！`
+      },
+      pottery: {
+        title: "🏺 陶磁器（きれいな器）完成！",
+        image: "CharaPrTm_ive1.jpg",
+        text: `工房の棚に、色とりどりの陶磁器が並んだ。<br><br>プラセオジムが試行錯誤を重ねていた、初めての陶磁器（とうじき）づくり。釉薬（ゆうやく）の配合や焼き上がりの色合いを何度も調整し、ついに納得のいく作品が完成した！<br><br>「見てごらん。黄色や緑、茶色がこんなにきれいに混ざり合うんだ。ひとつとして同じ模様にならないところも、陶磁器の面白さだね」<br><br>プラセオジムは、完成した器を大切そうに手に取り、光にかざして眺めている。<br><br>「こうして眺めているだけでも楽しいけれど、お店に並べた器をお客さんが選んでくれたら、もっと嬉しいだろうな。どんな人が、どんな料理を盛りつけて使ってくれるんだろう……想像するとワクワクするね！」<br><br>そばで器を眺めていたツリウムも、小さくうなずいた。<br><br>「……お気に入りの器が見つかったら、毎日の食事もちょっと楽しくなりそうだね」<br><br>「そうだね！ 誰かのお気に入りになれるような作品を、これからも作っていきたいな」<br><br>初めての陶磁器づくりは大成功。プラセオジムの作品が、誰かの暮らしを彩る日が楽しみだ。`
       }
-
-      for (let mat in recipe.materials) {
-        gameState.elements[mat] -= recipe.materials[mat];
-      }
-
-      const totalProduced = Math.max(1, 1 + bonusCount);
-      gameState.products[recipe.id] += totalProduced;
-      if(
- recipe.id==="sunglasses"
- &&
- !gameState.craftedProducts.sunglasses
-){
-
- gameState.craftedProducts.sunglasses=true;
-
- showStoryEvent(
- "🕶️ 偏光サングラス完成！",
- "CharaPrEr_ive1.jpg",
- `
- プラセオジムとエルビウム。
-
- 海外の「資源開発企業」を視察するため、
- 遠い国へやってきました！
-
- 視察の合間に、
- 海辺の遊歩道をお散歩中。
-
- 空は青く、
- 海はキラキラ、
- 日差しはまぶしいほど！
-
- さて、
- ここはどこの国でしょう？
-
- ヒントは、
- 海岸のすぐそばにそびえる山々と、
- 南国らしい陽気な風景。
-
- <br><br>
-
- <b>プラセオジム：</b>
- 「うわぁ、日差しが強いね！
- 偏光サングラスの実力を試すには絶好の場所だ！」
-
- <br><br>
-
- <b>エルビウム：</b>
- 「海面のギラギラした反射も、
- これなら見やすくなるね。
- 新製品、大成功かも！」
-
- <br><br>
-
- <b>プラセオジム：</b>
- 「ふふふ、
- 景色までいつもより美しく見える気がするよ！」
-
- <br><br>
-
- <b>エルビウム：</b>
- 「それはサングラスのおかげ？
- それとも、
- 旅行が楽しいからかな？」
-
- <br><br>
-
- ✨二人の視察旅行はまだまだ続きます！
- `
- );
-
-}
-
-if(
- recipe.id==="catalyst"
- &&
- !gameState.craftedProducts.catalyst
-){
-
- gameState.craftedProducts.catalyst=true;
-
- showStoryEvent(
- "🏭 ガソリン精製触媒 製造成功！",
- "CharaCe_ive1.jpg",
- `
-
- 大きな石油精製プラントで、
- セリウム(Ce)が
- 新しい触媒の製造に成功しました！
-
- <br><br>
-
- 触媒は、
- 化学反応を助ける大切な材料。
-
- <br><br>
-
- <b>セリウム：</b>
-
- 「やったー！
- ついに完成したよ！
-
- これで石油精製の技術が、
- また一歩前進するね！」
-
- <br><br>
-
- ヘルメットをきゅっとかぶり直して、
-
- セリウムは工場の仲間たちに
- 完成を報告するのでした。
- `
- );
-
-}
-
-      const earnedExp = totalProduced * 50;
-      addExp(earnedExp);
-
-      const se = document.getElementById('se-nyu1');
-      if (se) { se.currentTime = 0; se.play().catch(e => {}); }
-
-      showNotice(recipe.icon, `${recipe.name} を ${totalProduced}個 製造！`, `✨ サクサク製造完了！ (EXP +${earnedExp})${eventBonusMsg}`);
-      checkYHelperAppearance();
-      saveGameState();
-      updateUI();
-    }
-
-    let timingInterval = null;
-    let cursorPosition = 0;
-    let isMovingRight = true;
-
-    function showTimingMinigame(recipe) {
-      const modal = document.getElementById('minigameModal');
-      const content = document.getElementById('minigame-content');
-
-      let modeTitle = isHardTimingMode ? '🔥【激ムズ】神業製造！' : '⚡ 職人技タイミング製造！';
-      let targetWidth = isHardTimingMode ? 6 : 20;
-
-      content.innerHTML = `
-        <div class="timing-title" style="color: ${isHardTimingMode ? '#ffde59' : '#00fff5'}">${modeTitle}</div>
-        <div class="timing-sub">枠が光るタイミングに合わせてボタンを押せ！</div>
-        <div class="timing-track">
-          <div class="timing-target" style="left: ${50 - targetWidth/2}%; width: ${targetWidth}%;"></div>
-          <div class="timing-cursor" id="timingCursor"></div>
-        </div>
-        <button class="btn" style="background:#00fff5; color:#0f3460;" onclick="judgeTiming(${targetWidth})">🎯 今だ！プレス！</button>
-      `;
-
-      modal.style.display = 'flex';
-      cursorPosition = 0;
-      isMovingRight = true;
-
-      if (timingInterval) clearInterval(timingInterval);
-      timingInterval = setInterval(() => {
-        if (isMovingRight) {
-          cursorPosition += 3.5;
-          if (cursorPosition >= 96) isMovingRight = false;
-        } else {
-          cursorPosition -= 3.5;
-          if (cursorPosition <= 0) isMovingRight = true;
-        }
-        const cursor = document.getElementById('timingCursor');
-        if (cursor) cursor.style.left = cursorPosition + '%';
-      }, 20);
-    }
-
-    function judgeTiming(targetWidth) {
-      clearInterval(timingInterval);
-      document.getElementById('minigameModal').style.display = 'none';
-
-      let bonusCount = 0;
-      let resultText = '';
-      let extraMoneyBonus = 0;
-      const targetLeft = 50 - targetWidth / 2;
-      const targetRight = 50 + targetWidth / 2;
-      const isInsideTarget = (cursorPosition >= targetLeft && cursorPosition <= targetRight);
-
-      if (isHardTimingMode && isInsideTarget) {
-        bonusCount = 4;
-        extraMoneyBonus = 5000;
-        resultText = '🔥🔥 神業成功！臨時ボーナス5,000G獲得！';
-      } else if (isInsideTarget) {
-        bonusCount = 2;
-        resultText = '🌟 大成功！多く製造できた！';
-      } else if (cursorPosition >= targetLeft - 12 && cursorPosition <= targetRight + 12) {
-        bonusCount = 1;
-        resultText = '👍 成功！きれいに仕上がった！';
-      } else {
-        bonusCount = 0;
-        resultText = '💦 惜しい…標準クオリティ。';
-      }
-
-      const recipe = activeRecipeToCraft;
-      for (let mat in recipe.materials) {
-        gameState.elements[mat] -= recipe.materials[mat];
-      }
-
-      const totalProduced = Math.max(1, 1 + bonusCount);
-      gameState.products[recipe.id] += totalProduced;
-      if(
- recipe.id==="sunglasses"
- &&
- !gameState.craftedProducts.sunglasses
-){
-
- gameState.craftedProducts.sunglasses=true;
-
- showStoryEvent(
- "🕶️ 偏光サングラス完成！",
- "CharaPrEr_ive1.jpg",
- `
- プラセオジムとエルビウム。
-
- 海外の「資源開発企業」を視察するため、
- 遠い国へやってきました！
-
- 視察の合間に、
- 海辺の遊歩道をお散歩中。
-
- 空は青く、
- 海はキラキラ、
- 日差しはまぶしいほど！
-
- さて、
- ここはどこの国でしょう？
-
- ヒントは、
- 海岸のすぐそばにそびえる山々と、
- 南国らしい陽気な風景。
-
- <br><br>
-
- <b>プラセオジム：</b>
- 「うわぁ、日差しが強いね！
- 偏光サングラスの実力を試すには絶好の場所だ！」
-
- <br><br>
-
- <b>エルビウム：</b>
- 「海面のギラギラした反射も、
- これなら見やすくなるね。
- 新製品、大成功かも！」
-
- <br><br>
-
- <b>プラセオジム：</b>
- 「ふふふ、
- 景色までいつもより美しく見える気がするよ！」
-
- <br><br>
-
- <b>エルビウム：</b>
- 「それはサングラスのおかげ？
- それとも、
- 旅行が楽しいからかな？」
-
- <br><br>
-
- ✨二人の視察旅行はまだまだ続きます！
- `
- );
-
-}
-
-if(
- recipe.id==="catalyst"
- &&
- !gameState.craftedProducts.catalyst
-){
-
- gameState.craftedProducts.catalyst=true;
-
- showStoryEvent(
- "🏭 ガソリン精製触媒 製造成功！",
- "CharaCe_ive1.jpg",
- `
- 🏭 ガソリン精製触媒、製造成功！
-
- <br><br>
-
- 大きな石油精製プラントで、
- セリウム(Ce)が
- 新しい触媒の製造に成功しました！
-
- <br><br>
-
- 触媒は、
- 化学反応を助ける大切な材料。
-
- <br><br>
-
- <b>セリウム：</b>
-
- 「やったー！
- ついに完成したよ！
-
- これで石油精製の技術が、
- また一歩前進するね！」
-
- <br><br>
-
- ヘルメットをきゅっとかぶり直して、
-
- セリウムは工場の仲間たちに
- 完成を報告するのでした。
- `
- );
-
-}
-
-if(
- recipe.id==="paint"
- &&
- !gameState.craftedProducts.paint
-){
-
- gameState.craftedProducts.paint=true;
-
- showStoryEvent(
- "🖌 蛍光塗料の製造成功！",
- "CharaEuTb_ive1.png",
-
- `
+,
+      paint: {
+        title: "🖌 蛍光塗料の製造成功！",
+        image: "CharaEuTb_ive1.png",
+        text: `
  🖌️<b>蛍光塗料の製造成功！</b>
 
  <br><br>
@@ -1390,23 +1087,11 @@ if(
  その夜だけの特別な
  光のアトリエになった。
  `
- );
-
-}
-
-if(
- recipe.id==="muffler"
- &&
- !gameState.craftedProducts.muffler
-){
-
- gameState.craftedProducts.muffler=true;
-
- showStoryEvent(
- "🚗 エコ・マフラー完成！",
- "CharaCe_ive2_2.jpg",
-
- `
+      },
+      muffler: {
+        title: "🚗 エコ・マフラー完成！",
+        image: "CharaCe_ive2_2.jpg",
+        text: `
  🚗 <b>エコ・マフラー、完成！</b>
 
  <br><br>
@@ -1468,23 +1153,11 @@ if(
  未来のクリーンなモビリティに
  期待をふくらませるのでした。
  `
- );
-
-}
-
-if(
- recipe.id==="super_motor"
- &&
- !gameState.craftedProducts.super_motor
-){
-
- gameState.craftedProducts.super_motor=true;
-
- showStoryEvent(
- "🚄 超伝導リニアモーター完成！",
- "CharaNd_ive1.jpg",
-
- `
+      },
+      super_motor: {
+        title: "🚄 超伝導リニアモーター完成！",
+        image: "CharaNd_ive1.jpg",
+        text: `
  🚄 <b>超電導リニアモーター、ついに完成！</b>
 
  <br><br>
@@ -1581,9 +1254,219 @@ if(
  未来への道を
  つくっていくのです。
  `
- );
+      }
+,
+      sunglasses: {
+        title: "🕶️ 偏光サングラス完成！",
+        image: "CharaPrEr_ive1.jpg",
+        text: `
+ プラセオジムとエルビウム。
 
-}
+ 海外の「資源開発企業」を視察するため、
+ 遠い国へやってきました！
+
+ 視察の合間に、
+ 海辺の遊歩道をお散歩中。
+
+ 空は青く、
+ 海はキラキラ、
+ 日差しはまぶしいほど！
+
+ さて、
+ ここはどこの国でしょう？
+
+ ヒントは、
+ 海岸のすぐそばにそびえる山々と、
+ 南国らしい陽気な風景。
+
+ <br><br>
+
+ <b>プラセオジム：</b>
+ 「うわぁ、日差しが強いね！
+ 偏光サングラスの実力を試すには絶好の場所だ！」
+
+ <br><br>
+
+ <b>エルビウム：</b>
+ 「海面のギラギラした反射も、
+ これなら見やすくなるね。
+ 新製品、大成功かも！」
+
+ <br><br>
+
+ <b>プラセオジム：</b>
+ 「ふふふ、
+ 景色までいつもより美しく見える気がするよ！」
+
+ <br><br>
+
+ <b>エルビウム：</b>
+ 「それはサングラスのおかげ？
+ それとも、
+ 旅行が楽しいからかな？」
+
+ <br><br>
+
+ ✨二人の視察旅行はまだまだ続きます！
+ `
+      },
+      catalyst: {
+        title: "🏭 ガソリン精製触媒 製造成功！",
+        image: "CharaCe_ive1.jpg",
+        text: `
+ 🏭 ガソリン精製触媒、製造成功！
+
+ <br><br>
+
+ 大きな石油精製プラントで、
+ セリウム(Ce)が
+ 新しい触媒の製造に成功しました！
+
+ <br><br>
+
+ 触媒は、
+ 化学反応を助ける大切な材料。
+
+ <br><br>
+
+ <b>セリウム：</b>
+
+ 「やったー！
+ ついに完成したよ！
+
+ これで石油精製の技術が、
+ また一歩前進するね！」
+
+ <br><br>
+
+ ヘルメットをきゅっとかぶり直して、
+
+ セリウムは工場の仲間たちに
+ 完成を報告するのでした。
+ `
+      }
+    };
+
+    function checkFirstCraftEvent(recipe) {
+      const ev = FIRST_CRAFT_EVENTS[recipe.id];
+      if (!ev) return;
+      if (!gameState.craftedProducts) gameState.craftedProducts = {};
+      if (gameState.craftedProducts[recipe.id]) return;
+      gameState.craftedProducts[recipe.id] = true;
+      showStoryEvent(ev.title, ev.image, ev.text);
+    }
+
+    function executeDirectCraft(recipe) {
+      let bonusCount = 0;
+      let eventBonusMsg = '';
+
+      const randEvent = Math.random();
+      if (randEvent < 0.12) {
+        bonusCount += 2;
+        eventBonusMsg = '<br><span style="color:#ffde59;">🍰 差し入れ（濃厚プリン）で＋2個追加！</span>';
+      } else if (randEvent < 0.22) {
+        bonusCount += 2;
+        eventBonusMsg = '<br><span style="color:#00fff5;">⚙️ 設備効率アップで＋2個追加！</span>';
+      }
+
+      for (let mat in recipe.materials) {
+        gameState.elements[mat] -= recipe.materials[mat];
+      }
+
+      const totalProduced = Math.max(1, 1 + bonusCount);
+      gameState.products[recipe.id] += totalProduced;
+      checkFirstCraftEvent(recipe);
+      
+
+      const earnedExp = totalProduced * 50;
+      addExp(earnedExp);
+
+      const se = document.getElementById('se-nyu1');
+      if (se) { se.currentTime = 0; se.play().catch(e => {}); }
+
+      showNotice(recipe.icon, `${recipe.name} を ${totalProduced}個 製造！`, `✨ サクサク製造完了！ (EXP +${earnedExp})${eventBonusMsg}`);
+      checkYHelperAppearance();
+      saveGameState();
+      updateUI();
+    }
+
+    let timingInterval = null;
+    let cursorPosition = 0;
+    let isMovingRight = true;
+
+    function showTimingMinigame(recipe) {
+      const modal = document.getElementById('minigameModal');
+      const content = document.getElementById('minigame-content');
+
+      let modeTitle = isHardTimingMode ? '🔥【激ムズ】神業製造！' : '⚡ 職人技タイミング製造！';
+      let targetWidth = isHardTimingMode ? 6 : 20;
+
+      content.innerHTML = `
+        <div class="timing-title" style="color: ${isHardTimingMode ? '#ffde59' : '#00fff5'}">${modeTitle}</div>
+        <div class="timing-sub">枠が光るタイミングに合わせてボタンを押せ！</div>
+        <div class="timing-track">
+          <div class="timing-target" style="left: ${50 - targetWidth/2}%; width: ${targetWidth}%;"></div>
+          <div class="timing-cursor" id="timingCursor"></div>
+        </div>
+        <button class="btn" style="background:#00fff5; color:#0f3460;" onclick="judgeTiming(${targetWidth})">🎯 今だ！プレス！</button>
+      `;
+
+      modal.style.display = 'flex';
+      cursorPosition = 0;
+      isMovingRight = true;
+
+      if (timingInterval) clearInterval(timingInterval);
+      timingInterval = setInterval(() => {
+        if (isMovingRight) {
+          cursorPosition += 3.5;
+          if (cursorPosition >= 96) isMovingRight = false;
+        } else {
+          cursorPosition -= 3.5;
+          if (cursorPosition <= 0) isMovingRight = true;
+        }
+        const cursor = document.getElementById('timingCursor');
+        if (cursor) cursor.style.left = cursorPosition + '%';
+      }, 20);
+    }
+
+    function judgeTiming(targetWidth) {
+      clearInterval(timingInterval);
+      document.getElementById('minigameModal').style.display = 'none';
+
+      let bonusCount = 0;
+      let resultText = '';
+      let extraMoneyBonus = 0;
+      const targetLeft = 50 - targetWidth / 2;
+      const targetRight = 50 + targetWidth / 2;
+      const isInsideTarget = (cursorPosition >= targetLeft && cursorPosition <= targetRight);
+
+      if (isHardTimingMode && isInsideTarget) {
+        bonusCount = 4;
+        extraMoneyBonus = 5000;
+        resultText = '🔥🔥 神業成功！臨時ボーナス5,000G獲得！';
+      } else if (isInsideTarget) {
+        bonusCount = 2;
+        resultText = '🌟 大成功！多く製造できた！';
+      } else if (cursorPosition >= targetLeft - 12 && cursorPosition <= targetRight + 12) {
+        bonusCount = 1;
+        resultText = '👍 成功！きれいに仕上がった！';
+      } else {
+        bonusCount = 0;
+        resultText = '💦 惜しい…標準クオリティ。';
+      }
+
+      const recipe = activeRecipeToCraft;
+      for (let mat in recipe.materials) {
+        gameState.elements[mat] -= recipe.materials[mat];
+      }
+
+      const totalProduced = Math.max(1, 1 + bonusCount);
+      gameState.products[recipe.id] += totalProduced;
+      checkFirstCraftEvent(recipe);
+      
+
+
+
 
       gameState.money += extraMoneyBonus;
 
