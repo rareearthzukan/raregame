@@ -1,665 +1,437 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>エルビウムの美肌ブロック崩し</title>
-  <style>
-    body { background-color: #1a1a2e; color: #fff; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; user-select: none; -webkit-user-select: none; touch-action: none; }
-    .phone { width: 360px; height: 740px; background: #0f3460; border: 4px solid #16213e; border-radius: 24px; display: flex; flex-direction: column; overflow: hidden; position: relative; box-sizing: border-box; }
-
-    /* ヘッダー */
-    .header { background: #16213e; padding: 8px 10px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: bold; border-bottom: 2px solid #e94560; flex-shrink: 0; }
-    .header-btns { display: flex; gap: 4px; align-items: center; }
-    .bgm-btn, .pause-btn { background: rgba(0,0,0,.4); border: 1px solid #00fff5; color: #00fff5; border-radius: 12px; padding: 2px 8px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 3px; transition: all .2s; }
-    .bgm-btn.muted { border-color: #e94560; color: #e94560; background: rgba(233,69,96,.2); }
-    .pause-btn { border-color: #ffde59; color: #ffde59; background: rgba(255,222,89,.15); }
-
-    .content { flex: 1; padding: 6px 10px; display: flex; flex-direction: column; gap: 4px; position: relative; overflow: hidden; box-sizing: border-box; }
-
-    /* ステータスパネル */
-    .status-panel { display: flex; align-items: center; gap: 8px; background: rgba(22,33,62,.8); border: 1px solid #00fff5; padding: 4px 8px; border-radius: 8px; font-size: 11px; flex-shrink: 0; }
-    .avatar-wrap { width: 44px; height: 44px; border-radius: 50%; border: 2px solid #ff758c; background: rgba(15,23,42,.85); overflow: hidden; flex-shrink: 0; }
-    .avatar-wrap img { width: 100%; height: 100%; object-fit: contain; display: block; }
-    .stat-col { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-    .score-line { font-size: 11px; color: #dcdde1; }
-    .score-line b { font-size: 17px; color: #00fff5; letter-spacing: 1px; }
-    .sub-line { font-size: 10px; color: #dcdde1; }
-    .sub-line b { color: #ffde59; }
-    .mode-indicator { font-size: 10px; color: #ff758c; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-    /* ゲームエリア */
-    .game-area {
-      position: relative; flex: none; display: flex; justify-content: center; align-items: center; padding: 2px 0;
-      background:
-        linear-gradient(180deg, rgba(0,0,0,.45) 0, transparent 25%, transparent 70%, rgba(0,0,0,.35) 100%),
-        repeating-linear-gradient(90deg, rgba(255,255,255,.06) 0 2px, transparent 2px 64px),
-        repeating-linear-gradient(0deg, rgba(255,255,255,.05) 0 2px, transparent 2px 64px),
-        #2c3e50;
-      border: 2px solid #00fff5; border-radius: 12px; overflow: hidden;
-    }
-    #gameCanvas { display: block; border: 2px solid rgba(0,255,245,.55); border-radius: 8px; position: relative; z-index: 2; touch-action: none; cursor: pointer; }
-
-    .game-desc-tip {
-      font-size: 9.5px;
-      color: #93c5fd;
-      background: rgba(15, 23, 42, 0.7);
-      border: 1px solid rgba(0, 255, 245, 0.3);
-      padding: 3px 6px;
-      border-radius: 6px;
-      text-align: center;
-      flex-shrink: 0;
-    }
-
-    .banner { position: absolute; left: 50%; top: 36%; transform: translate(-50%, -50%) scale(.85); z-index: 6; font-weight: bold; font-size: 14px; text-align: center; padding: 8px 14px; border-radius: 10px; background: rgba(0,0,0,.78); border: 2px solid #ffde59; color: #ffde59; opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s; white-space: nowrap; }
-    .banner.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-
-    /* 操作ボタン */
-    .controls { display: flex; gap: 6px; flex-shrink: 0; }
-    .ctrl-btn { flex: 1; background: #16213e; border: 2px solid #00fff5; color: #fff; padding: 8px 4px; border-radius: 10px; font-size: 12px; font-weight: bold; cursor: pointer; text-align: center; touch-action: none; }
-    .ctrl-btn:active { background: #00fff5; color: #0f3460; }
-    .ctrl-fire { background: linear-gradient(135deg, #ff758c, #ff7eb3); border-color: #ffde59; color: #fff; }
-    .ctrl-fire:active { background: #ffde59; color: #0f3460; }
-
-    .btn-back { background: #e94560; color: #fff; border: none; padding: 6px; font-weight: bold; border-radius: 8px; cursor: pointer; width: 100%; font-size: 11px; flex-shrink: 0; }
-
-    /* モーダル共通 */
-    .modal-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(10,15,30,.9); display: flex; justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(2px); box-sizing: border-box; padding: 12px; }
-    .modal-content { background: #16213e; border: 2px solid #00fff5; border-radius: 16px; padding: 14px; width: 100%; max-width: 300px; text-align: center; box-shadow: 0 0 20px rgba(0,255,245,.3); animation: popup .3s ease-out; box-sizing: border-box; max-height: 90vh; overflow-x: hidden; overflow-y: auto; }
-    @keyframes popup { 0% { transform: scale(.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-    
-    .modal-avatar { width: 64px; height: 64px; object-fit: contain; border-radius: 50%; border: 2px solid #ff758c; background: rgba(15,23,42,.85); margin: 0 auto; display: block; }
-    
-    .modal-game-title { font-size: 13px; font-weight: bold; color: #ff758c; margin-bottom: 6px; text-shadow: 0 0 8px rgba(255,117,140,0.5); }
-
-    .result-breakdown { background: rgba(15,23,42,.8); border: 1px solid #00fff5; border-radius: 8px; padding: 8px; margin: 6px 0; font-size: 11px; text-align: left; display: flex; flex-direction: column; gap: 4px; }
-    .result-row { display: flex; justify-content: space-between; }
-    .btn-main { background: #00fff5; color: #0f3460; font-size: 12px; padding: 9px; }
-    .btn-sub { background: #16213e; color: #00fff5; border: 1px solid #00fff5; font-size: 11px; padding: 7px; }
-
-    .diff-btn { width: 100%; padding: 9px; margin: 3px 0; border-radius: 8px; border: none; font-weight: bold; font-size: 11px; cursor: pointer; text-align: left; display: flex; justify-content: space-between; align-items: center; box-sizing: border-box; }
-    .diff-normal { background: #3b82f6; color: #fff; }
-    .diff-hard { background: #eab308; color: #fff; }
-    .diff-vhard { background: #e94560; color: #fff; }
-    .diff-locked { background: #334155; color: #94a3b8; cursor: not-allowed; }
-
-    .tutor-slide { display: none; flex-direction: column; align-items: center; text-align: left; width: 100%; box-sizing: border-box; }
-    .tutor-slide.active { display: flex; }
-    .tutor-desc { font-size: 11px; color: #f1f5f9; line-height: 1.5; background: rgba(0,0,0,0.3); padding: 8px 10px; border-radius: 8px; width: 100%; box-sizing: border-box; margin-bottom: 10px; }
-
-    .modal-btn-row { display: flex; gap: 6px; width: 100%; box-sizing: border-box; margin-top: 6px; }
-    .modal-btn-row .btn-back { flex: 1; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>エルビウムの美肌ブロック崩し</title>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#1b2a41;--paper:#fff7fa;--pink:#ff7eb3;--pink2:#ff4d8d;--sun:#ffd23f;--aqua:#7fe0ee;--soft:#ffe3ee}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:linear-gradient(160deg,#ffc9de,#fff1f7 55%,#d9f3ff);color:var(--ink);font-family:'Zen Maru Gothic','Hiragino Maru Gothic ProN','Hiragino Kaku Gothic ProN',Meiryo,sans-serif;font-weight:700;display:flex;justify-content:center;align-items:center;overflow:hidden;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:manipulation;overscroll-behavior:none}
+.phone{width:100%;max-width:480px;height:100%;max-height:980px;background:var(--paper);border:4px solid var(--ink);border-radius:24px;box-shadow:0 8px 0 var(--ink);display:flex;flex-direction:column;overflow:hidden;position:relative}
+@media (max-width:500px){.phone{border-radius:0;border-width:0;box-shadow:none}}
+.header{background:var(--pink);min-height:36px;padding:env(safe-area-inset-top,0px) 10px 0;display:flex;justify-content:space-between;align-items:center;font-size:14px;color:#fff;-webkit-text-stroke:3px var(--ink);paint-order:stroke fill;border-bottom:3px solid var(--ink);flex-shrink:0}
+.header span{height:34px;line-height:34px}
+.header-btns{display:flex;gap:6px;-webkit-text-stroke:0}
+.bgm-btn,.pause-btn{font:inherit;font-size:12px;background:#fff;border:2.5px solid var(--ink);color:var(--ink);border-radius:14px;padding:2px 9px;cursor:pointer;box-shadow:0 2px 0 var(--ink)}
+.bgm-btn.muted{background:#ffd0d8}
+.pause-btn{background:var(--sun)}
+.hud{display:flex;align-items:center;gap:10px;padding:6px 10px;background:var(--soft);border-bottom:3px solid var(--ink);flex-shrink:0}
+.avatar-wrap{width:46px;height:46px;border-radius:50%;border:3px solid var(--ink);background:#fff;overflow:hidden;flex-shrink:0;box-shadow:0 3px 0 var(--ink)}
+.avatar-wrap img{width:100%;height:100%;object-fit:contain;display:block}
+.avatar-wrap.cheer{animation:cheer .4s}
+@keyframes cheer{30%{transform:scale(1.25) rotate(-8deg)}60%{transform:scale(1.15) rotate(8deg)}}
+.stat{flex:1;min-width:0;font-size:12px;line-height:1.4}
+.stat b{color:var(--pink2);font-size:20px;letter-spacing:1px}
+.stat .l{color:var(--ink);float:right}
+.say{color:#7a3b5a;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.game-area{position:relative;flex:1;min-height:0;overflow:hidden;background:linear-gradient(#ffe6f0,#fff9fc)}
+#gameCanvas{display:block;position:absolute}
+.banner{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%) scale(.8);z-index:6;font-size:17px;text-align:center;padding:8px 16px;border-radius:16px;background:#fff;border:3px solid var(--ink);box-shadow:0 4px 0 var(--ink);color:var(--pink2);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;white-space:nowrap}
+.banner.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+.controls{display:flex;gap:8px;padding:8px 10px calc(8px + env(safe-area-inset-bottom,0px));flex-shrink:0;background:var(--soft);border-top:3px solid var(--ink)}
+.ctrl-btn{font:inherit;flex:1;height:46px;background:#fff;border:3px solid var(--ink);color:var(--ink);border-radius:26px;font-size:15px;cursor:pointer;touch-action:none;box-shadow:0 4px 0 var(--ink)}
+.ctrl-btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+.ctrl-fire{flex:1.7;background:linear-gradient(135deg,#ff9fc8,#ff7eb3);color:#fff;-webkit-text-stroke:3px var(--ink);paint-order:stroke fill}
+.modal-overlay{position:absolute;inset:0;background:rgba(255,126,179,.55);display:flex;justify-content:center;align-items:center;z-index:100;padding:14px;backdrop-filter:blur(3px)}
+.modal-content{background:var(--paper);border:4px solid var(--ink);border-radius:24px;padding:16px;width:100%;max-width:340px;text-align:center;box-shadow:0 7px 0 var(--ink);animation:popup .3s ease-out;max-height:96%;overflow-y:auto}
+@keyframes popup{0%{transform:scale(.85);opacity:0}100%{transform:scale(1);opacity:1}}
+.modal-avatar{width:72px;height:72px;object-fit:contain;border-radius:50%;border:3px solid var(--ink);background:#fff;margin:0 auto;display:block;box-shadow:0 3px 0 var(--ink)}
+.result-art{display:block;width:auto;max-width:78%;max-height:150px;margin:0 auto;object-fit:contain}
+.mt{font-size:15px;color:var(--pink2);margin-bottom:6px}
+.tutor-slide{display:none;text-align:left}.tutor-slide.active{display:block}
+.tutor-desc{font-size:12.5px;line-height:1.7;background:var(--soft);border:2px solid var(--ink);padding:9px 11px;border-radius:14px;margin:8px 0}
+.note{font-size:10.5px;color:#7a6070;line-height:1.5;font-weight:500}
+.btn{font:inherit;display:block;width:100%;border:3px solid var(--ink);border-radius:26px;padding:11px;font-size:14px;cursor:pointer;margin-top:9px;box-shadow:0 4px 0 var(--ink);color:var(--ink)}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+.btn-main{background:var(--sun)}.btn-sub{background:#fff}.btn-pink{background:var(--pink);color:#fff;-webkit-text-stroke:3px var(--ink);paint-order:stroke fill}
+.row2{display:flex;gap:8px}
+.diff-btn{font:inherit;width:100%;padding:10px 12px;margin:6px 0;border-radius:18px;border:3px solid var(--ink);box-shadow:0 4px 0 var(--ink);font-size:13px;cursor:pointer;text-align:left;display:flex;justify-content:space-between;align-items:center;color:var(--ink)}
+.diff-btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+.diff-normal{background:#bfe9ff}.diff-hard{background:#ffe27a}.diff-vhard{background:#ffb3c7}
+.diff-btn small{font-weight:500;font-size:10.5px}
+.result-breakdown{background:#fff;border:3px solid var(--ink);border-radius:16px;padding:10px;margin:8px 0;font-size:13px;text-align:left;display:flex;flex-direction:column;gap:5px}
+.result-row{display:flex;justify-content:space-between}
+</style>
 </head>
 <body>
+<audio id="bgm" src="BGM_miniEr.ogg" loop preload="auto"></audio>
+<div class="phone" id="phone">
+  <div class="header">
+    <span>✨ 美肌ブロック崩し</span>
+    <div class="header-btns"><button id="pause-btn" class="pause-btn" style="display:none">⏸️ 休憩</button><button id="bgm-btn" class="bgm-btn">🎵 ON</button></div>
+  </div>
+  <div class="hud">
+    <div class="avatar-wrap" id="avWrap"><img id="avatar" src="chara0_Er.png" alt="Er" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='chara0_Eu.png'}else this.src='chara0_Y.png'"></div>
+    <div class="stat">SCORE <b id="score">0</b> <span class="l">　❤️×<span id="lives">3</span></span><div class="say" id="say">🚀 タップでレーザー発射！</div></div>
+  </div>
+  <div class="game-area" id="gameArea"><canvas id="gameCanvas"></canvas><div class="banner" id="banner"></div></div>
+  <div class="controls"><button class="ctrl-btn" id="btnL">◀</button><button class="ctrl-btn ctrl-fire" id="btnFire">🚀 発射！</button><button class="ctrl-btn" id="btnR">▶</button></div>
 
-  <audio id="bgm" src="BGM_puzzle.ogg" loop preload="auto"></audio>
-
-  <div class="phone">
-    <div class="header">
-      <span>✨ 美肌ブロック崩し</span>
-      <div class="header-btns">
-        <button id="pause-btn" class="pause-btn" style="display:none;">⏸️ 休憩</button>
-        <button id="bgm-btn" class="bgm-btn">🎵 ON</button>
-      </div>
-    </div>
-
-    <div class="content">
-      <div class="status-panel">
-        <div class="avatar-wrap"><img id="avatar" src="chara0_Er.png" alt="Er" onerror="this.src='chara0_Y.png'"></div>
-        <div class="stat-col">
-          <div class="score-line">SCORE <b id="score">0</b></div>
-          <div class="sub-line">❤️ レーザー残弾: <b id="lives">6</b></div>
-          <div class="mode-indicator" id="modeIndicator">✨ 画面をスワイプしてスタート！</div>
-        </div>
-      </div>
-
-      <div class="game-area" id="gameArea">
-        <canvas id="gameCanvas" width="340" height="390"></canvas>
-        <div class="banner" id="banner"></div>
-      </div>
-
-      <div class="game-desc-tip">
-        👆 パドルの下あたりを指でスワイプして操作してね！
-      </div>
-
-      <div class="controls">
-        <button class="ctrl-btn" id="btnL">◀ 左</button>
-        <button class="ctrl-btn ctrl-fire" id="btnFire">🚀 発射！</button>
-        <button class="ctrl-btn" id="btnR">右 ▶</button>
-      </div>
-
-      <button class="btn-back" id="backToStageSelectBtn" style="background:#00a8a8;">🎮 ステージ選択に戻る</button>
-      <button class="btn-back" onclick="location.href='map.html'">🗺️ マップに戻る</button>
-    </div>
-
-    <!-- チュートリアルモーダル -->
-    <div id="tutorialModal" class="modal-overlay" style="display:flex;">
-      <div class="modal-content">
-        <div class="modal-game-title">エルビウムの美肌ブロック崩し</div>
-        <img src="chara0_Er.png" class="modal-avatar" alt="Er" onerror="this.src='chara0_Y.png'">
-        <div style="font-size:13px;font-weight:bold;color:#ffde59;margin:6px 0;">📖 遊び方</div>
-
-        <div class="tutor-slide active" data-slide="0">
-          <div class="tutor-desc">
-            <b>1. パドルを指でスワイプ！</b><br>
-            キャンバス下部（パドルの下あたり）を指でスワイプしてパドルを動かし、エルビウムYAGレーザーを打ち返そう！
-          </div>
-        </div>
-        <div class="tutor-slide" data-slide="1">
-          <div class="tutor-desc">
-            <b>2. 原因ブロックを倒そう！</b><br>
-            🌵最初は「原因」とだけ表示されているよ！<b>1回当てると数字（HP）が出現</b>し、当て続けると数字が減って壊せるよ！
-          </div>
-        </div>
-        <div class="tutor-slide" data-slide="2">
-          <div class="tutor-desc">
-            <b>3. 骨と特殊ギミック</b><br>
-            🦴「骨」は安全なガードなのでそのままでOK！ハード以上では⚡「加速ブロック」などでスピードが上がったら、<b>パドルと3回ラリー</b>して元に戻そう！
-          </div>
-        </div>
-
-        <div class="modal-btn-row">
-          <button class="btn-back btn-sub" id="tutorPrevBtn" style="display:none;">もどる</button>
-          <button class="btn-back btn-main" id="tutorNextBtn">次へ ➡</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- 難易度選択モーダル -->
-    <div id="selectModal" class="modal-overlay" style="display:none;">
-      <div class="modal-content">
-        <div class="modal-game-title">エルビウムの美肌ブロック崩し</div>
-        <img src="chara0_Er.png" class="modal-avatar" alt="Er" onerror="this.src='chara0_Y.png'">
-        <div style="font-size:13px;font-weight:bold;color:#ffde59;margin:6px 0;">難易度を選択してね</div>
-        <div id="diffMenu" style="display:flex;flex-direction:column;gap:5px;margin-bottom:8px;width:100%;"></div>
-        <div style="font-size:10px;color:#94a3b8;line-height:1.4;">
-          現在のあなたのレベル: <b id="userLevelDisp" style="color:#00fff5;">1</b>
-        </div>
-      </div>
-    </div>
-
-    <!-- ポーズモーダル -->
-    <div id="pauseModal" class="modal-overlay" style="display:none;">
-      <div class="modal-content">
-        <div class="modal-game-title">エルビウムの美肌ブロック崩し</div>
-        <img src="chara0_Er.png" class="modal-avatar" alt="Pause" onerror="this.src='chara0_Y.png'">
-        <div style="font-size:14px;font-weight:bold;color:#ffde59;margin:8px 0;">⏸️ ゲーム一時停止中</div>
-        <div class="modal-btn-row" style="flex-direction:column;">
-          <button class="btn-back btn-main" id="resumeBtn">▶️ ゲームを続ける</button>
-          <button class="btn-back btn-sub" onclick="location.href='map.html'">🗺️ マップに戻る</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- 結果リザルトモーダル -->
-    <div id="resultModal" class="modal-overlay" style="display:none;">
-      <div class="modal-content">
-        <div class="modal-game-title">エルビウムの美肌ブロック崩し</div>
-        <img id="resultAvatar" src="chara0_Er.png" class="modal-avatar" alt="Er" onerror="this.src='chara0_Y.png'">
-        <div id="resultTitle" style="font-size:14px;font-weight:bold;color:#00fff5;margin:4px 0;">クリア！</div>
-        <div class="result-breakdown">
-          <div class="result-row"><span>💧 スコア:</span><span style="color:#00fff5;" id="rScore">0</span></div>
-          <div class="result-row"><span>🏅 難易度:</span><span style="color:#ffde59;" id="rDiff">ノーマル</span></div>
-          <div class="result-row"><span>⭐ 獲得EXP:</span><span style="color:#a29bfe;" id="rExp">+0 EXP</span></div>
-          <div style="border-top:1px dashed #00fff5;margin-top:2px;padding-top:4px;font-weight:bold;display:flex;justify-content:space-between;">
-            <span>💰 獲得賞金:</span><span style="color:#55ff55;" id="rMoney">+0 G</span>
-          </div>
-        </div>
-        <div class="modal-btn-row" style="flex-direction:column;">
-          <button class="btn-back btn-main" id="claimBtn">💰 報酬を受け取ってマップへ</button>
-          <button class="btn-back btn-sub" id="retryBtn">🔄 もう一度挑戦</button>
-        </div>
-      </div>
+  <div id="tutorialModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="mt">エルビウムの美肌ブロック崩し</div>
+      <img src="chara0_Er.png" class="modal-avatar" alt="Er" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='chara0_Eu.png'}else this.src='chara0_Y.png'">
+      <div class="tutor-slide active"><div class="tutor-desc"><b>1. レーザーを打ち返そう！</b><br>画面を<b>スワイプ</b>で治療ヘッドを動かし、<b>タップ</b>でエルビウムYAGレーザーを発射！ 落とさないように打ち返してね。連続で当てると<b>コンボ</b>でスコアUP！</div></div>
+      <div class="tutor-slide"><div class="tutor-desc"><b>2. ブロックはお肌のお悩み</b><br>〰️小じわ／⚫毛穴／🕳️ニキビ跡（クレーター）／🟤盛り上がりのシミ／🟤ほくろ。何度か当てると<b>ひびが入って</b>、壊れる直前になるよ。全部消して、つるつる肌をめざそう！</div></div>
+      <div class="tutor-slide"><div class="tutor-desc"><b>3. エルビウムYAGレーザーって？</b><br>水分への吸収率がCO₂レーザーの約10倍と高く、熱の発生を抑えて、皮膚をミクロン単位で削り取る治療機器だよ。<br>💧水分ブロックに当てるとレーザーが加速！ パドルで3回ラリーすると戻るよ。🦴骨ブロックは削れないガード。<div class="note">※これはゲームです。実際の治療は医師にご相談ください。</div></div></div>
+      <div class="tutor-slide"><div class="tutor-desc"><b>4. パワーアップ</b><br>ブロックを壊すとアイテムが落ちるよ。キャッチしよう！<br>↔ ワイドヘッド（広くなる）<br>🔥 貫通レーザー（突き抜ける）<br>✨ 3連レーザー（ボールが3つに）</div></div>
+      <div class="row2"><button class="btn btn-sub" id="tutorPrevBtn" style="display:none">もどる</button><button class="btn btn-main" id="tutorNextBtn">次へ ➡</button></div>
     </div>
   </div>
 
-  <script>
-  (() => {
-    const $ = id => document.getElementById(id);
+  <div id="selectModal" class="modal-overlay" style="display:none">
+    <div class="modal-content">
+      <div class="mt">エルビウムの美肌ブロック崩し</div>
+      <div style="font-size:13px;font-weight:bold;color:#ffde59;margin:6px 0">難易度を選択してね</div>
+      <div id="diffMenu"></div>
+    </div>
+  </div>
 
-    const canvas = $('gameCanvas'), ctx = canvas.getContext('2d');
-    const W = canvas.width, H = canvas.height;
+  <div id="pauseModal" class="modal-overlay" style="display:none">
+    <div class="modal-content">
+      <div style="font-size:14px;font-weight:bold;color:#ffde59;margin:8px 0">⏸️ 一時停止中</div>
+      <button class="btn btn-main" id="resumeBtn">▶️ ゲームを続ける</button>
+      <button class="btn btn-sub" onclick="location.href='map.html'">🗺️ マップに戻る</button>
+      <button class="btn btn-sub" onclick="location.href='home.html'">🏠 ホームに戻る</button>
+    </div>
+  </div>
 
-    const gs = JSON.parse(localStorage.getItem('rareEarthGameState')) || { level: 1, money: 1500 };
-    const userLevel = gs.level || 1;
-    $('userLevelDisp').textContent = userLevel;
+  <div id="resultModal" class="modal-overlay" style="display:none">
+    <div class="modal-content">
+      <img class="result-art" src="https://17rareearth.github.io/17character/Er2.png" alt="エルビウム" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='chara0_Er.png'}else this.style.display='none'">
+      <div id="resultTitle" style="font-size:15px;font-weight:bold;color:#00fff5;margin:4px 0">クリア！</div>
+      <div class="result-breakdown">
+        <div class="result-row"><span>💧 スコア</span><span id="rScore" style="color:#00fff5">0</span></div>
+        <div class="result-row"><span>🔥 最大コンボ</span><span id="rCombo" style="color:#ff9fb4">0</span></div>
+        <div class="result-row"><span>🏅 難易度</span><span id="rDiff" style="color:#ffde59">-</span></div>
+        <div class="result-row"><span>⭐ 獲得EXP</span><span id="rExp" style="color:#a29bfe">0</span></div>
+        <div class="result-row"><span>💰 獲得賞金</span><span id="rMoney" style="color:#55ff55">0</span></div>
+        <div class="result-row" id="rItemRow"><span>🧪 エルビウム</span><span style="color:#ffde59">×10</span></div>
+        <div class="note" id="rSaved" style="text-align:center">✅ 本編に反映しました</div>
+      </div>
+      <button class="btn btn-main" onclick="location.href='map.html'">🗺️ マップに戻る</button>
+      <button class="btn btn-pink" onclick="location.href='home.html'">🏠 ホームに戻る</button>
+      <button class="btn btn-sub" id="retryBtn">🔄 もう一度挑戦</button>
+    </div>
+  </div>
+</div>
 
-    let state = 'tutorial';
-    let score = 0, lives = 6, claimed = false, result = null;
-    let currentDiff = 'normal';
-    let speedBoostCounter = 0; 
+<script>
+(() => {
+const $ = id => document.getElementById(id);
+const canvas = $('gameCanvas'), ctx = canvas.getContext('2d'), area = $('gameArea'), phone = $('phone');
+const W = 360; let H = 640, S = 1;
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v)), rnd = (a, b) => a + Math.random() * (b - a);
 
-    // パドルの位置を少し上に配置（H - 50）し、下に指を置くスペースを確保
-    const paddle = { x: W / 2 - 35, y: H - 50, w: 70, h: 11, dx: 6 };
-    let laser = { x: W / 2, y: H - 62, baseVx: 3 * 0.7, baseVy: -4.5 * 0.7, vx: 3 * 0.7, vy: -4.5 * 0.7, radius: 7, active: false };
 
-    let blocks = [];
+/* ---------- audio ---------- */
+let AC, mute = false;
+function tone(f, d, type = 'sine', v = .12, slide = 0) {
+  if (mute) return;
+  try {
+    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+    const t = AC.currentTime, o = AC.createOscillator(), g = AC.createGain();
+    o.type = type; o.frequency.setValueAtTime(f, t);
+    if (slide) o.frequency.exponentialRampToValueAtTime(Math.max(40, f + slide), t + d);
+    g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(.0001, t + d);
+    o.connect(g); g.connect(AC.destination); o.start(t); o.stop(t + d);
+  } catch (e) {}
+}
+const seq = (a, d, type, v, gap) => a.forEach((f, i) => setTimeout(() => tone(f, d, type, v), i * gap));
+const SFX = {
+  fire: () => tone(1100, .2, 'sawtooth', .07, -800),
+  pad: () => tone(300, .09, 'triangle', .16, 120),
+  hit: c => tone(480 + Math.min(c, 14) * 25, .06, 'square', .06),
+  brk: c => { tone(620 + Math.min(c, 14) * 55, .15, 'triangle', .14); tone(1240 + Math.min(c, 14) * 90, .22, 'sine', .08) },
+  bone: () => tone(170, .12, 'square', .1),
+  water: () => tone(250, .3, 'sine', .14, 600),
+  item: () => seq([784, 988, 1319], .13, 'triangle', .12, 70),
+  combo: () => seq([880, 1175, 1568], .12, 'triangle', .13, 60),
+  lose: () => tone(320, .55, 'sawtooth', .14, -260),
+  clearSynth: () => seq([523, 659, 784, 1047, 1319, 1568], .28, 'triangle', .14, 110),
+  over: () => seq([400, 330, 260], .32, 'sawtooth', .1, 190)
+};
+const SEF = { wide: 'SE_newstittle.mp3', water: 'SE_pappa.mp3', crack: 'SE_bishi.mp3', brk: 'SE_kinzokuhakai.mp3', clear: 'SE_kirakawa.mp3', multi: 'SE_kirakira.mp3' };
+const SEA = {}, SET = {};
+Object.keys(SEF).forEach(k => { const a = new Audio(SEF[k]); a.preload = 'auto'; a.addEventListener('error', () => { a.bad = true }); SEA[k] = a });
+function se(k, fb) {
+  if (mute) return;
+  const a = SEA[k], n = performance.now();
+  if (!a || a.bad) { if (fb) fb(); return }
+  if (n - (SET[k] || 0) < 50) return; SET[k] = n;
+  try { const c = a.cloneNode(); c.volume = k === 'brk' ? .7 : .9; const p = c.play(); if (p && p.catch) p.catch(() => { if (fb) fb() }) } catch (e) { if (fb) fb() }
+}
+const bgm = $('bgm'); bgm.volume = .4;
+$('bgm-btn').addEventListener('click', () => {
+  mute = !mute; $('bgm-btn').classList.toggle('muted', mute); $('bgm-btn').textContent = mute ? '🔇 OFF' : '🎵 ON';
+  if (mute) bgm.pause(); else bgm.play().catch(() => {});
+});
+const startBgm = () => { if (!mute) bgm.play().catch(() => {}); };
 
-    let tutorIdx = 0;
-    const tutorSlides = document.querySelectorAll('.tutor-slide');
-    $('tutorNextBtn').addEventListener('click', () => {
-      if (tutorIdx < tutorSlides.length - 1) {
-        tutorIdx++;
-        tutorSlides.forEach((s, i) => s.classList.toggle('active', i === tutorIdx));
-        $('tutorPrevBtn').style.display = 'block';
-        if (tutorIdx === tutorSlides.length - 1) {
-          $('tutorNextBtn').textContent = 'OK！難易度を選ぶ';
-        }
-      } else {
-        $('tutorialModal').style.display = 'none';
-        buildDiffMenu();
-        $('selectModal').style.display = 'flex';
-      }
-    });
-    $('tutorPrevBtn').addEventListener('click', () => {
-      if (tutorIdx > 0) {
-        tutorIdx--;
-        tutorSlides.forEach((s, i) => s.classList.toggle('active', i === tutorIdx));
-        if (tutorIdx === 0) $('tutorPrevBtn').style.display = 'none';$('tutorNextBtn').textContent = '次へ ➡';
-      }
-    });
+/* ---------- state ---------- */
+const DIFFS = {
+  normal: { name: 'ノーマル', spd: 6.0, cap: 1.0, exp: 500, money: 500, cls: 'diff-normal', ic: '✨', sub: 'お悩みをぜんぶ消そう' },
+  hard: { name: 'ハード', spd: 7.0, cap: 1.4, exp: 2000, money: 1500, cls: 'diff-hard', ic: '⚡', sub: '💧水分ブロックで加速' },
+  vhard: { name: 'ベリーハード', spd: 9.0, cap: 2, exp: 10000, money: 5000, cls: 'diff-vhard', ic: '🔥', sub: '🦴骨ブロックで難関に' }
+};
+const PATTERNS = {
+  normal: ['mmmmmmm', 'sssssss', 'ccccccc', 'pcpcpcp', 'ppppppp', 'wwwwwww'],
+  hard: ['mmmmmmm', 'sasssas', 'ccccccc', 'pcpapcp', 'ppppppp', 'wwwwwww'],
+  vhard: ['bmmmmmb', 'sssasss', 'ccbcbcc', 'pcapacp', 'ppppppp', 'wwwwwww']
+};
+const HP = { m: 3, s: 2, c: 2, a: 2, p: 1, w: 1, b: 999 };
+let state = 'tutorial', diff = 'normal', score = 0, lives = 3, combo = 0, maxCombo = 0, rally = 0, boost = 0, pierceT = 0, wideT = 0, T = 0, shake = 0, flash = 0, claimed = false, result = null;
+let blocks = [], balls = [], items = [], parts = [], floats = [];
+const pad = { x: W / 2 - 38, y: H - 84, w: 76, h: 12, sq: 0 };
+let L = false, R = false, swipeX = null;
+const BW = 44, BH = 24, GAP = 4, OX = (W - (7 * BW + 6 * GAP)) / 2, OY = 36;
+const panel = { x: OX - 6, y: OY - 8, w: 7 * BW + 6 * GAP + 12, h: 6 * BH + 5 * GAP + 16 };
 
-    function buildDiffMenu() {
-      const menu = $('diffMenu');
-      menu.innerHTML = '';
+const say = t => { $('say').textContent = t };
+function cheer() { const a = $('avWrap'); a.classList.remove('cheer'); void a.offsetWidth; a.classList.add('cheer') }
+let bt; function banner(t, ms = 1200) { const b = $('banner'); b.textContent = t; b.classList.add('show'); clearTimeout(bt); bt = setTimeout(() => b.classList.remove('show'), ms) }
 
-      const unlNormal = userLevel >= 1;
-      const btnN = document.createElement('button');
-      btnN.className = 'diff-btn ' + (unlNormal ? 'diff-normal' : 'diff-locked');
-      btnN.innerHTML = `<span>✨ ノーマルステージ<br><small>全消しEXP: 500</small></span><span>${unlNormal ? '▶ 挑戦' : 'Lv.1〜'}</span>`;
-      if (unlNormal) btnN.onclick = () => selectStage('normal');
-      menu.appendChild(btnN);
+function newBall(on) { return { x: pad.x + pad.w / 2, y: pad.y - 8, vx: 0, vy: 0, r: 7, on: !!on, tr: [] } }
+function mkCracks() {
+  let x = rnd(.3, .7) * BW, y = 1; const segs = [], br = [];
+  for (let i = 0; i < 5; i++) { const nx = clamp(x + rnd(-9, 9), 2, BW - 2), ny = Math.min(BH - 1, y + rnd(3, 6)); segs.push([x, y, nx, ny]); x = nx; y = ny }
+  for (let i = 0; i < 4; i++) { const g = segs[i], d = i % 2 ? 1 : -1; br.push([g[2], g[3], clamp(g[2] + d * rnd(5, 10), 1, BW - 1), Math.min(BH - 1, g[3] + rnd(1, 5))]) }
+  return { segs, br };
+}
+function initBlocks() {
+  blocks = [];
+  PATTERNS[diff].forEach((row, r) => [...row].forEach((ch, c) => blocks.push({ t: ch, x: OX + c * (BW + GAP), y: OY + r * (BH + GAP), hp: HP[ch], max: HP[ch], on: true, fl: 0, cd: 0, sd: Math.random() * 9, cr: mkCracks() })));
+}
+function startGame() {
+  score = 0; lives = 3; combo = 0; maxCombo = 0; rally = 0; boost = 0; pierceT = 0; wideT = 0; claimed = false;
+  items = []; parts = []; floats = []; pad.w = 76; pad.x = W / 2 - pad.w / 2;
+  initBlocks(); balls = [newBall(false)];
+  $('pause-btn').style.display = 'block'; $('resultModal').style.display = 'none'; state = 'play';
+  say('🚀 タップでレーザー発射！'); startBgm(); updateHUD();
+}
+function updateHUD() { $('score').textContent = score.toLocaleString(); $('lives').textContent = lives }
+function fire() {
+  if (state !== 'play') return;
+  const b = balls.find(b => !b.on); if (!b) return;
+  const a = rnd(-.35, .35), s = DIFFS[diff].spd;
+  b.on = true; b.vx = s * Math.sin(a); b.vy = -s * Math.cos(a); SFX.fire(); say('✨ 治療スタート！');
+  burst(b.x, b.y, '#ff9fc8', 8, 2.5);
+}
 
-      const unlHard = userLevel >= 15;
-      const btnH = document.createElement('button');
-      btnH.className = 'diff-btn ' + (unlHard ? 'diff-hard' : 'diff-locked');
-      btnH.innerHTML = `<span>⚡ ハード (特殊ギミック)<br><small>全消しEXP: 2,000</small></span><span>${unlHard ? '▶ 挑戦' : 'Lv.15〜'}</span>`;
-      if (unlHard) btnH.onclick = () => selectStage('hard');
-      menu.appendChild(btnH);
+/* ---------- effects ---------- */
+function burst(x, y, col, n, sp, g = .08) { for (let i = 0; i < n && parts.length < 320; i++) { const a = rnd(0, 6.283), s = rnd(.4, 1) * sp; parts.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 1, l: rnd(25, 50), m: 50, c: col, s: rnd(1.5, 4), g }) } }
+const float = (x, y, s, c = '#fff', sz = 13) => floats.push({ x, y, s, c, sz, l: 55 });
+const COL = { m: '#7a3b2e', s: '#9a6a3a', c: '#b0605a', p: '#4a3a3a', w: '#a06a5a', a: '#5ac8fa', b: '#eee' };
 
-      const unlVHard = userLevel >= 20;
-      const btnV = document.createElement('button');
-      btnV.className = 'diff-btn ' + (unlVHard ? 'diff-vhard' : 'diff-locked');
-      btnV.innerHTML = `<span>🔥 ベリーハード (骨配置)<br><small>全消しEXP: 10,000</small></span><span>${unlVHard ? '▶ 挑戦' : 'Lv.20〜'}</span>`;
-      if (unlVHard) btnV.onclick = () => selectStage('vhard');
-      menu.appendChild(btnV);
+function hitBlock(k) {
+  if (k.t === 'b') { SFX.bone(); return false }
+  k.hp--; k.fl = 7; combo++; if (combo > maxCombo) maxCombo = combo;
+  const cx = k.x + BW / 2, cy = k.y + BH / 2;
+  score += Math.round(10 * (1 + combo * .1)); if (k.t === 'a') se('water', SFX.water); else if (k.hp > 0) se('crack', () => SFX.hit(combo)); burst(cx, cy, COL[k.t], 4, 2);
+  if (k.hp <= 0) {
+    k.on = false; const g = Math.round(50 * k.max * (1 + combo * .1)); score += g;
+    if (k.t !== 'a') se('brk', () => SFX.brk(combo)); burst(cx, cy, COL[k.t], 16, 4.5); burst(cx, cy, '#fff', 8, 3.5, 0);
+    float(cx, cy - 6, '+' + g, '#fff3a0'); shake = Math.max(shake, 4); cheer();
+    if (k.t === 'a') { boost = 3; banner('💧 吸収！加速！3回ラリーで戻る'); say('💧 水分に吸収されて加速！') }
+    if (Math.random() < .17) items.push({ x: cx, y: cy, t: ['W', 'P', 'M'][Math.floor(Math.random() * 3)] });
+    if (combo > 0 && combo % 5 === 0) { SFX.combo(); banner('COMBO ×' + combo + '！', 900); say('✨ コンボ×' + combo + '！いい感じ！'); flash = .5 }
+    if (!blocks.some(b => b.on && b.t !== 'b')) endGame(true);
+  }
+  return true;
+}
+function getItem(it) {
+  burst(it.x, pad.y, '#ffde59', 14, 4); cheer();
+  if (it.t === 'W') { se('wide', SFX.item); wideT = 600; banner('↔ ワイドヘッド！'); say('↔ ヘッドが広がった！') }
+  else if (it.t === 'P') { SFX.item(); pierceT = 420; banner('🔥 貫通レーザー！'); say('🔥 突き抜けろ！') }
+  else { const src = balls.find(b => b.on) || balls[0]; if (!src.on) SFX.item(); if (src.on) { se('multi', SFX.item); const s = Math.hypot(src.vx, src.vy), th = Math.atan2(src.vx, Math.abs(src.vy) + .001); [-.45, .45].forEach(a => { const t = clamp(th + a, -.95, .95); balls.push({ x: src.x, y: src.y, vx: Math.sin(t) * s, vy: -Math.cos(t) * s, r: 7, on: true, tr: [], idle: 0 }) }); banner('✨ 3連レーザー！'); say('✨ レーザーが3つに！') } }
+}
+
+/* ---------- update ---------- */
+function moveBall(b, dt) {
+  const base = DIFFS[diff].spd, spd = (base + Math.min(DIFFS[diff].cap, rally * .1)) * (boost > 0 ? 1.35 : 1);
+  const m = Math.hypot(b.vx, b.vy) || 1; b.vx *= spd / m; b.vy *= spd / m;
+  const mv = spd * .38; if (Math.abs(b.vy) < mv) { b.vy = (b.vy >= 0 ? 1 : -1) * mv; b.vx = (b.vx >= 0 ? 1 : -1) * Math.sqrt(spd * spd - mv * mv) }
+  b.idle = (b.idle || 0) + dt; if (b.idle > 420) { b.vx += rnd(-.3, .3) * spd; b.idle = 200 }
+  const steps = Math.ceil(spd * dt / 4);
+  for (let i = 0; i < steps; i++) {
+    b.x += b.vx * dt / steps; b.y += b.vy * dt / steps;
+    if (b.x < b.r) { b.x = b.r; b.vx = Math.abs(b.vx) } else if (b.x > W - b.r) { b.x = W - b.r; b.vx = -Math.abs(b.vx) }
+    if (b.y < b.r) { b.y = b.r; b.vy = Math.abs(b.vy) }
+    if (b.y > H + 12) { b.dead = true; return }
+    if (b.vy > 0 && b.y + b.r >= pad.y && b.y - b.r <= pad.y + pad.h && b.x >= pad.x - 4 && b.x <= pad.x + pad.w + 4) {
+      const rel = clamp((b.x - (pad.x + pad.w / 2)) / (pad.w / 2), -1, 1), a = clamp(rel * 1.05 + rnd(-.09, .09), -1.2, 1.2);
+      b.vx = spd * Math.sin(a); b.vy = -spd * Math.cos(a); b.y = pad.y - b.r - .5;
+      rally++; combo = 0; pad.sq = 6; SFX.pad(); burst(b.x, pad.y, '#ff9fc8', 5, 2);
+      if (boost > 0) { boost--; if (boost === 0) { banner('✅ スピードが戻った！', 900); say('✅ ペースが戻ったよ') } }
     }
-
-    function selectStage(diff) {
-      currentDiff = diff;
-      $('selectModal').style.display = 'none';
-      startGame();
+    const pier = pierceT > 0;
+    for (const k of blocks) {
+      if (!k.on) continue;
+      const nx = clamp(b.x, k.x, k.x + BW), ny = clamp(b.y, k.y, k.y + BH), dx = b.x - nx, dy = b.y - ny;
+      if (dx * dx + dy * dy >= b.r * b.r) continue;
+      if (pier && k.t !== 'b') { if (k.cd <= 0) { k.cd = 8; b.idle = 0; hitBlock(k) } continue }
+      if (Math.abs(dx) > Math.abs(dy)) { b.vx = dx > 0 ? Math.abs(b.vx) : -Math.abs(b.vx); b.x += dx > 0 ? 1 : -1 }
+      else { b.vy = dy >= 0 ? Math.abs(b.vy) : -Math.abs(b.vy); b.y += dy >= 0 ? 1 : -1 }
+      b.idle = 0; hitBlock(k); break;
     }
+  }
+  b.tr.push([b.x, b.y]); if (b.tr.length > 9) b.tr.shift();
+}
+function update(dt) {
+  if (state !== 'play') return;
+  T += dt;
+  if (L) pad.x -= 8 * dt; if (R) pad.x += 8 * dt;
+  if (swipeX !== null) pad.x += clamp(swipeX - pad.x, -18 * dt, 18 * dt);
+  if (wideT > 0) wideT -= dt; if (pierceT > 0) pierceT -= dt;
+  const tw = wideT > 0 ? 124 : 76; const old = pad.w; pad.w += (tw - pad.w) * .15; pad.x -= (pad.w - old) / 2;
+  pad.x = clamp(pad.x, 0, W - pad.w); if (pad.sq > 0) pad.sq -= dt;
+  balls.forEach(b => { if (!b.on) { b.x = pad.x + pad.w / 2; b.y = pad.y - b.r - 1 } });
+  blocks.forEach(k => { if (k.fl > 0) k.fl -= dt; if (k.cd > 0) k.cd -= dt });
+  balls.forEach(b => b.on && moveBall(b, dt));
+  balls = balls.filter(b => !b.dead);
+  if (state === 'play' && !balls.length) {
+    lives--; combo = 0; rally = 0; boost = 0; pierceT = 0; SFX.lose(); shake = 10; updateHUD();
+    if (lives <= 0) { endGame(false); return }
+    balls = [newBall(false)]; banner('💦 残り❤️×' + lives, 900); say('💦 もう一度タップで発射！');
+  }
+  for (const it of items) { it.y += 2.4 * dt; if (it.y > pad.y - 4 && it.y < pad.y + 18 && it.x > pad.x - 8 && it.x < pad.x + pad.w + 8) { it.d = 1; getItem(it) } else if (it.y > H + 20) it.d = 1 }
+  items = items.filter(i => !i.d);
+  for (const p of parts) { p.x += p.vx * dt; p.y += p.vy * dt; p.vy += p.g * dt; p.l -= dt }
+  parts = parts.filter(p => p.l > 0);
+  for (const f of floats) { f.y -= .7 * dt; f.l -= dt } floats = floats.filter(f => f.l > 0);
+  if (shake > 0) shake -= dt * .8; if (flash > 0) flash -= .03 * dt;
+  updateHUD();
+}
 
-    function initBlocks() {
-      blocks = [];
-      const rows = 5, cols = 7;
-      const bWidth = 44, bHeight = 20, padding = 4, offsetTop = 25, offsetLeft = 13;
+/* ---------- render ---------- */
+function rr(x, y, w, h, r) { ctx.beginPath(); ctx.roundRect(x, y, w, h, r) }
+function drawBlock(k) {
+  const dmg = k.max > 1 && k.t !== 'b' && k.t !== 'a' ? (k.max - k.hp) / (k.max - 1) : 0, x = k.x + (dmg >= 1 ? Math.sin(T * 1.3 + k.sd) * .7 : 0), y = k.y, cx = x + BW / 2, cy = y + BH / 2, f = k.fl > 0;
+  if (k.t === 'a') { ctx.fillStyle = f ? '#fff' : (k.hp < k.max ? 'rgba(30,140,235,.92)' : 'rgba(90,200,250,.55)'); rr(x, y, BW, BH, 8); ctx.fill(); ctx.strokeStyle = '#bff'; ctx.lineWidth = 1.5; ctx.stroke(); ctx.font = '14px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('💧', cx, cy + 1) }
+  else if (k.t === 'b') { ctx.fillStyle = '#dfe6e9'; rr(x + 5, y + 8, BW - 10, 8, 4); ctx.fill(); ctx.beginPath(); [[x + 6, y + 6], [x + 6, y + 18], [x + BW - 6, y + 6], [x + BW - 6, y + 18]].forEach(p => { ctx.moveTo(p[0] + 5, p[1]); ctx.arc(p[0], p[1], 5, 0, 7) }); ctx.fill() }
+  else {
+    ctx.fillStyle = f ? '#fff' : 'rgba(255,255,255,.38)'; rr(x, y, BW, BH, 6); ctx.fill(); ctx.strokeStyle = 'rgba(27,42,65,.22)'; ctx.lineWidth = 1; ctx.stroke();
+    ctx.strokeStyle = COL[k.t]; ctx.fillStyle = COL[k.t]; ctx.lineWidth = 1.6;
+    if (k.t === 'w') { for (let i = 0; i < 3; i++) { ctx.beginPath(); for (let j = 0; j <= 8; j++) { const px = x + 6 + j * 4, py = y + 6 + i * 6 + Math.sin(j * 1.4 + k.sd) * 1.8; j ? ctx.lineTo(px, py) : ctx.moveTo(px, py) } ctx.stroke() } }
+    else if (k.t === 'p') { [[-12, -4], [0, 4], [12, -4], [-4, 6], [8, 6]].forEach(p => { ctx.beginPath(); ctx.arc(cx + p[0], cy + p[1] * .8, 2.2, 0, 7); ctx.fill() }) }
+    else if (k.t === 'c') { const g = ctx.createRadialGradient(cx, cy, 1, cx, cy, 11); g.addColorStop(0, '#7a2d2d'); g.addColorStop(.7, '#c9807a'); g.addColorStop(1, 'rgba(255,255,255,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx, cy, 11, 0, 7); ctx.fill() }
+    else if (k.t === 's') { ctx.fillStyle = '#8a5a2e'; ctx.beginPath(); ctx.ellipse(cx, cy, 16, 8, 0, 0, 7); ctx.fill(); ctx.fillStyle = 'rgba(255,230,190,.55)'; ctx.beginPath(); ctx.ellipse(cx - 4, cy - 3, 6, 2.5, 0, 0, 7); ctx.fill() }
+    else if (k.t === 'm') { ctx.fillStyle = '#3b1f1a'; ctx.beginPath(); ctx.arc(cx, cy, 9, 0, 7); ctx.fill(); ctx.fillStyle = 'rgba(255,255,255,.4)'; ctx.beginPath(); ctx.arc(cx - 3, cy - 3, 2.5, 0, 7); ctx.fill() }
+  }
+  if (dmg > 0) {
+    const n = Math.ceil(dmg * k.cr.segs.length); ctx.beginPath();
+    k.cr.segs.slice(0, n).forEach(g => { ctx.moveTo(x + g[0], y + g[1]); ctx.lineTo(x + g[2], y + g[3]) });
+    if (dmg >= 1) k.cr.br.forEach(g => { ctx.moveTo(x + g[0], y + g[1]); ctx.lineTo(x + g[2], y + g[3]) });
+    ctx.lineCap = 'round'; ctx.strokeStyle = 'rgba(255,255,255,.75)'; ctx.lineWidth = 3.2; ctx.stroke(); ctx.strokeStyle = 'rgba(70,30,30,.9)'; ctx.lineWidth = 1.3; ctx.stroke();
+  }
+}
+function render() {
+  const sx = shake > 0 ? rnd(-shake, shake) * .6 : 0, sy = shake > 0 ? rnd(-shake, shake) * .6 : 0;
+  ctx.save(); ctx.translate(sx, sy);
+  const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#ffe6f0'); g.addColorStop(1, '#fff9fc'); ctx.fillStyle = g; ctx.fillRect(-10, -10, W + 20, H + 20);
+  ctx.strokeStyle = 'rgba(255,126,179,.13)'; ctx.lineWidth = 1; for (let x = 0; x < W; x += 32) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke() } for (let y = (T * .5) % 32; y < H; y += 32) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke() }
+  for (let i = 0; i < 10; i++) { const bx = (i * 83) % W + Math.sin(T * .03 + i) * 6, by = H - ((T * .4 + i * 97) % (H + 40)); ctx.strokeStyle = 'rgba(255,126,179,.4)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(bx, by, 3 + (i % 3) * 2, 0, 7); ctx.stroke() }
+  const left = blocks.filter(b => b.on && b.t !== 'b').length, tot = blocks.filter(b => b.t !== 'b').length || 1, ratio = 1 - left / tot;
+  const sg = ctx.createLinearGradient(0, panel.y, 0, panel.y + panel.h); sg.addColorStop(0, '#ffd8c4'); sg.addColorStop(1, '#ffc3a8'); ctx.fillStyle = sg; rr(panel.x, panel.y, panel.w, panel.h, 14); ctx.fill();
+  ctx.fillStyle = `rgba(255,255,255,${ratio * .55})`; rr(panel.x, panel.y, panel.w, panel.h, 14); ctx.fill();
+  ctx.strokeStyle = '#1b2a41'; ctx.lineWidth = 3; ctx.stroke();
+  if (ratio > .4) { ctx.fillStyle = '#fff'; for (let i = 0; i < 6; i++) { const t = T * .06 + i * 1.7, px = panel.x + 14 + ((i * 53) % (panel.w - 28)), py = panel.y + 10 + ((i * 37) % (panel.h - 20)), a = .5 + .5 * Math.sin(t); ctx.globalAlpha = a * ratio; ctx.fillRect(px - 1, py - 5, 2, 10); ctx.fillRect(px - 5, py - 1, 10, 2) } ctx.globalAlpha = 1 }
+  blocks.forEach(k => k.on && drawBlock(k));
+  items.forEach(it => { const c = { W: '#4da3ff', P: '#ff6b3d', M: '#c77dff' }[it.t]; ctx.fillStyle = c; ctx.strokeStyle = '#1b2a41'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(it.x, it.y, 12, 0, 7); ctx.fill(); ctx.stroke(); ctx.font = '13px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#fff'; ctx.fillText({ W: '↔', P: '🔥', M: '✨' }[it.t], it.x, it.y + 1) });
+  balls.forEach(b => {
+    b.tr.forEach((p, i) => { ctx.globalAlpha = i / b.tr.length * .5; ctx.fillStyle = pierceT > 0 ? '#ffb347' : '#ff7eb3'; ctx.beginPath(); ctx.arc(p[0], p[1], b.r * (i / b.tr.length), 0, 7); ctx.fill() }); ctx.globalAlpha = 1;
+    const gl = ctx.createRadialGradient(b.x, b.y, 1, b.x, b.y, b.r * 2.8); gl.addColorStop(0, pierceT > 0 ? 'rgba(255,179,71,.9)' : 'rgba(255,105,170,.9)'); gl.addColorStop(1, 'rgba(255,126,179,0)'); ctx.fillStyle = gl; ctx.beginPath(); ctx.arc(b.x, b.y, b.r * 2.8, 0, 7); ctx.fill();
+    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(b.x, b.y, b.r * .7, 0, 7); ctx.fill(); ctx.strokeStyle = '#ff4d8d'; ctx.lineWidth = 2; ctx.stroke();
+  });
+  ctx.fillStyle = tid !== null ? 'rgba(255,126,179,.22)' : 'rgba(255,126,179,.1)'; rr(12, H - 62, W - 24, 50, 18); ctx.fill();
+  ctx.setLineDash([7, 6]); ctx.strokeStyle = '#ff7eb3'; ctx.lineWidth = 2.5; ctx.stroke(); ctx.setLineDash([]);
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = 'bold 11px sans-serif'; ctx.fillStyle = 'rgba(214,60,120,.75)'; ctx.fillText('ここに指をおいて スワイプ', W / 2, H - 37 + (tid !== null ? 100 : 0));
+  { const mx = pad.x + pad.w / 2; ctx.fillStyle = '#fff'; ctx.strokeStyle = '#ff4d8d'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(mx, H - 37, 12, 0, 7); ctx.fill(); ctx.stroke(); ctx.font = '13px sans-serif'; ctx.fillStyle = '#ff4d8d'; ctx.fillText('👆', mx, H - 36) }
+  const sq = pad.sq > 0 ? 3 : 0, pg = ctx.createLinearGradient(0, pad.y, 0, pad.y + pad.h); pg.addColorStop(0, '#ffffff'); pg.addColorStop(1, '#ffb3d1');
+  if (wideT > 0 || pierceT > 0) { ctx.shadowColor = pierceT > 0 ? '#ffb347' : '#ff7eb3'; ctx.shadowBlur = 14 }
+  ctx.fillStyle = pg; rr(pad.x, pad.y + sq, pad.w, pad.h - sq, 6); ctx.fill(); ctx.shadowBlur = 0; ctx.strokeStyle = '#1b2a41'; ctx.lineWidth = 2.5; ctx.stroke();
+  ctx.fillStyle = '#ff4d8d'; rr(pad.x + pad.w / 2 - 12, pad.y - 3 + sq, 24, 5, 2.5); ctx.fill();
+  parts.forEach(p => { ctx.globalAlpha = clamp(p.l / p.m, 0, 1); ctx.fillStyle = p.c; ctx.fillRect(p.x, p.y, p.s, p.s) }); ctx.globalAlpha = 1;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; floats.forEach(f => { ctx.globalAlpha = clamp(f.l / 25, 0, 1); ctx.font = `bold ${f.sz}px sans-serif`; ctx.lineWidth = 3; ctx.strokeStyle = '#1b2a41'; ctx.strokeText(f.s, f.x, f.y); ctx.fillStyle = f.c; ctx.fillText(f.s, f.x, f.y) }); ctx.globalAlpha = 1;
+  if (combo >= 3 && state === 'play') { ctx.font = 'bold 18px sans-serif'; ctx.lineWidth = 4; ctx.strokeStyle = '#1b2a41'; ctx.strokeText('COMBO ×' + combo, W / 2, panel.y + panel.h + 24); ctx.fillStyle = '#ff4d8d'; ctx.fillText('COMBO ×' + combo, W / 2, panel.y + panel.h + 24) }
+  if (!balls.some(b => b.on) && state === 'play') { ctx.font = 'bold 14px sans-serif'; ctx.fillStyle = `rgba(255,77,141,${.65 + .35 * Math.sin(T * .15 + 1)})`; ctx.fillText('👆 タップで発射！', W / 2, H - 80) }
+  if (flash > 0) { ctx.fillStyle = `rgba(255,255,255,${flash * .5})`; ctx.fillRect(-10, -10, W + 20, H + 20) }
+  ctx.restore();
+}
 
-      for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-          let hp = 1, type = 'water';
+/* ---------- end & reward ---------- */
+function claim() {
+  if (claimed || !result) return; claimed = true;
+  let s; try { s = JSON.parse(localStorage.getItem('rareEarthGameState')) } catch (e) {} s = s || {};
+  if (s.money == null) s.money = 1500;
+  if (s.level == null) { s.level = 1; if (s.mudStock == null) s.mudStock = 5 }
+  s.money += result.money;
+  if (result.er) { s.elements = s.elements || {}; s.elements.Er = (s.elements.Er || 0) + result.er }
+  let lv = s.level, ex = (s.exp || 0) + result.exp; while (ex >= lv * 100) { ex -= lv * 100; lv++ }
+  s.level = lv; s.exp = ex;
+  try { localStorage.setItem('rareEarthGameState', JSON.stringify(s)) } catch (e) {}
+}
+function endGame(clear) {
+  if (state === 'clear' || state === 'over') return;
+  state = clear ? 'clear' : 'over'; $('pause-btn').style.display = 'none';
+  const d = DIFFS[diff];
+  result = { money: clear ? d.money : 100, exp: clear ? d.exp : 0, er: clear ? 10 : 0 };
+  claim();
+  if (clear) { se('clear', SFX.clearSynth); flash = 1; for (let i = 0; i < 4; i++) setTimeout(() => burst(rnd(40, W - 40), rnd(60, 220), ['#ffd23f', '#ff7eb3', '#7fe0ee', '#ffffff'][i], 40, 5, .05), i * 160); banner('✨ つるつる肌に！', 1500); say('✨ ぴかぴかお肌、完成！'); cheer() }
+  else { SFX.over(); say('💦 エネルギー切れ…') }
+  $('resultTitle').textContent = clear ? '✨ 美肌スキンクリア！' : '💦 レーザーエネルギー切れ…';
+  $('rScore').textContent = score.toLocaleString() + ' 点'; $('rCombo').textContent = '×' + maxCombo; $('rDiff').textContent = d.name;
+  $('rExp').textContent = '+' + result.exp.toLocaleString() + ' EXP'; $('rMoney').textContent = '+' + result.money.toLocaleString() + ' G';
+  $('rItemRow').style.display = clear ? 'flex' : 'none';
+  setTimeout(() => { $('resultModal').style.display = 'flex' }, clear ? 1500 : 700);
+}
 
-          if (currentDiff === 'normal') {
-            if (r === 0) { hp = 3; type = 'boss'; }
-            else if (r === 1) { hp = 2; type = 'dry'; }
-          } else if (currentDiff === 'hard') {
-            if (r === 0) { hp = 3; type = 'boss'; }
-            else if ((r === 2 || r === 3) && (c === 1 || c === 5)) { hp = 2; type = 'speedup'; }
-            else if (r === 1) { hp = 2; type = 'dry'; }
-          } else if (currentDiff === 'vhard') {
-            if (r === 0 && (c === 0 || c === 6)) { type = 'bone'; hp = 999; }
-            else if (r === 0) { hp = 4; type = 'boss'; }
-            else if (r === 2 && (c === 2 || c === 4)) { type = 'bone'; hp = 999; }
-            else if (r === 1) { hp = 3; type = 'boss'; }
-            else if ((r === 3) && (c % 2 === 1)) { hp = 2; type = 'speedup'; }
-          }
-
-          blocks.push({
-            x: offsetLeft + c * (bWidth + padding),
-            y: offsetTop + r * (bHeight + padding),
-            w: bWidth, h: bHeight,
-            hp: hp, maxHp: hp, type: type, status: 1, hitFlash: 0
-          });
-        }
-      }
-    }
-
-    function startGame() {
-      score = 0; lives = 6; claimed = false; speedBoostCounter = 0;
-      paddle.x = W / 2 - 35;
-      resetLaser();
-      initBlocks();
-      $('pause-btn').style.display = 'flex';$('resultModal').style.display = 'none';
-      state = 'play';
-      updateHUD();
-    }
-
-    function resetLaser() {
-      laser.x = paddle.x + paddle.w / 2;
-      laser.y = paddle.y - 12;
-      laser.vx = laser.baseVx;
-      laser.vy = laser.baseVy;
-      laser.active = false;
-      speedBoostCounter = 0;
-    }
-
-    function updateHUD() {
-      $('score').textContent = score.toLocaleString();$('lives').textContent = lives;
-      const diffName = currentDiff === 'normal' ? 'ノーマル' : currentDiff === 'hard' ? 'ハード(加速有)' : 'ベリーハード(骨配置)';
-      $('modeIndicator').textContent = laser.active ? `✨ ${diffName}ステージ` : `🚀 画面をスワイプしてスタート`;
-    }
-
-    let leftPressed = false, rightPressed = false;
-    let isDragging = false;
-
-    const fireAction = () => {
-      if (!laser.active && state === 'play') laser.active = true;
-    };
-
-    // タッチ＆マウススワイプ操作（パドルの下あたりをタッチ・ドラッグして操作）
-    canvas.addEventListener('pointerdown', (e) => {
-      if (state !== 'play') return;
-      isDragging = true;
-      updatePaddleByTouch(e);
-      fireAction();
-      try { canvas.setPointerCapture(e.pointerId); } catch(err) {}
-    });
-
-    canvas.addEventListener('pointermove', (e) => {
-      if (!isDragging || state !== 'play') return;
-      updatePaddleByTouch(e);
-    });
-
-    canvas.addEventListener('pointerup', (e) => {
-      isDragging = false;
-      try { canvas.releasePointerCapture(e.pointerId); } catch(err) {}
-    });
-
-    canvas.addEventListener('pointercancel', () => {
-      isDragging = false;
-    });
-
-    function updatePaddleByTouch(e) {
-      const rect = canvas.getBoundingClientRect();
-      const scaleX = canvas.width / rect.width;
-      const touchX = (e.clientX - rect.left) * scaleX;
-      
-      // 指の位置にパドルの中心を合わせる
-      paddle.x = touchX - paddle.w / 2;
-      if (paddle.x < 0) paddle.x = 0;
-      if (paddle.x > W - paddle.w) paddle.x = W - paddle.w;
-    }
-
-    $('btnL').addEventListener('pointerdown', () => leftPressed = true);
-    $('btnL').addEventListener('pointerup', () => leftPressed = false);$('btnR').addEventListener('pointerdown', () => rightPressed = true);
-    $('btnR').addEventListener('pointerup', () => rightPressed = false);$('btnFire').addEventListener('click', fireAction);
-
-    $('backToStageSelectBtn').addEventListener('click', () => {
-      state = 'select';
-      $('pause-btn').style.display = 'none';
-      $('pauseModal').style.display = 'none';
-      $('resultModal').style.display = 'none';
-      buildDiffMenu();
-      $('selectModal').style.display = 'flex';
-    });
-
-    $('pause-btn').addEventListener('click', () => {
-      if (state === 'play') { state = 'pause'; $('pauseModal').style.display = 'flex'; }
-    });
-    $('resumeBtn').addEventListener('click', () => {$('pauseModal').style.display = 'none'; state = 'play'; });
-
-    document.addEventListener('keydown', e => {
-      if (state !== 'play') return;
-      if (e.key === 'ArrowLeft' || e.key === '4' || e.code === 'Numpad4') leftPressed = true;
-      if (e.key === 'ArrowRight' || e.key === '6' || e.code === 'Numpad6') rightPressed = true;
-      if (e.key === ' ' || e.key === '8' || e.key === '5' || e.key === '0' || e.code === 'Numpad8' || e.code === 'Numpad5' || e.code === 'Numpad0') fireAction();
-    });
-    document.addEventListener('keyup', e => {
-      if (e.key === 'ArrowLeft' || e.key === '4' || e.code === 'Numpad4') leftPressed = false;
-      if (e.key === 'ArrowRight' || e.key === '6' || e.code === 'Numpad6') rightPressed = false;
-    });
-
-    function update() {
-      if (state !== 'play') return;
-
-      if (leftPressed) paddle.x = Math.max(0, paddle.x - paddle.dx);
-      if (rightPressed) paddle.x = Math.min(W - paddle.w, paddle.x + paddle.dx);
-
-      blocks.forEach(b => { if (b.hitFlash > 0) b.hitFlash--; });
-
-      if (!laser.active) {
-        laser.x = paddle.x + paddle.w / 2;
-        return;
-      }
-
-      const steps = Math.ceil(Math.max(Math.abs(laser.vx), Math.abs(laser.vy)) / 3);
-      const stepVx = laser.vx / steps;
-      const stepVy = laser.vy / steps;
-
-      for (let s = 0; s < steps; s++) {
-        laser.x += stepVx;
-        laser.y += stepVy;
-
-        if (laser.x - laser.radius < 0) { laser.x = laser.radius; laser.vx *= -1; break; }
-        if (laser.x + laser.radius > W) { laser.x = W - laser.radius; laser.vx *= -1; break; }
-        if (laser.y - laser.radius < 0) { laser.y = laser.radius; laser.vy *= -1; break; }
-
-        if (
-          laser.y + laser.radius >= paddle.y &&
-          laser.y - laser.radius <= paddle.y + paddle.h &&
-          laser.x >= paddle.x && laser.x <= paddle.x + paddle.w &&
-          laser.vy > 0
-        ) {
-          laser.y = paddle.y - laser.radius;
-          const hitPos = (laser.x - (paddle.x + paddle.w / 2)) / (paddle.w / 2);
-          const currentSpeed = Math.hypot(laser.vx, laser.vy);
-          const angle = hitPos * 1.1;
-
-          if (speedBoostCounter > 0) {
-            speedBoostCounter--;
-            if (speedBoostCounter === 0) {
-              const baseSpeed = Math.hypot(laser.baseVx, laser.baseVy);
-              laser.vx = baseSpeed * Math.sin(angle);
-              laser.vy = -Math.abs(baseSpeed * Math.cos(angle));
-              showBanner('✨ 3回ラリー達成！スピードが戻った');
-            } else {
-              laser.vx = currentSpeed * Math.sin(angle);
-              laser.vy = -Math.abs(currentSpeed * Math.cos(angle));
-              showBanner(`⚡ ラリー残りあと ${speedBoostCounter} 回！`);
-            }
-          } else {
-            laser.vx = currentSpeed * Math.sin(angle);
-            laser.vy = -Math.abs(currentSpeed * Math.cos(angle));
-          }
-          break;
-        }
-
-        let collided = false;
-        blocks.forEach(b => {
-          if (!collided && b.status === 1) {
-            if (
-              laser.x + laser.radius > b.x &&
-              laser.x - laser.radius < b.x + b.w &&
-              laser.y + laser.radius > b.y &&
-              laser.y - laser.radius < b.y + b.h
-            ) {
-              collided = true;
-
-              const prevX = laser.x - stepVx;
-              const prevY = laser.y - stepVy;
-
-              const overlapLeft = (prevX + laser.radius) <= b.x;
-              const overlapRight = (prevX - laser.radius) >= (b.x + b.w);
-              const overlapTop = (prevY + laser.radius) <= b.y;
-              const overlapBottom = (prevY - laser.radius) >= (b.y + b.h);
-
-              if (overlapTop) {
-                laser.y = b.y - laser.radius;
-                laser.vy *= -1;
-              } else if (overlapBottom) {
-                laser.y = b.y + b.h + laser.radius;
-                laser.vy *= -1;
-              } else if (overlapLeft) {
-                laser.x = b.x - laser.radius;
-                laser.vx *= -1;
-              } else if (overlapRight) {
-                laser.x = b.x + b.w + laser.radius;
-                laser.vx *= -1;
-              } else {
-                laser.vy *= -1;
-              }
-
-              if (b.type === 'bone') {
-                b.hitFlash = 6;
-              } else {
-                b.hp--;
-                b.hitFlash = 8;
-                score += 50;
-                updateHUD();
-
-                if (b.type === 'speedup' && speedBoostCounter === 0) {
-                  laser.vx *= 1.4;
-                  laser.vy *= 1.4;
-                  speedBoostCounter = 3; 
-                  showBanner('⚡ スピードアップ！パドルで3回打ち返そう');
-                }
-
-                if (b.hp <= 0) {
-                  b.status = 0;
-                  score += (b.type === 'boss' ? 500 : 150);
-                  updateHUD();
-                }
-              }
-            }
-          }
-        });
-        if (collided) break;
-      }
-
-      if (laser.y > H) {
-        lives--;
-        updateHUD();
-        if (lives <= 0) endGame(false);
-        else resetLaser();
-      }
-
-      let breakableCount = 0;
-      blocks.forEach(b => {
-        if (b.status === 1 && b.type !== 'bone') breakableCount++;
-      });
-      if (breakableCount === 0) endGame(true);
-    }
-
-    function showBanner(text) {
-      const b = $('banner'); b.textContent = text; b.classList.add('show');
-      setTimeout(() => b.classList.remove('show'), 1500);
-    }
-
-    function render() {
-      ctx.clearRect(0, 0, W, H);
-
-      ctx.fillStyle = '#00fff5';
-      ctx.beginPath();
-      ctx.roundRect(paddle.x, paddle.y, paddle.w, paddle.h, 6);
-      ctx.fill();
-
-      ctx.fillStyle = speedBoostCounter > 0 ? '#ffde59' : '#ff758c';
-      ctx.shadowColor = speedBoostCounter > 0 ? '#ffde59' : '#ff4d8d';
-      ctx.shadowBlur = 10;
-      ctx.beginPath();
-      ctx.arc(laser.x, laser.y, laser.radius, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.shadowBlur = 0;
-
-      blocks.forEach(b => {
-        if (b.status === 1) {
-          ctx.save();
-          if (b.type === 'bone') {
-            ctx.fillStyle = '#cbd5e1'; ctx.strokeStyle = '#94a3b8';
-          } else if (b.type === 'speedup') {
-            ctx.fillStyle = '#eab308'; ctx.strokeStyle = '#fef08a';
-          } else if (b.type === 'boss') {
-            ctx.fillStyle = '#e94560'; ctx.strokeStyle = '#fff';
-          } else {
-            ctx.fillStyle = '#00fff5'; ctx.strokeStyle = '#1b8cff';
-          }
-
-          if (b.hitFlash > 0 && b.hitFlash % 2 === 0) {
-            ctx.fillStyle = '#ffffff';
-          }
-
-          ctx.lineWidth = 2;
-          ctx.beginPath();
-          ctx.roundRect(b.x, b.y, b.w, b.h, 4);
-          ctx.fill();
-          ctx.stroke();
-
-          ctx.fillStyle = b.type === 'bone' ? '#1e293b' : '#fff';
-          ctx.font = 'bold 10px sans-serif';
-          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-          let label = '💧';
-          if (b.type === 'bone') label = '🦴骨';
-          else if (b.type === 'speedup') label = '⚡加速';
-          else if (b.type === 'boss') {
-            label = (b.hp === b.maxHp) ? '🌵原因' : '🌵' + b.hp;
-          }
-          else if (b.hp > 1) label = 'HP' + b.hp;
-          ctx.fillText(label, b.x + b.w / 2, b.y + b.h / 2);
-          ctx.restore();
-        }
-      });
-    }
-
-    function loop() {
-      update();
-      render();
-      requestAnimationFrame(loop);
-    }
-
-    function endGame(isClear) {
-      state = isClear ? 'clear' : 'over';
-      $('pause-btn').style.display = 'none';
-
-      let expReward = 500;
-      let moneyReward = 500;
-      let diffLabel = 'ノーマル';
-
-      if (currentDiff === 'hard') {
-        expReward = 2000; moneyReward = 1500; diffLabel = 'ハード';
-      } else if (currentDiff === 'vhard') {
-        expReward = 10000; moneyReward = 5000; diffLabel = 'ベリーハード';
-      }
-
-      const finalExp = isClear ? expReward : 0;
-      const finalMoney = isClear ? moneyReward : 100;
-
-      result = { money: finalMoney, exp: finalExp, diffStr: diffLabel };
-
-      $('resultTitle').textContent = isClear ? '✨ 美肌スキンクリア！' : '💦 レーザーエネルギー切れ…';
-      $('rScore').textContent = score.toLocaleString() + ' 点';
-      $('rDiff').textContent = diffLabel;
-      $('rExp').textContent = '+' + finalExp.toLocaleString() + ' EXP';$('rMoney').textContent = '+' + finalMoney.toLocaleString() + ' G';
-
-      setTimeout(() => { $('resultModal').style.display = 'flex'; }, 400);
-    }
-
-    function claim() {
-      if (claimed || !result) return; claimed = true;
-      const gs = JSON.parse(localStorage.getItem('rareEarthGameState')) || { level: 1, money: 1500 };
-      gs.money = (gs.money || 0) + result.money;
-      
-      let lv = gs.level || 1, ex = (gs.exp || 0) + result.exp;
-      while (ex >= lv * 100) { ex -= lv * 100; lv++; }
-      gs.level = lv; gs.exp = ex;
-      localStorage.setItem('rareEarthGameState', JSON.stringify(gs));
-    }
-
-    $('claimBtn').addEventListener('click', () => { claim(); location.href = 'map.html'; });$('retryBtn').addEventListener('click', () => { claim(); $('resultModal').style.display = 'none'; buildDiffMenu();$('selectModal').style.display = 'flex'; });
-
-    loop();
-  })();
-  </script>
+/* ---------- UI ---------- */
+let ti = 0; const slides = document.querySelectorAll('.tutor-slide');
+const showSlide = () => { slides.forEach((s, i) => s.classList.toggle('active', i === ti)); $('tutorPrevBtn').style.display = ti ? 'block' : 'none'; $('tutorNextBtn').textContent = ti === slides.length - 1 ? 'OK！難易度を選ぶ' : '次へ ➡' };
+$('tutorNextBtn').addEventListener('click', () => { startBgm(); if (ti < slides.length - 1) { ti++; showSlide() } else { $('tutorialModal').style.display = 'none'; buildMenu(); $('selectModal').style.display = 'flex' } });
+$('tutorPrevBtn').addEventListener('click', () => { if (ti > 0) { ti--; showSlide() } });
+function buildMenu() {
+  const m = $('diffMenu'); m.innerHTML = '';
+  Object.keys(DIFFS).forEach(k => {
+    const d = DIFFS[k], b = document.createElement('button');
+    b.className = 'diff-btn ' + d.cls;
+    b.innerHTML = `<span>${d.ic} ${d.name}<br><small>${d.sub}／EXP ${d.exp.toLocaleString()}・${d.money.toLocaleString()}G</small></span><span>▶ 挑戦</span>`;
+    b.onclick = () => { diff = k; $('selectModal').style.display = 'none'; startGame() };
+    m.appendChild(b);
+  });
+}
+$('retryBtn').addEventListener('click', () => { $('resultModal').style.display = 'none'; buildMenu(); $('selectModal').style.display = 'flex' });
+$('pause-btn').addEventListener('click', () => { if (state === 'play') { state = 'pause'; $('pauseModal').style.display = 'flex' } });
+$('resumeBtn').addEventListener('click', () => { $('pauseModal').style.display = 'none'; state = 'play' });
+const hold = (id, f) => { const e = $(id); e.addEventListener('pointerdown', () => f(true)); ['pointerup', 'pointercancel', 'pointerleave'].forEach(v => e.addEventListener(v, () => f(false))) };
+hold('btnL', v => L = v); hold('btnR', v => R = v); $('btnFire').addEventListener('click', fire);
+let tid = null, lastX = 0, moved = 0, downT = 0;
+area.style.touchAction = 'none';
+area.addEventListener('pointerdown', e => { if (state !== 'play' || tid !== null) return; tid = e.pointerId; lastX = e.clientX; moved = 0; downT = performance.now(); swipeX = pad.x; try { area.setPointerCapture(e.pointerId) } catch (_) {} e.preventDefault() });
+area.addEventListener('pointermove', e => { if (e.pointerId !== tid || state !== 'play') return; const sc = canvas.getBoundingClientRect().width / W, dx = (e.clientX - lastX) / sc * 1.4; lastX = e.clientX; moved += Math.abs(dx); swipeX = clamp((swipeX === null ? pad.x : swipeX) + dx, 0, W - pad.w); e.preventDefault() });
+const endTouch = e => { if (e.pointerId !== tid) return; const tap = e.type === 'pointerup' && moved < 12 && performance.now() - downT < 320; tid = null; swipeX = null; if (tap) fire() };
+area.addEventListener('pointerup', endTouch); area.addEventListener('pointercancel', endTouch);
+document.addEventListener('keydown', e => { if (state !== 'play') return; if (['ArrowLeft', 'a'].includes(e.key) || e.code === 'Numpad4') L = true; if (['ArrowRight', 'd'].includes(e.key) || e.code === 'Numpad6') R = true; if ([' ', 'ArrowUp', 'Enter'].includes(e.key) || ['Numpad8', 'Numpad5', 'Numpad0'].includes(e.code)) { e.preventDefault(); fire() } });
+document.addEventListener('keyup', e => { if (['ArrowLeft', 'a'].includes(e.key) || e.code === 'Numpad4') L = false; if (['ArrowRight', 'd'].includes(e.key) || e.code === 'Numpad6') R = false });
+let K = 1;
+function layout() {
+  const aw = area.clientWidth, ah = area.clientHeight; if (!aw || !ah) return;
+  H = clamp(Math.round(W * ah / aw), 420, 820); S = Math.min(aw / W, ah / H);
+  const cw = W * S, ch = H * S;
+  canvas.style.width = cw + 'px'; canvas.style.height = ch + 'px'; canvas.style.left = (aw - cw) / 2 + 'px'; canvas.style.top = (ah - ch) / 2 + 'px';
+  K = Math.min(3, Math.ceil(S * (devicePixelRatio || 1))); canvas.width = W * K; canvas.height = H * K; ctx.setTransform(K, 0, 0, K, 0, 0);
+  pad.y = H - 84; balls.forEach(b => { b.y = b.on ? Math.min(b.y, H) : pad.y - b.r - 1 });
+}
+addEventListener('resize', layout); addEventListener('orientationchange', () => setTimeout(layout, 200)); addEventListener('load', layout);
+if (window.ResizeObserver) new ResizeObserver(layout).observe(area);
+let last = performance.now();
+function loop(n) { const dt = Math.min(2.5, (n - last) / 16.67); last = n; update(dt); render(); requestAnimationFrame(loop) }
+initBlocks(); balls = [newBall(false)]; layout(); requestAnimationFrame(loop);
+})();
+</script>
 </body>
 </html>
