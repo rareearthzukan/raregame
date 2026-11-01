@@ -1047,9 +1047,13 @@
       document.getElementById('drillOv').classList.remove('open'); document.getElementById('drillAsk').classList.remove('open');
       document.getElementById('drillFrame').src = 'about:blank';
     }
-    document.getElementById('drillX').onclick = () => document.getElementById('drillAsk').classList.add('open');
-    document.getElementById('drillNo').onclick = () => document.getElementById('drillAsk').classList.remove('open');
-    document.getElementById('drillYes').onclick = closeDrill;
+    // ドリル用の部品はページ末尾にあるので、読み込み時ではなくクリック時に探す（部品が無くても初期化は止まらない）
+    document.addEventListener('click', e => {
+      const t = e.target.closest ? e.target : null; if (!t) return;
+      if (t.closest('#drillX')) document.getElementById('drillAsk').classList.add('open');
+      else if (t.closest('#drillNo')) document.getElementById('drillAsk').classList.remove('open');
+      else if (t.closest('#drillYes')) closeDrill();
+    });
     function registerJewel(j) {
       if (!gameState.jewels) gameState.jewels = [];
       if (!gameState.jewels.includes(j.id)) gameState.jewels.push(j.id);
