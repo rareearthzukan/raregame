@@ -333,6 +333,9 @@
     .modal-icon { font-size: 2rem; margin-bottom: .2rem; }
     .modal-title { font-size: 1.05rem; font-weight: bold; color: #ffde59; margin-bottom: .4rem; }
     .modal-desc { font-size: .88rem; color: #f1f5f9; margin-bottom: .8rem; line-height: 1.55; white-space: pre-line; }
+    .story-speaker { display:inline-block; margin-top:.15rem; color:#ffde59; font-size:.82rem; font-weight:800; letter-spacing:.03em; }
+    .story-dialogue { animation: storyTextIn .45s ease-out .35s both; }
+    @keyframes storyTextIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
     @keyframes popup { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
   </style>
 </head>
@@ -340,6 +343,8 @@
 
   <!-- BGMおよび効果音 -->
   <audio id="bgm" src="BGM_koujyo.ogg" loop preload="auto"></audio>
+  <audio id="story-bgm" src="BGM_home_piano.ogg" loop preload="auto"></audio>
+  <audio id="se-story-kirakira" src="SE_kirakira.mp3" preload="auto"></audio>
   <audio id="se-nyu1" src="nyu1.mp3" preload="auto"></audio>
   <audio id="se-nyu2" src="nyu2.mp3" preload="auto"></audio>
   <audio id="se-baikyaku" src="SE_baikyaku.mp3" preload="auto"></audio>
@@ -480,31 +485,57 @@
     );
     document.addEventListener('dblclick', e => e.preventDefault());
     const bgm = document.getElementById('bgm');
+    const storyBgm = document.getElementById('story-bgm');
     const bgmBtn = document.getElementById('bgm-btn');
+    const storySe = document.getElementById('se-story-kirakira');
     bgm.volume = 0.3;
-
+    storyBgm.volume = 0;
     let isMuted = localStorage.getItem('bgmMutedFactory') === 'true';
+    let storyEventOpen = false;
+    let storyBgmWasPlaying = false;
+    let bgmFadeTimer = null;
 
     function updateBgmUI() {
-      if (isMuted) {
-        bgm.muted = true;
-        bgmBtn.innerText = '🔇 OFF';
-        bgmBtn.classList.add('muted');
-      } else {
-        bgm.muted = false;
-        bgmBtn.innerText = '🎵 ON';
-        bgmBtn.classList.remove('muted');
-      }
+      bgm.muted = isMuted;
+      storyBgm.muted = isMuted;
+      bgmBtn.innerText = isMuted ? '🔇 OFF' : '🎵 ON';
+      bgmBtn.classList.toggle('muted', isMuted);
+    }
+
+    function fadeAudio(audio, target, duration = 700, pauseAtEnd = false) {
+      if (!audio) return Promise.resolve();
+      if (bgmFadeTimer) clearInterval(bgmFadeTimer);
+      const start = audio.volume;
+      const steps = 14;
+      const interval = duration / steps;
+      let step = 0;
+      return new Promise(resolve => {
+        bgmFadeTimer = setInterval(() => {
+          step++;
+          audio.volume = Math.max(0, Math.min(1, start + (target - start) * (step / steps)));
+          if (step >= steps) {
+            clearInterval(bgmFadeTimer);
+            bgmFadeTimer = null;
+            audio.volume = target;
+            if (pauseAtEnd) audio.pause();
+            resolve();
+          }
+        }, interval);
+      });
     }
 
     function toggleBGM() {
       isMuted = !isMuted;
       localStorage.setItem('bgmMutedFactory', isMuted);
       updateBgmUI();
-      if (!isMuted) {
-        bgm.play().catch(e => {});
-      } else {
+      if (isMuted) {
         bgm.pause();
+        storyBgm.pause();
+        if (storySe) storySe.pause();
+      } else if (storyEventOpen) {
+        storyBgm.play().catch(() => {});
+      } else {
+        bgm.play().catch(() => {});
       }
     }
 
@@ -512,7 +543,9 @@
       updateBgmUI();
       if (!isMuted) {
         bgm.play().catch(() => {
-          document.addEventListener('click', () => { if (!isMuted) bgm.play().catch(e=>{}); }, { once: true });
+          document.addEventListener('click', () => {
+            if (!isMuted && !storyEventOpen) bgm.play().catch(() => {});
+          }, { once: true });
         });
       }
     });
@@ -877,54 +910,87 @@
     function closeInfoModal() {
       document.getElementById('infoModal').style.display = 'none';
     }
-    function showStoryEvent(title,image,text){
+    const speakerColors = {
+      '#ff9e9e': 'ユウロピウム',
+      '#8df7f7': 'イットリウム',
+      '#c0c0c0': 'ネオジム',
+      '#b0c4de': 'ジスプロシウム',
+      '#a9a9a9': 'ガドリニウム',
+      '#98fb98': 'テルビウム',
+      '#6a5acd': 'プロメチウム',
+      '#ffdab9': 'サマリウム',
+      '#9acd32': 'プラセオジム',
+      '#ffb6c1': 'エルビウム'
+    };
 
-  const modal=document.createElement('div');
+    function addSpeakerNames(storyText) {
+      return storyText.replace(/<font\\s+color=["']([^"']+)["']\\s*>/gi, (tag, color, offset, fullText) => {
+        const name = speakerColors[color.toLowerCase()];
+        if (!name) return tag;
+        const before = fullText.slice(Math.max(0, offset - 90), offset);
+        if (/<b>[^<：:]+[：:]<\/b>\s*$/i.test(before)) return tag;
+        return `<b class="story-speaker">${name}：</b><br>${tag}`;
+      });
+    }
 
-  modal.className='modal-overlay';
+    async function showStoryEvent(title, image, text) {
+      storyEventOpen = true;
+      storyBgmWasPlaying = !isMuted && !bgm.paused;
+      if (storyBgmWasPlaying) {
+        await fadeAudio(bgm, 0, 550, true);
+      } else {
+        bgm.pause();
+      }
 
-  modal.style.zIndex='9999';
+      if (!isMuted && storySe) {
+        storySe.currentTime = 0;
+        storySe.volume = 0.85;
+        try {
+          await storySe.play();
+          await Promise.race([
+            new Promise(resolve => storySe.addEventListener('ended', resolve, { once: true })),
+            new Promise(resolve => setTimeout(resolve, 1800))
+          ]);
+        } catch (e) {
+          // 音声再生が許可されない環境でもイベント画面は表示する
+        }
+      }
 
-  modal.innerHTML=`
-  <div class="modal-content"
-       style="max-width:700px;">
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.id = 'storyEventModal';
+      modal.style.zIndex = '9999';
+      modal.innerHTML = `
+        <div class="modal-content" style="max-width:700px;">
+          <img src="${image}" alt="イベント画像"
+               style="width:100%; max-height:38vh; object-fit:contain; border-radius:12px; margin-bottom:12px;">
+          <div class="modal-title">${title}</div>
+          <div class="modal-desc story-dialogue" style="text-align:left; max-height:50vh; overflow:auto;">
+            ${addSpeakerNames(text)}
+          </div>
+          <button class="btn" onclick="closeStoryEvent()">閉じる</button>
+        </div>
+      `;
+      document.body.appendChild(modal);
 
-    <img src="${image}"
-         style="
-         width:100%;
-         border-radius:12px;
-         margin-bottom:12px;">
+      if (!isMuted) {
+        storyBgm.currentTime = 0;
+        storyBgm.volume = 0;
+        storyBgm.play().then(() => fadeAudio(storyBgm, 0.22, 900)).catch(() => {});
+      }
+    }
 
-    <div class="modal-title">
-      ${title}
-    </div>
-
-    <div class="modal-desc"
-         style="
-         text-align:left;
-         max-height:50vh;
-         overflow:auto;">
-      ${text}
-    </div>
-
-    <button class="btn"
-      onclick="this.closest('.modal-overlay').remove()">
-      閉じる
-    </button>
-
-  </div>
-  `;
-
-  document.body.appendChild(modal);
-
-  const se =
-  document.getElementById('se-itemget');
-
-  if(se){
-    se.currentTime=0;
-    se.play().catch(()=>{});
-  }
-}
+    async function closeStoryEvent() {
+      const modal = document.getElementById('storyEventModal');
+      if (modal) modal.remove();
+      storyEventOpen = false;
+      await fadeAudio(storyBgm, 0, 650, true);
+      if (!isMuted && storyBgmWasPlaying) {
+        bgm.volume = 0;
+        bgm.play().then(() => fadeAudio(bgm, 0.3, 800)).catch(() => {});
+      }
+      storyBgmWasPlaying = false;
+    }
 
     let currentPreviewRecipe = null;
     function showProductPreview(recipe) {
@@ -1699,11 +1765,12 @@
 
     function checkFirstCraftEvent(recipe) {
       const ev = FIRST_CRAFT_EVENTS[recipe.id];
-      if (!ev) return;
+      if (!ev) return false;
       if (!gameState.craftedProducts) gameState.craftedProducts = {};
-      if (gameState.craftedProducts[recipe.id]) return;
+      if (gameState.craftedProducts[recipe.id]) return false;
       gameState.craftedProducts[recipe.id] = true;
       showStoryEvent(ev.title, ev.image, ev.text);
+      return true;
     }
 
     function executeDirectCraft(recipe) {
@@ -1725,14 +1792,16 @@
 
       const totalProduced = Math.max(1, 1 + bonusCount);
       gameState.products[recipe.id] += totalProduced;
-      checkFirstCraftEvent(recipe);
+      const hasFirstCraftEvent = checkFirstCraftEvent(recipe);
       
 
       const earnedExp = totalProduced * 50;
       addExp(earnedExp);
 
-      const se = document.getElementById('se-nyu1');
-      if (se) { se.currentTime = 0; se.play().catch(e => {}); }
+      if (!hasFirstCraftEvent) {
+        const se = document.getElementById('se-nyu1');
+        if (se) { se.currentTime = 0; se.play().catch(e => {}); }
+      }
 
       showNotice(recipe.icon, `${recipe.name} を ${totalProduced}個 製造！`, `✨ サクサク製造完了！ (EXP +${earnedExp})${eventBonusMsg}`);
       checkYHelperAppearance();
@@ -1812,7 +1881,7 @@
 
       const totalProduced = Math.max(1, 1 + bonusCount);
       gameState.products[recipe.id] += totalProduced;
-      checkFirstCraftEvent(recipe);
+      const hasFirstCraftEvent = checkFirstCraftEvent(recipe);
       
 
 
@@ -1823,7 +1892,9 @@
       const earnedExp = (totalProduced * 50) + (isInsideTarget ? 100 : 20);
       addExp(earnedExp);
 
-      if (extraMoneyBonus > 0) {
+      if (hasFirstCraftEvent) {
+        // 初回製造イベントでは専用のキラキラSEを使う
+      } else if (extraMoneyBonus > 0) {
         const hakusyuSe = document.getElementById('se-hakusyu');
         if (hakusyuSe) { hakusyuSe.currentTime = 0; hakusyuSe.play().catch(e => {}); }
       } else {
