@@ -377,6 +377,8 @@
   <audio id="se-type" src="type.mp3" preload="auto"></audio>
   <audio id="se-gogogo" src="gogogo.mp3" preload="auto"></audio>
   <audio id="se-unlock" src="itemget.mp3" preload="auto"></audio>
+<audio id="se-drillstart" src="SE_newstittle.mp3" preload="auto"></audio>
+<audio id="se-gacha" src="SE_gacha.mp3" preload="auto"></audio>
 
   <div class="phone">
     <div class="header">
@@ -1040,13 +1042,17 @@
       const pay = drillPay();
       if (gameState.money < pay) { document.getElementById('noMoneyModal').style.display = 'flex'; return; }
       gameState.money -= pay; saveGameState(); updateUI();
-      document.getElementById('drillFrame').src = 'drill_game.html?embed=1&t=' + Date.now();
+      playSeById('se-drillstart');
+      bgm.pause();   // ドリル中は専用BGMに切り替える
+      document.getElementById('drillFrame').src = 'drill_game.html?embed=1&mute=' + (isMuted ? 1 : 0) + '&t=' + Date.now();
       document.getElementById('drillOv').classList.add('open');
     }
     function closeDrill() {
       document.getElementById('drillOv').classList.remove('open'); document.getElementById('drillAsk').classList.remove('open');
       document.getElementById('drillFrame').src = 'about:blank';
+      if (!isMuted) bgm.play().catch(() => {});   // 採掘画面のBGMに戻す
     }
+    function playSeById(id) { const a = document.getElementById(id); if (a) { a.currentTime = 0; a.play().catch(() => {}); } }
     // ドリル用の部品はページ末尾にあるので、読み込み時ではなくクリック時に探す（部品が無くても初期化は止まらない）
     document.addEventListener('click', e => {
       const t = e.target.closest ? e.target : null; if (!t) return;
@@ -1063,6 +1069,7 @@
     }
     addEventListener('message', e => {
       if (e.source !== document.getElementById('drillFrame').contentWindow || !e.data || e.data.type !== 'drillResult') return;
+      playSeById('se-gacha');
       const mud = Math.max(DRILL.minMud, Math.min(DRILL.maxMud, Math.round(e.data.mud || 0))), exp = mud * DRILL.expPerMud;
       closeDrill();
       RE.addMud(gameState, spotId in RE.AREAS ? spotId : areaKey, mud);   // 元素の割合は、精製時の産地設定（Pm・Tm・Dy・Tbなど）がそのまま効く
