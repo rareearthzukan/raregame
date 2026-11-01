@@ -11,7 +11,7 @@
     { page: 'mine.html',    sel: '#mine-btn', text: 'ここが採掘エリア。このボタンをタップして、資源を掘り出してみよう！' },
     { page: 'mine.html',    sel: '.nav-item[onclick*="seisei.html"]', delay: 1800, text: '掘り出したものは「精製」で元素にできるよ。精製画面へ行ってみよう！' },
     { page: 'seisei.html',  sel: 'button[onclick="refineElement(1)"]', delay: 500, text: '精製ボタンをタップ！掘削物から、レアアース元素のキャラクターがとり出せるよ。' },
-    { page: 'seisei.html',  sel: '.nav-item[onclick*="factory.html"]', delay: 600, waitHide: '#minigameModal', text: '元素は素材になって、所持品に並んだよ。次は「工場」で製品にしよう！' },
+    { page: 'seisei.html',  sel: '.nav-item[onclick*="factory.html"], .nav-item[onclick*="goToFactory"]', delay: 600, waitHide: '#minigameModal', text: '元素は素材になって、所持品に並んだよ。次は「工場」で製品にしよう！' },
     { page: 'factory.html', type: 'msg', sel: '#recipe-list', delay: 500, text: '素材がそろうと「🔨製造」できるよ。作った製品は「💰売却」でゴールドとEXPになるよ。製造すると、キャラクターのイベントも見られるよ！' },
     { page: 'factory.html', sel: '.nav-item[onclick*="home.html"]', text: '最後に「ホーム」をのぞいてみよう！' },
     { page: 'home.html',    type: 'msg', last: true, text: 'ホームでは、キャラクターとおしゃべりするとミニゲームが遊べるよ。仲良くなると、掘削・精製・製造のお仕事も手伝ってくれるんだ。レベルを上げて、レベル50で解放される「南鳥島」をめざそう！' }
