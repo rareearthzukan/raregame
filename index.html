@@ -106,7 +106,7 @@ h1{margin:.2rem 0 .7rem;font-size:clamp(2.2rem,8vw,3.6rem);line-height:1.15;font
 .btn.main-cta{animation:glow 2s ease-in-out infinite}
 @keyframes glow{50%{box-shadow:0 4px 0 #0a6b8a,0 0 38px rgba(0,255,245,.75)}}
 .btn.sub{background:transparent;color:var(--ink);border:1px solid var(--mute);box-shadow:none;font-weight:700;font-size:.9rem;min-height:2.7rem}
-.btn.ghost{background:none;border:0;box-shadow:none;color:var(--mute);font-weight:500;font-size:.8rem;text-decoration:underline;min-height:2.2rem}
+.btn.ghost{margin-top:1.2rem;background:none;border:0;box-shadow:none;color:var(--mute);font-weight:500;font-size:.8rem;text-decoration:underline;min-height:2.2rem}
 .btn:focus-visible,a:focus-visible{outline:3px solid var(--yellow);outline-offset:2px}
 h2{margin:0 0 .2rem;font-size:1.2rem;font-weight:900}
 .sub-h{margin:0 0 1rem;font-size:.8rem;color:var(--mute)}
@@ -121,6 +121,16 @@ h2{margin:0 0 .2rem;font-size:1.2rem;font-weight:900}
 .line p{margin:0;font-size:.8rem;color:var(--mute);line-height:1.5}
 footer{margin-top:2rem;padding:1.1rem 1.2rem;border-radius:1rem;border:1px solid rgba(255,77,109,.5);background:rgba(17,26,51,.7);font-size:.75rem;color:var(--mute)}
 footer a{color:var(--cyan)}footer p{margin:.2rem 0}
+.dlg{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;padding:1rem;background:rgba(3,7,18,.82)}
+.dlg.open{display:flex}
+.dlg-box{width:min(26rem,100%);background:var(--panel);border:2px solid var(--pink);border-radius:1rem;padding:1.3rem 1.2rem;text-align:center;box-shadow:0 0 40px rgba(255,77,109,.3)}
+.dlg-box h3{margin:0 0 .4rem;font-size:1.15rem;font-weight:900;color:var(--yellow)}
+.dlg-box p{margin:.3rem 0;font-size:.88rem}
+.dlg-box .warn{color:var(--pink);font-weight:700}
+.dlg-row{display:flex;gap:.6rem;margin-top:1.1rem}
+.dlg-row .btn{margin:0;min-height:3.1rem;font-size:1rem}
+#dno{flex:1.3}#dyes{flex:1}
+.btn.danger{background:var(--pink);color:#fff;box-shadow:0 4px 0 #8f2238}
 @media(prefers-reduced-motion:reduce){.bg::after,.btn.main-cta{animation:none}}
 </style>
 </head>
@@ -155,6 +165,18 @@ footer a{color:var(--cyan)}footer p{margin:.2rem 0}
   </footer>
 </div>
 
+<div class="dlg" id="dlg" role="alertdialog" aria-modal="true" aria-labelledby="dttl">
+  <div class="dlg-box">
+    <h3 id="dttl">本当にはじめからやり直しますか？</h3>
+    <p id="dinfo"></p>
+    <p class="warn">消したデータは元に戻せません。</p>
+    <div class="dlg-row">
+      <button class="btn" id="dno">いいえ（もどる）</button>
+      <button class="btn danger" id="dyes">はい、リセット</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const KEY='rareEarthGameState',TUT='rareEarthTutorialDone',STEP='rareEarthTutorialStep';
 const get=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
@@ -173,6 +195,18 @@ const STEPS=[
 ];
 document.getElementById('line').innerHTML=STEPS.map(s=>`<li><span class="num">STEP ${s.n}</span><div class="ico"><img src="${s.img}" alt="${s.k}" onerror="this.parentNode.classList.add('noimg');this.remove()"><span class="em">${s.e}</span></div><div><h3>${s.k}</h3><p>${s.d}</p></div></li>`).join('');
 
+// リセット確認（「いいえ」が初期フォーカス。外側タップ・Escでも取り消し）
+const dlg=document.getElementById('dlg'),dno=document.getElementById('dno'),dyes=document.getElementById('dyes');
+function openReset(){
+  const sv=save||{};
+  document.getElementById('dinfo').textContent=`いまのデータ（Lv.${sv.level||1} ／ ${(sv.money??0).toLocaleString()}G）がすべて消えて、最初の状態に戻ります。`;
+  dlg.classList.add('open');dno.focus();
+}
+const closeReset=()=>dlg.classList.remove('open');
+dno.onclick=closeReset;
+dyes.onclick=()=>{[KEY,'currentSelectedSpot',TUT,STEP].forEach(del);location.reload()};
+dlg.addEventListener('click',e=>{if(e.target===dlg)closeReset()});
+addEventListener('keydown',e=>{if(e.key==='Escape')closeReset()});
 let save=null;try{save=JSON.parse(get(KEY))}catch(e){}
 const hasSave=!!save,done=get(TUT)==='1';
 const st=document.getElementById('status'),ac=document.getElementById('actions');
@@ -181,10 +215,7 @@ if(hasSave){
   st.innerHTML=`<div class="tiles"><div class="tile">レベル<b>${save.level||1}</b></div><div class="tile">所持金<b>${(save.money??0).toLocaleString()}G</b></div><div class="tile">マイル<b>${save.miles??0}m</b></div></div>`;
   btn('▶ つづきから','main-cta',go);
   btn('チュートリアルをもう一度','sub',startTutorial);
-  btn('はじめからやり直す','ghost',()=>{
-    if(confirm('保存されているデータを消して、はじめからやり直します。よろしいですか？')){
-      [KEY,'currentSelectedSpot',TUT,STEP].forEach(del);location.reload();
-    }});
+  btn('はじめからやり直す','ghost',openReset);
 }else if(!done){
   st.innerHTML='<p class="note">はじめての方は、画面の指示に従ってタップするだけのガイドつき。1分ほどで基本がわかります。</p>';
   btn('▶ はじめる','main-cta',startTutorial);
