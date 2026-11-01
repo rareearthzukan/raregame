@@ -71,6 +71,7 @@
       const r0 = tgt.getBoundingClientRect(); if (r0.top < 0 || r0.bottom > innerHeight) tgt.scrollIntoView({ block: 'center' });
     }
     const loop = () => {
+      ov.style.display = modalOpen() ? 'none' : '';
       const W = innerWidth, H = innerHeight;
       if (tgt) {
         const r = tgt.getBoundingClientRect(), p = 6, x = r.left - p, y = r.top - p, w = r.width + p * 2, hh = r.height + p * 2;
@@ -95,15 +96,20 @@
     ov = document.createElement('div'); ov.id = 'tut-ov'; document.body.appendChild(ov);
     const pn = h('pn'), reMissing = typeof RE === 'undefined';
     pn.style.bottom = 'calc(5rem + env(safe-area-inset-bottom,0px))';
-    pn.innerHTML = `<img src="navtb.png" alt="" onerror="this.remove()"><div class="bb"><small>チュートリアルが進めません</small>${reMissing ? '「areaconfig.js」が読み込めていません。ゲームの元のフォルダ（画像などが入っている場所）にファイルを置いて、開き直してください。' : 'このステップのボタンが見つかりませんでした。ページを再読み込みしてやり直すか、スキップしてください。'}<button class="ok">スキップ</button></div>`;
+    pn.innerHTML = `<img src="navtb.png" alt="" onerror="this.remove()"><div class="bb"><small>チュートリアルが進めません</small>${reMissing ? '「areaconfig.js」が読み込めていません。ゲームの元のフォルダ（画像などが入っている場所）にファイルを置いて、開き直してください。' : 'このステップのボタンが見つかりませんでした。ページを再読み込みしてやり直すか、スキップしてください。'}<small style="margin-top:.4rem">（対象: ${STEPS[i].sel || '-'}）</small><button class="ok">スキップ</button></div>`;
     pn.querySelector('.ok').onclick = finish;
   }
+  // ゲーム側のポップアップが開いているか（開いている間はチュートリアルを出さず、閉じるまで待つ）
+  const modalOpen = () => [...document.querySelectorAll('.modal-overlay')].some(m => {
+    const c = getComputedStyle(m);
+    return c.display !== 'none' && c.visibility !== 'hidden' && c.opacity !== '0' && m.getBoundingClientRect().width > 0;
+  });
   function start() {
     const s = STEPS[i];
     setTimeout(function wait(n = 0) {
-      const hidden = !s.waitHide || (document.querySelector(s.waitHide) || {}).style?.display === 'none' || !document.querySelector(s.waitHide);
-      if (hidden && show()) return;
-      if (n < 60) setTimeout(() => wait(n + 1), 250); else fail();       // 最大約15秒、条件が整うのを待つ
+      if (modalOpen()) return setTimeout(() => wait(n), 250);       // ポップアップ中は待つ（時間は数えない）
+      if (show()) return;
+      if (n < 60) setTimeout(() => wait(n + 1), 250); else fail();   // ボタン自体が無いときだけ、約15秒で諦める
     }, s.delay || 300);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
