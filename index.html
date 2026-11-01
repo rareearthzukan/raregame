@@ -1,9 +1,133 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
-    <meta http-equiv="refresh" content="0;url=map.html">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>レアアース・クラフト - レアアース17元素キャラ図鑑</title>
+<meta name="description" content="スマホ、電気自動車、最新の医療機器……。現代の産業や医療に欠かせないレアアースの「唯一無二の力」を体験するゲーム。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#060b1a;--panel:#111a33;--deep:#0f3460;--cyan:#00fff5;--pink:#ff4d6d;--yellow:#ffde59;--ink:#eaf2ff;--mute:#9db0cf;--maxw:1080px}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{font-size:clamp(15px,calc(13px + .6vw),18px)}
+body{margin:0;min-height:100vh;min-height:100dvh;background:var(--bg);color:var(--ink);font-family:"Zen Maru Gothic","Hiragino Sans","Noto Sans JP",Meiryo,sans-serif;line-height:1.7;overflow-x:hidden}
+/* 背景：ゆっくり漂う光 + 六角グリッド風の模様 */
+.bg{position:fixed;inset:0;z-index:0;pointer-events:none;background:
+ radial-gradient(60rem 40rem at 15% -10%,rgba(0,255,245,.16),transparent 60%),
+ radial-gradient(50rem 38rem at 100% 10%,rgba(255,77,109,.16),transparent 60%),
+ radial-gradient(60rem 40rem at 50% 120%,rgba(15,52,96,.9),transparent 70%),var(--bg)}
+.bg::after{content:"";position:absolute;inset:0;opacity:.07;background-image:linear-gradient(var(--cyan) 1px,transparent 1px),linear-gradient(90deg,var(--cyan) 1px,transparent 1px);background-size:44px 44px;animation:drift 40s linear infinite}
+@keyframes drift{to{background-position:44px 44px}}
+.wrap{position:relative;z-index:1;max-width:var(--maxw);margin:0 auto;padding:env(safe-area-inset-top) clamp(.8rem,3vw,2rem) calc(1.5rem + env(safe-area-inset-bottom))}
+.hero{margin-top:.8rem;border-radius:1.2rem;overflow:hidden;border:1px solid rgba(0,255,245,.35);box-shadow:0 0 40px rgba(0,255,245,.15);background:linear-gradient(135deg,var(--panel),var(--deep));min-height:5rem}
+.hero img{display:block;width:100%;height:auto}
+.main{display:grid;gap:1.4rem;margin-top:1.4rem}
+@media(min-width:860px){.main{grid-template-columns:1.05fr .95fr;gap:2.2rem;align-items:start;margin-top:2rem}.flow-col{position:sticky;top:1rem}}
+.site{margin:0;font-size:.78rem;color:var(--cyan);font-weight:700;letter-spacing:.06em}
+h1{margin:.2rem 0 .7rem;font-size:clamp(2.2rem,8vw,3.6rem);line-height:1.15;font-weight:900;letter-spacing:.02em;background:linear-gradient(100deg,#fff 10%,var(--cyan) 55%,var(--yellow));-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 18px rgba(0,255,245,.35))}
+.chips{display:flex;flex-wrap:wrap;gap:.4rem;margin:0 0 .9rem;padding:0;list-style:none}
+.chips li{font-size:.75rem;font-weight:900;padding:.1rem .75rem;border-radius:1rem;border:1px solid var(--cyan);color:var(--cyan);background:rgba(0,255,245,.08)}
+.chips li+li::before{content:none}
+.lead{margin:0;font-size:.95rem}
+.start{margin-top:1.2rem;padding:1.1rem;border-radius:1.1rem;background:rgba(17,26,51,.75);border:1px solid rgba(0,255,245,.45);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);box-shadow:0 0 30px rgba(0,255,245,.12)}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem;margin-bottom:.8rem}
+.tile{background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.1);border-radius:.7rem;padding:.4rem .3rem;text-align:center;font-size:.7rem;color:var(--mute)}
+.tile b{display:block;color:var(--yellow);font-size:1.15rem;line-height:1.3}
+.note{margin:0 0 .6rem;font-size:.85rem;color:var(--mute)}
+.btn{display:block;width:100%;min-height:3.2rem;border:0;border-radius:.9rem;font:inherit;font-weight:900;font-size:1.1rem;cursor:pointer;margin-top:.55rem;color:var(--deep);background:linear-gradient(135deg,var(--cyan),#5b9dff);box-shadow:0 4px 0 #0a6b8a,0 0 24px rgba(0,255,245,.4);transition:transform .1s}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 #0a6b8a,0 0 14px rgba(0,255,245,.4)}
+.btn.main-cta{animation:glow 2s ease-in-out infinite}
+@keyframes glow{50%{box-shadow:0 4px 0 #0a6b8a,0 0 38px rgba(0,255,245,.75)}}
+.btn.sub{background:transparent;color:var(--ink);border:1px solid var(--mute);box-shadow:none;font-weight:700;font-size:.9rem;min-height:2.7rem}
+.btn.ghost{background:none;border:0;box-shadow:none;color:var(--mute);font-weight:500;font-size:.8rem;text-decoration:underline;min-height:2.2rem}
+.btn:focus-visible,a:focus-visible{outline:3px solid var(--yellow);outline-offset:2px}
+h2{margin:0 0 .2rem;font-size:1.2rem;font-weight:900}
+.sub-h{margin:0 0 1rem;font-size:.8rem;color:var(--mute)}
+.line{list-style:none;margin:0;padding:0;position:relative;display:grid;gap:.7rem}
+.line::before{content:"";position:absolute;left:1.9rem;top:2rem;bottom:2rem;width:3px;background:linear-gradient(var(--cyan),var(--pink));opacity:.6}
+.line li{position:relative;display:flex;gap:.9rem;align-items:center;padding:.6rem .8rem;border-radius:1rem;background:rgba(17,26,51,.7);border:1px solid rgba(255,255,255,.08)}
+.ico{flex:none;width:3.4rem;height:3.4rem;background:#000;border:2px solid var(--cyan);border-radius:.7rem;overflow:hidden;display:flex;align-items:center;justify-content:center;position:relative;z-index:1;box-shadow:0 0 14px rgba(0,255,245,.35)}
+.ico img{width:100%;height:100%;object-fit:cover;display:block}
+.ico .em{display:none;font-size:1.6rem}.ico.noimg .em{display:block}
+.num{position:absolute;right:.7rem;top:.4rem;font-size:.7rem;font-weight:900;color:var(--pink)}
+.line h3{margin:0;font-size:1rem;font-weight:900}
+.line p{margin:0;font-size:.8rem;color:var(--mute);line-height:1.5}
+footer{margin-top:2rem;padding:1.1rem 1.2rem;border-radius:1rem;border:1px solid rgba(255,77,109,.5);background:rgba(17,26,51,.7);font-size:.75rem;color:var(--mute)}
+footer a{color:var(--cyan)}footer p{margin:.2rem 0}
+@media(prefers-reduced-motion:reduce){.bg::after,.btn.main-cta{animation:none}}
+</style>
 </head>
 <body>
-    <p>読み込み中...</p>
+<div class="bg" aria-hidden="true"></div>
+<div class="wrap">
+  <div class="hero"><img src="header.png" alt="レアアース17元素キャラ図鑑 - 未来をつくる元素たち -" onerror="this.remove()"></div>
+
+  <div class="main">
+    <section class="intro">
+      <p class="site">レアアース17元素キャラ図鑑 - 未来をつくる元素たち -</p>
+      <h1>レアアース・クラフト</h1>
+      <ul class="chips"><li>⛏️ 掘る</li><li>🧪 精製する</li><li>🏭 つくる</li><li>📦 届ける</li></ul>
+      <p class="lead">スマホ、電気自動車、最新の医療機器……。現代の産業や医療に欠かせない場所で活躍する大切な成分、それがレアアース。掘って、精製して、つくって、届けながら、彼らの「唯一無二の力」を体験しよう。</p>
+      <div class="start" aria-live="polite">
+        <div id="status"></div>
+        <div id="actions"></div>
+      </div>
+    </section>
+
+    <section class="flow-col">
+      <h2>レアアースが製品になるまで</h2>
+      <p class="sub-h">ゲームは、この5つの工程をたどって進みます。</p>
+      <ol class="line" id="line"></ol>
+    </section>
+  </div>
+
+  <footer>
+    <p>知れば知るほど愛着がわく、17元素の物語。</p>
+    <p><a href="https://17rareearth.github.io/17character/">レアアース17元素キャラ図鑑 公式サイトへ</a></p>
+    <p>イラスト：バルバロッサ上田 ／ BGM：MusMus ／ 効果音：効果音ラボ</p>
+  </footer>
+</div>
+
+<script>
+const KEY='rareEarthGameState',TUT='rareEarthTutorialDone',STEP='rareEarthTutorialStep';
+const get=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
+const set=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
+const del=k=>{try{localStorage.removeItem(k)}catch(e){}};
+const go=()=>{location.href='map.html'};
+const startTutorial=()=>{set(STEP,'0');go()};   // tutorial.js が各ゲーム画面で続きを案内する
+
+// 工程（運搬は工程ではないので削除）。画像は既存の koutei*.png を流用
+const STEPS=[
+ {n:1,img:'koutei1.png',k:'採掘',e:'⛏️',d:'世界地図から採掘エリアを選んで、資源を掘り出す'},
+ {n:2,img:'koutei3.png',k:'精製',e:'🧪',d:'掘削物から、元素キャラクターをとり出す'},
+ {n:3,img:'koutei4.png',k:'素材',e:'🔩',d:'元素がインゴットなどの素材になり、コレクションに並ぶ'},
+ {n:4,img:'koutei5.png',k:'製造',e:'🏭',d:'素材を使って、工業製品をクラフトする'},
+ {n:5,img:'koutei6.png',k:'出荷',e:'📦',d:'製品を売却してゴールドと経験値に'}
+];
+document.getElementById('line').innerHTML=STEPS.map(s=>`<li><span class="num">STEP ${s.n}</span><div class="ico"><img src="${s.img}" alt="${s.k}" onerror="this.parentNode.classList.add('noimg');this.remove()"><span class="em">${s.e}</span></div><div><h3>${s.k}</h3><p>${s.d}</p></div></li>`).join('');
+
+let save=null;try{save=JSON.parse(get(KEY))}catch(e){}
+const hasSave=!!save,done=get(TUT)==='1';
+const st=document.getElementById('status'),ac=document.getElementById('actions');
+const btn=(label,cls,fn)=>{const b=document.createElement('button');b.className='btn '+(cls||'');b.textContent=label;b.onclick=fn;ac.appendChild(b)};
+if(hasSave){
+  st.innerHTML=`<div class="tiles"><div class="tile">レベル<b>${save.level||1}</b></div><div class="tile">所持金<b>${(save.money??0).toLocaleString()}G</b></div><div class="tile">マイル<b>${save.miles??0}m</b></div></div>`;
+  btn('▶ つづきから','main-cta',go);
+  btn('チュートリアルをもう一度','sub',startTutorial);
+  btn('はじめからやり直す','ghost',()=>{
+    if(confirm('保存されているデータを消して、はじめからやり直します。よろしいですか？')){
+      [KEY,'currentSelectedSpot',TUT,STEP].forEach(del);location.reload();
+    }});
+}else if(!done){
+  st.innerHTML='<p class="note">はじめての方は、画面の指示に従ってタップするだけのガイドつき。1分ほどで基本がわかります。</p>';
+  btn('▶ はじめる','main-cta',startTutorial);
+}else{
+  st.innerHTML='<p class="note">準備ができたら出発しよう。</p>';
+  btn('▶ あそぶ','main-cta',go);
+  btn('チュートリアルをもう一度','sub',startTutorial);
+}
+</script>
 </body>
 </html>

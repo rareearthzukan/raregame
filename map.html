@@ -257,7 +257,7 @@
           <div class="spot" id="spot-myanmar" style="top: 48%; left: 68%;" onclick="selectSpot('myanmar')"><img src="hata_mm.png" alt="MM">ミャンマー</div>
           <div class="spot" id="spot-africa" style="top: 60%; left: 54%;" onclick="selectSpot('africa')"><img src="hata_af.png" alt="AF">アフリカ鉱床</div>
           <div class="spot" id="spot-mount" style="top: 78%; left: 82%;" onclick="selectSpot('mount')"><img src="hata_au.png" alt="AU">マウントウェルド</div>
-          <div class="spot" id="spot-okinotori" style="top: 45%; left: 88%;" onclick="selectSpot('okinotori')"><img src="hata_jp.png" alt="JP">沖ノ鳥島</div>
+          <div class="spot" id="spot-okinotori" style="top: 45%; left: 88%;" onclick="selectSpot('okinotori')"><img src="hata_jp.png" alt="JP">南鳥島</div>
           <div class="spot" id="spot-tahiti" style="top: 75%; left: 18%;" onclick="selectSpot('tahiti')"><img src="hata_pf.png" alt="PF">南太平洋</div>
         </div>
       </div>
@@ -397,7 +397,7 @@
       'africa': { country: '🌍 アフリカ新興国（マラウイ等）', title: 'アフリカ新興鉱床', desc: '脱・中国依存に向けて近年世界中から開発が進む注目のフロンティア。', cost: 150, milesGain: 250, minLv: 15, target: 'Lu, Yb, Sc', btnColor: '#ffbb55', btnText: '🚜 このエリアの開拓採掘へ移動！', img: 'area_image_africa.png', flag: 'hata_af.png' },
       'tahiti': { country: '🇫🇷 南太平洋', title: 'マンガン団塊深海エリア', desc: '深海底に転がる金属塊。重レアアースやコバルトを含む高価なゾーン。', cost: 200, milesGain: 300, minLv: 20, target: 'Dy, Tb, Er, Yb', btnColor: '#2980b9', btnText: '🚢 このエリアの深海探査へ移動！', img: 'area_image_tahiti.png', flag: 'hata_pf.png' },
       'greenland': { country: '🇬🇱 グリーンランド', title: 'クバネフエルド鉱床', desc: '氷河の下に眠る、世界最大級の未開発レアアース・ウラン複合鉱床。', cost: 300, milesGain: 400, minLv: 30, target: 'Gd, Ho, Er', btnColor: '#55ffff', btnText: '⛏️ 氷河エリアの採掘へ移動！', img: 'area_image_greenland.png', flag: 'hata_greenisland.png' },
-      'okinotori': { country: '🇯🇵 日本（南鳥島・沖ノ鳥島）', title: 'EEZ海底泥エリア', desc: '日本の未来を担う！水深数千mの海底に眠る超高濃度レアアース泥。', cost: 500, milesGain: 800, minLv: 50, target: '全17元素（高純度）', btnColor: '#3498db', btnText: '🚢 このエリアの海中探査・採掘へ移動！', img: 'area_image_okinotori.png', flag: 'hata_jp.png' }
+      'okinotori': { country: '🇯🇵 日本（南鳥島）', title: 'EEZ海底泥エリア', desc: '日本の未来を担う！水深数千mの海底に眠る超高濃度レアアース泥。', cost: 500, milesGain: 800, minLv: 50, target: '全17元素（高純度）', btnColor: '#3498db', btnText: '🚢 このエリアの海中探査・採掘へ移動！', img: 'area_image_okinotori.png', flag: 'hata_jp.png' }
     };
 
     function initMapLocks() {
@@ -498,5 +498,6 @@
       location.href = 'mine.html';
     }
   </script>
+<script src="tutorial.js"></script>
 </body>
 </html>
