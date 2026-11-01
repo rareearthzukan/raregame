@@ -18,21 +18,27 @@ h1{margin:0 0 8px;font-size:1.05rem;color:var(--cy);font-weight:800}
 .wear{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:.75rem;color:#cbd5e1}
 .wtrack{flex:1;height:12px;border-radius:8px;background:#030b1a;border:1.5px solid var(--line);overflow:hidden}
 .wfill{height:100%;width:0;background:linear-gradient(90deg,#22d3ee,#f59e0b,#ef4444);transition:width .3s}
-.stage{padding:8px;border-color:var(--cy);box-shadow:0 0 14px rgba(34,211,238,.35)}
+.stage{position:relative;padding:8px;border-color:var(--cy);box-shadow:0 0 14px rgba(34,211,238,.35)}
 canvas{width:100%;height:auto;display:block;border-radius:14px;border:2px solid var(--cy);touch-action:manipulation}
 .bar{height:16px;margin:12px 4px 4px;border-radius:8px;background:#06142c;border:1.5px solid var(--line);position:relative;overflow:hidden}
-.tg{position:absolute;left:40%;width:20%;height:100%;background:rgba(34,197,94,.35);border-left:2px dashed #22c55e;border-right:2px dashed #22c55e}
+.tg{position:absolute;left:35%;width:30%;height:100%;background:rgba(34,197,94,.35);border-left:2px dashed #22c55e;border-right:2px dashed #22c55e}
 .ptr{position:absolute;left:0;width:5px;height:100%;background:#facc15;box-shadow:0 0 8px #facc15}
 .say{display:flex;align-items:center;gap:10px}
 .ava{flex:none;width:60px;height:60px;border-radius:50%;border:3px solid var(--cy);background:radial-gradient(#0e3a5a,#030b1a);display:flex;align-items:center;justify-content:center;font-size:1.9rem;box-shadow:0 0 10px rgba(34,211,238,.5)}
 .bub{position:relative;background:#fff;color:#0f172a;border-radius:14px;padding:10px 12px;font-size:.88rem;line-height:1.45;flex:1}
 .bub:before{content:"";position:absolute;left:-8px;top:22px;border:8px solid transparent;border-right-color:#fff;border-left:0}
 .ctl{display:flex;gap:10px}
-button{font:inherit;color:#fff;cursor:pointer;border:2px solid var(--cy);border-radius:16px;background:linear-gradient(#0e7490,#0b4a66);padding:14px;box-shadow:0 0 10px rgba(34,211,238,.3)}
+button{touch-action:manipulation;user-select:none;font:inherit;color:#fff;cursor:pointer;border:2px solid var(--cy);border-radius:16px;background:linear-gradient(#0e7490,#0b4a66);padding:14px;box-shadow:0 0 10px rgba(34,211,238,.3)}
 button:active{transform:scale(.96)}
 #dig{flex:2;font-size:1.2rem}
 #rep{flex:1;font-size:.9rem}
 #rep:disabled{opacity:.4}
+.tc{position:absolute;left:45%;width:10%;height:100%;background:#15803d;box-shadow:0 0 8px #4ade80,inset 0 0 6px #86efac}
+.res{position:absolute;inset:8px;z-index:5;border-radius:14px;background:rgba(3,10,25,.92);display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;line-height:1.8}
+.res h2{margin:0;color:#fde047;font-size:1.5rem}
+#again{font-size:1.05rem;padding:12px 28px}
+.gem{margin-top:6px;font-size:.78rem;color:#f0abfc}.gem b{color:#fff;font-size:.95rem}
+.ava{overflow:hidden}.ava img{width:100%;height:100%;object-fit:contain}
 </style>
 </head>
 <body>
@@ -40,35 +46,41 @@ button:active{transform:scale(.96)}
   <div class="card">
     <h1>🌊 南鳥島 レアアース泥 掘削ミッション</h1>
     <div class="stats">
-      <div class="st"><small>深度</small><b id="sd" style="color:#4ade80">0m</b></div>
-      <div class="st"><small>レアアース</small><b id="sr" style="color:#fde047">0g</b></div>
-      <div class="st"><small>修繕費</small><b id="sc" style="color:#f87171">-0g</b></div>
+      <div class="st"><small>残り</small><b id="sd" style="color:#4ade80">0m</b></div>
+      <div class="st"><small>掘削物</small><b id="sr" style="color:#fde047">0個</b></div>
+      <div class="st"><small>修繕費</small><b id="sc" style="color:#f87171">-0個</b></div>
       <div class="st"><small>コンボ</small><b id="sb">0</b></div>
     </div>
     <div class="wear">🔧 ドリル摩耗度<div class="wtrack"><div class="wfill" id="wf"></div></div><span id="wp">0%</span></div>
+    <div class="gem">💎 きれいな鉱物 <b id="gm">0</b>個　<span id="gp"></span></div>
   </div>
 
   <div class="card stage">
     <canvas id="cv"></canvas>
-    <div class="bar"><div class="tg"></div><div class="ptr" id="ptr"></div></div>
+    <div class="bar"><div class="tg"></div><div class="tc"></div><div class="ptr" id="ptr"></div></div>
+    <div class="res" id="res"><h2>🎉 ミッション達成！</h2><div id="resb"></div><button id="again">もう一度挑戦</button></div>
   </div>
 
-  <div class="card say"><div class="ava">🧑‍🔬</div><div class="bub" id="say">タイミングよく掘削ボタンを押して、光る泥の層まで掘り進めよう！</div></div>
+  <div class="card say"><div class="ava" id="ava"><img src="assets/neodymium.png" alt="ネオジム" onerror="this.replaceWith(document.createTextNode('🧑‍🔬'))"></div><div class="bub" id="say">緑のゾーンでタップ！中央の濃い緑ならクリティカルで掘削物が増量。5コンボでジェット掘削！</div></div>
 
-  <div class="ctl"><button id="dig">⛏ 掘削 (SPACE)</button><button id="rep">🔧 修繕 30g</button></div>
+  <div class="ctl"><button id="dig">⛏ 掘削 (画面タップもOK)</button><button id="rep">🔧 修繕 30個</button></div>
 </div>
 
 <script>
 const $=id=>document.getElementById(id);
 const cv=$('cv'),ctx=cv.getContext('2d');
-const W=360,H=440,SURF=105,SEA=335,PX=180,L1=150,L2=400;
+const W=360,H=440,SURF=105,SEA=335,PX=180,L1=150,L2=400,GOAL=1000,PER=650;
 const dpr=Math.min(devicePixelRatio||1,2);
 cv.width=W*dpr;cv.height=H*dpr;ctx.scale(dpr,dpr);
-const yOf=d=>SEA+d*0.6;
+const yOf=d=>SEA+d*2.2;
 const rnd=i=>{const x=Math.sin(i*127.1+311.7)*43758.5453;return x-Math.floor(x)};
 
 let depth=0,dDepth=0,combo=0,dur=100,ree=0,repCost=0,pos=0,dir=1,hyper=false,started=false,shake=0,flash=0,flashCol='34,211,238';
 let parts=[],texts=[];
+let bonus=0,reeAcc=0,crits=0,misses=0,jets=0,minerals=0,jetTick=0;
+let jet=0,done=false,doneAt=0,prevDy=335,spdPx=0,drillSY=272,camG=0;
+const ppos=ms=>{const q=(ms/PER)%2;return (q<1?q:2-q)*100};
+const chunkCols=()=>depth>=L2?['#7a3b2a','#4a2a20','#22d3ee','#f472b6']:depth>=L1?['#5b4a68','#3f3148','#7c6a8a']:['#6b7280','#4b5563','#9ca3af'];
 
 function glow(x,y,r,rgb,a){const g=ctx.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,`rgba(${rgb},${a})`);g.addColorStop(1,`rgba(${rgb},0)`);ctx.fillStyle=g;ctx.fillRect(x-r,y-r,r*2,r*2)}
 function layerName(){return depth>=L2?'【深層】南鳥島タイプ・レアアース泥':depth>=L1?'【中層】堆積泥層':'【表層】軟弱泥層'}
@@ -126,11 +138,15 @@ function drawWorld(t,cam,bob,dy){
     if(rnd(r)>.42)continue;const y=r*12+rnd(r+.3)*8,x=rnd(r+.5)*(W-60)+30;
     if(y>yOf(L2)&&rnd(r*7)>.4){const c=cols[Math.floor(rnd(r*3)*3)],f=.7+.3*Math.sin(t/300+r);glow(x,y,12,c,.55*f);ctx.fillStyle=`rgb(${c})`;ctx.beginPath();ctx.arc(x,y,2+rnd(r+.9)*2,0,7);ctx.fill()}
     else{const s=4+rnd(r+.7)*6;ctx.fillStyle='#4b5563';ctx.beginPath();ctx.ellipse(x,y,s,s*.65,0,0,7);ctx.fill();ctx.fillStyle='rgba(255,255,255,.12)';ctx.beginPath();ctx.ellipse(x-1,y-s*.25,s*.6,s*.25,0,0,7);ctx.fill()}}
+  if(dy>SEA){const gb=dy+24;g=ctx.createLinearGradient(PX-26,0,PX+26,0);g.addColorStop(0,'rgba(0,0,0,.55)');g.addColorStop(.15,'rgba(0,0,0,.9)');g.addColorStop(.85,'rgba(0,0,0,.9)');g.addColorStop(1,'rgba(0,0,0,.55)');
+    ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(PX-26,SEA);for(let y=SEA;y<=gb;y+=10)ctx.lineTo(PX-26+Math.sin(y*.9)*2,y);ctx.lineTo(PX-14,gb+8);ctx.lineTo(PX+14,gb+8);for(let y=gb;y>=SEA;y-=10)ctx.lineTo(PX+26+Math.sin(y*.7)*2,y);ctx.closePath();ctx.fill();
+    ctx.strokeStyle='rgba(255,255,255,.25)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(PX-26,SEA);ctx.lineTo(PX-26,gb);ctx.moveTo(PX+26,SEA);ctx.lineTo(PX+26,gb);ctx.stroke();
+    ctx.fillStyle='#5b6270';[[-36,5],[-31,3],[34,4],[39,3]].forEach(([dx,sz])=>{ctx.beginPath();ctx.ellipse(PX+dx,SEA-1,sz+3,sz,0,0,7);ctx.fill()})}
   // 海面ライン
   ctx.strokeStyle='rgba(120,220,255,.7)';ctx.lineWidth=2;ctx.beginPath();for(let x=0;x<=W;x+=10)ctx.lineTo(x,SURF+Math.sin(x/20+t/500)*1.2);ctx.stroke();
   drawShip(t,bob);
   // パイプ
-  const hx=PX+(shake?Math.sin(t)*shake*.15:0),hy=dy;
+  const hx=PX+(shake?Math.sin(t)*shake*.45:0),hy=dy;
   const y0=SURF-6+bob,y1=hy-34;
   ctx.lineCap='round';ctx.strokeStyle='#4b5a70';ctx.lineWidth=9;ctx.beginPath();ctx.moveTo(PX,y0);ctx.lineTo(hx,y1);ctx.stroke();
   ctx.strokeStyle='#a9b8cb';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(PX-1.5,y0);ctx.lineTo(hx-1.5,y1);ctx.stroke();
@@ -150,8 +166,8 @@ function drawWorld(t,cam,bob,dy){
   for(let k=-1;k<5;k++){const yy=hy-2+((k*10+sp)%40);ctx.beginPath();ctx.moveTo(hx-22,yy);ctx.lineTo(hx+22,yy+8);ctx.lineTo(hx+22,yy+12);ctx.lineTo(hx-22,yy+4);ctx.fill()}ctx.restore();
   ctx.strokeStyle=`rgb(${rgb})`;ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(hx,hy-2,24,5,0,0,7);ctx.stroke();
   // パーティクル
-  if(started&&hyper&&Math.random()<.8)parts.push({x:hx+(Math.random()-.5)*16,y:hy+30,vx:(Math.random()-.5)*2,vy:-1.2-Math.random()*1.5,l:40,c:Math.random()<.5?'255,160,60':'253,224,71',r:2+Math.random()*2});
-  parts=parts.filter(p=>p.l>0);parts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.l--;glow(p.x,p.y,p.r*3,p.c,p.l/45)});
+  if(hyper){const cc=chunkCols();for(let i=0;i<4;i++){const a=-Math.PI/2+(Math.random()-.5)*2.2,sp2=3+Math.random()*6;parts.push({x:hx+(Math.random()-.5)*30,y:hy+28,vx:Math.cos(a)*sp2,vy:Math.sin(a)*sp2,g:.25,l:40,k:cc[Math.floor(Math.random()*cc.length)],r:2+Math.random()*3,rot:0,vr:.3})}parts.push({x:hx+(Math.random()-.5)*16,y:hy+30,vx:(Math.random()-.5)*2,vy:-1.5,l:30,c:'255,160,60',r:3})}
+  if(parts.length>350)parts.splice(0,parts.length-350);parts=parts.filter(p=>p.l>0);parts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=p.g||0;p.l--;if(p.k){ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot+=p.vr);ctx.fillStyle=p.k;ctx.fillRect(-p.r,-p.r*.7,p.r*2,p.r*1.4);ctx.restore()}else glow(p.x,p.y,p.r*3,p.c,p.l/45)});
   texts=texts.filter(s=>s.l>0);ctx.textAlign='center';ctx.font='900 18px sans-serif';
   texts.forEach(s=>{s.y-=.7;s.l--;ctx.globalAlpha=Math.min(1,s.l/20);ctx.lineWidth=4;ctx.strokeStyle='#0b1329';ctx.strokeText(s.t,s.x,s.y);ctx.fillStyle=s.c;ctx.fillText(s.t,s.x,s.y);ctx.globalAlpha=1});
 }
@@ -159,6 +175,14 @@ function drawWorld(t,cam,bob,dy){
 function rr(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath()}
 
 function drawHUD(t){
+  if(spdPx>3){const a=Math.min(.5,spdPx/25),top=Math.max(0,SEA-camG);ctx.strokeStyle=`rgba(255,255,255,${a})`;ctx.lineWidth=1.5;for(let i=0;i<16;i++){const x=rnd(i+3)*W,y=((rnd(i+9)*H-t*(.6+rnd(i)*.8))%H+H)%H;if(y<top)continue;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,y+spdPx*3);ctx.stroke()}}
+  if(!done){const tx=PX+34,ty=Math.max(60,drillSY-58),tw=104,dd=Math.round(dDepth);
+    rr(tx,ty,tw,46,10);ctx.fillStyle='rgba(4,20,40,.88)';ctx.fill();ctx.strokeStyle='#22d3ee';ctx.lineWidth=1.5;ctx.stroke();
+    ctx.textAlign='left';ctx.font='900 15px sans-serif';ctx.fillStyle='#fde047';ctx.fillText('あと '+Math.max(0,GOAL-dd)+'m',tx+8,ty+19);
+    ctx.font='700 10px sans-serif';ctx.fillStyle='#bae6fd';ctx.fillText(dd+' / '+GOAL+'m',tx+8,ty+32);
+    rr(tx+8,ty+36,tw-16,5,3);ctx.fillStyle='#0b1f3a';ctx.fill();rr(tx+8,ty+36,Math.max(4,(tw-16)*Math.min(1,dDepth/GOAL)),5,3);ctx.fillStyle='#22d3ee';ctx.fill();ctx.textAlign='center'}
+  if(bonus>0&&!done){const bt='獲得 +'+bonus+'%';ctx.font='900 12px sans-serif';const bw=ctx.measureText(bt).width+20;rr(10,10,bw,24,12);ctx.fillStyle='rgba(20,83,45,.9)';ctx.fill();ctx.strokeStyle='#4ade80';ctx.lineWidth=1.5;ctx.stroke();ctx.fillStyle='#bbf7d0';ctx.textAlign='left';ctx.fillText(bt,20,26);ctx.textAlign='center'}
+  if(hyper){const k=1+.06*Math.sin(t/60);ctx.save();ctx.translate(W/2,H*.2);ctx.scale(k,k);ctx.textAlign='center';ctx.font='900 40px sans-serif';ctx.lineJoin='round';ctx.lineWidth=6;ctx.strokeStyle='#9a3412';ctx.strokeText('JET DRILL!!',0,0);ctx.fillStyle='#fde68a';ctx.shadowColor='rgba(255,140,30,.9)';ctx.shadowBlur=16;ctx.fillText('JET DRILL!!',0,0);ctx.restore()}
   // 耐久ゲージ
   const gx=W-30,gy=44,gw=18,gh=H-130;
   ctx.textAlign='center';ctx.font='800 11px sans-serif';ctx.fillStyle='#22d3ee';ctx.fillText('耐久',gx+gw/2,gy-8);
@@ -171,51 +195,71 @@ function drawHUD(t){
   rr(W/2-w/2,H-44,w,30,15);ctx.fillStyle='rgba(4,20,40,.88)';ctx.fill();ctx.strokeStyle='#22d3ee';ctx.lineWidth=2;ctx.stroke();
   ctx.fillStyle='#67e8f9';ctx.fillText(label,W/2,H-24);
   // タイトル
-  if(!started){ctx.font='900 46px sans-serif';ctx.lineJoin='round';ctx.lineWidth=7;ctx.strokeStyle='#9a3412';ctx.strokeText('掘削スタート',W/2,H*.3);
-    const g=ctx.createLinearGradient(0,H*.3-40,0,H*.3);g.addColorStop(0,'#fde68a');g.addColorStop(1,'#f97316');ctx.fillStyle=g;ctx.shadowColor='rgba(255,160,40,.8)';ctx.shadowBlur=14;ctx.fillText('掘削スタート',W/2,H*.3);ctx.shadowBlur=0}
+  if(!started||done){const ttl=done?'掘削完了！':'掘削スタート';ctx.font='900 46px sans-serif';ctx.lineJoin='round';ctx.lineWidth=7;ctx.strokeStyle='#9a3412';ctx.strokeText(ttl,W/2,H*.3);
+    const g=ctx.createLinearGradient(0,H*.3-40,0,H*.3);g.addColorStop(0,'#fde68a');g.addColorStop(1,'#f97316');ctx.fillStyle=g;ctx.shadowColor='rgba(255,160,40,.8)';ctx.shadowBlur=14;ctx.fillText(ttl,W/2,H*.3);ctx.shadowBlur=0}
   if(flash>0){ctx.fillStyle=`rgba(${flashCol},${flash*.25})`;ctx.fillRect(0,0,W,H);flash-=.05}
   const v=ctx.createRadialGradient(W/2,H/2,H*.35,W/2,H/2,H*.75);v.addColorStop(0,'rgba(0,0,0,0)');v.addColorStop(1,'rgba(0,0,10,.4)');ctx.fillStyle=v;ctx.fillRect(0,0,W,H);
 }
 
 function frame(t){
-  pos+=2*dir;if(pos>=98||pos<=0)dir*=-1;$('ptr').style.left=pos+'%';
-  dDepth+=(depth-dDepth)*.1;
-  const dy=yOf(dDepth),cam=Math.max(0,dy-H*.62);
+  pos=ppos(t);$('ptr').style.left=pos+'%';const wasH=hyper;hyper=jet>t;
+  if(wasH&&!hyper&&!done){combo=0;say('ジェット掘削終了！また5コンボを狙おう。');ui()}
+  if(hyper&&!done){depth+=2.4;reeAcc+=(depth>=L2?.14:.05)*(1+bonus/100);if(reeAcc>=1){const w=Math.floor(reeAcc);ree+=w;reeAcc-=w}if(++jetTick%30===0&&Math.random()<mChance()*.6)gem();if(depth>=GOAL)finish();ui()}
+  dDepth+=(depth-dDepth)*.2;
+  const dy=yOf(dDepth),cam=Math.max(0,dy-H*.62);spdPx=dy-prevDy;prevDy=dy;drillSY=dy-cam;camG=cam;
+  if(hyper)shake=Math.max(shake,5);
   let sx=0,sy=0;if(shake>0){sx=(Math.random()-.5)*shake;sy=(Math.random()-.5)*shake;shake*=.85;if(shake<.3)shake=0}
   ctx.clearRect(0,0,W,H);ctx.save();ctx.translate(sx,-cam+sy);
   drawWorld(t,cam,Math.sin(t/900)*1.5,dy);
   ctx.restore();drawHUD(t);requestAnimationFrame(frame);
 }
 
+const mChance=()=>Math.min(.7,.08+crits*.05);
+function gem(){minerals++;texts.push({x:PX-55,y:yOf(depth)-54,t:'💎 きれいな鉱物！',c:'#f0abfc',l:80});burst(PX,yOf(depth)+30,'240,171,252',20);flash=.7;flashCol='240,171,252';say('💎 きれいな鉱物を発見！クリティカルを決めるほど見つかりやすくなるよ。')}
 function say(s){$('say').textContent=s}
 function ui(){
-  $('sd').textContent=depth+'m';$('sr').textContent=ree+'g';$('sc').textContent='-'+repCost+'g';$('sb').textContent=combo;
+  $('sd').textContent=Math.max(0,GOAL-Math.round(depth))+'m';$('sr').textContent=ree+'個';$('sc').textContent='-'+repCost+'個';$('gm').textContent=minerals;$('gp').textContent='発見率 '+Math.round(mChance()*100)+'%';$('sb').textContent=hyper?'JET':combo+'/5';
   $('wf').style.width=(100-dur)+'%';$('wp').textContent=(100-dur)+'%';$('rep').disabled=ree<30||dur>=100;
 }
 const HIT=['いいぞ！その調子で掘り進めよう。','ジャスト！泥の層が変わってきたよ。','リズムを保てばコンボが伸びるよ！'];
-function burst(x,y,c,n){for(let i=0;i<n;i++)parts.push({x,y,vx:(Math.random()-.5)*4,vy:-Math.random()*3,l:30+Math.random()*20,c,r:2+Math.random()*2})}
+function burst(x,y,c,n){for(let i=0;i<n;i++)parts.push({x,y,vx:(Math.random()-.5)*5,vy:-Math.random()*4,l:30+Math.random()*20,c,r:2+Math.random()*2});
+  const cc=chunkCols();for(let i=0;i<n*2;i++){const a=-Math.PI/2+(Math.random()-.5)*2.6,sp=3+Math.random()*7;parts.push({x:x+(Math.random()-.5)*30,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,g:.28,l:45+Math.random()*25,k:cc[Math.floor(Math.random()*cc.length)],r:2+Math.random()*4,rot:0,vr:(Math.random()-.5)*.5})}}
+function finish(){if(done)return;done=true;jet=0;depth=GOAL;doneAt=performance.now();burst(PX,yOf(GOAL)+30,'253,224,71',40);shake=14;flash=1;flashCol='253,224,71';say('🎉 ミッション達成！');ui();
+  setTimeout(()=>{$('resb').innerHTML=`到達深度 <b>${GOAL}m</b><br>獲得掘削物 <b style="color:#fde047">${ree}個</b><br>きれいな鉱物 <b style="color:#f0abfc">${minerals}個</b><br>クリティカル <b>${crits}</b>回 / ジェット <b>${jets}</b>回 / ミス <b>${misses}</b>回`;$('res').style.display='flex'},1100)}
+function reset(){depth=dDepth=0;prevDy=SEA;combo=0;dur=100;ree=0;repCost=0;bonus=reeAcc=crits=misses=jets=minerals=jetTick=0;jet=0;hyper=false;started=false;done=false;parts=[];texts=[];$('res').style.display='none';say('もう一度、掘削開始！');ui()}
 
 function dig(){
+  const now=performance.now();
+  if(done||jet>now)return;
   started=true;
-  if(dur<=0){say('ドリルが壊れている！レアアース30gで修繕しよう。');return}
-  if(pos>=40&&pos<=60){
-    combo++;const gain=combo>=5?50:10;
-    if(combo>=5&&!hyper){hyper=true;say('🔥 ジェット掘削モード突入！一気に掘り進めよう！')}
-    else say(hyper?'🔥 ジェット掘削中！コンボを切らすな！':HIT[Math.floor(Math.random()*3)]);
-    depth+=gain;if(depth>=L2)ree+=combo>=5?15:5;
-    burst(PX,yOf(depth)+30,hyper?'255,160,60':'34,211,238',16);
-    texts.push({x:PX+42,y:yOf(depth)-6,t:'+'+gain+'m',c:'#fde047',l:50});
-    flash=.6;flashCol='34,211,238';
+  if(dur<=0){say('ドリルが壊れている！掘削物30個で修繕しよう。');return}
+  const q=[0,50,100].map(d=>ppos(now-d));
+  const ok=q.some(v=>v>=35&&v<=65),crit=q.some(v=>v>=46&&v<=54);
+  if(ok){
+    combo++;const gain=40+Math.min(combo,5)*8+(crit?15:0);
+    if(crit){crits++;bonus+=10}
+    ree+=Math.max(1,Math.round((depth>=L2?8:3)*(1+bonus/100)));
+    depth+=gain;
+    burst(PX,yOf(depth)+30,crit?'253,224,71':'34,211,238',crit?26:18);
+    texts.push({x:PX-70,y:yOf(depth)-6,t:'+'+gain+'m',c:'#fde047',l:50});
+    if(crit)texts.push({x:PX-60,y:yOf(depth)-30,t:'CRITICAL! +'+bonus+'%',c:'#86efac',l:70});
+    shake=Math.max(shake,crit?12:9);flash=crit?.9:.5;flashCol=crit?'253,224,71':'34,211,238';
+    if(combo>=5){jet=now+2500;jets++;say('🔥 5コンボ！ジェット掘削で一気に掘り進む！');flash=1;flashCol='255,160,60';shake=14;burst(PX,yOf(depth)+30,'255,160,60',30)}
+    else say(crit?'✨ クリティカル！獲得掘削物 +'+bonus+'%':HIT[Math.floor(Math.random()*3)]);
+    if(Math.random()<mChance())gem();
   }else{
-    combo=0;hyper=false;dur=Math.max(0,dur-15);shake=10;flash=.8;flashCol='239,68,68';
-    texts.push({x:PX+42,y:yOf(depth),t:'MISS',c:'#f87171',l:40});
-    say(dur<=0?'🚨 ドリルが限界！修繕してください！':'タイミングミス！ドリル刃が摩耗したよ。緑のゾーンを狙って！');
+    combo=0;bonus=0;misses++;dur=Math.max(0,dur-10);shake=10;flash=.8;flashCol='239,68,68';
+    texts.push({x:PX-70,y:yOf(depth),t:'MISS',c:'#f87171',l:40});
+    say(dur<=0?'🚨 ドリルが限界！修繕してください！':'ミス！緑のゾーンでタップしよう。');
   }
+  if(depth>=GOAL)finish();
   ui();
 }
 function repair(){if(ree<30||dur>=100)return;ree-=30;repCost+=30;dur=Math.min(100,dur+40);say('🔧 修繕完了！耐久度が40%回復したよ。');ui()}
 
-$('dig').onclick=dig;$('rep').onclick=repair;cv.onclick=()=>{started=true};
+$('dig').onpointerdown=e=>{e.preventDefault();dig()};$('rep').onclick=repair;$('again').onclick=reset;
+const EMBED=new URLSearchParams(location.search).get('embed')==='1';
+if(EMBED){$('again').textContent='🚢 結果を受け取る';$('again').onclick=()=>parent.postMessage({type:'drillResult',mud:ree,gems:minerals,crits,jets,misses},'*')}cv.onpointerdown=e=>{e.preventDefault();dig()};
 addEventListener('keydown',e=>{if(e.code==='Space'){e.preventDefault();dig()}});
 ui();requestAnimationFrame(frame);
 </script>

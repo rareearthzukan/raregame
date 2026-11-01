@@ -7,7 +7,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#16213e">
   <meta name="format-detection" content="telephone=no">
-  <title>レアアース・クラフト - 採掘場</title>
+  <title>ぼくたちレアアース！ - 採掘場</title>
   <style>
     :root { --maxw: 720px; }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -353,6 +353,21 @@
       font-size: .76rem; line-height: 1.45; font-weight: bold; box-shadow: 0 .2rem .6rem rgba(0,0,0,.5);
     }
     .cameo-bub b { display: inline-block; background: var(--c); color: #0f172a; border-radius: 1rem; padding: 0 .55rem; margin-bottom: .2rem; font-size: .68rem; }
+
+    /* ═══ 南鳥島：深海ドリル ═══ */
+    .subsidy { font-size: .74rem; line-height: 1.55; background: rgba(0,0,0,.4); border: 1px solid rgba(255,222,89,.55); border-radius: .6rem; padding: .3rem .65rem; margin-bottom: .4rem; }
+    .subsidy div { display: flex; justify-content: space-between; }
+    .subsidy .minus { color: #4ade80; }
+    .subsidy .pay { border-top: 1px dashed rgba(255,255,255,.35); margin-top: .15rem; padding-top: .15rem; font-weight: 900; color: #ffde59; font-size: .85rem; }
+    .subsidy .bonus { display: block; text-align: center; font-weight: 900; color: #fff; background: linear-gradient(90deg,#e94560,#ff9f43); border-radius: .4rem; margin-bottom: .2rem; }
+    .drill-ov { position: fixed; inset: 0; z-index: 300; display: none; align-items: center; justify-content: center; background: rgba(3,7,18,.94); }
+    .drill-ov.open { display: flex; }
+    .drill-ov iframe { width: min(100%, 480px); height: 100%; border: 0; }
+    .drill-x { position: absolute; right: .6rem; top: calc(.5rem + env(safe-area-inset-top, 0px)); z-index: 2; border: 1px solid #9db0cf; background: rgba(15,23,42,.9); color: #e2e8f0; border-radius: 1rem; padding: .3rem .9rem; font: inherit; font-size: .8rem; }
+    .drill-ask { position: absolute; left: 50%; top: 40%; transform: translate(-50%,-50%); width: min(90%, 22rem); display: none; background: #16213e; border: 2px solid #e94560; border-radius: 1rem; padding: 1rem; text-align: center; z-index: 3; }
+    .drill-ask.open { display: block; }
+    .drill-ask .row { display: flex; gap: .5rem; margin-top: .7rem; }
+    .drill-ask button { flex: 1; min-height: 2.8rem; border-radius: .7rem; border: 0; font: inherit; font-weight: 900; }
   </style>
 </head>
 <body>
@@ -443,7 +458,7 @@
 
     <!-- ⛏️ 採掘ボタン：スクロールに関係なく常に画面下に固定 -->
     <div class="mine-dock">
-      <button id="mine-btn" class="btn-mine btn-mine-big" onclick="mineMud()">⛏️ 資源を採掘する<span class="mine-cost-tag"><span id="mine-cost">10</span>G +EXP</span></button>
+      <button id="mine-btn" class="btn-mine btn-mine-big" onclick="onMineClick()">⛏️ 資源を採掘する<span class="mine-cost-tag"><span id="mine-cost">10</span>G +EXP</span></button>
     </div>
 
     <!-- 下部ナビゲーション -->
@@ -999,6 +1014,67 @@
     }
     function scheduleCameo() { setTimeout(() => { showCameo(); scheduleCameo(); }, 20000 + Math.random() * 20000); }
 
+    // ═══ 南鳥島：深海ドリル（掘削ボタンの代わりにミニゲームで一気に引き上げる） ═══
+    // 運航費20,000G − 国の補助金17,500G ＝ お支払い2,500G。補正予算の日（約5日に1回・その日は一日中）は補助金19,000Gで1,000G。
+    const DRILL = { fare: 20000, subsidy: 17500, bonusSubsidy: 19000, minMud: 20, maxMud: 150, maxGems: 3, expPerMud: 2 };
+    function isBonusDay() { const d = new Date(), n = d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate(); return ((n * 9301 + 49297) % 233280) / 233280 < 0.2; }
+    const drillSubsidy = () => isBonusDay() ? DRILL.bonusSubsidy : DRILL.subsidy;
+    const drillPay = () => DRILL.fare - drillSubsidy();
+    const yen = n => n.toLocaleString();
+    function setupDrillUI() {
+      if (spotId !== 'okinotori') return;
+      currentSpot.cost = drillPay();
+      const btn = document.getElementById('mine-btn'), tag = btn.querySelector('.mine-cost-tag');
+      btn.firstChild.nodeValue = '🚢 海底の泥を引き上げる';
+      document.getElementById('mine-cost').textContent = yen(drillPay());
+      tag.lastChild.nodeValue = 'G';
+      const box = document.createElement('div'); box.className = 'subsidy';
+      box.innerHTML = (isBonusDay() ? '<span class="bonus">🎉 今日は補正予算の日！補助金が増額されています</span>' : '') +
+        `<div><span>🚢 ドリル船の運航費</span><span>+${yen(DRILL.fare)}G</span></div>` +
+        `<div class="minus"><span>🏛️ 国の補助金</span><span>−${yen(drillSubsidy())}G</span></div>` +
+        `<div class="pay"><span>お支払い</span><span>${yen(drillPay())}G</span></div>`;
+      btn.parentNode.insertBefore(box, btn);
+    }
+    function onMineClick() { if (spotId === 'okinotori') startDrill(); else mineMud(); }
+    function startDrill() {
+      const pay = drillPay();
+      if (gameState.money < pay) { document.getElementById('noMoneyModal').style.display = 'flex'; return; }
+      gameState.money -= pay; saveGameState(); updateUI();
+      document.getElementById('drillFrame').src = 'drill_game.html?embed=1&t=' + Date.now();
+      document.getElementById('drillOv').classList.add('open');
+    }
+    function closeDrill() {
+      document.getElementById('drillOv').classList.remove('open'); document.getElementById('drillAsk').classList.remove('open');
+      document.getElementById('drillFrame').src = 'about:blank';
+    }
+    document.getElementById('drillX').onclick = () => document.getElementById('drillAsk').classList.add('open');
+    document.getElementById('drillNo').onclick = () => document.getElementById('drillAsk').classList.remove('open');
+    document.getElementById('drillYes').onclick = closeDrill;
+    function registerJewel(j) {
+      if (!gameState.jewels) gameState.jewels = [];
+      if (!gameState.jewels.includes(j.id)) gameState.jewels.push(j.id);
+      if (!gameState.jewels.includes(`houseki${j.id}`)) gameState.jewels.push(`houseki${j.id}`);
+      if (!gameState.houseki) gameState.houseki = {};
+      gameState.houseki[j.id] = true; gameState.houseki[`houseki${j.id}`] = true;
+    }
+    addEventListener('message', e => {
+      if (e.source !== document.getElementById('drillFrame').contentWindow || !e.data || e.data.type !== 'drillResult') return;
+      const mud = Math.max(DRILL.minMud, Math.min(DRILL.maxMud, Math.round(e.data.mud || 0))), exp = mud * DRILL.expPerMud;
+      closeDrill();
+      RE.addMud(gameState, spotId in RE.AREAS ? spotId : areaKey, mud);   // 元素の割合は、精製時の産地設定（Pm・Tm・Dy・Tbなど）がそのまま効く
+      gameState.lastMinedSpot = spotId;
+      addExp(exp);
+      const jewels = [];
+      for (let k = 0; k < Math.min(DRILL.maxGems, e.data.gems || 0); k++) { const j = RE.rollGem(areaKey, gemsMaster); registerJewel(j); jewels.push(j); }
+      saveGameState(); updateUI();
+      const st = document.getElementById('mining-status');
+      st.innerText = jewels.length ? `💎 奇跡の発見！\n泥${mud}個 ＋ 鉱物${jewels.length}個` : `🚢 レアアース泥を\n${mud} 個 引き上げた！ (+${exp}EXP)`;
+      st.classList.remove('pop', 'rare'); void st.offsetWidth; st.classList.add('pop'); if (jewels.length) st.classList.add('rare');
+      playMineFx(mud, jewels.length > 0, jewels[0]);
+      if (jewels.length) setTimeout(() => showFirstJewelModal(jewels[0]), 1100);
+    });
+
+
     function mineMud() {
       if (gameState.money < currentSpot.cost) {
         document.getElementById('noMoneyModal').style.display = 'flex';
@@ -1219,8 +1295,17 @@
 
     updateUI();
     setTimeout(showCameo, 6000 + Math.random() * 4000);
+    setupDrillUI();
     scheduleCameo();
   </script>
-<script src="tutorial.js"></script>
+<div class="drill-ov" id="drillOv">
+    <iframe id="drillFrame" title="深海ドリル" allow="autoplay"></iframe>
+    <button class="drill-x" id="drillX">✕ 中止</button>
+    <div class="drill-ask" id="drillAsk">
+      <p>ドリルを中止しますか？<br><small>お支払いした運航費は戻りません。</small></p>
+      <div class="row"><button id="drillNo" style="background:#00fff5;color:#0f3460">つづける</button><button id="drillYes" style="background:#e94560;color:#fff">中止する</button></div>
+    </div>
+  </div>
+  <script src="tutorial.js"></script>
 </body>
 </html>
