@@ -643,10 +643,13 @@ function fmtLeft(ms){ const m=Math.max(1,Math.ceil(ms/60000)); return m>=60?`${M
 
 function csShow(inner){
   const o=$('csOv'), b=$('cs'); if(!o||!b) return;
+  const wasOpen=o.style.display==='flex';
   b.innerHTML=`<button class="cs-x" onclick="csClose()" aria-label="とじる">✕</button>`+inner;
   b.scrollTop=0; o.style.display='flex';
+  /* キャラをタップした指が離れた直後のクリックが、開いたばかりのボタンに当たらないよう、少しの間だけ無反応にする */
+  if(!wasOpen){ o.style.pointerEvents='none'; clearTimeout(csShow._t); csShow._t=setTimeout(()=>{ o.style.pointerEvents=''; },500); }
 }
-function csClose(){ const o=$('csOv'); if(o) o.style.display='none'; }
+function csClose(){ const o=$('csOv'); if(o){ o.style.display='none'; o.style.pointerEvents=''; } }
 function csHead(id,tag){
   const c=CHARAS[id];
   return `<div class="cs-head"><div class="cs-av"><img src="${CHARA_PREFIX}${id}.png" alt="${c.name}" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><span>🧪</span></div>
@@ -660,7 +663,12 @@ function playGame(id){
   const g=MINIGAMES[id]; if(!g) return;
   csClose();
   if(g.fn && typeof window[g.fn]==='function') window[g.fn]();
-  else if(g.url) location.href=g.url;
+  else if(g.url){
+    const go=()=>{ location.href=g.url; };
+    if(/^https?:/.test(location.protocol) && window.fetch){
+      fetch(g.url,{method:'HEAD',cache:'no-store'}).then(r=>{ if(r.ok) go(); else toast('🚧 このゲームは じゅんびちゅうだよ'); }).catch(go);
+    } else go();
+  }
 }
 
 /* ① メインメニュー */
