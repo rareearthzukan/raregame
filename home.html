@@ -188,18 +188,18 @@ try { ['gesturestart','gesturechange','gestureend'].forEach(e=>document.addEvent
 const IMG_DIR = '';
 const furnitureMaster = {
   'desk_l' : { name:'スタンダードなデスク',           cost:200,   bonus:0.3, img:'home_kagu0.png', size:28, x:30, y:88, emoji:'🗄️' },
-  'sofa_m' : { name:'クラシカルなソファ',         cost:1000,  bonus:1.0, img:'home_kagu1.png', size:34, x:55, y:92, emoji:'🛋️' },
-  'tv_l'   : { name:'テレビ',               cost:2500,  bonus:1.8, img:'home_kagu2.png', size:24, x:70, y:70, emoji:'📺' },
-  'plant_m': { name:'観葉植物１',                 cost:400,   bonus:0.4, img:'home_kagu3.png', size:14, x:90, y:82, emoji:'🪴' },
+  'sofa_m' : { name:'クラシカルなソファ',         cost:300,  bonus:1.0, img:'home_kagu1.png', size:34, x:55, y:92, emoji:'🛋️' },
+  'tv_l'   : { name:'テレビ',               cost:250,  bonus:1.8, img:'home_kagu2.png', size:24, x:70, y:70, emoji:'📺' },
+  'plant_m': { name:'観葉植物１',                 cost:100,   bonus:0.4, img:'home_kagu3.png', size:14, x:90, y:82, emoji:'🪴' },
   'daiTC'  : { name:'ダイニングテーブル＆チェアー', cost:200,   bonus:0.3, img:'home_kagu7.png', size:34, x:50, y:92, emoji:'🍽️' },
-  'plant_s': { name:'観葉植物２',                 cost:400,   bonus:0.4, img:'home_kagu4.png', size:12, x:12, y:84, emoji:'🌿' },
-  'kitchen': { name:'システムキッチン',           cost:10000, bonus:0.4, img:'home_kagu5.png', size:40, x:35, y:78, emoji:'🍳' },
+  'plant_s': { name:'観葉植物２',                 cost:300,   bonus:0.4, img:'home_kagu4.png', size:12, x:12, y:84, emoji:'🌿' },
+  'kitchen': { name:'キッチン',           cost:1000, bonus:0.4, img:'home_kagu5.png', size:40, x:35, y:78, emoji:'🍳' },
   'tree_m' : { name:'庭木１',                     cost:400,   bonus:0.4, img:'home_kagu6.png', size:26, x:75, y:70, emoji:'🌳' }
 };
 
 const IMG_PREFIX='kagu_';
 const MILE_ROWS=[
-  ['stool','スツール','🪑',120,0.1,10,88],['cushion','クッション','🟡',80,0.1,8,90],['flower_vase','花瓶','💐',100,0.1,7,70],
+  ['nomalsofa','レザーソファー','🪑',320,0.1,10,88],['cushion','クッション','🟡',80,0.1,8,90],['flower_vase','花瓶','💐',100,0.1,7,70],
   ['nightstand','ナイトテーブル','🛋️',150,0.1,12,86],['wall_clock','壁掛け時計','🕰️',150,0.2,9,38],['wall_art','壁掛けアート','🖼️',180,0.2,14,40],
   ['curtain','カーテン','🪟',200,0.2,22,50],['teddy','テディベア','🧸',200,0.2,9,90],['rug','ラグマット','🟫',250,0.2,32,94],
   ['floor_lamp','フロアライト','💡',300,0.3,9,86],['coffee_table','ローテーブル','🪵',350,0.3,22,90],['mirror','姿見','🪞',300,0.3,10,86],
@@ -507,7 +507,7 @@ function ensureCharas(){
     if((gameState.level||1) >= 6 && !gameState.tutorialShown6) {
       gameState.tutorialShown6 = true; save();
       setTimeout(() => {
-        askModal('🏠 イットリウム＆初期メンバーからの声かけ！',
+        askModal('🏠 初期メンバーからの声かけ！',
           `「プレイヤーさん、Lv.6おめでとう！私のお部屋や庭に配置して話しかけてくれたら、いつでも<b>『お仕事』</b>や<b>『お話し』</b>ができるよ！」`,
           'わかった！', null, '');
       }, 1000);
