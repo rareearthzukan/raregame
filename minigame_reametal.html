@@ -175,9 +175,12 @@
         @keyframes boxNg { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-6px); } 40% { transform: translateX(6px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(4px); } }
 
         /* ---- チュートリアル（大きく） ---- */
-        #start-overlay { position: absolute; inset: 0; z-index: 40; background: rgba(2, 6, 23, .97); overflow-y: auto; }
+        #start-overlay { position: absolute; inset: 0; z-index: 40; background: rgba(2, 6, 23, .97); display: flex; flex-direction: column; overflow: hidden; }
+        .t-scroll { flex: 1; min-height: 0; overflow-y: auto; }
+        .t-foot { flex-shrink: 0; padding: 6px 16px calc(12px + env(safe-area-inset-bottom, 0px)); background: rgba(2, 6, 23, .98); border-top: 1px solid #334155; text-align: center; }
+        @media (max-height: 620px) { .t-h { font-size: 20px; } .t-p { font-size: 14px; margin: 5px 0; } .t-rule { padding: 6px 10px; margin: 5px 0; font-size: 14px; } .t-box { padding: 9px 4px; } .t-wrap { padding: 10px 14px; } }
         #start-overlay, #start-overlay * { touch-action: pan-y; }
-        .t-wrap { min-height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 16px; text-align: center; }
+        .t-wrap { min-height: 100%; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 16px; text-align: center; }
         .t-h { font-size: clamp(22px, 6.4vw, 28px); font-weight: 900; color: #fff; line-height: 1.3; margin: 4px 0; }
         .t-h span { color: #22d3ee; }
         .t-p { font-size: clamp(15px, 4.4vw, 19px); line-height: 1.65; color: #e2e8f0; margin: 8px 0; }
@@ -347,9 +350,9 @@
 
         <!-- スタート / チュートリアル（2ページ・大きな文字） -->
         <div id="start-overlay">
+            <div class="t-scroll">
             <div class="t-wrap">
                 <div id="t1">
-                    <img src="Chara0_Nd.png" alt="ネオジム" style="height:clamp(70px,16vh,110px);margin:0 auto;filter:drop-shadow(0 0 15px rgba(0,255,245,.4))">
                     <div class="t-h">ネオジムの<br><span class="font-orbitron">METALS SORTING</span></div>
                     <div class="t-p">流れてくる 金属は ぜんぶで <b>59種</b>。<b>4つの なかま</b>に 分けて、下の ボタンで 仕分けよう！</div>
                     <div class="t-row"><div class="t-chip"><b>Fe・Pb・Sn</b><small>鉄・鉛・スズ など<br>（7種）</small></div><span class="t-arrow">➜</span><div class="t-box bg-base">📱 ベースメタル</div></div>
@@ -357,8 +360,6 @@
                     <div class="t-row"><div class="t-chip"><b>Li・Co・Ti</b><small>リチウム・コバルト・チタン など<br>（27種）</small></div><span class="t-arrow">➜</span><div class="t-box bg-rare">🔋 レアメタル</div></div>
                     <div class="t-row"><div class="t-chip"><b>Nd・Ce・Er</b><small>ネオジム・セリウム・エルビウム など<br>（17種）</small></div><span class="t-arrow">➜</span><div class="t-box bg-earth">🌟 レアアース</div></div>
                     <div class="t-p">※ 名前は 一部の れいだよ。わからない時は 右上の <b>図鑑</b>で 調べよう！<br>👇 <b>いちばん下の 金属</b>が 仕分けの 対象だよ！</div>
-                    <div class="t-dots">● ○</div>
-                    <div class="t-btns"><button id="btn-next" class="t-btn go">つぎへ ▶</button></div>
                 </div>
                 <div id="t2" class="hidden">
                     <div class="t-h">📋 ルール</div>
@@ -367,9 +368,12 @@
                     <div class="t-rule"><span class="ic">⚠️</span><span><b>赤い線</b>を こえて 落ちたら ミス！</span></div>
                     <div class="t-rule"><span class="ic">📖</span><span>わからない時は 右上の <b>図鑑</b>で 調べよう</span></div>
                     <div class="t-rule"><span class="ic">🏅</span><span><b>ノーミス</b>で 大ボーナス！</span></div>
-                    <div class="t-dots">○ ●</div>
-                    <div class="t-btns"><button id="btn-prev" class="t-btn">◀ もどる</button><button id="btn-start" class="t-btn go">🚀 ミッション開始</button></div>
                 </div>
+            </div>
+            </div>
+            <div class="t-foot">
+                <div id="f1"><div class="t-dots">● ○</div><div class="t-btns"><button id="btn-next" class="t-btn go">つぎへ ▶</button></div></div>
+                <div id="f2" class="hidden"><div class="t-dots">○ ●</div><div class="t-btns"><button id="btn-prev" class="t-btn">◀ もどる</button><button id="btn-start" class="t-btn go">🚀 ミッション開始</button></div></div>
             </div>
         </div>
     </div>
@@ -545,7 +549,7 @@
         ];
 
         /* サウンドシステム */
-        const BGM_VOL = 0.32;   // BGMの音量（大きくしたい時は数字を上げる。以前は0.08）
+        const BGM_VOL = 0.75;   // BGMの音量（大きくしたい時は数字を上げる。最初は0.08。1.0を超えると音がつぶれやすい）
         class SoundSystem {
             constructor() {
                 this.ctx = null;
@@ -620,27 +624,27 @@
             startBGM() {
                 if (!this.enabled) return;
                 this.init(); this.stopBGM();
+                // 音がつぶれないようにコンプレッサーを通して出力
+                const out = this.ctx.createDynamicsCompressor();
+                out.threshold.value = -14; out.ratio.value = 6; out.attack.value = 0.003; out.release.value = 0.2;
+                out.connect(this.ctx.destination);
+                const tone = (f, vol, dur, type) => {
+                    const t0 = this.ctx.currentTime, o = this.ctx.createOscillator(), g = this.ctx.createGain();
+                    o.type = type; o.frequency.setValueAtTime(f, t0);
+                    g.gain.setValueAtTime(vol, t0);
+                    g.gain.linearRampToValueAtTime(vol * 0.65, t0 + dur * 0.5);
+                    g.gain.exponentialRampToValueAtTime(0.001, t0 + dur);
+                    o.connect(g); g.connect(out);
+                    o.start(t0); o.stop(t0 + dur + 0.02);
+                };
                 let step = 0;
                 const notes = [261.63, 329.63, 392.00, 523.25];
                 this.bgmTimer = setInterval(() => {
                     if (!this.enabled) return;
-                    const osc = this.ctx.createOscillator();
-                    const gain = this.ctx.createGain();
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(notes[step % notes.length], this.ctx.currentTime);
-                    gain.gain.setValueAtTime(BGM_VOL, this.ctx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.24);
-                    osc.connect(gain);
-                    gain.connect(this.ctx.destination);
-                    osc.start(); osc.stop(this.ctx.currentTime + 0.24);
-                    if (step % 4 === 0) {   // 4拍ごとに低音を足して厚みを出す
-                        const bo = this.ctx.createOscillator(), bg = this.ctx.createGain();
-                        bo.type = 'triangle'; bo.frequency.setValueAtTime(notes[0] / 2, this.ctx.currentTime);
-                        bg.gain.setValueAtTime(BGM_VOL * 1.1, this.ctx.currentTime);
-                        bg.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.6);
-                        bo.connect(bg); bg.connect(this.ctx.destination);
-                        bo.start(); bo.stop(this.ctx.currentTime + 0.6);
-                    }
+                    const n = notes[step % notes.length];
+                    tone(n, BGM_VOL, 0.3, 'triangle');            // メロディ
+                    tone(n * 2, BGM_VOL * 0.35, 0.22, 'sine');     // きらきらした高音
+                    if (step % 4 === 0) tone(notes[0] / 2, BGM_VOL * 1.0, 0.75, 'triangle');   // 低音
                     step++;
                 }, 250);
             }
@@ -728,7 +732,9 @@
         function tutGo(n) {
             document.getElementById('t1').classList.toggle('hidden', n !== 1);
             document.getElementById('t2').classList.toggle('hidden', n !== 2);
-            document.getElementById('start-overlay').scrollTop = 0;
+            document.getElementById('f1').classList.toggle('hidden', n !== 1);
+            document.getElementById('f2').classList.toggle('hidden', n !== 2);
+            document.querySelector('#start-overlay .t-scroll').scrollTop = 0;
         }
 
         function hideGuide() {
