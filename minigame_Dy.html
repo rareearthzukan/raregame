@@ -52,7 +52,10 @@ body{background:var(--wood) repeating-linear-gradient(90deg,#33200f 0 38px,#2b18
 .tank .aq{position:absolute;bottom:0;left:0;right:0;height:55%;background:var(--aq);opacity:.95;transition:opacity .1s}
 .tank .lb{position:absolute;right:6px;font-size:.7rem;font-weight:bold;color:#4a3a2a}
 .tank .pad{position:absolute;left:50%;top:6px;width:6px;height:132px;margin-left:-3px;background:#777;border-radius:3px}
-.tank .blade{position:absolute;left:50%;top:92px;width:70px;height:8px;margin-left:-35px;background:#777;border-radius:4px}
+.tank .blade{position:absolute;left:50%;top:96px;width:78px;height:10px;margin-left:-39px;transform-style:preserve-3d;animation:blSpin 1.8s linear infinite}
+.tank .blade i{position:absolute;inset:0;background:linear-gradient(#bbb,#666);border-radius:5px;border:1px solid #444}
+.tank .blade i:nth-child(2){transform:rotateY(90deg)}
+@keyframes blSpin{from{transform:perspective(260px) rotateY(0)}to{transform:perspective(260px) rotateY(360deg)}}
 .cells{display:flex;gap:3px;justify-content:center;margin:6px 0 2px}
 .cells i{width:20px;height:22px;border:2px solid #6b4423;border-radius:3px 3px 8px 8px;background:#fff7}
 .cells i.p{background:#ffd35a}.cells i.o{background:#8fd0ff}.cells i.m{background:#ccc}
@@ -131,7 +134,7 @@ const OT=()=>ORD==='ingot'?'インゴット':'酸化物の粉';
 
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 let timers=[], rafs=[], keyFn=null, R;
-function cleanup(){ timers.forEach(clearInterval); rafs.forEach(cancelAnimationFrame); timers=[]; rafs=[]; if(keyFn){removeEventListener('keydown',keyFn);keyFn=null;} }
+function cleanup(){ stopLoops(); timers.forEach(clearInterval); rafs.forEach(cancelAnimationFrame); timers=[]; rafs=[]; if(keyFn){removeEventListener('keydown',keyFn);keyFn=null;} }
 function say(h){ $('#say').innerHTML=h; }
 
 function powder(c,l){ return `<svg viewBox="0 0 120 70"><path d="M2 69Q28 64 42 36Q60 2 78 36Q92 64 118 69Z" fill="${c}" stroke="#8a7f66" stroke-width="2"/><g fill="#8a7f6688"><circle cx="50" cy="50" r="2"/><circle cx="70" cy="46" r="2"/><circle cx="60" cy="30" r="1.6"/><circle cx="40" cy="62" r="2"/><circle cx="84" cy="60" r="2"/></g><text x="60" y="66" font-size="9" text-anchor="middle" fill="#fff" stroke="#333" stroke-width=".4" font-weight="bold">${l}</text></svg>`; }
@@ -158,7 +161,7 @@ function s1(){
   <div class="tip">${tip1()}</div></div>`;
   const upd=()=>{ $('#lq').style.height=p+'%'; $('#pw').style.transform=`scale(${1},${clamp(1-p/T,0,1)})`; $('#pw').style.opacity=p>=T?0:1; $('#st').style.height=(100-p)+'%'; $('#fb').textContent='現在 '+Math.floor(p)+'%'; };
   const b=$('#pb');
-  b.onpointerdown=e=>{ e.preventDefault(); if(on||R.done1)return; on=true; $('#st').style.opacity=1; timers.push(setInterval(()=>{ if(p<100){p+=.8;upd();} },30)); };
+  b.onpointerdown=e=>{ e.preventDefault(); if(on||R.done1)return; on=true; playPour(); $('#st').style.opacity=1; timers.push(setInterval(()=>{ if(p<100){p+=.8;upd();} },30)); };
   const end=()=>{ if(!on)return; on=false; cleanup(); $('#st').style.opacity=0; R.done1=1;
     const d=p-T; R.q1=Math.pow(clamp(1-Math.max(0,Math.abs(d)-3)/16,0,1),1.5);
     const m=Math.abs(d)<=3?'🎯 ぴったり！最高判定！粉が溶けきった！':d<0?'💦 溶け残りだ…収率ダウン':'🧪 酸が余った…中和のコストが増えるぞ';
@@ -174,7 +177,7 @@ function s2(){
   $('#main').innerHTML=`<div class="card"><div class="ttl">二の型　溶媒抽出（スープと油を混ぜる）</div>
   <div class="sub">連打で撹拌！ ${E.s}が水相から有機相へ移っていく。</div>
   <div class="meter"><i id="tf"></i></div>
-  <div class="tank" id="tk"><div class="og" id="og"></div><div class="aq" id="aq" style="background:${E.sol}"></div><div class="pad"></div><div class="blade"></div><div class="lb" style="top:4px">有機相（油）</div><div class="lb" style="bottom:4px">水相（酸のスープ）</div></div>
+  <div class="tank" id="tk"><div class="og" id="og"></div><div class="aq" id="aq" style="background:${E.sol}"></div><div class="pad"></div><div class="blade"><i></i><i></i></div><div class="lb" style="top:4px">有機相（油）</div><div class="lb" style="bottom:4px">水相（酸のスープ）</div></div>
   <div class="fb" id="fb">移行 0%　残り 6.0秒</div><button class="btn" id="mb">激まぜ！</button>
   <div class="tip">実際は有機溶媒（P507やPC-88Aなど）を灯油で希釈し、水相と混ぜて元素ごとの親和性の差で分けます。混ぜた後は静置して2層に分けます。</div></div>`;
   const upd=()=>{ $('#og').style.opacity=.25+.7*prog/100; $('#aq').style.opacity=.95-.7*prog/100; $('#fb').textContent=`移行 ${Math.floor(prog)}%　残り ${left.toFixed(1)}秒`; $('#tf').style.width=left/6*100+'%'; };
@@ -182,7 +185,7 @@ function s2(){
     R.q2= prog>=100 ? .55+.45*clamp(left/2.5,0,1) : prog/100*.35; R.q2=clamp(R.q2,0,1);
     $('#fb').textContent= prog>=100?'✨ よく混ざった！':'⏰ 混ぜ足りない…抽出率が下がった'; setTimeout(s3,1100); };
   timers.push(setInterval(()=>{ left=Math.max(0,left-.1); prog=Math.max(0,prog-.9); upd(); if(left<=0)done(); },100));
-  $('#mb').onpointerdown=e=>{ e.preventDefault(); if(fin)return; prog=Math.min(100,prog+6); upd(); if(prog>=100)done(); };
+  $('#mb').onpointerdown=e=>{ e.preventDefault(); if(fin)return; stirTap(); prog=Math.min(100,prog+6); upd(); if(prog>=100)done(); };
 }
 
 // ===== 三の型：多段分離（ミキサーセトラー） =====
@@ -223,13 +226,13 @@ function s3(){
 function s4(){
   cleanup();
   const c=.25+Math.random()*.5, hw=.06; let pos=0,dir=1,stopped=false,last=performance.now();
-  say(ORD==='ingot'?'溶液から<b>シュウ酸塩で沈殿</b>させ、焼いて酸化物に戻したら、最後は<b>金属還元</b>！炉の温度ぴったりでインゴットに仕上げるぜ！':'溶液に<b>シュウ酸</b>を入れて沈殿させ、ろ過して<b><ruby>焙焼<rt>ばいしょう</rt></ruby></b>すれば酸化物の粉の出来上がりだ！炉の温度を見極めな！');
+  say(ORD==='ingot'?'溶液から<b>シュウ酸塩で沈殿</b>させ、焼いて酸化物に戻したら、最後は<b>金属還元</b>！炉の温度ぴったりで<b><ruby>鋳込<rt>いこ</rt></ruby>む</b>んだ！<ruby>鋳込<rt>いこ</rt></ruby>むってのは、型に入れて冷やし固めることだぜ！':'溶液に<b>シュウ酸</b>を入れて沈殿させ、ろ過して<b><ruby>焙焼<rt>ばいしょう</rt></ruby></b>すれば酸化物の粉の出来上がりだ！炉の温度を見極めな！');
   $('#main').innerHTML=`<div class="card"><div class="ttl">${ORD==='ingot'?'四の型　金属還元（インゴットに仕上げる）':'四の型　沈殿と<ruby>焙焼<rt>ばいしょう</rt></ruby>（粉に仕上げる）'}</div>
-  <div class="sub">温度メーターが緑のゾーンに来たら${ORD==='ingot'?'「鋳込む」':'「<ruby>焙焼<rt>ばいしょう</rt></ruby>完了」'}！</div>
+  <div class="sub">温度メーターが緑のゾーンに来たら${ORD==='ingot'?'「<ruby>鋳込む<rt>いこむ</rt></ruby>」':'「<ruby>焙焼<rt>ばいしょう</rt></ruby>完了」'}！</div>
   <div class="gauge"><div class="zone" style="left:${(c-hw)*100}%;width:${hw*200}%"></div><div class="mk" id="mk"></div></div>
   <div id="ig" style="min-height:96px;font-size:2.4rem;padding-top:20px">🔥</div>
-  <div class="fb" id="fb">低温 ⇄ 高温</div><button class="btn" id="cb">${ORD==='ingot'?'鋳込む！':'<ruby>焙焼<rt>ばいしょう</rt></ruby>完了！'}</button>
-  <div class="tip">${ORD==='ingot'?'精製した酸化物はフッ化物にして金属カルシウムで還元するか、溶融塩電解で金属にします。':'希土類はシュウ酸塩として沈殿します。ろ過・洗浄して900℃前後で<ruby>焙焼<rt>ばいしょう</rt></ruby>すると酸化物の粉になります。'}${E.s}の主な用途：${E.use}。</div></div>`;
+  <div class="fb" id="fb">低温 ⇄ 高温</div><button class="btn" id="cb">${ORD==='ingot'?'<ruby>鋳込む<rt>いこむ</rt></ruby>！':'<ruby>焙焼<rt>ばいしょう</rt></ruby>完了！'}</button>
+  <div class="tip">${ORD==='ingot'?'<b><ruby>鋳込む<rt>いこむ</rt></ruby></b>＝溶けた金属を<b>型に入れて冷やし固めること</b>です。精製した酸化物はフッ化物にして金属カルシウムで還元するか、溶融塩電解で金属にします。':'希土類はシュウ酸塩として沈殿します。ろ過・洗浄して900℃前後で<ruby>焙焼<rt>ばいしょう</rt></ruby>すると酸化物の粉になります。'}${E.s}の主な用途：${E.use}。</div></div>`;
   function loop(now){ const dt=(now-last)/1000; last=now; pos+=dir*dt*1.25; if(pos>1){pos=1;dir=-1;} if(pos<0){pos=0;dir=1;} $('#mk').style.left=pos*97+'%'; if(!stopped)rafs.push(requestAnimationFrame(loop)); }
   rafs.push(requestAnimationFrame(loop));
   $('#cb').onpointerdown=e=>{ e.preventDefault(); if(stopped)return; stopped=true; cleanup(); playFile('SE_kirakira.mp3');
@@ -258,11 +261,24 @@ function result(){
 
 
 // ===== キャラ画像・サウンド設定 =====
-const CHAR_SRC=sym=>`chars/${sym}.png`;   // 各元素キャラPNGの置き場所（例: chars/Nd.png）
+const CHAR_SRC=sym=>`chara0_${sym}.png`;   // 各元素キャラPNGの置き場所（例: chars/Nd.png）
 const BGM_FILE='';                        // BGMのファイル名（例: 'bgm.mp3'）。空欄ならBGMなし
 const RAW='https://raw.githubusercontent.com/rareearthzukan/raregame/main/';
 const DY_IMG=document.querySelector('.chef img').src;
-function charHtml(){ const src=E.s==='Dy'?DY_IMG:CHAR_SRC(E.s); return `<img src="${src}" alt="${E.s}" onerror="this.outerHTML='${E.s}'">`; }
+function charFail(i,sym){ if(sym==='Dy'&&!i.dataset.f){ i.dataset.f=1; i.src=DY_IMG; } else i.outerHTML=sym; }
+function charHtml(){ return `<img src="${CHAR_SRC(E.s)}" alt="${E.s}" onerror="charFail(this,'${E.s}')">`; }
+// ループ系効果音（塩酸を注ぐ／激まぜ）
+let sePour=null, seStir=null, stirT=null, bladeT=null;
+function playPour(){ if(muted)return; if(!sePour){ sePour=mkAudio('SE_sosogu.mp3'); sePour.loop=true; sePour.volume=.8; } try{ sePour.currentTime=0; }catch(e){} sePour.play().catch(()=>{}); }
+function stirTap(){
+  const bl=document.querySelector('.tank .blade'); if(bl) bl.style.animationDuration='.22s';
+  clearTimeout(bladeT); bladeT=setTimeout(()=>{ const b=document.querySelector('.tank .blade'); if(b) b.style.animationDuration='1.8s'; },400);
+  if(muted)return;
+  if(!seStir){ seStir=mkAudio('SE_kakuhan.mp3'); seStir.loop=true; seStir.volume=.8; }
+  if(seStir.paused) seStir.play().catch(()=>{});
+  clearTimeout(stirT); stirT=setTimeout(()=>{ seStir.pause(); },450);
+}
+function stopLoops(){ try{ if(sePour)sePour.pause(); if(seStir)seStir.pause(); }catch(e){} clearTimeout(stirT); clearTimeout(bladeT); }
 let muted=false; try{ muted=localStorage.getItem('rareMute')==='1'; }catch(e){}
 let bgm=null, ac=null;
 function mkAudio(name){ const a=new Audio(name); a.addEventListener('error',()=>{ if(!a.dataset.fb){ a.dataset.fb=1; a.src=RAW+name; a.play().catch(()=>{}); } }); return a; }
@@ -275,7 +291,7 @@ function synthSet(){ if(muted)return; try{ ac=ac||new (window.AudioContext||wind
 function startBgm(){ if(!BGM_FILE||bgm)return; bgm=mkAudio(BGM_FILE); bgm.loop=true; bgm.volume=.35; if(!muted)bgm.play().catch(()=>{}); }
 addEventListener('pointerdown',startBgm,{once:true});
 function paintMute(){ $('#mt').textContent=muted?'🔇':'🔊'; }
-$('#mt').onclick=()=>{ muted=!muted; try{localStorage.setItem('rareMute',muted?'1':'0');}catch(e){} if(bgm){ muted?bgm.pause():bgm.play().catch(()=>{}); } paintMute(); };
+$('#mt').onclick=()=>{ muted=!muted; try{localStorage.setItem('rareMute',muted?'1':'0');}catch(e){} if(muted)stopLoops(); if(bgm){ muted?bgm.pause():bgm.play().catch(()=>{}); } paintMute(); };
 paintMute();
 showBar(); newRound();
 </script>
