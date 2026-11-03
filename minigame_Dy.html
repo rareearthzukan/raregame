@@ -262,7 +262,7 @@ function result(){
 
 // ===== キャラ画像・サウンド設定 =====
 const CHAR_SRC=sym=>`chara0_${sym}.png`;   // 各元素キャラPNGの置き場所（例: chars/Nd.png）
-const BGM_FILE='';                        // BGMのファイル名（例: 'bgm.mp3'）。空欄ならBGMなし
+const BGM_FILE='BGM_ramen.ogg';                        // BGMのファイル名（例: 'bgm.mp3'）。空欄ならBGMなし
 const RAW='https://raw.githubusercontent.com/rareearthzukan/raregame/main/';
 const DY_IMG=document.querySelector('.chef img').src;
 function charFail(i,sym){ if(sym==='Dy'&&!i.dataset.f){ i.dataset.f=1; i.src=DY_IMG; } else i.outerHTML=sym; }
