@@ -122,6 +122,12 @@
         </div>
     </header>
 
+    <!-- 本編へ戻るナビ -->
+    <nav class="flex gap-2 mt-2" style="width:min(92vw,420px)">
+        <a href="home.html" class="flex-1 py-2 px-3 bg-gray-800 hover:bg-gray-700 active:bg-sky-600 text-gray-200 text-xs font-bold rounded-lg border border-gray-700 transition text-center shadow no-underline">🏠 ホームへ</a>
+        <a href="map.html" class="flex-1 py-2 px-3 bg-gray-800 hover:bg-gray-700 active:bg-sky-600 text-gray-200 text-xs font-bold rounded-lg border border-gray-700 transition text-center shadow no-underline">🗺 マップへ</a>
+    </nav>
+
     <!-- Main Kaleidoscope Canvas Container -->
     <div class="relative my-3 rounded-full kaleido-glow border-4 border-gray-800 overflow-hidden bg-radial from-slate-900 to-black cursor-grab active:cursor-grabbing transition-all duration-300" id="kaleidoContainer" style="width:min(92vw,420px);aspect-ratio:1/1;">
         <canvas id="kaleidoCanvas" width="700" height="700" class="w-full h-full block"></canvas>

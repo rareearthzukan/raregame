@@ -176,6 +176,7 @@
 
         /* ---- チュートリアル（大きく） ---- */
         #start-overlay { position: absolute; inset: 0; z-index: 40; background: rgba(2, 6, 23, .97); display: flex; flex-direction: column; overflow: hidden; }
+        #start-overlay.hidden { display: none; }   /* ゲーム開始で確実に隠す（上のdisplay:flexに負けないように） */
         .t-scroll { flex: 1; min-height: 0; overflow-y: auto; }
         .t-foot { flex-shrink: 0; padding: 6px 16px calc(12px + env(safe-area-inset-bottom, 0px)); background: rgba(2, 6, 23, .98); border-top: 1px solid #334155; text-align: center; }
         @media (max-height: 620px) { .t-h { font-size: 20px; } .t-p { font-size: 14px; margin: 5px 0; } .t-rule { padding: 6px 10px; margin: 5px 0; font-size: 14px; } .t-box { padding: 9px 4px; } .t-wrap { padding: 10px 14px; } }
@@ -419,7 +420,7 @@
                     <div class="bg-slate-950 border border-slate-800 p-3 rounded-xl text-xs text-slate-300">
                         <h3 class="text-cyan-400 font-bold mb-2 text-xs sm:text-sm"><i class="fa-solid fa-sitemap mr-1"></i> 金属資源の分類構造概念</h3>
                         <p class="leading-relaxed text-slate-400 mb-3 text-[11px]">
-                            産業で使われる金属は大きく分けられます。「レアメタル」は流通量が少なく希少な鉱種の総称で、**レアアース（希土類17元素）はそのレアメタルの中の１グループ**として包含されています。
+                            産業で使われる金属は大きく分けられます。「レアメタル」は流通量が少なく希少な鉱種の総称で、レアアース（希土類17元素）は『そのレアメタルの中の１グループ』として包含されています。
                         </p>
 
                         <div class="space-y-2">
@@ -706,6 +707,7 @@
 
             itemContainer.innerHTML = '';
             document.getElementById('start-overlay').classList.add('hidden');
+            document.getElementById('start-overlay').style.display = 'none';
             document.getElementById('result-overlay').classList.add('hidden');
             gameArea.classList.remove('conveyor-paused');
 
