@@ -64,6 +64,38 @@
         html, body { touch-action: manipulation; overscroll-behavior-y: none; -webkit-tap-highlight-color: transparent; }
         /* 万華鏡内のドラッグでページがスクロールしないようにする */
         #kaleidoContainer { touch-action: none; }
+            /* ===== 操作ガイド（スポットライト＋指さし） ===== */
+        #tourRoot{position:fixed;inset:0;z-index:70}
+        #tourRoot .tp{position:fixed;background:transparent;z-index:1}
+        #tHole{position:fixed;z-index:2;pointer-events:none;animation:tourGlow 1.4s ease-in-out infinite;
+            box-shadow:0 0 0 3px #fbbf24,0 0 22px 6px rgba(251,191,36,.7),0 0 0 200vmax rgba(3,6,14,.82)}
+        #tHole.anim{transition:left .4s,top .4s,width .4s,height .4s,border-radius .4s}
+        #tHole.noring{animation:none;box-shadow:0 0 0 200vmax rgba(3,6,14,.82)}
+        @keyframes tourGlow{
+            0%,100%{box-shadow:0 0 0 3px #fbbf24,0 0 14px 2px rgba(251,191,36,.5),0 0 0 200vmax rgba(3,6,14,.82)}
+            50%{box-shadow:0 0 0 3px #fde68a,0 0 30px 10px rgba(251,191,36,.9),0 0 0 200vmax rgba(3,6,14,.82)}}
+        #tFinger{position:fixed;z-index:3;pointer-events:none;font-size:48px;line-height:1;display:none;
+            transform:translate(-50%,-6%);filter:drop-shadow(0 5px 6px rgba(0,0,0,.7))}
+        #tFinger span{display:inline-block}
+        #tFinger.tap span{animation:tourTap 1s ease-in-out infinite}
+        @keyframes tourTap{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px) scale(.92)}}
+        #tRip{position:fixed;z-index:3;pointer-events:none;width:46px;height:46px;margin:-23px 0 0 -23px;
+            border-radius:50%;border:3px solid #fde68a;display:none;animation:tourRip 1s ease-out infinite}
+        @keyframes tourRip{0%{transform:scale(.3);opacity:1}100%{transform:scale(1.6);opacity:0}}
+        #tCard{position:fixed;z-index:4;background:#111827;border:2px solid rgba(56,189,248,.6);border-radius:16px;
+            padding:12px;box-shadow:0 10px 30px rgba(0,0,0,.6);color:#f0f6fc}
+        #tCard .tc-top{display:flex;gap:10px;align-items:center}
+        #tCard img{width:54px;height:54px;object-fit:contain;flex:none;filter:drop-shadow(0 0 6px rgba(227,179,65,.5))}
+        #tStep{font-size:10px;color:#7dd3fc;font-weight:700;margin-bottom:2px}
+        #tText{font-size:13px;line-height:1.55}
+        #tText b{color:#fbbf24}
+        #tOk{font-size:12px;font-weight:700;color:#4ade80;margin-top:4px}
+        #tCard .tc-btns{display:flex;justify-content:space-between;align-items:center;margin-top:8px;gap:8px}
+        #tSkip{font-size:11px;color:#9ca3af;padding:6px 8px}
+        #tNext{font-size:12px;font-weight:700;color:#fff;background:linear-gradient(90deg,#0ea5e9,#2563eb);padding:8px 16px;border-radius:10px}
+        .tour-hint{animation:hintPulse 1.2s infinite;border-color:#fbbf24 !important;color:#fde68a !important}
+        @keyframes hintPulse{0%,100%{box-shadow:0 0 0 0 rgba(251,191,36,.7)}50%{box-shadow:0 0 0 6px rgba(251,191,36,0)}}
+        @media (prefers-reduced-motion:reduce){#tHole,#tFinger span,#tRip,.tour-hint{animation:none}}
     </style>
 </head>
 <body class="flex flex-col items-center min-h-screen pb-6">
@@ -186,7 +218,10 @@
                 <p>✨ <strong>④ セリウム磨き:</strong> 酸化セリウムの輝き効果で、宝石のツヤと透明感をアップできます！</p>
             </div>
 
-            <button id="closeTutorialBtn" class="w-full py-2.5 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-bold text-xs rounded-xl shadow-lg transition transform active:scale-95">
+            <button id="startTourBtn" class="w-full py-2.5 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-bold text-xs rounded-xl shadow-lg transition transform active:scale-95">
+                👆 操作ガイドを見る（指で案内）
+            </button>
+            <button id="closeTutorialBtn" class="w-full mt-2 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold text-xs rounded-xl border border-gray-700 transition">
                 万華鏡を覗いてみる！
             </button>
         </div>
@@ -758,6 +793,141 @@
                 }
             });
         }
+    </script>
+    <script>
+    // ===== 操作ガイド：画面を暗くして、押す場所を指で示す =====
+    (function(){
+        const KEY='kaleidoTourDone', $=id=>document.getElementById(id);
+        let seen=false; try{ seen=localStorage.getItem(KEY)==='1'; }catch(e){}
+        const markSeen=()=>{ seen=true; try{localStorage.setItem(KEY,'1');}catch(e){} $('openTutorialBtn').classList.remove('tour-hint'); };
+        if(!seen) $('openTutorialBtn').classList.add('tour-hint');
+
+        const root=document.createElement('div');
+        root.id='tourRoot'; root.style.display='none';
+        root.innerHTML=`<div class="tp"></div><div class="tp"></div><div class="tp"></div><div class="tp"></div>
+          <div id="tHole"></div><div id="tRip"></div><div id="tFinger"><span>👆</span></div>
+          <div id="tCard"><div class="tc-top"><img src="chara_minigame_ce.png" alt="" onerror="this.style.display='none'">
+          <div><div id="tStep"></div><div id="tText"></div></div></div><div id="tOk"></div>
+          <div class="tc-btns"><button id="tSkip" type="button">スキップ</button><button id="tNext" type="button">次へ ▶</button></div></div>`;
+        document.body.appendChild(root);
+        const panels=[...root.querySelectorAll('.tp')], hole=$('tHole'), fing=$('tFinger'), rip=$('tRip'), card=$('tCard');
+
+        const firstGem=()=>gemsMaster.find(g=>playerUnlockedGemIds.includes(g.id));
+        const ensureGem=()=>{ if(!placedGems.length) addGemToKaleido(firstGem()); };
+        const cvRect=()=>$('kaleidoCanvas').getBoundingClientRect();
+        const ease=p=>{ if(p<.15)return 0; if(p>.85)return 1; const q=(p-.15)/.7; return q*q*(3-2*q); };
+        function gemPos(i){
+            const g=placedGems[i]; if(!g) return null;
+            const b=cvRect(), k=b.width/CONFIG.canvasSize, f=fold(g.a);
+            const lx=g.r*Math.cos(f), ly=g.r*Math.sin(f), c=Math.cos(mirrorRotationAngle), s=Math.sin(mirrorRotationAngle);
+            return { x:b.left+b.width/2+(lx*c-ly*s)*k, y:b.top+b.height/2+(lx*s+ly*c)*k };
+        }
+        const centerOf=(el,fy=.6)=>{ const b=el.getBoundingClientRect(); return { x:b.left+b.width/2, y:b.top+b.height*fy, tap:1 }; };
+
+        const steps=[
+          { text:'セリウムが<b>指さしで操作を案内</b>するよ！光っている場所を、実際にさわってみてね👆' },
+          { target:()=>$('gemTray'),
+            finger:()=>{ const e=$('gemTray').firstElementChild; return e?centerOf(e):null; },
+            text:'まずは<b>宝石図鑑</b>から好きな宝石を<b>タップ</b>！万華鏡の中に置かれるよ。',
+            cond:()=>placedGems.length>=1 },
+          { target:()=>$('kaleidoContainer'), round:true,
+            enter:s=>{ ensureGem(); const g=placedGems[0]; s.snap={r:g.r,a:g.a}; },
+            finger:now=>{ const from=gemPos(0); if(!from) return null; const b=cvRect(), cx=b.left+b.width/2, cy=b.top+b.height/2;
+                const vx=(from.x-cx)*.6, vy=(from.y-cy)*.6, ca=Math.cos(.7), sa=Math.sin(.7);
+                const to={x:cx+vx*ca-vy*sa, y:cy+vx*sa+vy*ca}, e=ease((now%1900)/1900);
+                return { x:from.x+(to.x-from.x)*e, y:from.y+(to.y-from.y)*e }; },
+            text:'光っている宝石を<b>指でドラッグ</b>して動かしてみよう。鏡のおかげで模様が増えるよ！',
+            cond:s=>{ const g=placedGems[0]; return g&&(Math.abs(g.r-s.snap.r)>16||Math.abs(g.a-s.snap.a)>.12); } },
+          { target:()=>$('kaleidoContainer'), round:true,
+            enter:s=>{ ensureGem(); s.snap=placedGems.map(g=>g.a); },
+            finger:now=>{ const b=cvRect(), cx=b.left+b.width/2, cy=b.top+b.height/2, R=b.width*.36, a=.5+ease((now%1900)/1900)*1.1;
+                return { x:cx+R*Math.cos(a), y:cy+R*Math.sin(a) }; },
+            text:'宝石のない<b>余白をなぞる</b>と、ビーズ全体が<b>くるくる回る</b>よ。',
+            cond:s=>placedGems.some((g,i)=>Math.abs(g.a-(s.snap[i]??g.a))>.3) },
+          { target:()=>$('slotBar'),
+            enter:s=>{ ensureGem(); if(selectedIndex<0) selectGem(0); s.snap=selectedIndex; },
+            finger:()=>{ const e=$('slotBar').firstElementChild; return e?centerOf(e,.55):null; },
+            text:'置いた宝石には<b>番号</b>が付くよ。番号を<b>タップで選択</b>、<b>もう一度タップで解除</b>。押してみて！',
+            cond:s=>selectedIndex!==s.snap },
+          { target:()=>$('inspector'),
+            enter:()=>{ ensureGem(); if(selectedIndex<0) selectGem(0); },
+            finger:now=>{ const e=$('sizeSlider'); if(!e) return null; const b=e.getBoundingClientRect(), p=ease((now%1800)/1800);
+                return { x:b.left+b.width*(.2+.6*p), y:b.top+b.height*.7 }; },
+            text:'選んでいる宝石は<b>サイズ</b>と<b>角度</b>をスライダーで変えられるよ。「📍光らせる」で場所も確認できる！' },
+          { target:()=>$('rotateBtn'),
+            finger:()=>centerOf($('rotateBtn')),
+            text:'<b>自動回転</b>をONにすると、模様がどんどん変化していくよ。押してみよう！',
+            cond:()=>isAutoRotating },
+          { target:()=>$('cePolishingBtn'),
+            finger:()=>centerOf($('cePolishingBtn')),
+            text:'最後に<b>セリウム磨き</b>！酸化セリウムの輝きで宝石のツヤがアップするよ✨',
+            cond:()=>isPolished },
+          { text:'これで基本はバッチリ！最大<b>10個</b>まで置いて、あなただけの万華鏡を作ってね。ガイドは右上の「❓遊び方」からいつでも見られるよ。' }
+        ];
+
+        let idx=0, active=false;
+        const set=(el,l,t,w,h)=>{ el.style.left=l+'px'; el.style.top=t+'px'; el.style.width=Math.max(0,w)+'px'; el.style.height=Math.max(0,h)+'px'; };
+
+        function placeCard(r,hasTarget){
+            const cw=Math.min(innerWidth-24,380); card.style.width=cw+'px';
+            const ch=card.offsetHeight, x=(innerWidth-cw)/2, above=r.t, below=innerHeight-(r.t+r.h);
+            let y;
+            if(!hasTarget) y=(innerHeight-ch)/2;
+            else if(r.t+r.h/2>innerHeight*.55 && above>=ch+20) y=r.t-ch-14;
+            else if(below>=ch+46) y=r.t+r.h+40;
+            else if(above>=ch+20) y=r.t-ch-14;
+            else y=innerHeight-ch-12;
+            card.style.left=x+'px'; card.style.top=Math.max(8,y)+'px';
+        }
+
+        function tick(now){
+            if(!active) return;
+            const s=steps[idx], el=s.target?s.target():null;
+            let r;
+            if(el){ const b=el.getBoundingClientRect(), P=6; r={l:b.left-P,t:b.top-P,w:b.width+P*2,h:b.height+P*2}; }
+            else r={l:innerWidth/2,t:innerHeight/2,w:0,h:0};
+            hole.classList.toggle('noring',!el);
+            set(hole,r.l,r.t,r.w,r.h); hole.style.borderRadius=s.round?'50%':'14px';
+            const sw=innerWidth, sh=innerHeight, T=Math.max(0,r.t), B=Math.min(sh,r.t+r.h), L=Math.max(0,r.l), Rr=Math.min(sw,r.l+r.w);
+            set(panels[0],0,0,sw,T); set(panels[1],0,B,sw,sh-B); set(panels[2],0,T,L,B-T); set(panels[3],Rr,T,sw-Rr,B-T);
+            const f=(el&&s.finger)?s.finger(now,el):null;
+            if(f){ fing.style.display='block'; fing.style.left=f.x+'px'; fing.style.top=f.y+'px'; fing.classList.toggle('tap',!!f.tap);
+                   rip.style.display=f.tap?'block':'none'; rip.style.left=f.x+'px'; rip.style.top=f.y+'px'; }
+            else { fing.style.display='none'; rip.style.display='none'; }
+            placeCard(r,!!el);
+            if(s.cond && !s.ok && s.cond(s)){
+                s.ok=true; $('tOk').textContent='✓ ナイス！できたね';
+                setTimeout(()=>{ if(active && steps[idx]===s) go(idx+1); },900);
+            }
+            requestAnimationFrame(tick);
+        }
+
+        function go(i){
+            if(i>=steps.length){ finish(); return; }
+            idx=i; const s=steps[i]; s.ok=false;
+            if(s.enter) s.enter(s);
+            $('tStep').textContent=`ガイド ${i+1} / ${steps.length}`;
+            $('tText').innerHTML=s.text; $('tOk').textContent='';
+            $('tNext').textContent=(i===steps.length-1)?'あそぶ！':(s.cond?'できない・次へ ▶':'次へ ▶');
+            $('tSkip').style.display=(i===steps.length-1)?'none':'';
+            hole.classList.add('anim'); setTimeout(()=>hole.classList.remove('anim'),450);
+            const el=s.target&&s.target(); if(el) el.scrollIntoView({block:'nearest'});
+        }
+        function start(){
+            $('tutorialModal').classList.add('hidden');
+            if(placedGems.length){ placedGems=[]; selectGem(-1); updateUI(); }
+            if(isAutoRotating) $('rotateBtn').click();
+            if(isPolished) $('cePolishingBtn').click();
+            scrollTo(0,0);
+            root.style.display='block'; active=true; go(0); requestAnimationFrame(tick);
+        }
+        function finish(){ active=false; root.style.display='none'; markSeen(); showToast('ガイド完了！自由に遊んでね✨'); }
+
+        $('tNext').addEventListener('click',()=>go(idx+1));
+        $('tSkip').addEventListener('click',()=>{ active=false; root.style.display='none'; markSeen(); });
+        addEventListener('keydown',e=>{ if(active&&e.key==='Escape'){ active=false; root.style.display='none'; markSeen(); } });
+        $('startTourBtn').addEventListener('click',start);
+    })();
     </script>
 </body>
 </html>
