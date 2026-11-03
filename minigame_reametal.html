@@ -151,6 +151,51 @@
             position: absolute;
             transition: transform 0.05s linear;
         }
+
+        /* ---- 仕分けリアクション（〇/×印・BOXに吸い込み） ---- */
+        .sort-mark { position: absolute; width: clamp(96px, 28vw, 140px); height: clamp(96px, 28vw, 140px); z-index: 60; pointer-events: none;
+            transform: translate(-50%, -50%) scale(.2); opacity: 0; animation: markPop 1.05s ease-out forwards; filter: drop-shadow(0 0 10px rgba(0,0,0,.75)); }
+        @keyframes markPop {
+            0% { transform: translate(-50%, -50%) scale(.2); opacity: 0; }
+            18% { transform: translate(-50%, -50%) scale(1.25); opacity: 1; }
+            32% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            78% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1.1); opacity: 0; }
+        }
+        .sort-label { position: absolute; transform: translateX(-50%); z-index: 61; padding: 5px 12px; border-radius: 999px; font-weight: 900;
+            font-size: clamp(13px, 3.8vw, 17px); color: #fff; white-space: nowrap; border: 2px solid #fff; pointer-events: none; animation: lblIn 1.4s ease forwards; text-shadow: 0 1px 2px rgba(0,0,0,.6); }
+        @keyframes lblIn { 0% { opacity: 0; transform: translateX(-50%) translateY(8px); } 15%, 80% { opacity: 1; transform: translateX(-50%) translateY(0); } 100% { opacity: 0; } }
+        .box-ok { animation: boxOk .95s ease-out; position: relative; z-index: 5; }
+        @keyframes boxOk {
+            0% { box-shadow: 0 0 0 0 var(--bc); transform: scale(1); }
+            35% { box-shadow: 0 0 0 6px var(--bc), 0 0 28px 6px var(--bc); transform: scale(1.07); }
+            100% { box-shadow: 0 0 0 0 transparent; transform: scale(1); }
+        }
+        .box-ng { animation: boxNg .4s ease-out; }
+        @keyframes boxNg { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-6px); } 40% { transform: translateX(6px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(4px); } }
+
+        /* ---- チュートリアル（大きく） ---- */
+        #start-overlay { position: absolute; inset: 0; z-index: 40; background: rgba(2, 6, 23, .97); overflow-y: auto; }
+        #start-overlay, #start-overlay * { touch-action: pan-y; }
+        .t-wrap { min-height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 16px; text-align: center; }
+        .t-h { font-size: clamp(22px, 6.4vw, 28px); font-weight: 900; color: #fff; line-height: 1.3; margin: 4px 0; }
+        .t-h span { color: #22d3ee; }
+        .t-p { font-size: clamp(15px, 4.4vw, 19px); line-height: 1.65; color: #e2e8f0; margin: 8px 0; }
+        .t-p b { color: #fde047; white-space: nowrap; }
+        .t-row { display: grid; grid-template-columns: 1.5fr auto 1fr; align-items: center; gap: 8px; margin: 7px 0; width: 100%; }
+        .t-chip { background: linear-gradient(135deg, #0f172a, #1e293b); border: 2px solid #00fff5; border-radius: 12px; padding: 6px 4px; }
+        .t-chip b { display: block; font-family: 'Orbitron', sans-serif; font-size: clamp(16px, 4.8vw, 21px); color: #fff; line-height: 1.15; }
+        .t-chip small { font-size: clamp(11px, 3.1vw, 14px); line-height: 1.4; display: block; margin-top: 2px; color: #cbd5e1; font-weight: 700; }
+        .t-arrow { font-size: clamp(24px, 7vw, 32px); color: #22d3ee; font-weight: 900; }
+        .t-box { border: 3px solid; border-radius: 12px; padding: 14px 4px; font-weight: 900; font-size: clamp(13px, 3.8vw, 17px); color: #fff; }
+        .t-box.bg-precious { color: #1e1b05; }
+        .t-rule { display: flex; gap: 12px; align-items: center; text-align: left; background: rgba(15, 23, 42, .9); border: 2px solid #334155; border-radius: 14px; padding: 10px 12px; margin: 8px 0; width: 100%; font-size: clamp(14px, 4vw, 18px); line-height: 1.5; color: #e2e8f0; }
+        .t-rule .ic { width: clamp(44px, 13vw, 58px); flex-shrink: 0; text-align: center; font-size: clamp(30px, 9vw, 40px); line-height: 1; }
+        .t-rule b { color: #fde047; }
+        .t-dots { letter-spacing: 8px; color: #22d3ee; margin: 6px 0 2px; }
+        .t-btns { display: flex; gap: 8px; width: 100%; margin-top: 8px; }
+        .t-btn { flex: 1; border-radius: 14px; padding: 14px 6px; font-weight: 900; font-size: clamp(16px, 4.6vw, 20px); color: #fff; border: 0; cursor: pointer; background: #334155; }
+        .t-btn.go { flex: 2; background: linear-gradient(90deg, #06b6d4, #2563eb); box-shadow: 0 0 16px rgba(6, 182, 212, .5); }
     </style>
 </head>
 <body class="w-full h-full flex items-center justify-center p-0 sm:p-2">
@@ -229,21 +274,6 @@
                 </div>
             </div>
 
-            <!-- スタート / オーバーレイ -->
-            <div id="start-overlay" class="absolute inset-0 bg-slate-950/90 backdrop-blur-sm z-30 flex flex-col items-center justify-center p-4 text-center">
-                <div class="w-24 h-24 sm:w-28 sm:h-28 mb-2 flex items-center justify-center">
-                    <img src="Chara0_Nd.png" alt="ネオジム" class="max-h-full max-w-full object-contain drop-shadow-[0_0_15px_rgba(0,255,245,0.4)]">
-                </div>
-                <h1 class="text-lg sm:text-xl font-black text-white mb-1 tracking-wide leading-tight">ネオジムの<br><span class="text-cyan-400 font-orbitron text-xl sm:text-2xl">METALS SORTING</span></h1>
-                <p class="text-xs text-slate-300 mb-4 leading-relaxed">
-                    流れてくる鉱物を適切な回収カゴへ仕分けよう！<br>
-                    正解で資金・経験値GET！間違えるとペナルティ！
-                </p>
-                <button id="btn-start" class="btn-neon w-full max-w-xs py-3 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-black text-base rounded-xl shadow-lg border border-cyan-300/40">
-                    ミッション開始
-                </button>
-            </div>
-
             <!-- リザルト画面 -->
             <div id="result-overlay" class="absolute inset-0 bg-slate-950/90 backdrop-blur-md z-30 flex flex-col items-center justify-center p-4 text-center hidden">
                 <h2 class="text-xl sm:text-2xl font-black text-amber-400 mb-1">SORTING COMPLETE!</h2>
@@ -314,6 +344,34 @@
             </div>
         </footer>
 
+
+        <!-- スタート / チュートリアル（2ページ・大きな文字） -->
+        <div id="start-overlay">
+            <div class="t-wrap">
+                <div id="t1">
+                    <img src="Chara0_Nd.png" alt="ネオジム" style="height:clamp(70px,16vh,110px);margin:0 auto;filter:drop-shadow(0 0 15px rgba(0,255,245,.4))">
+                    <div class="t-h">ネオジムの<br><span class="font-orbitron">METALS SORTING</span></div>
+                    <div class="t-p">流れてくる 金属は ぜんぶで <b>59種</b>。<b>4つの なかま</b>に 分けて、下の ボタンで 仕分けよう！</div>
+                    <div class="t-row"><div class="t-chip"><b>Fe・Pb・Sn</b><small>鉄・鉛・スズ など<br>（7種）</small></div><span class="t-arrow">➜</span><div class="t-box bg-base">📱 ベースメタル</div></div>
+                    <div class="t-row"><div class="t-chip"><b>Au・Ag・Pt</b><small>金・銀・プラチナ など<br>（8種）</small></div><span class="t-arrow">➜</span><div class="t-box bg-precious">💍 貴金属</div></div>
+                    <div class="t-row"><div class="t-chip"><b>Li・Co・Ti</b><small>リチウム・コバルト・チタン など<br>（27種）</small></div><span class="t-arrow">➜</span><div class="t-box bg-rare">🔋 レアメタル</div></div>
+                    <div class="t-row"><div class="t-chip"><b>Nd・Ce・Er</b><small>ネオジム・セリウム・エルビウム など<br>（17種）</small></div><span class="t-arrow">➜</span><div class="t-box bg-earth">🌟 レアアース</div></div>
+                    <div class="t-p">※ 名前は 一部の れいだよ。わからない時は 右上の <b>図鑑</b>で 調べよう！<br>👇 <b>いちばん下の 金属</b>が 仕分けの 対象だよ！</div>
+                    <div class="t-dots">● ○</div>
+                    <div class="t-btns"><button id="btn-next" class="t-btn go">つぎへ ▶</button></div>
+                </div>
+                <div id="t2" class="hidden">
+                    <div class="t-h">📋 ルール</div>
+                    <div class="t-rule"><span class="ic">⭕</span><span><b>正解</b>だと 大きな<b>〇</b>が出て、お金(G)がもらえる！</span></div>
+                    <div class="t-rule"><span class="ic">❌</span><span><b>まちがい</b>だと 大きな<b>×</b>が出て <b>-30G</b>。<b>正しいBOX</b>に 吸いこまれるよ</span></div>
+                    <div class="t-rule"><span class="ic">⚠️</span><span><b>赤い線</b>を こえて 落ちたら ミス！</span></div>
+                    <div class="t-rule"><span class="ic">📖</span><span>わからない時は 右上の <b>図鑑</b>で 調べよう</span></div>
+                    <div class="t-rule"><span class="ic">🏅</span><span><b>ノーミス</b>で 大ボーナス！</span></div>
+                    <div class="t-dots">○ ●</div>
+                    <div class="t-btns"><button id="btn-prev" class="t-btn">◀ もどる</button><button id="btn-start" class="t-btn go">🚀 ミッション開始</button></div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- 金属分類図鑑モーダル -->
@@ -487,6 +545,7 @@
         ];
 
         /* サウンドシステム */
+        const BGM_VOL = 0.32;   // BGMの音量（大きくしたい時は数字を上げる。以前は0.08）
         class SoundSystem {
             constructor() {
                 this.ctx = null;
@@ -569,11 +628,19 @@
                     const gain = this.ctx.createGain();
                     osc.type = 'sine';
                     osc.frequency.setValueAtTime(notes[step % notes.length], this.ctx.currentTime);
-                    gain.gain.setValueAtTime(0.08, this.ctx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.2);
+                    gain.gain.setValueAtTime(BGM_VOL, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.24);
                     osc.connect(gain);
                     gain.connect(this.ctx.destination);
-                    osc.start(); osc.stop(this.ctx.currentTime + 0.2);
+                    osc.start(); osc.stop(this.ctx.currentTime + 0.24);
+                    if (step % 4 === 0) {   // 4拍ごとに低音を足して厚みを出す
+                        const bo = this.ctx.createOscillator(), bg = this.ctx.createGain();
+                        bo.type = 'triangle'; bo.frequency.setValueAtTime(notes[0] / 2, this.ctx.currentTime);
+                        bg.gain.setValueAtTime(BGM_VOL * 1.1, this.ctx.currentTime);
+                        bg.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.6);
+                        bo.connect(bg); bg.connect(this.ctx.destination);
+                        bo.start(); bo.stop(this.ctx.currentTime + 0.6);
+                    }
                     step++;
                 }, 250);
             }
@@ -656,6 +723,12 @@
             }, 1000);
 
             spawnLoop();
+        }
+
+        function tutGo(n) {
+            document.getElementById('t1').classList.toggle('hidden', n !== 1);
+            document.getElementById('t2').classList.toggle('hidden', n !== 2);
+            document.getElementById('start-overlay').scrollTop = 0;
         }
 
         function hideGuide() {
@@ -764,13 +837,57 @@
                 createFloatingText(isMiss ? 'MISS!' : 'WRONG!', 'text-rose-500', targetItem.element.offsetLeft, targetItem.y);
             }
 
-            targetItem.element.style.transform = 'scale(1.2)';
-            targetItem.element.style.opacity = '0';
-            setTimeout(() => {
-                if (targetItem.element.parentNode) targetItem.element.parentNode.removeChild(targetItem.element);
-            }, 100);
+            flyToBox(targetItem, data.category, isCorrect, selectedCategory);
 
             updateGameStats();
+        }
+
+        /* ---- 仕分け結果の演出：〇/×印 → 正しいBOXの色に変化 → BOXへ吸い込み ---- */
+        const CAT = {
+            base:     { n: '📱 ベースメタル', bd: '#94a3b8', bg: 'linear-gradient(135deg,#475569,#334155)', glow: '#cbd5e1' },
+            precious: { n: '💍 貴金属',       bd: '#fef08a', bg: 'linear-gradient(135deg,#eab308,#ca8a04)', glow: '#facc15' },
+            rare:     { n: '🔋 レアメタル',   bd: '#93c5fd', bg: 'linear-gradient(135deg,#2563eb,#1d4ed8)', glow: '#60a5fa' },
+            earth:    { n: '🌟 レアアース',   bd: '#f0abfc', bg: 'linear-gradient(135deg,#9333ea,#7e22ce)', glow: '#e879f9' }
+        };
+        const SVG_O = '<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="36" fill="rgba(34,197,94,.18)" stroke="#22c55e" stroke-width="13"/></svg>';
+        const SVG_X = '<svg viewBox="0 0 100 100"><path d="M20 20 L80 80 M80 20 L20 80" stroke="#ef4444" stroke-width="16" stroke-linecap="round" fill="none"/></svg>';
+        function flyToBox(it, cat, ok, sel) {
+            const el = it.element, c = CAT[cat], area = gameArea;
+            const w = el.offsetWidth, h = el.offsetHeight, cx = el.offsetLeft + w / 2, cy = it.y + h / 2;
+            // 大きな〇／×印
+            const mk = document.createElement('div');
+            mk.className = 'sort-mark'; mk.innerHTML = ok ? SVG_O : SVG_X;
+            mk.style.left = cx + 'px'; mk.style.top = cy + 'px';
+            area.appendChild(mk); setTimeout(() => mk.remove(), 1100);
+            // まちがい：正解のBOX名を表示
+            if (!ok) {
+                const lb = document.createElement('div');
+                lb.className = 'sort-label'; lb.textContent = '正解は ' + c.n; lb.style.background = c.bg; lb.style.borderColor = c.bd;
+                lb.style.left = Math.max(80, Math.min(area.clientWidth - 80, cx)) + 'px';
+                lb.style.top = Math.max(8, cy - h / 2 - 96) + 'px';
+                area.appendChild(lb); setTimeout(() => lb.remove(), 1450);
+            }
+            // 正しいBOXの色に変化
+            el.style.borderColor = c.bd; el.style.background = c.bg; el.style.boxShadow = `0 0 20px ${c.glow}`;
+            // 正しいBOXへ引き寄せられて落ちる
+            const btn = document.querySelector(`.sort-btn[data-category="${cat}"]`);
+            const br = btn.getBoundingClientRect(), ar = area.getBoundingClientRect();
+            const tx = br.left + br.width / 2 - ar.left - w / 2, ty = ar.height - h * 0.15;
+            const ease = 'cubic-bezier(.45,0,.9,.6)';
+            el.style.transition = `left .5s ${ease} .22s, top .5s ${ease} .22s, transform .5s ease-in .22s, opacity .2s linear .55s`;
+            requestAnimationFrame(() => {
+                el.style.left = tx + 'px'; el.style.top = ty + 'px';
+                el.style.transform = 'scale(.5)'; el.style.opacity = '0';
+            });
+            setTimeout(() => { if (el.parentNode) el.parentNode.removeChild(el); }, 850);
+            // BOXを光らせる
+            btn.style.setProperty('--bc', c.glow);
+            btn.classList.remove('box-ok'); void btn.offsetWidth; btn.classList.add('box-ok');
+            setTimeout(() => btn.classList.remove('box-ok'), 1000);
+            if (!ok && sel && sel !== cat) {
+                const wb = document.querySelector(`.sort-btn[data-category="${sel}"]`);
+                if (wb) { wb.classList.remove('box-ng'); void wb.offsetWidth; wb.classList.add('box-ng'); setTimeout(() => wb.classList.remove('box-ng'), 450); }
+            }
         }
 
         function getLowestItem() {
@@ -895,6 +1012,8 @@
             requestAnimationFrame(updatePhysics);
 
             document.getElementById('btn-start').addEventListener('click', startGame);
+            document.getElementById('btn-next').addEventListener('click', () => { sound.init(); sound.playClick(); tutGo(2); });
+            document.getElementById('btn-prev').addEventListener('click', () => { sound.playClick(); tutGo(1); });
             document.getElementById('btn-restart').addEventListener('click', startGame);
 
             document.querySelectorAll('.sort-btn').forEach(btn => {

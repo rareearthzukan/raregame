@@ -67,7 +67,7 @@ body.embed{padding-top:calc(2.7rem + env(safe-area-inset-top,0px))}
       <div class="st"><small>コンボ</small><b id="sb">0</b></div>
     </div>
     <div class="wear">🔧 ドリル摩耗度<div class="wtrack"><div class="wfill" id="wf"></div></div><span id="wp">0%</span></div>
-    <div class="gem">💎 きれいな鉱物 <b id="gm">0</b>個　<span id="gp"></span></div>
+    <div class="gem">💎 きれいな鉱物 <b id="gm">0</b>個　<span id="gp"></span>　📦 ストック <b id="stk">0</b>個</div>
   </div>
 
   <div class="card stage">
@@ -90,7 +90,9 @@ cv.width=W*dpr;cv.height=H*dpr;ctx.scale(dpr,dpr);
 const yOf=d=>SEA+d*2.2;
 const rnd=i=>{const x=Math.sin(i*127.1+311.7)*43758.5453;return x-Math.floor(x)};
 
-let depth=0,dDepth=0,combo=0,dur=100,ree=0,repCost=0,pos=0,dir=1,hyper=false,started=false,shake=0,flash=0,flashCol='34,211,238';
+const SAVE_KEY='drillState';let SV={dur:100,stock:0};try{Object.assign(SV,JSON.parse(localStorage.getItem(SAVE_KEY)||'{}'))}catch(e){}
+SV.dur=Math.max(0,Math.min(100,+SV.dur||0));SV.stock=Math.max(0,+SV.stock||0);let lastSave='';
+let depth=0,dDepth=0,combo=0,dur=SV.dur,stock=SV.stock,stockSpent=0,ree=0,repCost=0,pos=0,dir=1,hyper=false,started=false,shake=0,flash=0,flashCol='34,211,238';
 let parts=[],texts=[];
 let bonus=0,reeAcc=0,crits=0,misses=0,jets=0,minerals=0,jetTick=0;
 let jet=0,done=false,doneAt=0,prevDy=335,spdPx=0,drillSY=272,camG=0;
@@ -234,24 +236,25 @@ function gem(){minerals++;texts.push({x:PX-55,y:yOf(depth)-54,t:'💎 きれい�
 function say(s){$('say').textContent=s}
 function ui(){
   $('sd').textContent=Math.max(0,GOAL-Math.round(depth))+'m';$('sr').textContent=ree+'個';$('sc').textContent='-'+repCost+'個';$('gm').textContent=minerals;$('gp').textContent='発見率 '+Math.round(mChance()*100)+'%';$('sb').textContent=hyper?'JET':combo+'/5';
-  $('wf').style.width=(100-dur)+'%';$('wp').textContent=(100-dur)+'%';$('rep').disabled=ree<30||dur>=100;
+  $('wf').style.width=(100-dur)+'%';$('wp').textContent=(100-dur)+'%';$('rep').disabled=ree+stock<30||dur>=100;$('stk').textContent=stock;
+  const sv=JSON.stringify({dur,stock});if(sv!==lastSave){lastSave=sv;try{localStorage.setItem(SAVE_KEY,sv)}catch(e){}}
 }
 const HIT=['いいぞ！その調子で掘り進めよう。','ジャスト！泥の層が変わってきたよ。','リズムを保てばコンボが伸びるよ！'];
 function burst(x,y,c,n){for(let i=0;i<n;i++)parts.push({x,y,vx:(Math.random()-.5)*5,vy:-Math.random()*4,l:30+Math.random()*20,c,r:2+Math.random()*2});
   const cc=chunkCols();for(let i=0;i<n*2;i++){const a=-Math.PI/2+(Math.random()-.5)*2.6,sp=3+Math.random()*7;parts.push({x:x+(Math.random()-.5)*30,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,g:.28,l:45+Math.random()*25,k:cc[Math.floor(Math.random()*cc.length)],r:2+Math.random()*4,rot:0,vr:(Math.random()-.5)*.5})}}
-function finish(){if(done)return;done=true;jet=0;depth=GOAL;doneAt=performance.now();burst(PX,yOf(GOAL)+30,'253,224,71',40);shake=14;flash=1;flashCol='253,224,71';say('🎉 ミッション達成！');ui();
-  setTimeout(()=>{$('resb').innerHTML=`到達深度 <b>${GOAL}m</b><br>獲得掘削物 <b style="color:#fde047">${ree}個</b><br>きれいな鉱物 <b style="color:#f0abfc">${minerals}個</b><br>クリティカル <b>${crits}</b>回 / ジェット <b>${jets}</b>回 / ミス <b>${misses}</b>回`;$('res').style.display='flex'},1100)}
-function reset(){depth=dDepth=0;prevDy=SEA;combo=0;dur=100;ree=0;repCost=0;bonus=reeAcc=crits=misses=jets=minerals=jetTick=0;jet=0;hyper=false;started=false;done=false;parts=[];texts=[];$('res').style.display='none';say('もう一度、掘削開始！');ui()}
+function finish(){if(done)return;done=true;jet=0;jetN=0;try{seJet.pause()}catch(e){}stock+=ree;depth=GOAL;doneAt=performance.now();burst(PX,yOf(GOAL)+30,'253,224,71',40);shake=14;flash=1;flashCol='253,224,71';say('🎉 ミッション達成！');ui();
+  setTimeout(()=>{$('resb').innerHTML=`到達深度 <b>${GOAL}m</b><br>獲得掘削物 <b style="color:#fde047">${ree}個</b><br>きれいな鉱物 <b style="color:#f0abfc">${minerals}個</b><br>クリティカル <b>${crits}</b>回 / ジェット <b>${jets}</b>回 / ミス <b>${misses}</b>回<br>📦 ストック <b>${stock}</b>個 ／ ドリル耐久 <b>${Math.round(dur)}</b>%`;$('res').style.display='flex'},1100)}
+function reset(){depth=dDepth=0;prevDy=SEA;combo=0;ree=0;repCost=0;stockSpent=0;jetN=0;try{seJet.pause()}catch(e){}bonus=reeAcc=crits=misses=jets=minerals=jetTick=0;jet=0;hyper=false;started=false;done=false;parts=[];texts=[];$('res').style.display='none';say(dur<=0?'🚨 ドリルが故障中…修繕が必要だ！':dur<100?'前回の摩耗が残っている。ミスに注意！':'もう一度、掘削開始！');ui()}
 
 function dig(){
   const now=performance.now();
   if(done||jet>now)return;
   started=true;
-  if(dur<=0){say('ドリルが壊れている！掘削物30個で修繕しよう。');return}
+  if(dur<=0&&ree+stock>=30){say('ドリルが壊れている！掘削物30個で修繕しよう。');return}
   const q=[0,50,100].map(d=>ppos(now-d));
   const ok=q.some(v=>v>=35&&v<=65),crit=q.some(v=>v>=46&&v<=54);
   if(ok){
-    combo++;playDrill(combo>=5?1.3:1);const gain=40+Math.min(combo,5)*8+(crit?15:0);
+    combo++;if(combo>=5)playDrillJet();else playDrill(1);const gain=40+Math.min(combo,5)*8+(crit?15:0);
     if(crit){crits++;bonus+=10}
     ree+=Math.max(1,Math.round((depth>=L2?8:3)*(1+bonus/100)));
     depth+=gain;
@@ -265,12 +268,12 @@ function dig(){
   }else{
     combo=0;bonus=0;misses++;dur=Math.max(0,dur-10);shake=10;flash=.8;flashCol='239,68,68';
     texts.push({x:PX-70,y:yOf(depth),t:'MISS',c:'#f87171',l:40});
-    say(dur<=0?'🚨 ドリルが限界！修繕してください！':'ミス！緑のゾーンでタップしよう。');
+    say(dur<=0?(ree+stock>=30?'🚨 ドリルが限界！修繕してください！':'🚨 ボロボロのまま掘削中…修繕費30個を稼ごう！'):'ミス！緑のゾーンでタップしよう。');
   }
   if(depth>=GOAL)finish();
   ui();
 }
-function repair(){if(ree<30||dur>=100)return;ree-=30;repCost+=30;dur=Math.min(100,dur+40);say('🔧 修繕完了！耐久度が40%回復したよ。');ui()}
+function repair(){if(ree+stock<30||dur>=100)return;const fr=Math.min(ree,30);ree-=fr;stock-=30-fr;stockSpent+=30-fr;repCost+=30;dur=Math.min(100,dur+40);say('🔧 修繕完了！耐久度が40%回復したよ。');ui()}
 
 $('dig').onpointerdown=e=>{e.preventDefault();dig()};$('rep').onclick=repair;$('again').onclick=reset;
 const Q=new URLSearchParams(location.search),EMBED=Q.get('embed')==='1',MUTE=Q.get('mute')==='1';
@@ -281,9 +284,15 @@ const startBgm=()=>{if(!MUTE&&bgm.paused)bgm.play().catch(()=>{})};
 startBgm();addEventListener('pointerdown',startBgm);addEventListener('pagehide',()=>bgm.pause());
 // 掘削SE：当たりのたびに頭から鳴らす（ジェット時は少し速く）
 const seDrill=new Audio('SE_drill.mp3');
+// ジェット掘削：同じ効果音を3回続けて鳴らす
+const seJet=new Audio('SE_drill.mp3');let jetN=0;
+function playDrillJet(){try{seDrill.pause()}catch(e){}jetN=3;
+  const step=()=>{if(jetN<=0)return;jetN--;try{seJet.currentTime=0}catch(e){}seJet.playbackRate=1.3;seJet.volume=1;seJet.play().catch(()=>{jetN=0})};
+  seJet.onended=step;step()}
 function playDrill(rate){try{seDrill.pause();seDrill.currentTime=0;seDrill.playbackRate=rate;seDrill.volume=1;seDrill.play().catch(()=>{})}catch(e){}}
-if(EMBED){$('again').textContent='🚢 結果を受け取る';$('again').onclick=()=>parent.postMessage({type:'drillResult',mud:ree,gems:minerals,crits,jets,misses},'*')}
+if(EMBED){$('again').textContent='🚢 結果を受け取る';$('again').onclick=()=>parent.postMessage({type:'drillResult',mud:ree,stockSpent,stock,durability:Math.round(dur),gems:minerals,crits,jets,misses},'*')}
 addEventListener('keydown',e=>{if(e.code==='Space'){e.preventDefault();dig()}});
+if(dur<=0)say('🚨 前回のプレイでドリルが故障したまま。修繕が必要だ！');else if(dur<100)say('前回の摩耗が残っている。ミスに注意！');
 ui();requestAnimationFrame(frame);
 </script>
 </body>
