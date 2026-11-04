@@ -239,6 +239,14 @@
     }
     .cols-3 .rc-card { width: 30%; }
     .cols-5 .rc-card { width: 18%; }
+    /* 50個まとめ精製：10列×5行。多少重なってもOK */
+    .rc-grid.cols-10 { gap: .1rem; }
+    .cols-10 .rc-card { width: 9.4%; padding: .1rem 0; margin: 0 -.1rem -.15rem; }
+    .cols-10 .rc-sym { font-size: .55rem; }
+    .cols-10 .rc-name { display: none; }
+    .cols-10 .rc-flag { width: .6rem; height: .42rem; }
+    .cols-10 .rc-badge { font-size: .65rem; top: -.35rem; right: -.25rem; }
+    .btn.btn-secret { background: linear-gradient(135deg, #f39c12, #e94560); box-shadow: 0 3px 12px rgba(243, 156, 18, 0.55); }
     .rc-card img { width: 100%; aspect-ratio: 1 / 1; object-fit: contain; }
     .rc-sym { font-size: .85rem; font-weight: bold; line-height: 1.1; }
     .rc-name { font-size: .55rem; line-height: 1.15; overflow-wrap: anywhere; }
@@ -350,6 +358,8 @@
             <button class="btn" id="refine5Btn" onclick="refineElement(5)"><span id="refine5Text"></span></button>
             <button class="btn" id="refine10Btn" onclick="refineElement(10)"><span id="refine10Text"></span></button>
           </div>
+          <!-- シークレット：Lv50以上＆掘削物300個以上で出現（一度出現したら残る） -->
+          <button class="btn btn-secret" id="refine50Btn" style="display:none" onclick="refineElement(50)"><span id="refine50Text"></span></button>
         </div>
 
         <div class="card card-inv">
@@ -568,8 +578,10 @@
     const REFINE_MODES = {
       1:  { cost: 50,  mud: 1,  unlockLv: 1,  hinanRate: 0.015, label: '精製する' },
       5:  { cost: 150, mud: 5,  unlockLv: 7,  hinanRate: 0.03,  label: '5個まとめて精製' },
-      10: { cost: 300, mud: 10, unlockLv: 15, hinanRate: 0.03,  label: '10個まとめて精製' }
+      10: { cost: 300, mud: 10, unlockLv: 15, hinanRate: 0.03,  label: '10個まとめて精製' },
+      50: { cost: 1500, mud: 50, unlockLv: 50, hinanRate: 0.03, label: '50個まとめて精製', secret: true }
     };
+    const SECRET50_MUD_REQ = 300;       // シークレット出現に必要な掘削物の所持数（Lv50以上と合わせて条件）
     const HIGHLOW_RATE_SINGLE = 0.10;   // 単発のハイ＆ロー発生率
     const HIGHLOW_RATE_PER_5  = 0.50;   // 5個ぶんあたりの発生率（単発の×5）。10個なら5個ぶんを2回判定
     const ER_EVENT_RATE = 0.12;         // カード1枚あたり（Lv15以上）
@@ -604,6 +616,20 @@
           txt.innerHTML = `🔒 ${n}個まとめて<br>Lv${cfg.unlockLv}で解放`;
         }
       });
+
+      // シークレット50個精製：Lv50以上かつ掘削物300個以上で出現。一度出現したら以後は表示し続ける
+      const btn50 = document.getElementById('refine50Btn');
+      if (btn50) {
+        if (!gameState.secret50 && lv >= REFINE_MODES[50].unlockLv && gameState.mudStock >= SECRET50_MUD_REQ) {
+          gameState.secret50 = true;
+          localStorage.setItem('rareEarthGameState', JSON.stringify(gameState));
+        }
+        const show = !!gameState.secret50 && lv >= REFINE_MODES[50].unlockLv;
+        btn50.style.display = show ? '' : 'none';
+        if (show) {
+          document.getElementById('refine50Text').innerHTML = `🌟 50個まとめて精製<br>${REFINE_MODES[50].cost.toLocaleString()}G / 掘削物${REFINE_MODES[50].mud}個`;
+        }
+      }
     }
 
     // 掘削物の産地配合バー（出やすい元素の目安つき）
@@ -840,7 +866,7 @@
         const m = elementsMaster[k];
         const isChance = chanceIdx.includes(i);
         if (!isChance) counts[k] = (counts[k] || 0) + 1;
-        cardsHtml += `<div class="rc-card ${m.type === 'heavy' ? 'rc-rare' : ''} ${isChance ? 'rc-chance' : ''}" style="animation-delay:${(i * 0.12).toFixed(2)}s">
+        cardsHtml += `<div class="rc-card ${m.type === 'heavy' ? 'rc-rare' : ''} ${isChance ? 'rc-chance' : ''}" style="animation-delay:${(i * (n >= 50 ? 0.03 : 0.12)).toFixed(2)}s">
           ${isChance ? '<div class="rc-badge">⭐</div>' : ''}
           ${areas ? RE.flagHTML(areas[i], 'rc-flag') : ''}
           <img src="${m.img}" alt="${m.name}" onerror="this.style.visibility='hidden'">
@@ -855,10 +881,14 @@
       const content = document.getElementById('modal-content-inner');
       content.innerHTML = `
         <div style="font-size: 1rem; font-weight: bold; color: #ffde59; margin-bottom: 0.2rem;">✨ ${n}個まとめて精製 完了！</div>
-        <div class="rc-grid ${n > 5 ? 'cols-5' : 'cols-3'}">${cardsHtml}</div>
+        <div class="rc-grid ${n >= 50 ? 'cols-10' : (n > 5 ? 'cols-5' : 'cols-3')}">${cardsHtml}</div>
         <div style="font-size: 0.74rem; color: #dcdde1; line-height: 1.5; margin-bottom: 0.6rem;">${summary}${chanceNote}</div>
         <button class="btn" style="margin-top:0; background:#00fff5; color:#0f3460;" onclick="finishEvent()">${pendingEvents.length ? 'つづける ▶' : 'OK'}</button>
       `;
+      // 50個のときだけモーダルを広げ、画面に収まらなければスクロール
+      content.style.maxWidth = n >= 50 ? '34rem' : '';
+      content.style.maxHeight = n >= 50 ? '92vh' : '';
+      content.style.overflowY = n >= 50 ? 'auto' : '';
       document.getElementById('minigameModal').style.display = 'flex';
     }
 
@@ -992,7 +1022,7 @@
       } else {
         updateMainDisplay(shown, `✨ ${n}個まとめて精製 【+${exp} EXP】`, null);
         showRefineCards(cards, chanceIdx, cardAreas);
-        rfxMulti(cards);
+        if (n < 50) rfxMulti(cards);   // 50個は枚数が多すぎるので酸化物・インゴット演出は省略
       }
     }
 
@@ -1353,6 +1383,8 @@
 
     function closeMinigameModal() {
       document.getElementById('minigameModal').style.display = 'none';
+      const inner = document.getElementById('modal-content-inner');
+      inner.style.maxWidth = ''; inner.style.maxHeight = ''; inner.style.overflowY = '';
     }
 
 
