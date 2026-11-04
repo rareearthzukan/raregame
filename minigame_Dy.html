@@ -78,6 +78,12 @@ body{background:var(--wood) repeating-linear-gradient(90deg,#33200f 0 38px,#2b18
 .res .g{color:#c27c00}.res .e{color:#1f5aa6}
 .tip{font-size:.74rem;color:#6b5646;text-align:left;line-height:1.5;background:#efe0bd;border-radius:8px;padding:7px 9px;margin-top:8px}
 @media (prefers-reduced-motion:reduce){*{animation:none!important}}
+#intro{position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:20px;background:rgba(20,10,5,.94) repeating-linear-gradient(90deg,#33200f 0 38px,#2b1810 38px 40px);transition:opacity .45s}
+#intro .it{background:var(--noren);color:#fff;font-weight:900;font-size:1.3rem;letter-spacing:.12em;padding:10px 18px;border-radius:6px;box-shadow:0 4px 0 #000 inset;text-align:center}
+#intro .it small{display:block;font-size:.7rem;font-weight:400;letter-spacing:.1em;opacity:.85}
+#intro .bub{flex:none;margin:0;width:min(88vw,360px);text-align:center;font-size:1.1rem;font-weight:900;padding:14px 16px}
+#intro .bub:before{display:none}
+#intro .btn{width:min(80vw,280px);font-size:1.25rem;padding:15px}
 </style>
 </head>
 <body>
@@ -97,6 +103,12 @@ body{background:var(--wood) repeating-linear-gradient(90deg,#33200f 0 38px,#2b18
   <div id="order" class="order"></div><div id="main"></div>
 </div>
 
+<div id="intro">
+  <div class="it">極み！レアアース仕込み堂<small>ジスプロ亭</small></div>
+  <div class="chef" style="width:190px"><img id="introImg" alt="ジスプロシウムの大将"><div class="hb"></div><div class="steam">♨</div></div>
+  <div class="bub" id="introSay"></div>
+  <button class="btn" id="introBtn"></button>
+</div>
 <script>
 // ===== ゲーム本編との連携 =====
 // 本編側が同じキーで {gold, exp} を読み書きすればそのまま反映されます。
@@ -294,14 +306,30 @@ function pickBgm(){ const a=new Audio();
     return a.canPlayType({mp3:'audio/mpeg',m4a:'audio/mp4',wav:'audio/wav'}[e]||''); };
   return BGM_FILES.find(ok)||BGM_FILES[0]; }
 // 自動再生制限対策：タップ/クリック/キー操作のたびに、鳴っていなければ再生を試す
-function tryBgm(){ if(!BGM_FILES.length||muted)return;
+let started=false;
+function tryBgm(){ if(!started||!BGM_FILES.length||muted)return;
   if(!bgm){ bgm=mkAudio(pickBgm()); bgm.loop=true; bgm.volume=.35; }
   if(!bgm.paused)return; bgm.play().catch(()=>{}); }
 ['pointerup','touchend','click','keydown'].forEach(ev=>addEventListener(ev,tryBgm,{passive:true}));
 function paintMute(){ $('#mt').textContent=muted?'🔇':'🔊'; }
 $('#mt').onclick=()=>{ muted=!muted; try{localStorage.setItem('rareMute',muted?'1':'0');}catch(e){} if(muted)stopLoops(); if(muted){ if(bgm)bgm.pause(); } else tryBgm(); paintMute(); };
 paintMute();
-showBar(); newRound();
+showBar();
+// ===== 開始画面：ボタンを押してからゲーム＆BGM開始 =====
+(function(){
+  const G=[['今日も、作っていくかい？','作る！'],['まいど！中に入んな','入る'],['へいらっしゃい！いい粉入ってるよ','仕込む！'],['おう、今日も来たな！','暖簾をくぐる']];
+  const g=G[Math.floor(Math.random()*G.length)];
+  $('#introSay').textContent=g[0]; $('#introBtn').textContent=g[1]; $('#introImg').src=DY_IMG;
+  $('#introBtn').onclick=()=>{
+    started=true; tryBgm();
+    // 効果音を先に読み込んでおく（最初の1回目から確実に鳴らすため）
+    sePour=mkAudio('SE_sosogu.mp3'); sePour.loop=true; sePour.volume=.8; sePour.preload='auto'; sePour.load();
+    seStir=mkAudio('SE_kakuhan.mp3'); seStir.loop=true; seStir.volume=.8; seStir.preload='auto'; seStir.load();
+    ['SE_pappa.mp3','SE_kirakira.mp3','SE_baikyaku.mp3'].forEach(n=>{ const a=new Audio(n); a.preload='auto'; a.load(); });
+    const o=$('#intro'); o.style.opacity=0; setTimeout(()=>o.remove(),450);
+    newRound();
+  };
+})();
 </script>
 </body>
 </html>
