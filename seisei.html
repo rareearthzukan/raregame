@@ -296,6 +296,7 @@
   <audio id="se-seikai" src="mini_seikai.mp3" preload="auto"></audio>
   <audio id="se-baikyaku" src="SE_baikyaku.mp3" preload="auto"></audio>
   <audio id="se-hakusyu" src="SE_hakusyu.mp3" preload="auto"></audio>
+  <audio id="se-50ren" src="SE_50ren.mp3" preload="auto"></audio>
 
   <div class="phone">
     <!-- ヘッダー -->
@@ -768,7 +769,8 @@
     function rollSideEvent(cards) {
       const lv = gameState.level || 1;
       const erN = lv >= 15 ? cards.filter(k => k === 'Er').length : 0;
-      const hoN = cards.filter(k => k === 'Ho').length;
+      // 50個まとめ精製が解放されたら、ホルミウム・ビリヤードは発生しない
+      const hoN = gameState.secret50 ? 0 : cards.filter(k => k === 'Ho').length;
       const erHit = erN > 0 && Math.random() < 1 - Math.pow(1 - ER_EVENT_RATE, erN);
       const hoHit = hoN > 0 && Math.random() < 1 - Math.pow(1 - HO_EVENT_RATE, hoN);
       if (erHit && hoHit) return Math.random() < 0.5 ? 'er' : 'ho';
@@ -978,7 +980,7 @@
       if (gameState.mudStock < cfg.mud) { showShortageModal('mud', n); return; }
       if (gameState.money < cfg.cost)   { showShortageModal('money', n); return; }
 
-      const soundId = Math.random() < 0.5 ? 'se-nyu1' : 'se-nyu2';
+      const soundId = n === 50 ? 'se-50ren' : (Math.random() < 0.5 ? 'se-nyu1' : 'se-nyu2');
       const se = document.getElementById(soundId);
       if (se) { se.currentTime = 0; se.play().catch(e => {}); }
 
@@ -1027,6 +1029,35 @@
     }
 
     window.addEventListener('load', () => setTimeout(checkFactoryReports, 400));
+
+    // ═══ シークレット解放のお知らせ（一度だけ。他のモーダルやミニゲーム中は出さず、閉じたあとに出す）═══
+    function checkSecret50Notice() {
+      if (!gameState.secret50 || gameState.secret50Notified) return;
+      if (document.getElementById('minigameModal').style.display === 'flex') return;
+      if (document.getElementById('minigameContainer').style.display === 'flex') return;
+      gameState.secret50Notified = true;
+      localStorage.setItem('rareEarthGameState', JSON.stringify(gameState));
+      const se = document.getElementById('se-itemget');
+      if (se) { se.currentTime = 0; se.play().catch(e => {}); }
+      const content = document.getElementById('modal-content-inner');
+      content.innerHTML = `
+        <div style="font-size: 1.8rem;">🌟</div>
+        <div style="font-size: 1rem; font-weight: bold; color: #ffde59; margin: 0.2rem 0 0.5rem;">シークレット機能が解放されました！</div>
+        <div style="display:flex; align-items:center; gap:.6rem; background:rgba(22,33,62,0.95); border:1px solid #00fff5; border-radius:.7rem; padding:.5rem; margin-bottom:.6rem; text-align:left;">
+          <img src="navtb.png" alt="テルビウム" style="width:3rem; height:3rem; border-radius:50%; border:2px solid #00fff5; object-fit:cover; flex-shrink:0;" onerror="this.src='chara0_Tb.png'">
+          <div style="background:#f8f9fa; border:1px solid #00fff5; border-radius:.6rem; padding:.4rem .55rem; font-size:.8rem; color:#1a1a2e; font-weight:bold; flex:1; line-height:1.4;">
+            掘削物がたくさん溜まったね！<br>これからは<span style="color:#d35400;">「50個まとめて精製」</span>が使えるよ。
+          </div>
+        </div>
+        <div style="font-size:.78rem; color:#dcdde1; line-height:1.5; margin-bottom:.7rem;">
+          精製ボタンの下に追加されました（1,500G / 掘削物50個）。<br>
+          <span style="color:#ffde59;">※ホルミウム・ビリヤードは、今後発生しなくなります。</span>
+        </div>
+        <button class="btn" style="margin-top:0; background:#00fff5; color:#0f3460;" onclick="closeMinigameModal()">OK</button>
+      `;
+      document.getElementById('minigameModal').style.display = 'flex';
+    }
+    window.addEventListener('load', () => setTimeout(checkSecret50Notice, 900));
 
     function showErBreakoutModal() {
       const modal = document.getElementById('minigameModal');
@@ -1385,6 +1416,7 @@
       document.getElementById('minigameModal').style.display = 'none';
       const inner = document.getElementById('modal-content-inner');
       inner.style.maxWidth = ''; inner.style.maxHeight = ''; inner.style.overflowY = '';
+      setTimeout(checkSecret50Notice, 300);
     }
 
 
