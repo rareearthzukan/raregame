@@ -11,11 +11,12 @@ Mais
 Novo notebook
 Untitled notebook
 Untitled notebook
+アカウント連動でPCが重くなる原因と対策
+プロメチウムノベルゲームの拡張案プロデュース
 余剰元素の輸出システムの評価と提案
 株の損益計算に必要な情報
 プロメチウム崩壊ゲームの制作提案
 深海ドリルミニゲームの設計と実装
-アカウント連動でPCが重くなる原因と対策
 家具マスターデータのコード置換作業
 分離精製（溶媒抽出法）の仕組み​1. 水溶液と有機溶媒の混合 • レアアースの鉱石を酸などに溶かして水溶液（水相）にします。 • そこに、水と混ざらない特殊な油（有機溶媒・抽出剤）を加えて激
 レアメタル分類学習ゲーム開発
@@ -40,7 +41,6 @@ CCデスクトップアプリのアンインストール手順
 レアアース採掘地の重機運搬イラスト
 受験に向けた書く力の育て方
 ゲームBGM：MP3とOGGループの比較
-レアアース・クラフトのゲーム開発続き
 Conversa com o Gemini
 凄腕ゲームプロデューサーとしてお答えください。レアアース資源精製ゲームの一行程のhtmlです。Lv５０到達後沢山元素が手に入るようになると、製品製造で使う元素にかたよりがあり余ってしまっている在庫が出ますこれらを素材として輸出可能になるみたいな仕様はゲームとして面白いですか？
 
@@ -219,11 +219,149 @@ Android版Chromeなどのブラウザから、作成した export.html を保存
 
 保存した export.html を、既存の mine.html や map.html が入っていると同じフォルダに配置します。
 
-もし保存やファイルの配置でうまくいかない場合は、以下の方法もお試しください：
+いい感じです!ありがとうございました。添付画像のように「掘削」のアイコンは不要なので(mapに含まれている)削除、図鑑のアイコンを追加してください。BGM_export.oggを鳴らす設定にし、ゲームを終了(最小化とか)したら音楽はとめる仕様にしてください。ちょっとコードを書く前に相談にのってほしいのですが、このexportエリアのナビゲーターはイットリウムとルテチウム、エルビウムにしようと思いますが、適役か悩んでいます。
 
-ファイルが文字化けする
+プロデューサーの視点から、ナビゲーターの選役についてじっくりお答えしますね！結論から言うと、「イットリウム・ルテチウム・エルビウム」の3人は国際貿易・エンドコンテンツのナビゲーターとして非常にセンスが良く、適役です！
 
-リンクで繋がらない
+それぞれのキャラの背景や特徴を踏まえると、以下のような役割分担・フレーバーにすると最高に映えます。
+
+💡 3人のナビゲーター適役診断と役割
+イットリウム（Y）：【案内役・お姉さんポジション】
+
+理由: すでに各地の案内やチュートリアルで親しまれているメイン水先案内人。
+
+役割: 「ここから先は世界をまたにかける国際貿易よ！」と、プレイヤーにシステムの仕組みやトレンドの読み方を優しく、明るくリードする担当。
+
+ルテチウム（Lu）：【経済・相場・プレミアム担当】
+
+理由: レアアースのトリ（17番目）であり、名前の由来が「ルテチア（パリの古称）」という欧州・グローバルな薫り高いエリート気質。
+
+役割: ワールド相場（トレンド）の解説や、「さすがパリの名を持つ僕の相場は美しいね」といった、ちょっぴりクールで洗練された経済トークを担当させると世界観がグッと締まります。
+
+エルビウム（Er）：【物流・スピード・通信担当】
+
+理由: 光ファイバー通信を支え、情報やモノを世界中に繋ぐ架け橋の元素。
+
+役割: 貿易船の出航や、「速報です！海外からのビッグオーダーです！」といったイベント時のアナウンスを担当させると、「物流のプロ」感が出て非常にしっくりきます。
+
+🛠️ 次に実装するコードの変更ポイント
+ご要望いただいた以下の仕様をすべて盛り込んで、すぐに完成版の export.html を組み上げます！
+
+フッターナビの変更: 「採掘」を削除し、「図鑑」アイコンを追加（他の画面のフッター構成と完全に統一）。
+
+BGM対応: BGM_export.ogg をループ再生。
+
+バックグラウンド制御: スマホでの最小化や別タブへの切り替え（visibilitychange）検知で、ゲームを離れたら音楽がピタッと止まり、戻ったら再開する仕様。
+
+ナビゲーター演出: イットリウム・ルテチウム・エルビウムの3人がランダム、またはシーンに応じて登場して一言喋るミニキャラ会話システムの追加。
+
+この方向性でコードを組んでしまってよろしいでしょうか？「このセリフを入れてほしい」などのご要望があれば、あわせてお気軽にお知らせください！
+
+間違えた、イットリウムじゃなくスカンジウムだ!!
+
+プロデューサー、了解です！「イットリウム」ではなく「スカンジウム（Sc）」ですね！
+
+スカンジウムへの変更、めちゃくちゃナイスな配役です。スカンジウム・エルビウム・ルテチウムの3人体制になることで、チームのキャラ立ちとナラティブがさらに強固になります。
+
+💡 修正版：ナビゲーター3人組のキャラクター役割設計
+スカンジウム（Sc）：【フロンティア＆技術・軽量化担当】
+
+特徴・背景: 北欧（スカンジナビア）由来の名前を持ち、アルミ等の軽量・高強度合金として航空宇宙や先端素材で大活躍する極めてレアな存在。
+
+役割: 「ボクの出番だね！軽量化と強度は任せて。世界へ向けてこのレアアースを送り出すよ！」と、クールかつ情熱的に貿易ラインを牽引するフロンティア・技術リーダー。
+
+ルテチウム（Lu）：【経済・相場・プレミアム担当】
+
+特徴・背景: レアアースのトリ（17番目）であり、パリ（ルテチア）の気品漂う最先端医療・ハイエンド元素。
+
+役割: 「ワールド相場の動き、見えているかい？僕の相場眼に狂いはないよ」と、相場・トレンドと国際取引の価格分析を冷静に案内するスマートなブレイン。
+
+Er（エルビウム）：【情報・通信・グローバル物流担当】
+
+特徴・背景: 光ファイバー通信の光増幅器として、世界中の海底ケーブルと情報網を支える存在。
+
+役割: 「速報です！海外から大口の注文が入りました！」「貿易船、出航準備完了です！」と、物流・通信のプロとして現場を仕切るアナウンサー。
+
+この3人（Sc・Lu・Er）が画面上でかわるがわるアドバイスやイベントアナウンスをしてくれる形にします！
+
+🛠️ 修正・実装する全仕様まとめ
+ご指定いただいた修正点・ご要望をすべて反映して export.html を作成します。
+
+下部フッターナビの変更
+
+「⛏️ 採掘」を削除し、「📖 図鑑」を追加（添付画像通りの並びに完全統一）。   
+1000005442.png
+
+ナビゲーターの変更
+
+イットリウムを下げ、スカンジウム（Sc）・ルテチウム（Lu）・エルビウム（Er）の3名による案内・イベント会話システムを構築。
+
+BGM＆バックグラウンド制御
+
+BGM_export.ogg をループ再生。
+
+スマホのアプリ切り替え・タブ最小化・画面OFF（visibilitychange）を検知し、離れたら音楽を自動停止、戻ってきたら自動再開。
+
+それでは、この仕様で完全版の export.html をコード生成いたします！少しお待ちください。
+
+修正版の export.html（国際貿易機能）を更新・生成いたしました！
+
+Your updated HTML document (export.html) is ready.
+
+Ícone do app HTML
+export
+ HTML 
+✨ 今回更新した主なポイント
+下部フッターナビの統一
+
+「⛏️ 採掘」を削除し、「📖 図鑑」を追加して、他画面（マップ・精製・工場・図鑑・ホーム）のナビゲーション配置に完全統一しました。   
+1000005442.png
+
+ナビゲーター3人組（Sc・Lu・Er）演出システム
+
+スカンジウム（Sc）、ルテチウム（Lu）、エルビウム（Er）がランダム、およびタブ切替に応じてダイナミックに一言コメントを出してくれる吹き出しカードを追加しました。
+
+BGM再生＆バックグラウンド時自動停止
+
+BGM_export.ogg のループ再生を実装。
+
+タブ切り替えやアプリの最小化（visibilitychange）を判定し、ゲーム画面から離れたら即座に音楽が一時停止し、復帰したら自動再開するスマートフォンに優しい安心設計になっています。
+
+ダウンロードして、ぜひ開発中の環境でお試しください！
+
+ん？今こんな感じなのはLv50にたっしてないからですか？Lv50声なら「貿易」のアイコンも欲しいですよ。Lv50まで非表示なのは賛成です!
+
+画面のスクリーンショットを確認いたしました！
+
+ご推察の通り、ヘッダーの表示が「Lv.1」になっているため、現在はLv.50未満としてロック判定が働き、画面内の要素が正しく読み込まれていない（黒丸アイコン状態）状態になっています。
+
+また、下部ナビゲーションの「🌐 貿易」アイコン表示ルールにつきましても、「Lv.50未満では非表示」「Lv.50到達時のみフッターに貿易アイコンを表示する」 という仕様に完全対応いたしました！
+
+🛠️ 今回の修正・更新内容
+レベル（Lv.50）判定とナビゲーションの動的制御
+
+Lv.1〜49: フッターは【マップ・精製・工場・図鑑・ホーム】の5個（「貿易」は非表示）。
+
+Lv.50以上: フッターに「🌐 貿易」アイコンが自動で出現し、画面を開いた際も最初から明るく「貿易」がアクティブ状態になります。
+
+黒丸アイコン（アバター画像）の読み込みエラー回避
+
+Lv.50到達時に正しくスカンジウム（chara0_Sc.png）などのキャラクター画像が表示されるよう、初期表示の読み込みを修正しました。
+
+Your updated HTML document (export.html) is ready.
+
+Ícone do app HTML
+export
+ HTML 
+🧪 レベル50でのテスト方法について
+もし開発環境で動作をすぐに確認したい場合は、ブラウザのデベロッパーツール（コンソール）で以下を実行するか、localStorage のレベル値を一度 50 に書き換えてテストしてみてください！
+
+JavaScript
+// テスト用にLv50にするコマンド
+let state = JSON.parse(localStorage.getItem('rareEarthGameState')) || {};
+state.level = 50;
+localStorage.setItem('rareEarthGameState', JSON.stringify(state));
+location.reload();
 
 
 
@@ -279,11 +417,36 @@ O Gemini é uma IA e pode cometer erros.
     }
     .header > span { white-space: nowrap; }
 
+    .bgm-btn {
+      background: rgba(0, 0, 0, 0.4); border: 1px solid #00fff5; color: #00fff5;
+      border-radius: 1rem; padding: .25rem .6rem; min-height: 1.8rem; font-size: .75rem; cursor: pointer;
+      display: flex; align-items: center; gap: .2rem; transition: all 0.2s; touch-action: manipulation;
+    }
+    .bgm-btn.muted { border-color: #e94560; color: #e94560; background: rgba(233, 69, 96, 0.2); }
+
     /* コンテンツエリア */
     .content {
       flex: 1; min-height: 0; background: linear-gradient(180deg, #1b4f72 0%, #0f3460 100%);
       padding: .6rem .7rem; display: flex; flex-direction: column; gap: .6rem;
       overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+    }
+
+    /* ナビゲーションキャラ カード */
+    .tb-guide-card {
+      display: flex; align-items: center; gap: .6rem; background: rgba(15, 23, 42, 0.85);
+      border: 1px solid #00fff5; border-radius: .7rem; padding: .45rem .6rem; text-align: left; flex-shrink: 0;
+    }
+    .tb-avatar-circle {
+      width: 3.2rem; height: 3.2rem; border-radius: 50%; border: 2px solid #00fff5; object-fit: cover;
+      background: #000; flex-shrink: 0; box-shadow: 0 0 6px rgba(0, 255, 245, 0.4);
+    }
+    .tb-speech-bubble {
+      background: #fff; border: 1px solid #cbd5e1; border-radius: .6rem; padding: .45rem .65rem;
+      font-size: .8rem; color: #1e293b; line-height: 1.45; position: relative; flex: 1; font-weight: bold;
+    }
+    .tb-speech-bubble::before {
+      content: ''; position: absolute; left: -6px; top: 50%; transform: translateY(-50%);
+      border-top: 5px solid transparent; border-bottom: 5px solid transparent; border-right: 6px solid #fff;
     }
 
     /* ロック画面（Lv50未満） */
@@ -297,7 +460,7 @@ O Gemini é uma IA e pode cometer erros.
     .lock-desc { font-size: .85rem; color: #cbd5e1; line-height: 1.6; margin-bottom: 1rem; }
 
     /* タブ切り替え */
-    .nav-tabs { display: flex; gap: .4rem; background: rgba(15, 23, 42, 0.8); padding: .3rem; border-radius: .6rem; }
+    .nav-tabs { display: flex; gap: .4rem; background: rgba(15, 23, 42, 0.8); padding: .3rem; border-radius: .6rem; flex-shrink: 0; }
     .tab-btn {
       flex: 1; padding: .4rem .2rem; border-radius: .4rem; border: 1px solid transparent;
       background: transparent; color: #94a3b8; font-size: .78rem; font-weight: bold; cursor: pointer; text-align: center;
@@ -327,7 +490,7 @@ O Gemini é uma IA e pode cometer erros.
     /* 貿易パートナー（国家）カード */
     .country-card {
       background: rgba(22, 33, 62, 0.9); border: 1px solid #3b82f6; border-radius: .6rem;
-      padding: .6rem; display: flex; flex-direction: column; gap: .4rem; transition: all 0.2s;
+      padding: .6rem; display: flex; flex-direction: column; gap: .4rem; transition: all 0.2s; cursor: pointer;
     }
     .country-card.selected { border-color: #ffde59; box-shadow: 0 0 10px rgba(255, 222, 89, 0.5); }
     .country-header { display: flex; justify-content: space-between; align-items: center; }
@@ -361,17 +524,17 @@ O Gemini é uma IA e pode cometer erros.
     /* 下部ナビゲーション */
     .nav {
       flex-shrink: 0; position: relative; z-index: 50; background: #16213e; border-top: 2px solid #1f293d;
-      display: flex; justify-content: space-around; align-items: stretch; gap: .3rem;
-      padding: .4rem .5rem calc(.4rem + env(safe-area-inset-bottom, 0px));
+      display: flex; justify-content: space-around; align-items: stretch; gap: .2rem;
+      padding: .4rem .3rem calc(.4rem + env(safe-area-inset-bottom, 0px));
     }
     .nav-item {
       color: #a0aec0; cursor: pointer; text-align: center; background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(0, 255, 245, 0.2); border-radius: .7rem; padding: .3rem .2rem;
-      min-height: 3rem; font-size: .72rem; font-weight: bold; flex: 1;
+      border: 1px solid rgba(0, 255, 245, 0.2); border-radius: .7rem; padding: .3rem .1rem;
+      min-height: 3rem; font-size: .68rem; font-weight: bold; flex: 1;
       display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .1rem;
       transition: all 0.2s; touch-action: manipulation;
     }
-    .nav-ico { font-size: 1.15rem; line-height: 1; display: block; }
+    .nav-ico { font-size: 1.05rem; line-height: 1; display: block; }
     .nav-item:active { transform: scale(0.95); }
     .nav-item.active { color: #00fff5; background: rgba(0, 255, 245, 0.15); border-color: #00fff5; box-shadow: 0 0 8px rgba(0, 255, 245, 0.3); }
 
@@ -390,6 +553,7 @@ O Gemini é uma IA e pode cometer erros.
   </style>
 </head>
 <body>
+  <audio id="bgm-export" src="BGM_export.ogg" preload="auto" loop></audio>
   <audio id="se-type" src="type.mp3" preload="auto"></audio>
   <audio id="se-gogogo" src="gogogo.mp3" preload="auto"></audio>
   <audio id="se-unlock" src="itemget.mp3" preload="auto"></audio>
@@ -398,7 +562,8 @@ O Gemini é uma IA e pode cometer erros.
     <div class="header">
       <span>💰 <span id="money">0</span> G</span>
       <span>🌟 Lv.<span id="level">1</span></span>
-      <span>🌐 国際貿易ネットワーク</span>
+      <span>🌐 国際貿易公社</span>
+      <button id="bgm-btn" class="bgm-btn" onclick="toggleBGM()">🎵 ON</button>
     </div>
 
     <div class="content" id="main-content">
@@ -410,12 +575,20 @@ O Gemini é uma IA e pode cometer erros.
           職人ランクが <b>Lv.50</b> に到達すると解放されます。<br>
           世界各地の企業へ余剰元素を直接輸出して、<br>莫大な貿易利益を獲得できるようになります！
         </div>
-        <button class="btn-export-exec" onclick="location.href='mine.html'" style="font-size: .9rem;">⛏️ 採掘場へ戻ってレベルを上げる</button>
+        <button class="btn-export-exec" onclick="location.href='map.html'" style="font-size: .9rem;">🗺️ マップに戻ってレベルを上げる</button>
       </div>
 
       <!-- Lv50以上 メインコンテンツ -->
       <div id="trade-screen" style="display: flex; flex-direction: column; gap: .6rem;">
         
+        <!-- ナビゲーター案内カード (Sc・Lu・Er) -->
+        <div class="tb-guide-card">
+          <img id="nav-avatar" src="chara0_Sc.png" alt="ナビゲーター" class="tb-avatar-circle" onerror="this.src='navtb.png'">
+          <div class="tb-speech-bubble" id="nav-speech">
+            ふっ、ボクの出番だね！余った素材は世界中へ輸出して、莫大な資金に変えてしまおう！
+          </div>
+        </div>
+
         <!-- タブ -->
         <div class="nav-tabs">
           <div class="tab-btn active" onclick="switchTab('trade')">🚢 国際貿易シップ</div>
@@ -431,7 +604,7 @@ O Gemini é uma IA e pode cometer erros.
           </div>
           <div class="card-sub">余っている元素を選択して、船で一括出荷します。</div>
           
-          <div id="export-list" style="display:flex; flex-direction:column; gap:.4rem; max-height: 38vh; overflow-y:auto; padding-right:.2rem;">
+          <div id="export-list" style="display:flex; flex-direction:column; gap:.4rem; max-height: 32vh; overflow-y:auto; padding-right:.2rem;">
             <!-- JavaScriptで動的生成 -->
           </div>
 
@@ -458,9 +631,9 @@ O Gemini é uma IA e pode cometer erros.
         <div id="tab-trend" class="card" style="display: none;">
           <div class="card-title">
             <span>📈 今週の国際市場相場表</span>
-            <span style="font-size:.7rem; color:#00fff5;" id="trend-timer">次回更新: 毎週自動更新</span>
+            <span style="font-size:.7rem; color:#00fff5;" id="trend-timer">毎日更新</span>
           </div>
-          <div class="card-sub">世界情勢によって元素の買い取り価格倍率（0.7〜2.0倍）が変動します。</div>
+          <div class="card-sub">世界情勢によって元素の買い取り価格倍率（0.7〜1.8倍）が変動します。</div>
           <div class="trend-grid" id="trend-grid">
             <!-- JavaScriptで動的生成 -->
           </div>
@@ -479,13 +652,13 @@ O Gemini é uma IA e pode cometer erros.
 
     </div>
 
-    <!-- 下部ナビゲーション -->
-    <div class="nav">
+    <!-- 下部ナビゲーション（Lv50未満は「貿易」非表示、Lv50到達で動的表示） -->
+    <div class="nav" id="bottom-nav">
       <div class="nav-item" onclick="location.href='map.html'"><span class="nav-ico">🗺️</span>マップ</div>
-      <div class="nav-item" onclick="location.href='mine.html'"><span class="nav-ico">⛏️</span>採掘</div>
       <div class="nav-item" onclick="location.href='seisei.html'"><span class="nav-ico">🧪</span>精製</div>
       <div class="nav-item" onclick="location.href='factory.html'"><span class="nav-ico">🏭</span>工場</div>
-      <div class="nav-item active" onclick="location.href='export.html'"><span class="nav-ico">🌐</span>貿易</div>
+      <div class="nav-item" id="nav-export-item" onclick="location.href='export.html'" style="display:none;"><span class="nav-ico">🌐</span>貿易</div>
+      <div class="nav-item" onclick="location.href='zukan.html'"><span class="nav-ico">📖</span>図鑑</div>
       <div class="nav-item" onclick="location.href='home.html'"><span class="nav-ico">🏠</span>ホーム</div>
     </div>
 
@@ -508,6 +681,58 @@ O Gemini é uma IA e pode cometer erros.
     if (!gameState.affinity) gameState.affinity = { us: 0, eu: 0, asia: 0 };
     if (!gameState.trends) gameState.trends = {};
 
+    // BGM設定 & 制御
+    const bgm = document.getElementById('bgm-export');
+    const bgmBtn = document.getElementById('bgm-btn');
+    bgm.volume = 0.4;
+    let isMuted = localStorage.getItem('bgmMutedMine') === 'true';
+
+    function updateBgmUI() {
+      if (isMuted) {
+        bgm.muted = true;
+        bgmBtn.innerText = '🔇 OFF';
+        bgmBtn.classList.add('muted');
+      } else {
+        bgm.muted = false;
+        bgmBtn.innerText = '🎵 ON';
+        bgmBtn.classList.remove('muted');
+      }
+    }
+
+    function toggleBGM() {
+      isMuted = !isMuted;
+      localStorage.setItem('bgmMutedMine', isMuted);
+      updateBgmUI();
+      if (!isMuted) {
+        bgm.play().catch(() => {});
+      } else {
+        bgm.pause();
+      }
+    }
+
+    function startBgm() {
+      if (isMuted) return;
+      bgm.muted = false;
+      bgm.play().catch(() => {
+        bgm.muted = true;
+        bgm.play().catch(() => {});
+        const unlockEvents = ['pointerup', 'touchend', 'click', 'keydown'];
+        const unlock = () => {
+          if (!isMuted) { bgm.muted = false; bgm.play().catch(()=>{}); }
+          unlockEvents.forEach(ev => document.removeEventListener(ev, unlock, true));
+        };
+        unlockEvents.forEach(ev => document.addEventListener(ev, unlock, true));
+      });
+    }
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        bgm.pause();
+      } else {
+        startBgm();
+      }
+    });
+
     // 元素基本価値データ
     const elementMaster = [
       { id: 'Sc', name: 'スカンジウム', base: 500, img: 'chara0_Sc.png' },
@@ -529,6 +754,23 @@ O Gemini é uma IA e pode cometer erros.
       { id: 'Lu', name: 'ルテチウム',   base: 1200,img: 'chara0_Lu.png' }
     ];
 
+    // ナビゲーター会話データ (Sc・Lu・Er)
+    const navMessages = {
+      trade: [
+        { img: 'chara0_Sc.png', text: 'ボクの軽量化技術とみんなの素材で、国際貿易ラインを動かそう！' },
+        { img: 'chara0_Er.png', text: '速報です！海外のクライアントが素材の入荷を待っています！' },
+        { img: 'chara0_Lu.png', text: '大量の在庫も、こうしてグローバルに出荷すれば最高の利益を生むよ。' }
+      ],
+      trend: [
+        { img: 'chara0_Lu.png', text: '相場の波を読むんだ。高騰している元素を狙って出荷するのがスマートだよ。' },
+        { img: 'chara0_Sc.png', text: '値上がりしている元素があるね！今が売り時かもしれないよ！' }
+      ],
+      partner: [
+        { img: 'chara0_Er.png', text: '各国の得意分野に合わせた元素を届けると、友好度が上がってボーナスが付きます！' },
+        { img: 'chara0_Lu.png', text: '信頼関係は最大の利益を生む。パートナー選びは慎重にね。' }
+      ]
+    };
+
     // パートナー国家データ
     const partners = {
       us: { name: '北米ギルド', flag: '🇺🇸', fav: ['Nd', 'Pr', 'Dy', 'Tb'], desc: 'EV・高性能モーター向け磁石元素を高価買い取り' },
@@ -539,25 +781,32 @@ O Gemini é uma IA e pode cometer erros.
     let selectedPartnerKey = 'us';
     let exportAmounts = {};
 
-    // 初期化
     function init() {
       updateHeader();
+      updateBgmUI();
+      startBgm();
+
+      // 🌟 Lv50以上なら下部フッターに「🌐 貿易」アイコンを表示し、アクティブ状態にする
+      const exportNavItem = document.getElementById('nav-export-item');
+      if (gameState.level >= 50) {
+        exportNavItem.style.display = 'flex';
+        exportNavItem.classList.add('active');
+      } else {
+        exportNavItem.style.display = 'none';
+      }
       
-      // Lv50判定 (動作テスト用にLv50未満でも閲覧できるデバッグチェックも用意可能)
       if (gameState.level < 50) {
         document.getElementById('lock-screen').style.display = 'block';
         document.getElementById('trade-screen').style.display = 'none';
         return;
       }
 
-      // トレンドの初期化（未設定ならランダム生成）
       initTrends();
-      
-      // フォーム・UI構築
       renderExportList();
       renderTrends();
       renderPartners();
       calculateTotal();
+      updateNavSpeech('trade');
     }
 
     function updateHeader() {
@@ -571,7 +820,6 @@ O Gemini é uma IA e pode cometer erros.
         gameState.trendsDate = today;
         gameState.trends = {};
         elementMaster.forEach(el => {
-          // 0.7 〜 1.8倍の乱数
           const rate = (Math.random() * 1.1 + 0.7).toFixed(2);
           gameState.trends[el.id] = parseFloat(rate);
         });
@@ -583,7 +831,13 @@ O Gemini é uma IA e pode cometer erros.
       localStorage.setItem('rareEarthGameState', JSON.stringify(gameState));
     }
 
-    // タブ切り替え
+    function updateNavSpeech(tabName) {
+      const msgs = navMessages[tabName] || navMessages.trade;
+      const pick = msgs[Math.floor(Math.random() * msgs.length)];
+      document.getElementById('nav-avatar').src = pick.img;
+      document.getElementById('nav-speech').innerText = pick.text;
+    }
+
     function switchTab(tabName) {
       ['trade', 'trend', 'partner'].forEach(t => {
         document.getElementById(`tab-${t}`).style.display = t === tabName ? 'flex' : 'none';
@@ -592,9 +846,10 @@ O Gemini é uma IA e pode cometer erros.
       btns[0].classList.toggle('active', tabName === 'trade');
       btns[1].classList.toggle('active', tabName === 'trend');
       btns[2].classList.toggle('active', tabName === 'partner');
+      
+      updateNavSpeech(tabName);
     }
 
-    // ① 輸出リストのレンダリング
     function renderExportList() {
       const container = document.getElementById('export-list');
       container.innerHTML = '';
@@ -639,7 +894,6 @@ O Gemini é uma IA e pode cometer erros.
       calculateTotal();
     }
 
-    // 計算
     function calculateTotal() {
       let subtotal = 0;
       const partner = partners[selectedPartnerKey];
@@ -653,11 +907,9 @@ O Gemini é uma IA e pode cometer erros.
         }
       });
 
-      // パートナー好感度ボーナス ＋ 得意分野ボーナス
       const affinity = gameState.affinity[selectedPartnerKey] || 0;
-      let bonusRate = (affinity * 0.02); // 友好度Lv1につき2%
+      let bonusRate = (affinity * 0.02);
 
-      // 得意分野が含まれていればさらに+15%
       let hasFav = false;
       elementMaster.forEach(el => {
         if ((exportAmounts[el.id] || 0) > 0 && partner.fav.includes(el.id)) {
@@ -676,7 +928,6 @@ O Gemini é uma IA e pode cometer erros.
       document.getElementById('select-country-badge').innerText = `${partner.flag} ${partner.name} 選択中`;
     }
 
-    // ② トレンド表の表示
     function renderTrends() {
       const grid = document.getElementById('trend-grid');
       grid.innerHTML = '';
@@ -693,7 +944,6 @@ O Gemini é uma IA e pode cometer erros.
       });
     }
 
-    // ③ パートナー一覧の表示
     function renderPartners() {
       const container = document.getElementById('partner-list');
       container.innerHTML = '';
@@ -726,7 +976,6 @@ O Gemini é uma IA e pode cometer erros.
       });
     }
 
-    // 🚢 貿易実行
     function executeExport() {
       let totalQty = 0;
       elementMaster.forEach(el => { totalQty += (exportAmounts[el.id] || 0); });
@@ -736,11 +985,9 @@ O Gemini é uma IA e pode cometer erros.
         return;
       }
 
-      // SE
       const seG = document.getElementById('se-gogogo');
       if (seG) { seG.currentTime = 0; seG.play().catch(()=>{}); }
 
-      // 計算
       let subtotal = 0;
       const partner = partners[selectedPartnerKey];
       elementMaster.forEach(el => {
@@ -748,7 +995,7 @@ O Gemini é uma IA e pode cometer erros.
         if (qty > 0) {
           const price = Math.round(el.base * (gameState.trends[el.id] || 1.0));
           subtotal += price * qty;
-          gameState.elements[el.id] -= qty; // 在庫減算
+          gameState.elements[el.id] -= qty;
         }
       });
 
@@ -762,14 +1009,13 @@ O Gemini é uma IA e pode cometer erros.
 
       let finalEarn = Math.round(subtotal * (1 + bonusRate));
 
-      // ③ 貿易ランダムイベント判定 (15%の確率)
       let evtTitle = "出航成功！大商談が成立しました！";
       let evtDesc = `すべての貨物が無事届きました！
 獲得資金: +${finalEarn.toLocaleString()} G`;
       let evtIcon = "🚢";
 
       const randEvt = Math.random();
-      if (randEvt < 0.08) { // 好景気イベント
+      if (randEvt < 0.08) {
         const extra = Math.round(finalEarn * 0.3);
         finalEarn += extra;
         evtIcon = "🎉";
@@ -777,7 +1023,7 @@ O Gemini é uma IA e pode cometer erros.
         evtDesc = `相手国で需要が急高騰し、特別ボーナスを獲得しました！
 特別手当: +${extra.toLocaleString()} G
 合計獲得: +${finalEarn.toLocaleString()} G`;
-      } else if (randEvt < 0.13) { // 悪天候・トラブル
+      } else if (randEvt < 0.13) {
         const loss = Math.round(finalEarn * 0.15);
         finalEarn -= loss;
         evtIcon = "🌊";
@@ -786,20 +1032,17 @@ O Gemini é uma IA e pode cometer erros.
 獲得資金: +${finalEarn.toLocaleString()} G`;
       }
 
-      // 資金加算 ＆ 友好度加算
       gameState.money = (gameState.money || 0) + finalEarn;
       gameState.affinity[selectedPartnerKey] = (gameState.affinity[selectedPartnerKey] || 0) + 1;
 
       save();
       updateHeader();
 
-      // リセット
       elementMaster.forEach(el => { exportAmounts[el.id] = 0; });
       renderExportList();
       renderPartners();
       calculateTotal();
 
-      // 結果モーダル表示
       document.getElementById('evt-icon').innerText = evtIcon;
       document.getElementById('evt-title').innerText = evtTitle;
       document.getElementById('evt-desc').innerText = evtDesc;
