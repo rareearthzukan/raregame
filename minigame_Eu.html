@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ユウロピウムの鉱物鑑定ハイアンドロー</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:"Hiragino Maru Gothic ProN","Yu Gothic",system-ui,sans-serif;color:#fff;background:radial-gradient(circle at 50% -10%,#ff4a56,#c4121f 55%,#5c0a13)}
+#app{max-width:30rem;margin:auto;padding:.6rem .6rem calc(.6rem + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:.55rem;min-height:100vh}
+header{display:flex;justify-content:space-between;font-weight:700;font-size:.95rem}
+#eu{display:flex;gap:.5rem;align-items:center}
+#eu img{width:6.2rem;height:6.2rem;object-fit:contain;filter:drop-shadow(0 0 .7rem #fffa)}
+#say{flex:1;background:#fff;color:#4a0a10;border-radius:1rem 1rem 1rem .2rem;padding:.65rem .8rem;font-size:.9rem;line-height:1.55;min-height:4.2rem}
+#info{text-align:center;font-size:.8rem;min-height:1.1rem}
+#score{text-align:center;font-weight:700;font-size:1rem}
+.row{display:flex;gap:.3rem;justify-content:center}
+.card{width:3.7rem;height:5.3rem;border-radius:.55rem;background:#fffdf5;color:#333;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;font-size:.62rem;overflow:hidden;border:2px solid #ffde59}
+.card img{position:absolute;left:.2rem;right:.2rem;top:.3rem;width:calc(100% - .4rem);height:calc(100% - 1.5rem);object-fit:contain}
+.card i{position:absolute;top:0;left:0;background:#0f3460;color:#fff;font-size:.5rem;padding:0 .25rem;font-style:normal;z-index:1}
+.card span{position:relative;color:#a35a00;font-weight:700;padding-bottom:.15rem}
+.back{background:repeating-linear-gradient(45deg,#7a0f1a 0 6px,#5a0a12 6px 12px);justify-content:center;gap:.1rem;color:#ffde59;font-size:1.2rem;font-weight:700;border-color:#ffb3b3}
+.back.lit{background:#06222e;color:#8ff;border-color:#8ff;box-shadow:0 0 .9rem #6ff,inset 0 0 .8rem #3cc}
+.back.lit span{color:#8ff;font-size:.62rem}
+.tap{cursor:pointer}.tap:active{transform:scale(.94)}
+.tap:hover{border-color:#fff}
+#arena{display:flex;justify-content:center;align-items:center;gap:.7rem;min-height:9.5rem;text-align:center;font-size:.72rem}
+#arena>div{width:8rem}
+#arena img{width:6rem;height:6rem;object-fit:contain;background:#0005;border-radius:.9rem}
+#arena strong{display:block;font-size:1.5rem;color:#ffde59}
+#arena small{display:block}
+#arena .vs{width:auto;font-weight:700;font-size:1.1rem}
+#ctl{display:flex;gap:.5rem;flex-wrap:wrap;justify-content:center;margin-top:auto}
+#ctl button,#ctl a{font:inherit;font-weight:700;font-size:1rem;padding:.7rem 1.1rem;border:0;border-radius:.8rem;background:#ffde59;color:#5c0a13;text-decoration:none;cursor:pointer}
+#ctl button:active{transform:scale(.96)}
+#ctl .bl{background:#8ff;color:#06222e;box-shadow:0 0 .9rem #6ff}
+#ctl a{background:#fff3}#ctl a{color:#fff}
+button:focus-visible,a:focus-visible{outline:3px solid #fff;outline-offset:2px}
+</style></head><body>
+<div id="app">
+<header><span>💰 <span id="g">0</span> G</span><span>🔦 ×<span id="bl">0</span></span></header>
+<div id="eu"><img src="Eu2.png" alt="ユウロピウム" onerror="this.style.display='none'"><div id="say"></div></div>
+<div id="info"></div>
+<div class="row" id="eh"></div>
+<div id="arena"></div>
+<div id="score"></div>
+<div class="row" id="ph"></div>
+<div id="ctl"></div>
+</div>
+<script>
+const NM="ダイヤモンド,ルビー,サファイア,エメラルド,アメジスト,シトリン,トパーズ,ガーネット,アクアマリン,ペリドット,オパール,ターコイズ,翡翠,琥珀,フローライト,ジャスパー,メノウ,水晶,スモーキークォーツ,ローズクォーツ,ラピスラズリ,タンザナイト,トルマリン,ジルコン,スピネル,ムーンストーン,サンストーン,ブラッドストーン,カルセドニー,プレナイト,クンツァイト,モルガナイト,ヒデナイト,アパタイト,アイオライト,ジオード,ヘマタイト,パイライト,マラカイト,アズライト,ロードナイト,ロードクロサイト,クリソコラ,サーペンタイン,ソーダライト,チャロアイト,スギライト,ラリマー,アンモライト,テクタイト,モルダバイト,オブシディアン,リビアンガラス,セレスタイト,バライト,アラゴナイト,カルサイト,ドロマイト,ロードライト,ヘソナイト,アルマンディン,パペイア,パライバトルマリン,デマントイド,ツァボライト,スフェーン,アウイン,ベニトアイト,グランディディエライト,ターフェライト,ペタライト,ポルサイト,ダンビュライト,ベリル,ジンカイト,クォーツインクォーツ,ルチルクォーツ,スーパーセブン,オーラライト,ファントムクォーツ,ギベオン,メテオライト,コンドライト,パラサイト,テクタイト鉱脈石,ネフライト,ジェダイト,ピクチャージャスパー,オーシャンジャスパー,ユナカイト,ホークスアイ,タイガーアイ,ブルータイガーアイ,レッドタイガーアイ,ピーターサイト,セイクリッドセブン,ボルダーオパール,ファイヤーオパール,ブラックオパール,レアアース・プリズム鉱,ムオニナルスタ隕石,火星隕石,月隕石,エンハイドロ水晶,コットンボール,デザートローズ,閃電石,プディングストーン,セプタリア,バンブルビージャスパー,ブルージョン,ストロマトライト,珪化木,ゴールドナゲット,ブルーアンバー,フランクリン蛍光鉱物,ペレの毛,アイスランドスパー,ハーキマーダイヤモンド,ビスマス結晶".split(',');
+const V=[99,97,92,93,70,21,77,47,78,68,82,60,73,59,30,14,16,18,19,20,71,87,67,69,86,66,26,25,17,27,76,75,64,51,61,24,4,3,38,39,41,40,29,5,28,45,46,65,62,58,57,15,56,31,1,23,22,2,50,48,49,95,98,88,80,74,84,89,90,91,43,85,63,42,44,36,37,33,34,35,55,54,53,79,52,72,94,12,11,13,9,8,7,6,10,32,83,81,96,100];
+const R=new Set([5,6,15,16,17,18,19,20,27,28,29,36,37,38,40,42,43,44,50,51,52,53,54,55,56,57,58,71,72,74,75,76,77,78,79,80,81,82,83,84,85,88,89,90,91,92,93,94,95,96]);
+const $=s=>document.querySelector(s);
+const pick=a=>a[Math.random()*a.length|0];
+const KEY='rareEarthGameState';
+let G=null;try{G=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+G=G||{money:1500,level:1,products:{},unlockedIllustrations:{},houseki:{}};
+G.houseki=G.houseki||{};
+if(new URLSearchParams(location.search).get('debug')==='1'&&G.blacklight===undefined)G.blacklight=3;
+G.blacklight=G.blacklight||0;
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(G))}catch(e){}};
+const stars=v=>'★'.repeat(Math.ceil(v/20));
+const say=t=>{$('#say').textContent=t};
+const ctl=h=>{$('#ctl').innerHTML=h};
+const hud=()=>{$('#g').textContent=G.money.toLocaleString();$('#bl').textContent=G.blacklight};
+const JK=['✊グー','✌️チョキ','✋パー'];
+const ROUNDS=5;
+let S=null;
+
+function cardEl(id,back,lit){
+  const d=document.createElement('div');d.className='card';
+  const v=V[id-1];
+  if(back){
+    d.classList.add('back');
+    if(lit){d.classList.add('lit');d.innerHTML=`<b>${v}</b><span>${stars(v)}</span>`}else d.textContent='?';
+    return d;
+  }
+  d.innerHTML=`<img src="houseki${id}.png" alt="${NM[id-1]}" onerror="this.style.opacity=0"><i>${R.has(id)?'原石':'宝石'}</i><span>${stars(v)}</span>`;
+  return d;
+}
+function big(id,label){
+  return `<div><small>${label}</small><img src="houseki${id}.png" alt="" onerror="this.style.opacity=0"><small>${NM[id-1]}${id<=100?'（'+(R.has(id)?'原石':'宝石')+'）':''}</small>${id<=100?`<strong>${V[id-1]}</strong>`:''}</div>`;
+}
+function draw(){
+  hud();
+  const eh=$('#eh'),ph=$('#ph');eh.innerHTML='';ph.innerHTML='';
+  if(!S){$('#info').textContent='';$('#score').textContent='';return}
+  S.eh.forEach(id=>eh.appendChild(cardEl(id,true,S.lit.has(id))));
+  S.ph.forEach(id=>{const c=cardEl(id);if(S.phase==='pick'){c.classList.add('tap');c.onclick=()=>play(id)}ph.appendChild(c)});
+  $('#info').textContent=S.round<ROUNDS?`第${S.round+1}ラウンド／親：${S.parent==='p'?'あなた':'ユウロピウム'}${S.call?'／コール：'+(S.call==='H'?'ハイ':'ロー'):''}`:'';
+  $('#score').textContent=`あなた ${S.ps} − ${S.es} ユウロピウム`;
+}
+function title(){
+  S=null;$('#arena').innerHTML='';draw();
+  say('ようこそ、鉱物鑑定ハイアンドローへ！参加料は100G。勝てば賞金200Gと、特別な鉱物を差し上げます。');
+  ctl('<button onclick="start()">100Gで遊ぶ</button><a href="zukan.html">図鑑へ</a>');
+}
+function start(){
+  if(G.money<100){say('Gが足りないみたい。図鑑でダブりの鉱物を売ってから来てね。');return}
+  G.money-=100;save();
+  const d=Array.from({length:100},(_,i)=>i+1);
+  for(let i=99;i>0;i--){const j=Math.random()*(i+1)|0;[d[i],d[j]]=[d[j],d[i]]}
+  S={ph:d.slice(0,5),eh:d.slice(5,10),lit:new Set(),round:0,ps:0,es:0,parent:null,call:null,phase:'jk',bl:false};
+  janken('5枚ずつ配ったわ。まずはじゃんけんで親を決めましょう！');
+}
+function janken(msg){
+  S.phase='jk';draw();say(msg);
+  ctl(JK.map((h,i)=>`<button onclick="jk(${i})">${h}</button>`).join(''));
+}
+function jk(i){
+  const e=Math.random()*3|0,r=(i-e+3)%3;
+  if(!r)return janken(`${JK[e]}であいこ！もう一度！`);
+  S.parent=r===2?'p':'e';ctl('');
+  say(`${JK[e]}……${r===2?'あなたの勝ち！あなたが親よ。':'私の勝ち！私が親ね。'}`);
+  setTimeout(declare,1100);
+}
+const blBtn=()=>G.blacklight>0&&!S.bl?`<button class="bl" onclick="useBL()">🔦 ブラックライト（残り${G.blacklight}）</button>`:'';
+const declBtns=()=>`<button onclick="call('H')">⬆ ハイ</button><button onclick="call('L')">⬇ ロー</button>${blBtn()}`;
+function declare(){
+  S.call=null;S.phase='decl';draw();
+  if(S.parent==='p'){say('手札を見て、ハイかローをコールして！');ctl(declBtns());return}
+  const v=S.eh.map(i=>V[i-1]),hi=Math.max(...v),lo=Math.min(...v);
+  let c=hi>=101-lo?'H':'L';if(Math.random()<.15)c=c==='H'?'L':'H';
+  S.call=c;say(c==='H'?'私のコールは……ハイ！自信があるの。':'私のコールは……ロー！いい石が手元にあるのよ。');
+  pickPhase();
+}
+function call(c){S.call=c;say(c==='H'?'ハイね。受けて立つわ！':'ローね。面白い、受けて立つわ！');pickPhase()}
+function pickPhase(){
+  S.phase='pick';draw();
+  say($('#say').textContent+' 出す1枚を選んでね。');
+  ctl(blBtn());
+}
+function useBL(){
+  S.bl=true;G.blacklight--;save();
+  S.eh.filter(i=>!S.lit.has(i)).sort(()=>Math.random()-.5).slice(0,3).forEach(i=>S.lit.add(i));
+  draw();say('ブラックライト点灯！私の手札が3枚、透けて見えるわ。');
+  ctl(S.phase==='decl'?declBtns():'');
+}
+function ePick(){
+  const s=[...S.eh].sort((x,y)=>V[x-1]-V[y-1]);if(S.call==='H')s.reverse();
+  return Math.random()<.7?s[0]:pick(s.slice(0,Math.min(2,s.length)));
+}
+function play(id){
+  S.phase='rev';
+  const e=ePick(),a=V[id-1],b=V[e-1],pw=S.call==='H'?a>b:a<b;
+  S.ph=S.ph.filter(x=>x!==id);S.eh=S.eh.filter(x=>x!==e);
+  pw?S.ps++:S.es++;
+  $('#arena').innerHTML=big(id,'あなた')+'<div class="vs">VS</div>'+big(e,'ユウロピウム');
+  draw();
+  say((pw?pick(['お見事！この勝負はあなたの勝ち。','やるわね、いい鑑定眼！']):pick(['この勝負は私の勝ち！','ふふ、今回は私の目利きが上ね。']))+`（${S.call==='H'?'高い':'低い'}方が勝ち）`);
+  ctl(`<button onclick="next()">${S.round+1>=ROUNDS?'結果を見る':'次のラウンドへ'}</button>`);
+}
+function next(){
+  S.round++;$('#arena').innerHTML='';
+  if(S.round>=ROUNDS)return end();
+  S.parent=S.parent==='p'?'e':'p';
+  declare();
+}
+function addGem(id){
+  G.jewelCounts=G.jewelCounts||{};
+  const c=G.jewelCounts[id]!==undefined?G.jewelCounts[id]:(G.houseki[id]?1:0);
+  G.jewelCounts[id]=c+1;G.houseki[id]=true;
+}
+function end(){
+  S.phase='end';draw();
+  if(S.ps>S.es){
+    G.money+=200;
+    const un=[];for(let i=101;i<=120;i++)if(!G.houseki[i])un.push(i);
+    const id=un.length?pick(un):1+(Math.random()*120|0),isNew=!G.houseki[id];
+    addGem(id);
+    const bl=Math.random()<.35;if(bl)G.blacklight++;
+    save();hud();
+    $('#arena').innerHTML=big(id,isNew?'NEW! 図鑑に登録':'GET!')+(bl?'<div>🔦<br>ブラックライトを<br>手に入れた！</div>':'');
+    say('あなたの勝ち！見事な鑑定眼ね。賞金200Gと、この鉱物をどうぞ。');
+  }else if(S.ps===S.es){
+    G.money+=100;save();hud();say('引き分け。参加料は返すわね。');
+  }else say('今回は私の勝ち！また挑戦してね。');
+  ctl('<button onclick="title()">もう一度</button><a href="zukan.html">図鑑へ</a>');
+}
+title();
+</script></body></html>
