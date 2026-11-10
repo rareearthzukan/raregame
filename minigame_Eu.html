@@ -1,180 +1,227 @@
 <!DOCTYPE html>
-<html lang="ja"><head><meta charset="utf-8">
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>ユウロピウムの鉱物鑑定ハイアンドロー</title>
 <style>
+:root{color-scheme:dark;--gold:#d9ae4a;--gold2:#fff1b0;--felt:#0f4a2e;--k:min(1vw,.5vh);
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 *{box-sizing:border-box}
-body{margin:0;min-height:100vh;font-family:"Hiragino Maru Gothic ProN","Yu Gothic",system-ui,sans-serif;color:#fff;background:radial-gradient(circle at 50% -10%,#ff4a56,#c4121f 55%,#5c0a13)}
-#app{max-width:30rem;margin:auto;padding:.6rem .6rem calc(.6rem + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:.55rem;min-height:100vh}
-header{display:flex;justify-content:space-between;font-weight:700;font-size:.95rem}
-#eu{display:flex;gap:.5rem;align-items:center}
-#eu img{width:6.2rem;height:6.2rem;object-fit:contain;filter:drop-shadow(0 0 .7rem #fffa)}
-#say{flex:1;background:#fff;color:#4a0a10;border-radius:1rem 1rem 1rem .2rem;padding:.65rem .8rem;font-size:.9rem;line-height:1.55;min-height:4.2rem}
-#info{text-align:center;font-size:.8rem;min-height:1.1rem}
-#score{text-align:center;font-weight:700;font-size:1rem}
-.row{display:flex;gap:.3rem;justify-content:center}
-.card{width:3.7rem;height:5.3rem;border-radius:.55rem;background:#fffdf5;color:#333;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;font-size:.62rem;overflow:hidden;border:2px solid #ffde59}
-.card img{position:absolute;left:.2rem;right:.2rem;top:.3rem;width:calc(100% - .4rem);height:calc(100% - 1.5rem);object-fit:contain}
-.card i{position:absolute;top:0;left:0;background:#0f3460;color:#fff;font-size:.5rem;padding:0 .25rem;font-style:normal;z-index:1}
-.card span{position:relative;color:#a35a00;font-weight:700;padding-bottom:.15rem}
-.back{background:repeating-linear-gradient(45deg,#7a0f1a 0 6px,#5a0a12 6px 12px);justify-content:center;gap:.1rem;color:#ffde59;font-size:1.2rem;font-weight:700;border-color:#ffb3b3}
-.back.lit{background:#06222e;color:#8ff;border-color:#8ff;box-shadow:0 0 .9rem #6ff,inset 0 0 .8rem #3cc}
-.back.lit span{color:#8ff;font-size:.62rem}
-.tap{cursor:pointer}.tap:active{transform:scale(.94)}
-.tap:hover{border-color:#fff}
-#arena{display:flex;justify-content:center;align-items:center;gap:.7rem;min-height:9.5rem;text-align:center;font-size:.72rem}
-#arena>div{width:8rem}
-#arena img{width:6rem;height:6rem;object-fit:contain;background:#0005;border-radius:.9rem}
-#arena strong{display:block;font-size:1.5rem;color:#ffde59}
-#arena small{display:block}
-#arena .vs{width:auto;font-weight:700;font-size:1.1rem}
-#ctl{display:flex;gap:.5rem;flex-wrap:wrap;justify-content:center;margin-top:auto}
-#ctl button,#ctl a{font:inherit;font-weight:700;font-size:1rem;padding:.7rem 1.1rem;border:0;border-radius:.8rem;background:#ffde59;color:#5c0a13;text-decoration:none;cursor:pointer}
-#ctl button:active{transform:scale(.96)}
-#ctl .bl{background:#8ff;color:#06222e;box-shadow:0 0 .9rem #6ff}
-#ctl a{background:#fff3}#ctl a{color:#fff}
-button:focus-visible,a:focus-visible{outline:3px solid #fff;outline-offset:2px}
-</style></head><body>
+html,body{height:100%;margin:0;background:#031009;color:#f6ecd0;font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif}
+#app{position:relative;max-width:480px;height:100%;margin:0 auto;display:flex;flex-direction:column;gap:calc(var(--k)*1.6);padding:8px 12px 10px;overflow:hidden;overflow:clip;
+background:radial-gradient(ellipse at 50% 28%,#1f7248 0,#115133 48%,#06271a 100%)}
+#app::before{content:"";position:absolute;left:-18%;right:-18%;bottom:-22%;height:58%;border:3px solid var(--gold);border-radius:50%;box-shadow:0 0 0 5px #0b3a25,0 0 0 7px #d9ae4a77;opacity:.55;pointer-events:none}
+#app>*{position:relative}
+.gt{background:linear-gradient(var(--gold2),var(--gold) 55%,#8c6212);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:700}
+.top{display:flex;justify-content:space-between;align-items:center;font-size:calc(var(--k)*4.6)}
+.top b{font-size:calc(var(--k)*5.4)}
+.eu{display:flex;align-items:center;gap:10px}
+.eu img{width:calc(var(--k)*23);height:auto;filter:drop-shadow(0 0 10px #ff4d5a99);animation:bob 3s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-4px)}}
+.panel{border:2px solid var(--gold);border-radius:12px;background:linear-gradient(#124f31,#0a3822);box-shadow:inset 0 0 0 3px #0a3822,inset 0 0 0 4px #d9ae4a88,0 4px 14px #0009}
+.bubble{flex:1;padding:calc(var(--k)*2.6) 14px;text-align:center;font-size:calc(var(--k)*4.3);line-height:1.45;min-height:calc(var(--k)*17);display:flex;align-items:center;justify-content:center;margin-left:6px}
+.bubble::before{content:"";position:absolute;left:-11px;top:42%;border:9px solid transparent;border-right:11px solid var(--gold);border-left:0}
+.info{text-align:center;font-size:calc(var(--k)*3.9);letter-spacing:.04em}
+.backs{display:flex;justify-content:center;gap:10px;height:calc(var(--k)*13)}
+.back{width:calc(var(--k)*9.6);height:100%;border-radius:7px;border:2px solid var(--gold);background:radial-gradient(circle at 50% 50%,#1d6a42,#0a3a24);display:grid;place-items:center;font-size:calc(var(--k)*5);transition:opacity .5s,transform .5s}
+.back.gone{opacity:0;transform:translateY(14px)}
+.arena{display:flex;justify-content:center;align-items:flex-start;gap:calc(var(--k)*3)}
+.side{display:flex;flex-direction:column;align-items:center;width:calc(var(--k)*33)}
+.side small{font-size:calc(var(--k)*3.6);color:#e8d9a4}
+.nm{font-size:calc(var(--k)*3.5);min-height:1.3em;text-align:center}
+.val{font-size:calc(var(--k)*8);line-height:1;min-height:1em}
+.val.w{animation:pop .6s}
+@keyframes pop{40%{transform:scale(1.35)}}
+.vs{align-self:center;margin-top:calc(var(--k)*6);width:calc(var(--k)*13)}
+.gc{position:relative;width:100%;aspect-ratio:1/1.12;border-radius:9px;border:2.5px solid var(--gold);padding:5%;display:flex;flex-direction:column;
+background:radial-gradient(circle at 50% 40%,#92102f,#4b0716 75%);box-shadow:inset 0 0 0 2px #2a0309,inset 0 0 0 3px #d9ae4a99,0 3px 10px #000a;cursor:default}
+.gc.tap{cursor:pointer;transition:transform .2s}
+.gc.tap:hover,.gc.tap:focus-visible{transform:translateY(-6px);outline:none;box-shadow:inset 0 0 0 2px #2a0309,inset 0 0 0 3px #d9ae4a99,0 0 16px #ffd86b}
+.gc .art{flex:1;min-height:0}
+.gc svg{width:100%;height:100%;display:block;overflow:visible}
+.gc .st{text-align:center;font-size:calc(var(--k)*3.3);line-height:1;color:#ffd24a;text-shadow:0 1px 2px #000;letter-spacing:0;white-space:nowrap;min-height:1em}
+.gc .tg{position:absolute;left:-2px;top:-2px;background:#0d2b55;border:1px solid #d9ae4a;border-radius:6px 0 6px 0;font-size:calc(var(--k)*2.9);padding:1px 5px;color:#fff}
+.gc.back2{background:repeating-linear-gradient(45deg,#0c3a25 0 7px,#0f4a2e 7px 14px);display:grid;place-items:center;font-size:calc(var(--k)*11)}
+.gc.flip{animation:flip .7s}
+@keyframes flip{0%{transform:rotateY(90deg)}100%{transform:rotateY(0)}}
+.gc.used{opacity:.28;filter:grayscale(.7);pointer-events:none}
+.sp{transform-box:fill-box;transform-origin:center;animation:tw 2.2s ease-in-out infinite}
+@keyframes tw{0%,100%{transform:scale(.3);opacity:.2}50%{transform:scale(1);opacity:1}}
+.score{text-align:center;font-size:calc(var(--k)*5.6)}
+.hand{display:flex;justify-content:center;gap:calc(var(--k)*2.8)}
+.hand .gc{width:calc(var(--k)*27.5)}
+.msg{text-align:center;font-size:calc(var(--k)*3.9);min-height:1.5em;color:#f3e3a6}
+.act{display:flex;gap:10px;margin-top:auto}
+.act button{flex:1;font:inherit;font-size:calc(var(--k)*5.2);font-weight:700;letter-spacing:.12em;color:#3d2603;padding:calc(var(--k)*3) 0;border-radius:999px;border:2px solid #fff3c4;cursor:pointer;
+background:linear-gradient(#ffe9a0,#e3b647 55%,#b9861f);box-shadow:0 4px 0 #7a5410,0 8px 16px #000a}
+.act button:active{transform:translateY(3px);box-shadow:0 1px 0 #7a5410}
+.act button:disabled{opacity:.4;filter:grayscale(.6);cursor:default}
+button:focus-visible{outline:3px solid #fff;outline-offset:2px}
+#end{position:absolute;inset:0;z-index:9;background:rgba(2,12,7,.88);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:24px}
+#end[hidden]{display:none}
+#end h2{margin:0;font-size:clamp(30px,9vw,44px);letter-spacing:.14em}
+#end img{width:120px;filter:drop-shadow(0 0 14px #ff4d5a99)}
+.bubble{white-space:pre-line}
+.help{font:inherit;font-weight:700;width:calc(var(--k)*8);height:calc(var(--k)*8);border-radius:50%;border:2px solid var(--gold);background:#0a3822;color:var(--gold2);cursor:pointer;margin-left:8px;font-size:calc(var(--k)*4.4)}
+#app>.ov{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 30%,#1f7248,#115133 50%,#06271a);display:flex;flex-direction:column;align-items:center;gap:calc(var(--k)*3);padding:calc(18px + env(safe-area-inset-top,0px)) 22px calc(22px + env(safe-area-inset-bottom,0px));z-index:10;text-align:center}
+#app>.ov[hidden]{display:none}
+.ov::after{content:"";position:absolute;inset:8px;border:2px solid var(--gold);border-radius:16px;box-shadow:inset 0 0 0 3px #0a3822,inset 0 0 0 4px #d9ae4a77;pointer-events:none}
+#app>#guide{z-index:11}#app>#rps{z-index:9}
+.ov h1{margin:0;font-size:clamp(40px,13vw,62px);letter-spacing:.12em;line-height:1.1}
+.tdeco{display:flex;gap:8px;justify-content:center;margin-top:calc(var(--k)*3)}
+.td{width:calc(var(--k)*13);aspect-ratio:1;animation:bob 3s ease-in-out infinite}.td:nth-child(2n){animation-delay:-1s}.td:nth-child(3n){animation-delay:-2s}
+.ov .big{width:calc(var(--k)*46);height:auto;filter:drop-shadow(0 0 16px #ff4d5aaa);animation:bob 3s ease-in-out infinite}
+.tsub{font-size:calc(var(--k)*4.6);color:#f3e3a6;letter-spacing:.1em}
+.ov .act{width:min(82%,320px);flex-direction:column}
+.act button.sub{background:linear-gradient(#124f31,#0a3822);color:var(--gold2);border-color:var(--gold);box-shadow:0 3px 0 #04170d,0 6px 12px #000a}
+.mini{align-self:flex-end;font:inherit;font-size:calc(var(--k)*3.6);color:#e8d9a4;background:none;border:1px solid #d9ae4a77;border-radius:999px;padding:4px 14px;cursor:pointer;position:relative;z-index:2}
+.bubble2{white-space:pre-line;width:100%;padding:calc(var(--k)*4) 16px;font-size:calc(var(--k)*5);line-height:1.7;min-height:calc(var(--k)*34);display:flex;align-items:center;justify-content:center}
+.dots{color:var(--gold);letter-spacing:.2em;font-size:calc(var(--k)*4)}
+.rhands{display:flex;align-items:center;justify-content:center;gap:calc(var(--k)*5);margin-top:calc(var(--k)*4)}
+.rhands small{display:block;font-size:calc(var(--k)*3.8);color:#e8d9a4;margin-bottom:4px}
+.hnd{width:calc(var(--k)*30);aspect-ratio:1;border:2.5px solid var(--gold);border-radius:14px;background:radial-gradient(circle,#92102f,#4b0716 75%);display:grid;place-items:center;font-size:calc(var(--k)*15);box-shadow:inset 0 0 0 3px #2a0309,0 3px 10px #000a}
+.rbtns{display:flex;gap:calc(var(--k)*4);margin-top:calc(var(--k)*3)}
+.rb{font:inherit;width:calc(var(--k)*25);aspect-ratio:1;border-radius:50%;border:2px solid #fff3c4;background:linear-gradient(#ffe9a0,#e3b647 55%,#b9861f);color:#3d2603;font-weight:700;font-size:calc(var(--k)*3.8);cursor:pointer;box-shadow:0 4px 0 #7a5410,0 8px 14px #000a;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.2}
+.rb span{font-size:calc(var(--k)*10)}.rb:active{transform:translateY(3px)}.rb:disabled{opacity:.4}
+@media (max-height:700px){.backs{height:calc(var(--k)*10)}.back{width:calc(var(--k)*7.4)}.bubble{min-height:calc(var(--k)*13)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.hand .gc{width:calc(var(--k)*16)}.hand{gap:calc(var(--k)*2)}.hand .gc .st{font-size:calc(var(--k)*2.6)}.hand .gc .tg{font-size:calc(var(--k)*2.4)}
+.back.lit{background:#06222e;border-color:#8ff;color:#8ff;box-shadow:0 0 12px #6ff;font-size:calc(var(--k)*4.6);align-content:center;text-align:center;line-height:1}
+.back.lit small{display:block;font-size:calc(var(--k)*2.4)}
+.help:disabled{opacity:.4;cursor:default}
+#lampB:not(:disabled){border-color:#8ff;box-shadow:0 0 10px #6ff}
+#endM{line-height:1.5}#endM .gc{width:calc(var(--k)*30);margin:8px auto}
+.hand .gc{aspect-ratio:1/1.3}
+.gc .cn{text-align:center;font-weight:700;line-height:1.1;min-height:2.3em;display:flex;align-items:center;justify-content:center;color:#fff;text-shadow:0 1px 2px #000;overflow:hidden}
+#pvC .gc{width:calc(var(--k)*34);margin:0 auto;aspect-ratio:1/1.2}
+#pv .cn,#endM .cn{font-size:calc(var(--k)*3.6)!important}
+#pv{justify-content:center}#pvD{min-height:0!important}
+.act button:disabled{opacity:.5}
+</style>
+</head>
+<body>
 <div id="app">
-<header><span>💰 <span id="g">0</span> G</span><span>🔦 ×<span id="bl">0</span></span></header>
-<div id="eu"><img src="Eu2.png" alt="ユウロピウム" onerror="this.style.display='none'"><div id="say"></div></div>
-<div id="info"></div>
-<div class="row" id="eh"></div>
-<div id="arena"></div>
-<div id="score"></div>
-<div class="row" id="ph"></div>
-<div id="ctl"></div>
+ <div class="top"><span>💰 <b class="gt" id="gold">308,597</b> <span class="gt">G</span></span><span><button class="help" id="lampB" style="width:auto;padding:0 10px;border-radius:999px" aria-label="ブラックライトを使う">🔦 ×<span id="lamp">0</span></button><button class="help" id="help" aria-label="あそびかた">？</button></span></div>
+ <div class="eu"><img id="euImg" alt="ユウロピウム"><div class="panel bubble" id="bubble"></div></div>
+ <div class="info gt" id="info"></div>
+ <div class="backs" id="backs"></div>
+ <div class="arena">
+  <div class="side"><small>あなた</small><div class="gc back2" id="cYou" style="opacity:.25">？</div><div class="nm" id="nYou"></div><div class="val gt" id="vYou"></div></div>
+  <svg class="vs" viewBox="0 0 100 100" aria-label="VS"><circle cx="50" cy="50" r="44" fill="#14391f" stroke="#d9ae4a" stroke-width="4"/><circle cx="50" cy="50" r="36" fill="none" stroke="#d9ae4a" stroke-width="1.5" stroke-dasharray="3 4"/><text x="50" y="62" text-anchor="middle" font-size="34" font-weight="700" fill="#f2cf72" font-family="serif">VS</text></svg>
+  <div class="side"><small>ユウロピウム</small><div class="gc back2" id="cEu" style="opacity:.25">？</div><div class="nm" id="nEu"></div><div class="val gt" id="vEu"></div></div>
+ </div>
+ <div class="score gt" id="score"></div>
+ <div class="hand" id="hand"></div>
+ <div class="msg" id="msg"></div>
+ <div class="act" id="act"></div>
+ <div id="end" hidden><img id="endImg" alt=""><h2 class="gt" id="endT"></h2><div id="endM"></div><div class="act" style="width:100%;max-width:320px;flex-direction:column"><button id="again">もう一度あそぶ</button><button class="sub" id="toTitle">タイトルへ</button><button class="sub" onclick="location.href='zukan.html'">図鑑へ</button></div></div>
+
+ <div class="ov" id="rps" hidden><div class="eu" style="width:100%"><img id="rEu" alt="ユウロピウム"><div class="panel bubble" id="rTxt"></div></div>
+  <div class="rhands"><div><small>あなた</small><div class="hnd" id="hY">❔</div></div><div class="gt" style="font-size:calc(var(--k)*7)">VS</div><div><small>ユウロピウム</small><div class="hnd" id="hE">❔</div></div></div>
+  <div class="rbtns" id="rBtns"><button class="rb" data-h="0"><span>✊</span>グー</button><button class="rb" data-h="1"><span>✌️</span>チョキ</button><button class="rb" data-h="2"><span>✋</span>パー</button></div>
+  <div class="act"><button id="rGo" hidden>勝負をはじめる</button></div></div>
+ <div class="ov" id="pv" hidden><div id="pvT" class="gt" style="font-size:calc(var(--k)*6)"></div><div id="pvC"></div><div class="panel bubble2" id="pvD"></div><div class="act"><button id="pvGo"></button><button class="sub" id="pvBack">もどる</button></div></div>
+ <div class="ov" id="guide" hidden><button class="mini" id="skipG">スキップ</button><img class="big" id="gEu" alt="ユウロピウム" style="width:calc(var(--k)*44)"><div class="panel bubble2" id="gTxt"></div><div class="dots" id="gDots"></div><div class="act"><button id="gNext">つぎへ</button></div></div>
+ <div class="ov" id="title"><div style="margin-top:calc(var(--k)*3)"><div class="gt" style="font-size:calc(var(--k)*5);letter-spacing:.2em">～ レアアース図鑑 ～</div><h1 class="gt">鉱物鑑定<br>ハイアンドロー</h1></div><div class="tdeco" id="tdeco"></div><img class="big" id="tEu" alt="ユウロピウム"><div class="tsub">ユウロピウムと、きらめく勝負！</div><div class="act"><button id="tStart">はじめる</button><button class="sub" id="tHow">あそびかた</button></div></div>
 </div>
 <script>
-const NM="ダイヤモンド,ルビー,サファイア,エメラルド,アメジスト,シトリン,トパーズ,ガーネット,アクアマリン,ペリドット,オパール,ターコイズ,翡翠,琥珀,フローライト,ジャスパー,メノウ,水晶,スモーキークォーツ,ローズクォーツ,ラピスラズリ,タンザナイト,トルマリン,ジルコン,スピネル,ムーンストーン,サンストーン,ブラッドストーン,カルセドニー,プレナイト,クンツァイト,モルガナイト,ヒデナイト,アパタイト,アイオライト,ジオード,ヘマタイト,パイライト,マラカイト,アズライト,ロードナイト,ロードクロサイト,クリソコラ,サーペンタイン,ソーダライト,チャロアイト,スギライト,ラリマー,アンモライト,テクタイト,モルダバイト,オブシディアン,リビアンガラス,セレスタイト,バライト,アラゴナイト,カルサイト,ドロマイト,ロードライト,ヘソナイト,アルマンディン,パペイア,パライバトルマリン,デマントイド,ツァボライト,スフェーン,アウイン,ベニトアイト,グランディディエライト,ターフェライト,ペタライト,ポルサイト,ダンビュライト,ベリル,ジンカイト,クォーツインクォーツ,ルチルクォーツ,スーパーセブン,オーラライト,ファントムクォーツ,ギベオン,メテオライト,コンドライト,パラサイト,テクタイト鉱脈石,ネフライト,ジェダイト,ピクチャージャスパー,オーシャンジャスパー,ユナカイト,ホークスアイ,タイガーアイ,ブルータイガーアイ,レッドタイガーアイ,ピーターサイト,セイクリッドセブン,ボルダーオパール,ファイヤーオパール,ブラックオパール,レアアース・プリズム鉱,ムオニナルスタ隕石,火星隕石,月隕石,エンハイドロ水晶,コットンボール,デザートローズ,閃電石,プディングストーン,セプタリア,バンブルビージャスパー,ブルージョン,ストロマトライト,珪化木,ゴールドナゲット,ブルーアンバー,フランクリン蛍光鉱物,ペレの毛,アイスランドスパー,ハーキマーダイヤモンド,ビスマス結晶".split(',');
-const V=[99,97,92,93,70,21,77,47,78,68,82,60,73,59,30,14,16,18,19,20,71,87,67,69,86,66,26,25,17,27,76,75,64,51,61,24,4,3,38,39,41,40,29,5,28,45,46,65,62,58,57,15,56,31,1,23,22,2,50,48,49,95,98,88,80,74,84,89,90,91,43,85,63,42,44,36,37,33,34,35,55,54,53,79,52,72,94,12,11,13,9,8,7,6,10,32,83,81,96,100];
-const R=new Set([5,6,15,16,17,18,19,20,27,28,29,36,37,38,40,42,43,44,50,51,52,53,54,55,56,57,58,71,72,74,75,76,77,78,79,80,81,82,83,84,85,88,89,90,91,92,93,94,95,96]);
-const $=s=>document.querySelector(s);
-const pick=a=>a[Math.random()*a.length|0];
-const KEY='rareEarthGameState';
-let G=null;try{G=JSON.parse(localStorage.getItem(KEY))}catch(e){}
-G=G||{money:1500,level:1,products:{},unlockedIllustrations:{},houseki:{}};
-G.houseki=G.houseki||{};
-if(new URLSearchParams(location.search).get('debug')==='1'&&G.blacklight===undefined)G.blacklight=3;
-G.blacklight=G.blacklight||0;
-const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(G))}catch(e){}};
-const stars=v=>'★'.repeat(Math.ceil(v/20));
-const say=t=>{$('#say').textContent=t};
-const ctl=h=>{$('#ctl').innerHTML=h};
-const hud=()=>{$('#g').textContent=G.money.toLocaleString();$('#bl').textContent=G.blacklight};
-const JK=['✊グー','✌️チョキ','✋パー'];
-const ROUNDS=5;
-let S=null;
-
-function cardEl(id,back,lit){
-  const d=document.createElement('div');d.className='card';
-  const v=V[id-1];
-  if(back){
-    d.classList.add('back');
-    if(lit){d.classList.add('lit');d.innerHTML=`<b>${v}</b><span>${stars(v)}</span>`}else d.textContent='?';
-    return d;
-  }
-  d.innerHTML=`<img src="houseki${id}.png" alt="${NM[id-1]}" onerror="this.style.opacity=0"><i>${R.has(id)?'原石':'宝石'}</i><span>${stars(v)}</span>`;
-  return d;
-}
-function big(id,label){
-  return `<div><small>${label}</small><img src="houseki${id}.png" alt="" onerror="this.style.opacity=0"><small>${NM[id-1]}${id<=100?'（'+(R.has(id)?'原石':'宝石')+'）':''}</small>${id<=100?`<strong>${V[id-1]}</strong>`:''}</div>`;
-}
-function draw(){
-  hud();
-  const eh=$('#eh'),ph=$('#ph');eh.innerHTML='';ph.innerHTML='';
-  if(!S){$('#info').textContent='';$('#score').textContent='';return}
-  S.eh.forEach(id=>eh.appendChild(cardEl(id,true,S.lit.has(id))));
-  S.ph.forEach(id=>{const c=cardEl(id);if(S.phase==='pick'){c.classList.add('tap');c.onclick=()=>play(id)}ph.appendChild(c)});
-  $('#info').textContent=S.round<ROUNDS?`第${S.round+1}ラウンド／親：${S.parent==='p'?'あなた':'ユウロピウム'}${S.call?'／コール：'+(S.call==='H'?'ハイ':'ロー'):''}`:'';
-  $('#score').textContent=`あなた ${S.ps} − ${S.es} ユウロピウム`;
-}
-function title(){
-  S=null;$('#arena').innerHTML='';draw();
-  say('ようこそ、鉱物鑑定ハイアンドローへ！参加料は100G。勝てば賞金200Gと、特別な鉱物を差し上げます。');
-  ctl('<button onclick="start()">100Gで遊ぶ</button><a href="zukan.html">図鑑へ</a>');
-}
-function start(){
-  if(G.money<100){say('Gが足りないみたい。図鑑でダブりの鉱物を売ってから来てね。');return}
-  G.money-=100;save();
-  const d=Array.from({length:100},(_,i)=>i+1);
-  for(let i=99;i>0;i--){const j=Math.random()*(i+1)|0;[d[i],d[j]]=[d[j],d[i]]}
-  S={ph:d.slice(0,5),eh:d.slice(5,10),lit:new Set(),round:0,ps:0,es:0,parent:null,call:null,phase:'jk',bl:false};
-  janken('5枚ずつ配ったわ。まずはじゃんけんで親を決めましょう！');
-}
-function janken(msg){
-  S.phase='jk';draw();say(msg);
-  ctl(JK.map((h,i)=>`<button onclick="jk(${i})">${h}</button>`).join(''));
-}
-function jk(i){
-  const e=Math.random()*3|0,r=(i-e+3)%3;
-  if(!r)return janken(`${JK[e]}であいこ！もう一度！`);
-  S.parent=r===2?'p':'e';ctl('');
-  say(`${JK[e]}……${r===2?'あなたの勝ち！あなたが親よ。':'私の勝ち！私が親ね。'}`);
-  setTimeout(declare,1100);
-}
-const blBtn=()=>G.blacklight>0&&!S.bl?`<button class="bl" onclick="useBL()">🔦 ブラックライト（残り${G.blacklight}）</button>`:'';
-const declBtns=()=>`<button onclick="call('H')">⬆ ハイ</button><button onclick="call('L')">⬇ ロー</button>${blBtn()}`;
-function declare(){
-  S.call=null;S.phase='decl';draw();
-  if(S.parent==='p'){say('手札を見て、ハイかローをコールして！');ctl(declBtns());return}
-  const v=S.eh.map(i=>V[i-1]),hi=Math.max(...v),lo=Math.min(...v);
-  let c=hi>=101-lo?'H':'L';if(Math.random()<.15)c=c==='H'?'L':'H';
-  S.call=c;say(c==='H'?'私のコールは……ハイ！自信があるの。':'私のコールは……ロー！いい石が手元にあるのよ。');
-  pickPhase();
-}
-function call(c){S.call=c;say(c==='H'?'ハイね。受けて立つわ！':'ローね。面白い、受けて立つわ！');pickPhase()}
-function pickPhase(){
-  S.phase='pick';draw();
-  say($('#say').textContent+' 出す1枚を選んでね。');
-  ctl(blBtn());
-}
-function useBL(){
-  S.bl=true;G.blacklight--;save();
-  S.eh.filter(i=>!S.lit.has(i)).sort(()=>Math.random()-.5).slice(0,3).forEach(i=>S.lit.add(i));
-  draw();say('ブラックライト点灯！私の手札が3枚、透けて見えるわ。');
-  ctl(S.phase==='decl'?declBtns():'');
-}
-function ePick(){
-  const s=[...S.eh].sort((x,y)=>V[x-1]-V[y-1]);if(S.call==='H')s.reverse();
-  return Math.random()<.7?s[0]:pick(s.slice(0,Math.min(2,s.length)));
-}
-function play(id){
-  S.phase='rev';
-  const e=ePick(),a=V[id-1],b=V[e-1],pw=S.call==='H'?a>b:a<b;
-  S.ph=S.ph.filter(x=>x!==id);S.eh=S.eh.filter(x=>x!==e);
-  pw?S.ps++:S.es++;
-  $('#arena').innerHTML=big(id,'あなた')+'<div class="vs">VS</div>'+big(e,'ユウロピウム');
-  draw();
-  say((pw?pick(['お見事！この勝負はあなたの勝ち。','やるわね、いい鑑定眼！']):pick(['この勝負は私の勝ち！','ふふ、今回は私の目利きが上ね。']))+`（${S.call==='H'?'高い':'低い'}方が勝ち）`);
-  ctl(`<button onclick="next()">${S.round+1>=ROUNDS?'結果を見る':'次のラウンドへ'}</button>`);
-}
-function next(){
-  S.round++;$('#arena').innerHTML='';
-  if(S.round>=ROUNDS)return end();
-  S.parent=S.parent==='p'?'e':'p';
-  declare();
-}
-function addGem(id){
-  G.jewelCounts=G.jewelCounts||{};
-  const c=G.jewelCounts[id]!==undefined?G.jewelCounts[id]:(G.houseki[id]?1:0);
-  G.jewelCounts[id]=c+1;G.houseki[id]=true;
-}
-function end(){
-  S.phase='end';draw();
-  if(S.ps>S.es){
-    G.money+=200;
-    const un=[];for(let i=101;i<=120;i++)if(!G.houseki[i])un.push(i);
-    const id=un.length?pick(un):1+(Math.random()*120|0),isNew=!G.houseki[id];
-    addGem(id);
-    const bl=Math.random()<.35;if(bl)G.blacklight++;
-    save();hud();
-    $('#arena').innerHTML=big(id,isNew?'NEW! 図鑑に登録':'GET!')+(bl?'<div>🔦<br>ブラックライトを<br>手に入れた！</div>':'');
-    say('あなたの勝ち！見事な鑑定眼ね。賞金200Gと、この鉱物をどうぞ。');
-  }else if(S.ps===S.es){
-    G.money+=100;save();hud();say('引き分け。参加料は返すわね。');
-  }else say('今回は私の勝ち！また挑戦してね。');
-  ctl('<button onclick="title()">もう一度</button><a href="zukan.html">図鑑へ</a>');
-}
-title();
-</script></body></html>
+const EU_IMG="data:image/webp;base64,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";
+const $=id=>document.getElementById(id);
+["euImg","endImg","rEu","gEu","tEu"].forEach(i=>$(i).src=EU_IMG);
+let uid=0;
+function art(g){if(g.img)return`<img src="${g.img}" alt="" style="width:100%;height:100%;object-fit:contain" onerror="this.style.opacity=.2">`;
+ const id="gr"+(++uid),[a,b,c]=g.c,def=`<defs><radialGradient id="${id}" cx=".32" cy=".28" r=".95"><stop offset="0" stop-color="${a}"/><stop offset=".55" stop-color="${b}"/><stop offset="1" stop-color="${c}"/></radialGradient></defs>`;
+ const sp=`<path class="sp" d="M80 12l3 9 9 3-9 3-3 9-3-9-9-3 9-3z" fill="#fff"/><path class="sp" style="animation-delay:-1.1s" d="M22 70l2 6 6 2-6 2-2 6-2-6-6-2 6-2z" fill="#fff"/>`;
+ let o;
+ if(g.k==="oval")o=`<ellipse cx="50" cy="52" rx="31" ry="40" fill="url(#${id})" stroke="${c}" stroke-width="2"/><path d="M50 14 69 32 50 52 31 32Zm0 38 19-20 12 20-12 22Zm0 0-19-20-12 20 12 22Zm0 0-19 22 19 18 19-18Z" fill="none" stroke="#fff" stroke-opacity=".4"/><ellipse cx="38" cy="32" rx="7" ry="13" fill="#fff" opacity=".55" transform="rotate(-24 38 32)"/>`;
+ else if(g.k==="emerald")o=`<path d="M30 12h40l20 20v36L70 88H30L10 68V32Z" fill="url(#${id})" stroke="${c}" stroke-width="2"/><path d="M37 24h26l15 15v22L63 76H37L22 61V39Z" fill="#fff" fill-opacity=".14" stroke="#fff" stroke-opacity=".55"/><path d="M30 12 37 24M70 12 63 24M90 32 78 39M90 68 78 61M70 88 63 76M30 88 37 76M10 68 22 61M10 32 22 39" stroke="#fff" stroke-opacity=".4"/><path d="M30 20h22l-10 14H26Z" fill="#fff" opacity=".5"/>`;
+ else if(g.k==="rough")o=`<path d="M16 62 24 30 50 12 78 24 88 54 72 86 36 88Z" fill="url(#${id})" stroke="${c}" stroke-width="2.5" stroke-linejoin="round"/><path d="M24 30 52 40 16 62Z" fill="#fff" opacity=".22"/><path d="M50 12 78 24 52 40Z" fill="#fff" opacity=".38"/><path d="M52 40 78 24 88 54Z" fill="#000" opacity=".14"/><path d="M52 40 88 54 72 86 36 88 16 62Z" fill="#000" opacity=".1"/><path d="M36 88 52 40 72 86Z" fill="#fff" opacity=".12"/>`;
+ else o=[-36,-17,0,19,38].map((r,i)=>{const h=[56,66,78,64,54][i];return`<g transform="rotate(${r} 50 92)"><path d="M43 92V${92-h+14}l7-14 7 14V92Z" fill="url(#${id})" stroke="${c}" stroke-width="1.6" stroke-linejoin="round"/><path d="M50 ${92-h}v${h}" stroke="#fff" stroke-opacity=".45"/><path d="M45 ${92-h+16}v${h-20}" stroke="#fff" stroke-opacity=".6" stroke-width="2"/></g>`}).join("");
+ return`<svg viewBox="0 0 100 100">${def}${o}${sp}</svg>`}
+function card(g,tap){return`<div class="gc${tap?" tap":""}"${tap?' tabindex="0" role="button"':""}><div class="tg">${g.t}</div><div class="art">${art(g)}</div><div class="cn" style="font-size:calc(var(--k)*${g.n.length>9?1.5:g.n.length>7?1.8:g.n.length>5?2.1:2.5})">${g.n}</div><div class="st">${"★".repeat(g.s)}</div></div>`}
+const NM="ダイヤモンド,ルビー,サファイア,エメラルド,アメジスト,シトリン,トパーズ,ガーネット,アクアマリン,ペリドット,オパール,ターコイズ,翡翠,琥珀,フローライト,ジャスパー,メノウ,水晶,スモーキークォーツ,ローズクォーツ,ラピスラズリ,タンザナイト,トルマリン,ジルコン,スピネル,ムーンストーン,サンストーン,ブラッドストーン,カルセドニー,プレナイト,クンツァイト,モルガナイト,ヒデナイト,アパタイト,アイオライト,ジオード,ヘマタイト,パイライト,マラカイト,アズライト,ロードナイト,ロードクロサイト,クリソコラ,サーペンタイン,ソーダライト,チャロアイト,スギライト,ラリマー,アンモライト,テクタイト,モルダバイト,オブシディアン,リビアンガラス,セレスタイト,バライト,アラゴナイト,カルサイト,ドロマイト,ロードライト,ヘソナイト,アルマンディン,パペイア,パライバトルマリン,デマントイド,ツァボライト,スフェーン,アウイン,ベニトアイト,グランディディエライト,ターフェライト,ペタライト,ポルサイト,ダンビュライト,ベリル,ジンカイト,クォーツインクォーツ,ルチルクォーツ,スーパーセブン,オーラライト,ファントムクォーツ,ギベオン,メテオライト,コンドライト,パラサイト,テクタイト鉱脈石,ネフライト,ジェダイト,ピクチャージャスパー,オーシャンジャスパー,ユナカイト,ホークスアイ,タイガーアイ,ブルータイガーアイ,レッドタイガーアイ,ピーターサイト,セイクリッドセブン,ボルダーオパール,ファイヤーオパール,ブラックオパール,レアアース・プリズム鉱,ムオニナルスタ隕石,火星隕石,月隕石,エンハイドロ水晶,コットンボール,デザートローズ,閃電石,プディングストーン,セプタリア,バンブルビージャスパー,ブルージョン,ストロマトライト,珪化木,ゴールドナゲット,ブルーアンバー,フランクリン蛍光鉱物,ペレの毛,アイスランドスパー,ハーキマーダイヤモンド,ビスマス結晶".split(","),V=[99,97,92,93,70,21,77,47,78,68,82,60,73,59,30,14,16,18,19,20,71,87,67,69,86,66,26,25,17,27,76,75,64,51,61,24,4,3,38,39,41,40,29,5,28,45,46,65,62,58,57,15,56,31,1,23,22,2,50,48,49,95,98,88,80,74,84,89,90,91,43,85,63,42,44,36,37,33,34,35,55,54,53,79,52,72,94,12,11,13,9,8,7,6,10,32,83,81,96,100],RG=new Set([5,6,15,16,17,18,19,20,27,28,29,36,37,38,40,42,43,44,50,51,52,53,54,55,56,57,58,71,72,74,75,76,77,78,79,80,81,82,83,84,85,88,89,90,91,92,93,94,95,96]);
+const mk=id=>{const v=V[id-1];return{id,n:NM[id-1],v,t:id>100?"特別":id===100?"切り札":RG.has(id)?"原石":"宝石",s:v?Math.ceil(v/20):5,img:`houseki${id}.png`}};
+const DS=["永遠の輝きを放つ、世界最高硬度の宝石。", "情熱的な赤色を持つ、宝石の女王。", "気高き青色を湛える、知性の石。", "深緑の美しさが際立つ、癒やしの宝石。", "高貴な紫色が美しい、神秘的な水晶。", "太陽の光を閉じ込めたような黄色の水晶。", "透明感と豊かな色彩を持つ硬い鉱物。", "ざくろの実のように深い赤色の結晶。", "穏やかな海の水面を思わせる爽やかな宝石。", "夜の照明の下でも輝きを失わない黄緑色の石。", "虹色の遊色効果を持つ神秘の石。", "空の色を映したような鮮やかなスカイブルーの石。", "古来より神聖視されてきた東洋の緑色宝石。", "太古の樹液が化石化した温もりある黄金色の宝石。", "色とりどりのグラデーションが美しい蛍石。", "大地の模様が織りなす個性豊かな碧玉。", "縞模様が美しい、温かみのある微晶質クォーツ。", "無色透明で完璧なまでの美しさを持つ万能の石。", "大地のような落ち着いた煙色を帯びた水晶。", "優しいピンク色が心を癒やす愛の石。", "夜空のような群青色に黄金のパイライトが輝く石。", "キリマンジャロの夕暮れのような多色性の青紫石。", "豊富なカラーバリエーションを持つ電気石。", "ダイヤモンドに匹敵する強い輝きを持つ天然石。", "かつて王冠の宝石としてルビーと間違えられた美石。", "月光のようなシラー効果を宿す幻想的な石。", "内部のインクルージョンが黄金色に輝く石。", "深緑に血飛沫のような赤斑が入る神聖な石。", "滑らかな手触りと優しい半透明感を持つ石。", "マスカットのような爽やかなグリーンが特徴の石。", "ライラックピンクの優しい輝きを放つ上品な石。", "春の桜を思わせるピーチピンクのエレガントな石。", "淡い黄緑色が美しいスポジュメンの変種。", "ネオンブルーや鮮やかなグリーンが目を引く石。", "見る角度によって色が変わるバイオレットブルーの石。", "割ると内部に美しい結晶が広がる自然の宝箱。", "メタリックな銀灰色で磨くと鏡面になる重厚な石。", "黄金色に輝く立方体の結晶。「愚者の黄金」。", "美しい孔雀の羽のような緑色の同心円模様を持つ石。", "吸い込まれそうな深い群青色を持つ銅の鉱物。", "バラ色の素地に黒い脈模様が入る愛の石。", "インカローズとも呼ばれる鮮やかなピンクの石。", "地球を宇宙から見たようなマーブル模様の美しい石。", "蛇の皮膚のような模様を持つ滑らかな緑色の石。", "ディープブルーの落ち着いた色合いを持つ鉱物。", "マーブル模様の紫が織りなす世界三大ヒーリングストーン。", "日本で発見された深い紫色が神秘的な癒やしの石。", "カリブ海の海と空を閉じ込めたような美しい水色の石。", "化石が遊色効果を持つようになった奇跡の宝石。", "隕石衝突の衝撃で生まれた神秘的な黒いガラス質鉱物。", "深いオリーブグリーンが特徴の美しいテクタイト。", "漆黒の輝きを持つ火山ガラス。", "エジプトの砂漠で見つかる黄金色の神秘的なガラス。", "天使の羽のような空色の結晶が広がる天青石。", "重晶石と呼ばれ、ずっしりとした重みがある結晶。", "温かみのある黄色や白の放射状結晶を持つ石。", "多彩なカラーと高い複屈折を持つ方解石。", "白亜の美しい結晶を形成する苦灰石。", "紫がかった上品な赤色を持つガーネットの仲間。", "シナモンカラーの温かい輝きを持つガーネット。", "深い赤紫色の鉄マンガン榴石。", "蓮の花のようなピンクオレンジ色の幻のサファイア。", "ネオンブルーに発光する奇跡の稀少トルマリン。", "ダイヤモンドを超える強い分散光を持つ緑のガーネット。", "サバンナの緑を思わせる鮮やかなグリーンのガーネット。", "強いファイアと独特の多色性を持つ黄緑の宝石。", "鮮やかなコバルトブルーが強烈な印象を残すレアストーン。", "サファイアを超える青い輝きを放つアメリカの稀少石。", "青緑色の神秘的な色合いを持つマダガスカルの秘宝。", "発見が極めて少ない幻のモーヴカラー宝石。", "清らかな透明感を持つ、別名キャストライト。", "美しい等軸晶系を描くレアなセシウム鉱物。", "ダイヤモンドに似た清らかな透明感と強い輝きの石。", "エメラルドやアクアマリンの母体となる基本鉱物。", "鮮やかな赤やオレンジの燃えるような亜鉛鉱物。", "水晶の中に別の水晶が入り込んだ神秘的な鉱物。", "金色の針状結晶が内包された「金運の石」。", "7つの鉱物要素が奇跡的に共生した最強のパワーストーン。", "古代の波動を宿すとされる多層構造のスピリチュアルストーン。", "成長の軌跡が山型に刻まれた幻影水晶。", "宇宙から飛来した鉄隕石。ウィドマンシュテッテン構造。", "大気圏を突破して地球に到達した宇宙のロマン。", "太陽系誕生初期の物質をそのまま残す原始隕石。", "鉄ニッケルとカンラン石が混ざり合う宇宙の芸術品。", "未知のエネルギーを秘めた特殊なインパクト石。", "しっとりとした深い緑色を持つ硬度の高い軟玉。", "瑞々しい艶と美しい緑色を誇る本翡翠。", "まるで自然の風景画が描かれているかのような不思議な石。", "波打ち際のような美しい模様が浮かぶ海の碧玉。", "緑の緑泥石とピンクの長石が混ざり合う大地の石。", "鋭い眼光を思わせるブルーグレーのタイガーアイ。", "虎の目のようなシャトヤンシー効果を持つ金茶色の石。", "落ち着いた青色と美しい光の筋を持つ石。", "情熱的な赤褐色に光の筋が走るタイガーアイ。", "嵐の空のような複雑な模様が渦巻く神秘の石。", "高次元のエネルギーを宿すと言われる神秘の結晶。", "母岩の隙間に虹色の輝きが宿るワイルドなオパール。", "夕焼けのように燃えるオレンジ色の美しいオパール。", "黒い母岩の上で虹色の遊色が一層引き立つ最高級オパール。", "すべての希土類エネルギーを束ねた究極の幻の鉱物。【切り札】ハイでもローでも必ず勝つ！", "スウェーデンに落ちた鉄隕石。切って磨くと、宇宙でゆっくり冷えてできた美しい格子模様が浮かび上がる。", "火星への衝突で飛び出し、地球に届いた火星のかけら。", "月への衝突で飛び出し、地球に落ちてきた月のかけら。", "結晶の中に本物の水が閉じ込められた水晶。傾けると小さな泡が動く。", "綿のようにふわふわした針状結晶が集まった、ホウ酸塩の鉱物。", "砂漠で結晶が育ち、バラの花びらのような形になった鉱物。", "雷が砂に落ち、溶けた砂が固まってできた枝のような管状のガラス。", "丸い小石がプディングの具のように固まった、ふしぎな礫岩。", "ひび割れが黄色い結晶で埋まり、竜のうろこのような模様になった団塊。", "マルハナバチのような黄色と黒の模様が入った、火山地帯で採れる石。", "イギリスの限られた場所だけで採れる、紫と黄色の縞模様の蛍石。", "海の微生物がつくった層状の岩。何十億年も前の生命の痕跡。", "木が長い年月をかけて石に置き換わった石の木。年輪もそのまま残っている。", "自然の中でできた金の塊。見つけたらお宝！", "ドミニカ共和国で採れる琥珀。日光や紫外線に当たると青く光る。", "アメリカのフランクリンで採れる鉱物。ブラックライトで赤や緑に光る。", "ハワイの火山で、溶岩が風に引き伸ばされてできた髪の毛のような火山ガラス。", "無色透明の方解石。文字の上に置くと二重に見える。", "両端がとがった小さな水晶。ダイヤではないけれど、ダイヤのように輝く。", "虹色の階段のような結晶。自然にはほとんど見られず、溶かした金属を冷やして育てた人工の結晶。"];
+const KEY="rareEarthGameState";let SV=null;try{SV=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+SV=SV||{money:1500,level:1,products:{},unlockedIllustrations:{},houseki:{}};SV.houseki=SV.houseki||{};
+if(new URLSearchParams(location.search).get("debug")==="1"&&SV.blacklight===undefined)SV.blacklight=3;SV.blacklight=SV.blacklight||0;
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(SV))}catch(e){}};
+const WIN=["この勝負は私の勝ち！","ふふ、いただきね。","私の鑑定眼のほうが上みたいね。"],LOSE=["やられたわ……！","お見事、あなたの勝ち！","悔しいけど、いい目利きね！"],TIE=["同じ価値！いい勝負ね。"];
+const pick_=a=>a[Math.random()*a.length|0];
+let first="eu",gold=SV.money,R=0,wy=0,we=0,phase="",call="hi",parent="eu",hand=[],eh=[],lit=new Set(),blUsed=false;const MAX=5;
+const pay=n=>{gold+=n;SV.money=gold;save()};
+const fmt=n=>n.toLocaleString("ja-JP");
+function say(t){$("bubble").textContent=t}
+function setAct(btns){const a=$("act");a.innerHTML="";btns.forEach(b=>{const x=document.createElement("button");x.textContent=b[0];x.onclick=b[1];if(b[2])x.disabled=true;a.appendChild(x)})}
+function status(){$("gold").textContent=fmt(gold);$("lamp").textContent=SV.blacklight;$("lampB").disabled=!(SV.blacklight>0&&!blUsed&&(phase==="call"||phase==="pick"));$("score").textContent=`あなた ${wy} − ${we} ユウロピウム`;
+ $("info").textContent=`第${R}ラウンド／親：${parent==="eu"?"ユウロピウム":"あなた"}／コール：${call==="hi"?"ハイ":"ロー"}${SV.streak>0?"／🔥"+SV.streak+"連勝中":""}`}
+let pvI=-1;
+function openPV(i){const g=hand[i];pvI=i;$("pvT").textContent=g.id===100?"切り札":"鉱物鑑定";$("pvC").innerHTML=card(g);$("pvD").textContent=DS[g.id-1];
+ const ok=phase==="pick";$("pvGo").disabled=!ok;$("pvGo").textContent=ok?"これを出す":"先にハイ／ローをえらんでね";$("pv").hidden=false}
+$("pvBack").onclick=()=>{$("pv").hidden=true};
+$("pvGo").onclick=()=>{$("pv").hidden=true;play(pvI)};
+function renderBacks(){$("backs").innerHTML=eh.map(g=>lit.has(g.id)?`<div class="back lit">${g.id===100?'<b style="font-size:calc(var(--k)*3)">切り札</b>':`<b>${g.v}</b>`}<small>${"★".repeat(g.s)}</small></div>`:'<div class="back gt">？</div>').join("")}
+function tell(hi,lo,fl){let conf=!fl&&((call==="hi"?hi:101-lo)>=80||eh.some(g=>g.id===100));if(Math.random()<.2)conf=!conf;
+ const c=call==="hi"?"ハイ":"ロー",w=call==="hi"?"高い方":"低い方";
+ const A=[`私のコールは、${c}！ふふ、${w}が勝ちよ。`,`${c}でいくわ。これは自信あり！`,`${c}！${w}の勝ち。負ける気がしないわ。`];
+ const B=[`えっと……${c}、かしら。${w}が勝ちよ。`,`${c}で……いきましょう。たぶん。`,`……${c}！${w}が勝ちよ。きっとね。`];
+ return pick_(conf?A:B)+"\n1枚えらんでね。"}
+function useBL(){if(blUsed||SV.blacklight<1||(phase!=="call"&&phase!=="pick"))return;blUsed=true;SV.blacklight--;save();
+ eh.filter(g=>!lit.has(g.id)).sort(()=>Math.random()-.5).slice(0,3).forEach(g=>lit.add(g.id));renderBacks();status();
+ say("ブラックライト点灯！\n私の手札が3枚、透けて見えるでしょう？");$("msg").textContent="数字が見えるカードに注目！"}
+function resetArena(){["cYou","cEu"].forEach(i=>{const e=$(i);e.className="gc back2";e.style.opacity=".25";e.innerHTML="？"});["nYou","nEu","vYou","vEu"].forEach(i=>{$(i).textContent="";$(i).className=i[0]==="v"?"val gt":"nm"})}
+function renderHand(){const h=$("hand");h.innerHTML="";hand.forEach((g,i)=>{h.insertAdjacentHTML("beforeend",card(g,true));const el=h.lastChild;const go=()=>openPV(i);el.onclick=go;el.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();go()}}})}
+function newRound(){R++;parent=R%2?first:(first==="eu"?"you":"eu");resetArena();renderBacks();renderHand();$("msg").textContent="";$("hand").style.opacity="";
+ if(parent==="eu"){const v=eh.map(g=>g.v),hi=Math.max(...v),lo=Math.min(...v);call=hi>=101-lo?"hi":"lo";let fl=false;if(Math.random()<.15){call=call==="hi"?"lo":"hi";fl=true}
+  phase="pick";status();say(tell(hi,lo,fl));$("msg").textContent=R===1?"★が多い鉱物ほど価値が高いわ。手札をタップ！":"手札をタップして勝負！";setAct([["勝負をえらんでね","",1]])}
+ else{phase="call";status();say("あなたが親よ！\n手札を見て、ハイ（高い方が勝ち）か\nロー（低い方が勝ち）をえらんでね。");$("hand").style.opacity=".6";setAct([["ハイ（高い方が勝ち）",()=>setCall("hi")],["ロー（低い方が勝ち）",()=>setCall("lo")]])}}
+function setCall(c){call=c;phase="pick";$("hand").style.opacity="";status();say(c==="hi"?"ハイね！受けて立つわ。\n手札から1枚えらんでね。":"ローなのね、ひとひねりしたわね。\n手札から1枚えらんでね。");$("msg").textContent="手札をタップして勝負！";setAct([["勝負をえらんでね","",1]])}
+function show(id,g){const e=$(id);e.className="gc flip";e.style.opacity="1";e.innerHTML=`<div class="tg">${g.t}</div><div class="art">${art(g)}</div><div class="st">${"★".repeat(g.s)}</div>`}
+function count(id,to,done){const e=$(id);let n=0;const t=setInterval(()=>{n+=Math.max(1,Math.ceil(to/14));if(n>=to){n=to;clearInterval(t);done&&done()}e.textContent=n},38)}
+function play(i){if(phase!=="pick")return;phase="reveal";status();const y=hand[i],s2=[...eh].sort((a,b)=>a.v-b.v);if(call==="hi")s2.reverse();
+ const jk=eh.find(g=>g.id===100),e=jk&&Math.random()<.4?jk:Math.random()<.7?s2[0]:pick_(s2.slice(0,Math.min(2,s2.length))),j=eh.indexOf(e);
+ [...$("hand").children][i].classList.add("used");[...$("backs").children][j].classList.add("gone");hand.splice(i,1);eh.splice(j,1);
+ show("cYou",y);$("nYou").textContent=y.n;say("さあ、オープン！");setAct([["…","",1]]);
+ setTimeout(()=>{show("cEu",e);$("nEu").textContent=e.n;let d=0;const fin=()=>{if(++d<2)return;judge(y,e)};count("vYou",y.v,fin);count("vEu",e.v,fin)},700)}
+function judge(y,e){const jk2=y.id===100||e.id===100;const w=y.id===100?1:e.id===100?-1:y.v===e.v?0:(call==="hi"?(y.v>e.v?1:-1):(y.v<e.v?1:-1));
+ const ex=jk2?"切り札のプリズム鉱！ハイでもローでも必ず勝つのよ。\n":`あなた${y.v}、私${e.v}。`+(call==="hi"?"ハイは高い方":"ローは低い方")+"の勝ち！\n";
+ if(w>0){wy++;$("vYou").classList.add("w");say(ex+pick_(LOSE))}else if(w<0){we++;$("vEu").classList.add("w");say(ex+pick_(WIN))}else say(pick_(TIE));
+ $("msg").textContent=(w>0?"あなたの勝ち！":w<0?"ユウロピウムの勝ち…":"引き分け")+(call==="hi"?"（高い方が勝ち）":"（低い方が勝ち）");status();
+ setAct([[R>=MAX?"結果を見る":"次のラウンドへ",R>=MAX?finish:newRound]])}
+function finish(){phase="end";status();let bonus=0;const m=wy>we?"win":wy<we?"lose":"tie";let extra="";
+ if(m==="win"){SV.streak=(SV.streak||0)+1;bonus=SV.streak>=2?Math.min(SV.streak-1,3)*50:0;pay(200+bonus);const un=[];for(let i=101;i<=120;i++)if(!SV.houseki[i])un.push(i);
+  const id=un.length?pick_(un):1+(Math.random()*120|0),isNew=!SV.houseki[id];
+  SV.jewelCounts=SV.jewelCounts||{};SV.jewelCounts[id]=(SV.jewelCounts[id]!==undefined?SV.jewelCounts[id]:(SV.houseki[id]?1:0))+1;SV.houseki[id]=true;
+  const lamp=Math.random()<.25+.1*Math.min(SV.streak,5);if(lamp)SV.blacklight++;save();const g=mk(id);
+  extra=`<br>${isNew?"NEW！図鑑に登録しました":"ダブりました（図鑑で売却できます）"}${card(g)}<small>${DS[g.id-1]}</small>${lamp?"<br>🔦 ブラックライトも手に入れた！":""}`}
+ else if(m==="tie")pay(100);else{SV.streak=0;save()}
+ $("endT").textContent=m==="win"?"あなたの勝利！":m==="lose"?"ユウロピウムの勝利":"引き分け";
+ $("endM").innerHTML=`${wy} − ${we}／所持金 ${fmt(gold)} G${m==="win"?`（賞金${200+bonus}G！）${SV.streak>=2?"<br>🔥 "+SV.streak+"連勝ボーナス +"+bonus+"G":""}`:m==="tie"?"（参加料を返却）":""}${extra}`;
+ say(m==="win"?"完敗ね。賞金と鉱物をどうぞ！":m==="lose"?"今回は私の勝ち。また挑戦してね。":"いい勝負だったわ。");$("end").hidden=false;$("again").focus()}
+$("again").onclick=()=>{$("end").hidden=true;startRps()};
+$("toTitle").onclick=()=>{$("end").hidden=true;$("title").hidden=false};
+/* ---- タイトル・ガイド・じゃんけん ---- */
+$("tdeco").innerHTML=[1,2,99,4,3].map(i=>`<div class="td">${art(mk(i))}</div>`).join("");
+const GUIDE=["いらっしゃい！私はユウロピウム、略してEu。\n赤くきらきら光るのが自慢よ。","ここは鉱物鑑定のカジノ。\n参加料は100G。5枚ずつ手札を配って、\n5回勝負しましょう！","ルールは簡単。「ハイ」なら価値が高い方、\n「ロー」なら低い方の勝ち。\n親は手札を見てコールを決められるの。","鉱物の価値は、出すまで数字が見えないわ。\nでも★が多い鉱物ほど価値が高いの。\n原石か宝石かのバッジにも注目してね。","ブラックライトを使うと、私の手札を\n3枚だけ透かして見せてあげる。\n勝つともらえることがあるわ。","勝てば賞金200Gと特別な鉱物をプレゼント。\n連勝するとボーナスもアップするわ。\n引き分けなら参加料は返すわよ。","レアアース・プリズム鉱は、ハイでもローでも\n必ず勝てる切り札！\n私のコールの言い方にも注目してね。","困ったら右上の「？」でいつでも説明するわ。\nカードをタップすると拡大して、\n名前と解説が見られるの。さあ、はじめましょう！"];
+let gi=0,gmode="intro";
+function showG(){$("gTxt").textContent=GUIDE[gi];$("gDots").textContent=GUIDE.map((_,i)=>i===gi?"◆":"◇").join(" ");$("gNext").textContent=gi===GUIDE.length-1?(gmode==="intro"?"じゃんけんへ":"とじる"):"つぎへ"}
+function openGuide(m){gmode=m;gi=0;$("guide").hidden=false;showG();$("gNext").focus()}
+function endG(){$("guide").hidden=true;if(gmode==="intro"){try{localStorage.setItem("gem_seen","1")}catch(x){}startRps()}}
+$("gNext").onclick=()=>{if(gi<GUIDE.length-1){gi++;showG()}else endG()};$("skipG").onclick=endG;
+$("help").onclick=()=>openGuide("help");$("tHow").onclick=()=>openGuide("help");
+$("tStart").onclick=()=>{$("title").hidden=true;let seen=false;try{seen=localStorage.getItem("gem_seen")==="1"}catch(x){}seen?startRps():openGuide("intro")};
+const HAND=["✊","✌️","✋"],HN=["グー","チョキ","パー"];
+function startRps(){$("rps").hidden=false;$("hY").textContent="❔";$("hE").textContent="❔";$("rGo").hidden=true;$("rBtns").style.display="flex";[...$("rBtns").children].forEach(b=>b.disabled=false);$("rTxt").textContent="まずは じゃんけんで、親をきめよう！\n出す手をえらんでね。"}
+[...$("rBtns").children].forEach(b=>b.onclick=()=>{const y=+b.dataset.h;[...$("rBtns").children].forEach(x=>x.disabled=true);$("hY").textContent="❔";$("hE").textContent="❔";$("rTxt").textContent="じゃん…";
+ setTimeout(()=>$("rTxt").textContent="けん…",500);
+ setTimeout(()=>{const e=Math.random()*3|0,w=y===e?0:((y-e+3)%3===2?1:-1);$("hY").textContent=HAND[y];$("hE").textContent=HAND[e];
+  if(!w){$("rTxt").textContent="ぽん！あいこだね！\nもう一回いくよ〜";setTimeout(()=>{$("hY").textContent="❔";$("hE").textContent="❔";[...$("rBtns").children].forEach(x=>x.disabled=false);$("rTxt").textContent="もう一度、出す手をえらんでね！"},1300)}
+  else{first=w>0?"you":"eu";$("rTxt").textContent=w>0?`ぽん！あなたは${HN[y]}、私は${HN[e]}。\nあなたの勝ち！最初の「親」はあなただよ。`:`ぽん！私は${HN[e]}、あなたは${HN[y]}。\n私の勝ち！最初の「親」は私だね。`;$("rBtns").style.display="none";$("rGo").hidden=false;$("rGo").focus()}},1000)});
+$("rGo").onclick=()=>{if(gold<100){$("rTxt").textContent="Gが足りないわ。\n図鑑でダブりを売ってから来てね。";return}
+ pay(-100);const d=Array.from({length:100},(_,i)=>i+1);for(let i=99;i>0;i--){const j=Math.random()*(i+1)|0;[d[i],d[j]]=[d[j],d[i]]}
+ hand=d.slice(0,5).map(mk);eh=d.slice(5,10).map(mk);lit=new Set();blUsed=false;R=0;wy=we=0;$("rps").hidden=true;newRound()};
+$("lampB").onclick=useBL;$("gold").textContent=fmt(gold);$("lamp").textContent=SV.blacklight;$("lampB").disabled=true;
+</script>
+</body>
+</html>
