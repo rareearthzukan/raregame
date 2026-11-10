@@ -733,41 +733,57 @@ O Gemini é uma IA e pode cometer erros.
       }
     });
 
-    // 元素基本価値データ
-    const elementMaster = [
-      { id: 'Sc', name: 'スカンジウム', base: 500, img: 'chara0_Sc.png' },
-      { id: 'Y',  name: 'イットリウム', base: 200, img: 'chara0_Y.png' },
-      { id: 'La', name: 'ランタン',     base: 100, img: 'chara0_La.png' },
-      { id: 'Ce', name: 'セリウム',     base: 80,  img: 'chara0_Ce.png' },
-      { id: 'Pr', name: 'プラセオジム', base: 300, img: 'chara0_Pr.png' },
-      { id: 'Nd', name: 'ネオジム',     base: 400, img: 'chara0_Nd.png' },
-      { id: 'Pm', name: 'プロメチウム', base: 1000,img: 'chara0_Pm.png' },
-      { id: 'Sm', name: 'サマリウム',   base: 250, img: 'chara0_Sm.png' },
-      { id: 'Eu', name: 'ユウロピウム', base: 600, img: 'chara0_Eu.png' },
-      { id: 'Gd', name: 'ガドリニウム', base: 350, img: 'chara0_Gd.png' },
-      { id: 'Tb', name: 'テルビウム',   base: 800, img: 'chara0_Tb.png' },
-      { id: 'Dy', name: 'ジスプロシウム',base: 700, img: 'chara0_Dy.png' },
-      { id: 'Ho', name: 'ホルミウム',   base: 450, img: 'chara0_Ho.png' },
-      { id: 'Er', name: 'エルビウム',   base: 380, img: 'chara0_Er.png' },
-      { id: 'Tm', name: 'ツリウム',     base: 900, img: 'chara0_Tm.png' },
-      { id: 'Yb', name: 'イッテルビウム',base: 500, img: 'chara0_Yb.png' },
-      { id: 'Lu', name: 'ルテチウム',   base: 1200,img: 'chara0_Lu.png' }
-    ];
+    // 元素基本価値データ（最安Ce:80G 〜 最高Lu:1200G 調整版）
+const elementMaster = [
+  { id: 'Ce', name: 'セリウム',     base: 80,   img: 'chara0_Ce.png' },
+  { id: 'La', name: 'ランタン',     base: 100,  img: 'chara0_La.png' },
+  { id: 'Y',  name: 'イットリウム', base: 200,  img: 'chara0_Y.png' },
+  { id: 'Sm', name: 'サマリウム',   base: 200,  img: 'chara0_Sm.png' },
+  { id: 'Gd', name: 'ガドリニウム', base: 260,  img: 'chara0_Gd.png' },
+  { id: 'Pr', name: 'プラセオジム', base: 330,  img: 'chara0_Pr.png' },
+  { id: 'Er', name: 'エルビウム',   base: 410,  img: 'chara0_Er.png' },
+  { id: 'Nd', name: 'ネオジム',     base: 490,  img: 'chara0_Nd.png' },
+  { id: 'Ho', name: 'ホルミウム',   base: 570,  img: 'chara0_Ho.png' },
+  { id: 'Yb', name: 'イッテルビウム',base: 650,  img: 'chara0_Yb.png' },
+  { id: 'Eu', name: 'ユウロピウム', base: 730,  img: 'chara0_Eu.png' },
+  { id: 'Dy', name: 'ジスプロシウム',base: 810,  img: 'chara0_Dy.png' },
+  { id: 'Sc', name: 'スカンジウム', base: 890,  img: 'chara0_Sc.png' },
+  { id: 'Tb', name: 'テルビウム',   base: 970,  img: 'chara0_Tb.png' },
+  { id: 'Tm', name: 'ツリウム',     base: 1050, img: 'chara0_Tm.png' },
+  { id: 'Pm', name: 'プロメチウム', base: 1120, img: 'chara0_Pm.png' },
+  { id: 'Lu', name: 'ルテチウム',   base: 1200, img: 'chara0_Lu.png' }
+];
 
-    // ナビゲーター会話データ (Sc・Lu・Er)
+    // ナビゲーター会話データ (Sc・Lu・Er) - パターン拡充版
     const navMessages = {
       trade: [
         { img: 'chara0_Sc.png', text: 'ボクの軽量化技術とみんなの素材で、国際貿易ラインを動かそう！' },
-        { img: 'chara0_Er.png', text: '速報です！海外のクライアントが素材の入荷を待っています！' },
-        { img: 'chara0_Lu.png', text: '大量の在庫も、こうしてグローバルに出荷すれば最高の利益を生むよ。' }
+        { img: 'chara0_Er.png', text: '速報！海外のクライアントが素材の入荷を待っているみたい！' },
+        { img: 'chara0_Lu.png', text: '大量の在庫も、こうしてグローバルに出荷すれば最高の利益を生むよ。' },
+        { img: 'chara0_Lu.png', text: 'どの元素を出荷するか迷ったら、まずは相場の高いものや余っているものから選ぶといいよ。' },
+        { img: 'chara0_Sc.png', text: '輸出船の準備は万全！いつでも出航の合図を出してくださいね。' },
+        { img: 'chara0_Sc.png', text: 'ボクの軽量素材としての強みが、世界のあちこちで必要とされているんだ。誇らしいね！' },
+        { img: 'chara0_Er.png', text: 'まとまった数の在庫を一度に一括出荷するのが、一番効率的な貿易のコツですよ！' }
       ],
       trend: [
         { img: 'chara0_Lu.png', text: '相場の波を読むんだ。高騰している元素を狙って出荷するのがスマートだよ。' },
-        { img: 'chara0_Sc.png', text: '値上がりしている元素があるね！今が売り時かもしれないよ！' }
+        { img: 'chara0_Sc.png', text: '赤は値上がりしているもの、緑は値下がりしているものだよ。' },
+        { img: 'chara0_Er.png', text: '値上がりしている元素があるね！今が売り時かもしれないよ！' },
+        { img: 'chara0_Lu.png', text: '市場のトレンドは日々変動する。波に乗る者が利益を制するのさ。' },
+        { img: 'chara0_Sc.png', text: 'おっ、この元素の価格が上がってる！チェックしておいて正解だったね。' },
+        { img: 'chara0_Er.png', text: 'チャーンス！この高騰の波に乗り遅れないようにね！' },
+        { img: 'chara0_Lu.png', text: '相場が下がっている元素も、別の週には急騰することがある。焦りは禁物だよ。' },
+        { img: 'chara0_Sc.png', text: '世界が何を求めているか、この相場表を見れば一目瞭然ってわけだね！' }
       ],
       partner: [
-        { img: 'chara0_Er.png', text: '各国の得意分野に合わせた元素を届けると、友好度が上がってボーナスが付きます！' },
-        { img: 'chara0_Lu.png', text: '信頼関係は最大の利益を生む。パートナー選びは慎重にね。' }
+        { img: 'chara0_Er.png', text: '好みの元素をガンガン送り込んで、友好度をガッツリ上げちゃいましょ！' },
+        { img: 'chara0_Lu.png', text: '信頼関係は最大の利益を生む。パートナー選びは慎重にね。' },
+        { img: 'chara0_Er.png', text: 'どこの国が何を欲しがってるか、私のネットワークでお見通しよ！' },
+        { img: 'chara0_Lu.png', text: '特定のパートナーと何度も取引して友好度を上げれば、見返りも大きくなる。' },
+        { img: 'chara0_Sc.png', text: '北米、欧州、アジア……それぞれのニーズに合わせた元素を届けに行こう！' },
+        { img: 'chara0_Er.png', text: '友好度ボーナスが乗ると、売却時の利益が跳ね上がるので要チェック！' },
+        { img: 'chara0_Lu.png', text: 'ビジネスの基本は信頼関係の構築さ。どこの国と深く付き合うか、君の腕の見せ所だね。' },
+        { img: 'chara0_Sc.png', text: '世界各国とのパイプを太くして、我が社の貿易網をさらに広げよう！' }
       ]
     };
 
