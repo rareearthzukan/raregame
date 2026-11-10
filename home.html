@@ -232,6 +232,7 @@ textarea{width:100%;height:5rem;font-size:.65rem;border:1px solid var(--line);bo
 
 <div class="cs-ov" id="csOv" onclick="if(event.target===this)csClose()"><div class="cs" id="cs"></div></div>
 
+<script src="areaconfig.js"></script>
 <script>
 try { ['gesturestart','gesturechange','gestureend'].forEach(e=>document.addEventListener(e,x=>x.preventDefault())); } catch(e){}
 
@@ -482,6 +483,7 @@ function askModal(title,desc,ok,fn,no){
     if(mO) mO.style.display='flex';
   } catch(e){}
 }
+function homeBusy(){ const m=$('modal'), c=$('csOv'); return !!((m&&m.style.display==='flex')||(c&&c.style.display==='flex')); }
 function showGdReward(){
   const r=gameState.gdRiverLast; if(!r||r.seen) return;
   r.seen=true; save();
@@ -569,7 +571,7 @@ function ensureCharas(){
     if(!Array.isArray(gameState.charaOwned)) gameState.charaOwned=[];
     if(!gameState.placedItems) gameState.placedItems=[];
     
-    let added=0;
+    let added=0; const addedNames=[];
     while(gameState.charaOwned.length<want){
       const rest=ids.filter(i=>!gameState.charaOwned.includes(i)); if(!rest.length) break;
       let id;
@@ -579,9 +581,9 @@ function ensureCharas(){
         id = rest[Math.floor(Math.random()*rest.length)];
       }
       gameState.charaOwned.push(id);
-      gameState.placedItems.push({type:'chara',id,dir:0,s:1,x:25+Math.random()*50,y:90}); added++;
+      gameState.placedItems.push({type:'chara',id,dir:0,s:1,x:25+Math.random()*50,y:90}); added++; addedNames.push((CHARAS[id]&&CHARAS[id].name)||id);
     }
-    if(added){ save(); setTimeout(()=>toast('🎉 新しい仲間がお部屋に来たよ！'),600); }
+    if(added){ save(); setTimeout(()=>toast('🎉 '+addedNames.join('・')+' がお部屋に来たよ！'),600); }
 
     if((gameState.level||1) >= 6 && !gameState.tutorialShown6) {
       gameState.tutorialShown6 = true; save();
@@ -1175,6 +1177,7 @@ setInterval(()=>{
 
 window.addEventListener('load',()=>{
   try {
+    try { RE.initCommon(gameState,{page:'home',busy:homeBusy,delay:1500}); } catch(e){}   // 他ページで貯まった経験値のレベル確定＋貿易ナビ＋解放のお知らせ
     buildControls(); switchTab('shop'); changeDirection(0);
     updateBgmSource(); updateBgmUI(); applyTheme(gameState.currentTheme||'natural'); ensureCharas(); syncCrafted(); updateUI(); histBtns(); showGdReward();
     if(!isMuted && bgm) bgm.play().catch(()=>['click','touchstart'].forEach(e=>document.addEventListener(e,unlock)));

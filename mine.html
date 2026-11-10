@@ -540,20 +540,10 @@
       localStorage.setItem('rareEarthGameState', JSON.stringify(gameState));
     }
 
-    function getRequiredExp(level) {
-      if (level >= 50) return 50000000;
-      const expTable = [
-        0, 
-        100, 300, 600, 1000, 1600, 2400, 3500, 4800, 6500, 8500,
-        11000, 14000, 18000, 23000, 29000, 36000, 45000, 56000, 70000, 90000,
-        115000, 145000, 180000, 220000, 270000, 330000, 400000, 480000, 580000, 700000,
-        850000, 1050000, 1300000, 1600000, 2000000, 2500000, 3100000, 3800000, 4700000, 5800000,
-        7200000, 9000000, 11200000, 14000000, 17500000, 22000000, 28000000, 36000000, 48000000
-      ];
-      return expTable[level] || (level * 2000000);
-    }
+    function getRequiredExp(level) { return RE.getRequiredExp(level); }   // 経験値表は areaconfig.js に集約
 
     function addExp(amount) {
+      const lvBefore = gameState.level;
       gameState.exp += amount;
       let leveledUp = false;
       
@@ -576,32 +566,13 @@
       updateUI();
 
       if (leveledUp) {
-        triggerLevelUpEffect(gameState.level);
+        triggerLevelUpEffect(gameState.level, lvBefore);
       }
     }
 
-    function triggerLevelUpEffect(newLevel) {
-      const se = document.getElementById('se-unlock');
-      if (se) { se.currentTime = 0; se.play().catch(e => {}); }
-
-      const oldModal = document.getElementById('commonLevelUpModal');
-      if (oldModal) oldModal.remove();
-
-      const modal = document.createElement('div');
-      modal.id = 'commonLevelUpModal';
-      modal.className = 'modal-overlay';
-      modal.style.zIndex = '9999';
-      modal.innerHTML = `
-        <div class="levelup-card">
-          <div class="levelup-emoji">🎉</div>
-          <div class="levelup-title">LEVEL UP!</div>
-          <div class="levelup-sub">職人ランクが上がりました！</div>
-          <div class="levelup-lv">Lv. ${newLevel - 1} ➔ Lv. ${newLevel}</div>
-          <div class="levelup-note">採掘技術と効率が向上しました！</div>
-          <button class="levelup-btn" onclick="document.getElementById('commonLevelUpModal').remove()">やったね！</button>
-        </div>
-      `;
-      document.body.appendChild(modal);
+    // レベルアップ演出：全ページ共通（areaconfig.js）。解放された機能の一覧も表示されます
+    function triggerLevelUpEffect(newLevel, oldLevel) {
+      RE.announceUnlocks(gameState, { fromLevel: oldLevel, page: 'mine' });
     }
 
     let spotId = localStorage.getItem('currentSelectedSpot') || 'baiyun';
@@ -781,8 +752,7 @@
       });
     }
     window.addEventListener('load', () => { updateBgmUI(); startBgm(); });
-    window.addEventListener('pageshow', e => { if (e.persisted) startBgm(); });
-    document.addEventListener('visibilitychange', () => { if (!document.hidden) startBgm(); });
+    // 画面を閉じた時の停止／戻った時の再開は areaconfig.js が全ページ共通で行う
 
     function updateUI() {
       document.getElementById('money').innerText = gameState.money.toLocaleString();
@@ -966,7 +936,7 @@
       africa: ['マラウイ、タンザニア、ナミビアなど、アフリカ各地でレアアースの開発が進んでいるよ。','供給を中国に頼りすぎないよう、各国が新しい産地としてアフリカに注目しているんだ。中国企業も投資しているよ。','緑の旗はアフリカ連合（AU）の旗だよ。星は加盟国をあらわしているんだ。','タンザニアにはキリマンジャロ山、ナミビアには赤い砂丘のナミブ砂漠があるよ。タンザナイトの産地でもあるんだ。'],
       greenland: ['グリーンランドは世界最大の島。デンマーク王国の自治領で、レアアースの大型鉱床が眠っているよ。','クバネフエルドは、ウランも一緒に含むことが開発のハードルになっているんだ。','氷の下の資源は温暖化で調べやすくなる一方、自然への影響も心配されているよ。','観光の目玉はオーロラと氷河。イルリサットの氷河は世界遺産だよ。'],
       tahiti: ['タヒチはフランス領ポリネシア。だからフランス国旗が付いているんだよ。','フランスは海外領土のおかげで、世界トップクラスの広さの排他的経済水域（EEZ）を持っているんだ。','太平洋の深海底には、レアアースを含む泥やマンガン団塊が広がっているよ。','名物は、生魚をココナッツミルクとライムであえた「ポワソン・クリュ」だよ。'],
-      okinotori: ['日本の最東端の島、南鳥島の周辺海底で、高濃度のレアアース泥が見つかっているよ。','水深5,000m超の海底から引き上げるのが最大の難関。技術開発と試験が進んでいるんだ。','この泥には重レアアースも多いと考えられていて、「日本の切り札」と期待されているよ。','名前が似ている沖ノ鳥島は日本最南端の島。南鳥島とは別の島だよ！','南鳥島は東京都小笠原村の島。小笠原諸島は世界自然遺産だよ。']
+      okinotori: ['日本の最東端の島、南鳥島の周辺海底で、高濃度のレアアース泥が見つかっているよ。','水深5,000m超の海底から引き上げるのが最大の難関。技術開発と試験が進んでいるんだ。','この泥には重レアアースも多いと考えられていて、「日本の切り札」と期待されているよ。','名前が似ている南鳥島は日本最南端の島。南鳥島とは別の島だよ！','南鳥島は東京都小笠原村の島。小笠原諸島は世界自然遺産だよ。']
     };
     // キャラ×エリアの特別セリフ
     const SPECIAL = {
@@ -1108,7 +1078,7 @@
       let obtainedJewel = null;
 
       if (isRareJewel) {
-        // 産地の石が出やすい（レアアース・プリズム鉱は沖ノ鳥島だけ）
+        // 産地の石が出やすい（レアアース・プリズム鉱は南鳥島だけ）
         obtainedJewel = RE.rollGem(areaKey, gemsMaster);
         
         // 🔒 図鑑と確実に同期するための堅牢な保存（配列＆オブジェクト両方に登録）
@@ -1308,6 +1278,7 @@
     setTimeout(showCameo, 6000 + Math.random() * 4000);
     setupDrillUI();
     scheduleCameo();
+    RE.initCommon(gameState, { page: 'mine' });
   </script>
 <div class="drill-ov" id="drillOv">
     <iframe id="drillFrame" title="深海ドリル" allow="autoplay"></iframe>

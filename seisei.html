@@ -598,6 +598,14 @@
         text: 'レベル15に到達したので、工場をさらに自動アップグレードしました。今回も費用はいただきません！\n\n✨ 新機能：10個まとめて精製（300G）\n10枚のカードが一度に出てきます。' }
     ];
 
+    // 精製の Lv7 / Lv15 解放は、イッテルビウムの「工場アップグレード報告」で案内するので共通モーダルには出さない
+    const SEISEI_OWN_REPORTS = ['seisei-5', 'seisei-10'];
+    // ミニゲーム・イベント・報告モーダルの表示中は、レベルアップのお知らせを待たせる
+    function seiseiBusy() {
+      const m = document.getElementById('minigameModal'), g = document.getElementById('minigameContainer');
+      return (m && m.style.display === 'flex') || (g && g.style.display === 'flex') || pendingEvents.length > 0;
+    }
+
     function isModeUnlocked(n) {
       return (gameState.level || 1) >= REFINE_MODES[n].unlockLv;
     }
@@ -1008,7 +1016,11 @@
         if (!chanceIdx.includes(i)) gameState.elements[k] = (gameState.elements[k] || 0) + 1;
       });
       const exp = BASE_EXP_PER_ITEM * n;
-      gameState.exp = (gameState.exp || 0) + exp;
+      // 経験値の加算とレベルアップ判定（共通表）。解放のお知らせは、ミニゲーム／イベントが終わってから表示
+      const lvBefore = RE.addExp(gameState, exp);
+      if ((gameState.level || 1) > lvBefore) {
+        RE.announceUnlocks(gameState, { fromLevel: lvBefore, page: 'seisei', busy: seiseiBusy, exclude: SEISEI_OWN_REPORTS });
+      }
       localStorage.setItem('rareEarthGameState', JSON.stringify(gameState));
       updateUI();
 
@@ -1421,6 +1433,7 @@
 
 
     updateUI();
+    RE.initCommon(gameState, { page: 'seisei', busy: seiseiBusy, exclude: SEISEI_OWN_REPORTS, delay: 1200 });
   </script>
   <div id="rfx-band" aria-hidden="true"></div>
 <script src="tutorial.js"></script>

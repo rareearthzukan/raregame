@@ -482,21 +482,21 @@
       gameState.money -= data.cost;
       gameState.miles = (gameState.miles || 0) + data.milesGain;
       
-      let currentExp = (gameState.exp || 0) + 10;
-      let requiredExp = (gameState.level || 1) * 100;
-      if (currentExp >= requiredExp) {
-        gameState.level = (gameState.level || 1) + 1;
-        gameState.exp = currentExp - requiredExp;
-        showModal('🎉 レベルアップ！', `プレイヤーレベルが Lv.${gameState.level} に上がりました！新しい鉱山やレシピが解放されたかも？`);
-      } else {
-        gameState.exp = currentExp;
-      }
+      // 経験値は全ページ共通の表（areaconfig.js）で判定。レベルアップしたら解放演出を見せてから移動する
+      const lvBefore = gameState.level || 1;
+      RE.addExp(gameState, 10);
 
       localStorage.setItem('rareEarthGameState', JSON.stringify(gameState));
       localStorage.setItem('currentSelectedSpot', selectedSpotId);
 
+      if ((gameState.level || 1) > lvBefore) {
+        RE.announceUnlocks(gameState, { fromLevel: lvBefore, page: 'map', onClose: () => { location.href = 'mine.html'; } });
+        return;
+      }
       location.href = 'mine.html';
     }
+  
+    RE.initCommon(gameState, { page: 'map' });
   </script>
 <script src="tutorial.js"></script>
 </body>

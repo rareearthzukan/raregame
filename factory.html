@@ -478,6 +478,7 @@
     </div>
   </div>
 
+  <script src="areaconfig.js"></script>
   <script>
     // ピンチ／ダブルタップによる意図しない拡大・表示ブレを防止（iOS Safari 対策含む）
     ['gesturestart', 'gesturechange', 'gestureend'].forEach(ev =>
@@ -583,20 +584,10 @@
       localStorage.setItem('rareEarthGameState', JSON.stringify(gameState));
     }
 
-    function getRequiredExp(level) {
-      if (level >= 50) return 50000000;
-      const expTable = [
-        0, 
-        100, 300, 600, 1000, 1600, 2400, 3500, 4800, 6500, 8500,
-        11000, 14000, 18000, 23000, 29000, 36000, 45000, 56000, 70000, 90000,
-        115000, 145000, 180000, 220000, 270000, 330000, 400000, 480000, 580000, 700000,
-        850000, 1050000, 1300000, 1600000, 2000000, 2500000, 3100000, 3800000, 4700000, 5800000,
-        7200000, 9000000, 11200000, 14000000, 17500000, 22000000, 28000000, 36000000, 48000000
-      ];
-      return expTable[level] || (level * 2000000);
-    }
+    function getRequiredExp(level) { return RE.getRequiredExp(level); }   // 経験値表は areaconfig.js に集約
 
     function addExp(amount) {
+      const lvBefore = gameState.level;
       gameState.exp += amount;
       let leveledUp = false;
       
@@ -619,32 +610,13 @@
       updateUI();
 
       if (leveledUp) {
-        triggerLevelUpEffect(gameState.level);
+        triggerLevelUpEffect(gameState.level, lvBefore);
       }
     }
 
-    function triggerLevelUpEffect(newLevel) {
-      const se = document.getElementById('se-unlock');
-      if (se) { se.currentTime = 0; se.play().catch(e => {}); }
-
-      const oldModal = document.getElementById('commonLevelUpModal');
-      if (oldModal) oldModal.remove();
-
-      const modal = document.createElement('div');
-      modal.id = 'commonLevelUpModal';
-      modal.className = 'modal-overlay';
-      modal.style.zIndex = '9999';
-      modal.innerHTML = `
-        <div class="levelup-card">
-          <div class="levelup-emoji">🎉</div>
-          <div class="levelup-title">LEVEL UP!</div>
-          <div class="levelup-sub">職人ランクが上がりました！</div>
-          <div class="levelup-lv">Lv. ${newLevel - 1} ➔ Lv. ${newLevel}</div>
-          <div class="levelup-note">大量素材を要求するハイテク新レシピが解放されたよ！</div>
-          <button class="levelup-btn" onclick="document.getElementById('commonLevelUpModal').remove()">やったね！</button>
-        </div>
-      `;
-      document.body.appendChild(modal);
+    // レベルアップ演出：全ページ共通（areaconfig.js）。解放された機能の一覧も表示されます
+    function triggerLevelUpEffect(newLevel, oldLevel) {
+      RE.announceUnlocks(gameState, { fromLevel: oldLevel, page: 'factory' });
     }
 
     const elementsMaster = {
@@ -2023,6 +1995,7 @@
     vStage.addEventListener('pointercancel', endPointer);
 
     updateUI();
+      RE.initCommon(gameState, { page: 'factory' });
   </script>
 <script src="tutorial.js"></script>
 </body>

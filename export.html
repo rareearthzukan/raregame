@@ -160,6 +160,26 @@
     }
     .btn-export-exec:active { transform: scale(0.97); }
 
+    /* 輸出リスト・パートナー一覧（スマホは従来どおりコンパクト） */
+    .trade-grid { display: flex; flex-direction: column; gap: .5rem; }
+    .export-list { display: flex; flex-direction: column; gap: .4rem; max-height: 17vh; overflow-y: auto; padding-right: .2rem; }
+    .partner-list { display: flex; flex-direction: column; gap: .5rem; }
+    .lock-overlay { width: 100%; max-width: 34rem; align-self: center; }
+
+    /* 縦長タブレット：リストをもう少し広く */
+    @media (orientation: portrait) and (min-width: 700px) {
+      .export-list { max-height: 38vh; }
+      .tab-header-banner img { max-height: min(11rem, 18vh); object-fit: cover; }
+    }
+    /* 横長（タブレット横・PC）：左に元素リスト、右に見積もりと出航ボタン／パートナーは3列 */
+    @media (orientation: landscape) and (min-width: 700px) {
+      .trade-grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: .8rem; align-items: start; }
+      .export-list { max-height: max(12rem, calc(100vh - 21rem)); }
+      .trade-side { position: sticky; top: 0; }
+      .partner-list { display: grid; grid-template-columns: repeat(3, 1fr); }
+      .tab-header-banner img { max-height: min(8.5rem, 20vh); object-fit: cover; }
+    }
+
     /* 下部ナビゲーション */
     .nav {
       flex-shrink: 0; position: relative; z-index: 50; background: #16213e; border-top: 2px solid #1f293d;
@@ -211,7 +231,7 @@
         <div class="lock-icon">🔒</div>
         <div class="lock-title">国際貿易ライン（未解放）</div>
         <div class="lock-desc">
-          職人ランクが <b>Lv.50</b> に到達すると解放されます。<br>
+          職人ランクが <b>Lv.<span class="trade-unlock-lv">50</span></b> に到達すると解放されます。<br>
           世界各地の企業へ余剰元素を直接輸出して、<br>莫大な貿易利益を獲得できるようになります！
         </div>
         <button class="btn-export-exec" onclick="location.href='map.html'" style="font-size: .9rem;">🗺️ マップに戻ってレベルを上げる</button>
@@ -247,10 +267,12 @@
             </div>
             <div class="card-sub">余っている元素を選択して、船で一括出荷します。</div>
             
-            <div id="export-list" style="display:flex; flex-direction:column; gap:.4rem; max-height: 17vh; overflow-y:auto; padding-right:.2rem;">
+            <div class="trade-grid">
+            <div id="export-list" class="export-list">
               <!-- JavaScriptで動的生成 -->
             </div>
 
+            <div class="trade-side">
             <div style="background:rgba(0,0,0,.3); padding:.5rem; border-radius:.5rem; margin-top:.3rem;">
               <div style="display:flex; justify-content:space-between; font-size:.8rem; color:#cbd5e1;">
                 <span>小計（トレンド適用）:</span>
@@ -268,6 +290,8 @@
             </div>
 
             <button id="exec-btn" class="btn-export-exec" onclick="executeExport()">🚢 貿易船を出航させる！</button>
+            </div>
+            </div>
           </div>
         </div>
 
@@ -296,7 +320,7 @@
           <div class="card">
             <div class="card-title">🤝 輸出先パートナー（国家・企業）</div>
             <div class="card-sub">輸出を行うことで友好度が上がり、恒久的な買取ボーナスが付きます。</div>
-            <div id="partner-list" style="display:flex; flex-direction:column; gap:.5rem;">
+            <div id="partner-list" class="partner-list">
               <!-- JavaScriptで動的生成 -->
             </div>
           </div>
@@ -339,7 +363,7 @@
     const bgm = document.getElementById('bgm-export');
     const bgmBtn = document.getElementById('bgm-btn');
     bgm.volume = 0.4;
-    let isMuted = localStorage.getItem('bgmMutedMine') === 'true';
+    let isMuted = localStorage.getItem('bgmMutedExport') === 'true';
 
     function updateBgmUI() {
       if (isMuted) {
@@ -355,7 +379,7 @@
 
     function toggleBGM() {
       isMuted = !isMuted;
-      localStorage.setItem('bgmMutedMine', isMuted);
+      localStorage.setItem('bgmMutedExport', isMuted);
       updateBgmUI();
       if (!isMuted) {
         bgm.play().catch(() => {});
@@ -379,13 +403,7 @@
       });
     }
 
-    document.addEventListener('visibilitychange', () => {
-      if (document.hidden) {
-        bgm.pause();
-      } else {
-        startBgm();
-      }
-    });
+    // 画面を閉じた時の停止／戻った時の再開は areaconfig.js が全ページ共通で行う
 
     // 元素基本価値データ（最安Ce:80G 〜 最高Lu:1200G 調整版）
     const elementMaster = [
@@ -456,16 +474,17 @@
       updateBgmUI();
       startBgm();
 
-      // 🌟 Lv50以上なら下部フッターに「🌐 貿易」アイコンを表示し、アクティブ状態にする
+      // 共通初期化（経験値→レベル確定／解放のお知らせ）。解放レベルは areaconfig.js の TRADE_UNLOCK_LEVEL
+      RE.initCommon(gameState, { page: 'export' });
+      const unlocked = RE.isTradeUnlocked(gameState);
+      document.querySelectorAll('.trade-unlock-lv').forEach(e => { e.innerText = RE.TRADE_UNLOCK_LEVEL; });
+
+      // 解放済みなら下部フッターに「🌐 貿易」を表示し、アクティブ状態にする
       const exportNavItem = document.getElementById('nav-export-item');
-      if (gameState.level >= 50) {
-        exportNavItem.style.display = 'flex';
-        exportNavItem.classList.add('active');
-      } else {
-        exportNavItem.style.display = 'none';
-      }
-      
-      if (gameState.level < 50) {
+      exportNavItem.style.display = unlocked ? 'flex' : 'none';
+      if (unlocked) exportNavItem.classList.add('active');
+
+      if (!unlocked) {
         document.getElementById('lock-screen').style.display = 'block';
         document.getElementById('trade-screen').style.display = 'none';
         return;
@@ -646,7 +665,25 @@
       });
     }
 
+    // 別タブ・別ページで在庫やお金が変わっていても壊れないよう、出航の直前に最新のセーブを読み直す
+    function reloadLatestState() {
+      try {
+        const latest = JSON.parse(localStorage.getItem('rareEarthGameState'));
+        if (latest && typeof latest === 'object') {
+          gameState = latest;
+          if (!gameState.elements) gameState.elements = {};
+          if (!gameState.affinity) gameState.affinity = { us: 0, eu: 0, asia: 0 };
+          if (!gameState.trends) gameState.trends = {};
+        }
+      } catch (e) { /* 読めなければ今の状態のまま */ }
+      elementMaster.forEach(el => {
+        const stock = gameState.elements[el.id] || 0;
+        if ((exportAmounts[el.id] || 0) > stock) exportAmounts[el.id] = stock;
+      });
+    }
+
     function executeExport() {
+      reloadLatestState();
       let totalQty = 0;
       elementMaster.forEach(el => { totalQty += (exportAmounts[el.id] || 0); });
 
