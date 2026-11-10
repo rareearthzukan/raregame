@@ -88,6 +88,20 @@
 
     /* キャラクター一覧（画面幅に応じて列数が自動で増減） */
     .chara-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(5.2rem, 1fr)); gap: .35rem; }
+    /* キャラ一覧は枠内スクロール（その下の鉱物図鑑が画面内に見えるように高さを抑える） */
+    .chara-scroll { position: relative; }
+    .chara-scroll .chara-grid { max-height: 11.8rem; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: .1rem .1rem .6rem; scrollbar-width: thin; }
+    .chara-scroll::after {   /* 下端のフェード＝「まだ続きがある」合図。最後までスクロールすると消える */
+      content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 1.8rem; pointer-events: none;
+      background: linear-gradient(180deg, rgba(22,33,62,0), rgba(22,33,62,.95)); border-radius: 0 0 .6rem .6rem; transition: opacity .2s;
+    }
+    .chara-scroll.at-end::after { opacity: 0; }
+    .scroll-hint { font-size: .66rem; color: #94a3b8; text-align: center; margin-top: .25rem; }
+    .jump-gem {
+      background: transparent; border: 1px solid #ffde59; color: #ffde59; border-radius: 1rem; font-size: .7rem; font-weight: bold;
+      padding: .15rem .6rem; min-height: 1.7rem; cursor: pointer; font-family: inherit; touch-action: manipulation; white-space: nowrap;
+    }
+    .jump-gem:active { transform: scale(.95); }
     .chara-card {
       background: rgba(255, 255, 255, 0.08); border: 1px solid #cbd5e1; border-radius: .6rem; padding: .35rem .25rem;
       text-align: center; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; align-items: center; min-width: 0;
@@ -191,6 +205,8 @@
       .content { display: grid; grid-template-columns: 1fr 1fr; align-items: start; gap: .7rem; }
       .credit-card { grid-column: 1 / -1; }
       .gem-grid { max-height: max(14rem, calc(100vh - 17rem)); }
+      .chara-scroll .chara-grid { max-height: max(14rem, calc(100vh - 19rem)); }   /* 左右並びなので高さは鉱物側とそろえる */
+      .jump-gem { display: none; }
     }
 
     /* ═══ 下部フッター（ベストな大きさ） ═══ */
@@ -246,16 +262,22 @@
     <div class="content">
       <!-- 1. キャラ図鑑カード -->
       <div class="card">
-        <div class="card-title">🎨 レアアース・キャラクター図鑑 (全17元素)</div>
+        <div class="card-title card-title-row">
+          <span>🎨 レアアース・キャラクター図鑑 (全17元素)</span>
+          <button class="jump-gem" onclick="jumpToGems()">💎 鉱物図鑑へ ↓</button>
+        </div>
         <div class="card-note">キャラクターをタップして、5枚の特別イラストやギャラリーを解放しよう！</div>
-        <div class="chara-grid" id="charaGrid"></div>
+        <div class="chara-scroll" id="charaScroll">
+          <div class="chara-grid" id="charaGrid"></div>
+        </div>
+        <div class="scroll-hint">↕ この枠の中を上下にスクロールすると全員が見られます</div>
       </div>
 
       <!-- 2. 💎 鉱物・宝石図鑑コレクションカード -->
-      <div class="card">
+      <div class="card" id="gemCard">
         <div class="card-title card-title-row">
           <span>💎 鉱物・宝石図鑑コレクション</span>
-          <span id="collectionCount" class="collection-count">解放: 0 / 100</span>
+          <span id="collectionCount" class="collection-count">解放: 0 / 120</span>
         </div>
         <div class="card-note">マップやイベントでゲットした鉱物はここに展示されます！</div>
         <div class="gem-grid" id="gemGrid"></div>
@@ -330,6 +352,7 @@
           <span class="modal-stock" id="gemModalStock">発掘所持数: 0個</span>
         </div>
         <div id="gemModalDesc" style="font-size: 0.791rem; color: #f1f5f9; text-align: left; line-height: 1.4; background: rgba(15, 23, 42, 0.8); padding: 0.625rem; border-radius: 0.625rem; margin-bottom: 0.75rem; border: 1px solid #334155;"></div>
+        <button id="gemSellBtn" class="btn" style="display: none; background: #eab308; color: #0f3460; margin: 0 0 .5rem 0; padding: 0.625rem;" onclick="sellGem()"></button>
         <button class="btn" style="background: #00fff5; color: #0f3460; margin-top:0; padding: 0.625rem;" onclick="closeGemModal()">閉じる</button>
       </div>
     </div>
@@ -509,8 +532,33 @@
       { id: 97, name: 'ボルダーオパール', img: 'houseki97.png', desc: '母岩の隙間に虹色の輝きが宿るワイルドなオパール。' },
       { id: 98, name: 'ファイヤーオパール', img: 'houseki98.png', desc: '夕焼けのように燃えるオレンジ色の美しいオパール。' },
       { id: 99, name: 'ブラックオパール', img: 'houseki99.png', desc: '黒い母岩の上で虹色の遊色が一層引き立つ最高級オパール。' },
-      { id: 100, name: 'レアアース・プリズム鉱', img: 'houseki100.png', desc: 'すべての希土類エネルギーを束ねた究極の幻の鉱物。' }
+      { id: 100, name: 'レアアース・プリズム鉱', img: 'houseki100.png', desc: 'すべての希土類エネルギーを束ねた究極の幻の鉱物。' },
+      // ✨ ユウロピウムに勝つともらえる特別な鉱物（101〜120）
+      { id: 101, name: 'ムオニナルスタ隕石', img: 'houseki101.png', desc: 'スウェーデンに落ちた鉄隕石。切って磨くと、宇宙でゆっくり冷えてできた美しい格子模様が浮かび上がる。' },
+      { id: 102, name: '火星隕石', img: 'houseki102.png', desc: '火星への衝突で飛び出し、地球に届いた火星のかけら。' },
+      { id: 103, name: '月隕石', img: 'houseki103.png', desc: '月への衝突で飛び出し、地球に落ちてきた月のかけら。' },
+      { id: 104, name: 'エンハイドロ水晶', img: 'houseki104.png', desc: '結晶の中に本物の水が閉じ込められた水晶。傾けると小さな泡が動く。' },
+      { id: 105, name: '針ニッケル鉱', img: 'houseki105.png', desc: '光る針状の結晶が珍しい鉱物。硫化ニッケルが主成分。' },
+      { id: 106, name: 'デザートローズ', img: 'houseki106.png', desc: '砂漠で結晶が育ち、バラの花びらのような形になった鉱物。' },
+      { id: 107, name: '閃電石（フルグライト）', img: 'houseki107.png', desc: '雷が砂に落ち、溶けた砂が固まってできた枝のような管状のガラス。' },
+      { id: 108, name: 'プディングストーン', img: 'houseki108.png', desc: '丸い小石がプディングの具のように固まった、ふしぎな礫岩。' },
+      { id: 109, name: 'セプタリア（ドラゴンストーン）', img: 'houseki109.png', desc: 'ひび割れが黄色い結晶で埋まり、竜のうろこのような模様になった団塊。' },
+      { id: 110, name: 'バンブルビージャスパー', img: 'houseki110.png', desc: 'マルハナバチのような黄色と黒の模様が入った、火山地帯で採れる石。' },
+      { id: 111, name: 'ブルージョン', img: 'houseki111.png', desc: 'イギリスの限られた場所だけで採れる、紫と黄色の縞模様の蛍石。' },
+      { id: 112, name: 'ストロマトライト', img: 'houseki112.png', desc: '海の微生物がつくった層状の岩。何十億年も前の生命の痕跡。' },
+      { id: 113, name: '珪化木', img: 'houseki113.png', desc: '木が長い年月をかけて石に置き換わった石の木。年輪もそのまま残っている。' },
+      { id: 114, name: 'ゴールドナゲット', img: 'houseki114.png', desc: '自然の中でできた金の塊。見つけたらお宝！' },
+      { id: 115, name: 'ブルーアンバー', img: 'houseki115.png', desc: 'ドミニカ共和国で採れる琥珀。日光や紫外線に当たると青く光る。' },
+      { id: 116, name: 'フランクリン蛍光鉱物', img: 'houseki116.png', desc: 'アメリカのフランクリンで採れる鉱物。ブラックライトで赤や緑に光る。' },
+      { id: 117, name: 'ペレの毛', img: 'houseki117.png', desc: 'ハワイの火山で、溶岩が風に引き伸ばされてできた髪の毛のような火山ガラス。' },
+      { id: 118, name: 'アイスランドスパー', img: 'houseki118.png', desc: '無色透明の方解石。文字の上に置くと二重に見える。' },
+      { id: 119, name: 'ハーキマーダイヤモンド', img: 'houseki119.png', desc: '両端がとがった小さな水晶。ダイヤではないけれど、ダイヤのように輝く。' },
+      { id: 120, name: 'ビスマス結晶', img: 'houseki120.png', desc: '虹色の階段のような結晶。自然にはほとんど見られず、溶かした金属を冷やして育てた人工の結晶。' }
     ];
+
+    // 💰 売却価格(G)。1〜100は鑑定価値と同じ額、101〜120は固定額
+    const gemPrices = {1: 99, 2: 97, 3: 92, 4: 93, 5: 70, 6: 21, 7: 77, 8: 47, 9: 78, 10: 68, 11: 82, 12: 60, 13: 73, 14: 59, 15: 30, 16: 14, 17: 16, 18: 18, 19: 19, 20: 20, 21: 71, 22: 87, 23: 67, 24: 69, 25: 86, 26: 66, 27: 26, 28: 25, 29: 17, 30: 27, 31: 76, 32: 75, 33: 64, 34: 51, 35: 61, 36: 24, 37: 4, 38: 3, 39: 38, 40: 39, 41: 41, 42: 40, 43: 29, 44: 5, 45: 28, 46: 45, 47: 46, 48: 65, 49: 62, 50: 58, 51: 57, 52: 15, 53: 56, 54: 31, 55: 1, 56: 23, 57: 22, 58: 2, 59: 50, 60: 48, 61: 49, 62: 95, 63: 98, 64: 88, 65: 80, 66: 74, 67: 84, 68: 89, 69: 90, 70: 91, 71: 43, 72: 85, 73: 63, 74: 42, 75: 44, 76: 36, 77: 37, 78: 33, 79: 34, 80: 35, 81: 55, 82: 54, 83: 53, 84: 79, 85: 52, 86: 72, 87: 94, 88: 12, 89: 11, 90: 13, 91: 9, 92: 8, 93: 7, 94: 6, 95: 10, 96: 32, 97: 83, 98: 81, 99: 96, 100: 100, 101: 250, 102: 300, 103: 300, 104: 200, 105: 120, 106: 120, 107: 180, 108: 100, 109: 150, 110: 120, 111: 180, 112: 150, 113: 120, 114: 250, 115: 200, 116: 200, 117: 150, 118: 100, 119: 150, 120: 100};
+    function getGemPrice(gem) { return gemPrices[gem.id] || 10; }
 
     const charactersMaster = [
       {
@@ -735,7 +783,7 @@
         gemGrid.appendChild(item);
       });
 
-      document.getElementById('collectionCount').innerText = `解放: ${unlockedGemCount} / 100`;
+      document.getElementById('collectionCount').innerText = `解放: ${unlockedGemCount} / ${gemsMaster.length}`;
     }
 
     // 鉱物の発掘所持数を取得する関数
@@ -754,7 +802,36 @@
       document.getElementById('gemModalImg').src = gem.img;
       document.getElementById('gemModalStock').innerText = `発掘所持数: ${stock} 個`;
       document.getElementById('gemModalDesc').innerText = gem.desc;
+      currentGemForSell = gem;
+      const sellBtn = document.getElementById('gemSellBtn');
+      if (stock >= 2) {
+        sellBtn.style.display = 'block';
+        sellBtn.innerText = `💰 ダブりを1個売る（+${getGemPrice(gem)} G）`;
+      } else {
+        sellBtn.style.display = 'none';
+      }
       document.getElementById('gemModal').style.display = 'flex';
+    }
+
+    // 💰 ダブり売却（図鑑用に1個は必ず残す）
+    let currentGemForSell = null;
+    function sellGem() {
+      const gem = currentGemForSell;
+      if (!gem) return;
+      if (!gameState.jewelCounts) gameState.jewelCounts = {};
+      if (gameState.jewelCounts[gem.id] === undefined) {
+        gameState.jewelCounts[gem.id] = gameState.houseki[gem.id] ? 1 : 0;
+      }
+      if (gameState.jewelCounts[gem.id] < 2) return;
+      const price = getGemPrice(gem);
+      if (!confirm(`「${gem.name}」を1個 ${price}G で売りますか？`)) return;
+      gameState.jewelCounts[gem.id] -= 1;
+      gameState.money += price;
+      localStorage.setItem('rareEarthGameState', JSON.stringify(gameState));
+      const se = document.getElementById('se-unlock');
+      if (se) { se.currentTime = 0; se.play().catch(e => {}); }
+      updateUI();
+      showGemModal(gem);
     }
 
     function showLockedGemModal(id) {
@@ -762,7 +839,10 @@
       document.getElementById('gemModalTitle').innerText = '未入手の鉱物';
       document.getElementById('gemModalImg').src = 'chara0_Y.png';
       document.getElementById('gemModalStock').innerText = `発掘所持数: 0 個`;
-      document.getElementById('gemModalDesc').innerText = 'まだ発見していません。マップでの採掘やイベントを進めて鉱物を手に入れよう！';
+      document.getElementById('gemModalDesc').innerText = id > 100
+        ? 'ユウロピウムとの鉱物鑑定ハイアンドローに勝つと手に入る、特別な鉱物です。'
+        : 'まだ発見していません。マップでの採掘やイベントを進めて鉱物を手に入れよう！';
+      document.getElementById('gemSellBtn').style.display = 'none';
       document.getElementById('gemModal').style.display = 'flex';
     }
 
@@ -927,7 +1007,18 @@
       return false;
     }
 
+    // キャラ一覧の下端フェード切替＆「鉱物図鑑へ」ジャンプ
+    (function () {
+      const sc = document.getElementById('charaScroll'), g = document.getElementById('charaGrid');
+      const upd = () => sc.classList.toggle('at-end', g.scrollTop + g.clientHeight >= g.scrollHeight - 4 || g.scrollHeight <= g.clientHeight + 4);
+      g.addEventListener('scroll', upd, { passive: true });
+      window.addEventListener('resize', upd);
+      setTimeout(upd, 100); setTimeout(upd, 800);
+    })();
+    function jumpToGems() { document.getElementById('gemCard').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+
     updateUI();
+    // 共通初期化：経験値→レベル確定／貿易ナビ（Lv解放後）／レベルアップ・解放のお知らせ（areaconfig.js）
     RE.initCommon(gameState, { page: 'zukan' });
   </script>
 </body>
