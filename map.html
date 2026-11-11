@@ -12,7 +12,6 @@
     :root { --maxw: 720px; }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     
-    /* 全体は丁度よかったベストなサイズ感をベースにする */
     html {
       height: 100%;
       font-size: clamp(14px, min(calc(12px + 1.1vw), 3.2vh), 21px);
@@ -41,7 +40,7 @@
     }
     @media (orientation: landscape) and (min-width: 700px) { :root { --maxw: 1200px; } }
 
-    /* ═══ ヘッダー：パラメータが収まるように文字をコンパクトに維持 ═══ */
+    /* ═══ ヘッダー ═══ */
     .header {
       background: #16213e; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
       padding: calc(.4rem + env(safe-area-inset-top, 0px)) .6rem .4rem;
@@ -54,7 +53,7 @@
     }
     .bgm-btn.muted { border-color: #e94560; color: #e94560; background: rgba(233, 69, 96, 0.2); }
 
-    /* 工程ナビゲーションバー（ベストな大きさ） */
+    /* 工程ナビゲーションバー */
     .koutei-bar {
       background: rgba(15, 23, 42, 0.9); border-bottom: 1px solid #00fff5;
       padding: .4rem .25rem; display: flex; justify-content: space-around; align-items: center; flex-shrink: 0;
@@ -92,6 +91,7 @@
       position: absolute; top: 0; left: 0; width: 100%; height: 100%;
       display: flex; align-items: center; gap: .6rem; background: rgba(22,33,62,0.9);
       border: 1px solid #00fff5; border-radius: .7rem; padding: .5rem .6rem; flex-shrink: 0;
+      z-index: 2;
     }
     .chara-icon { width: 3.2rem; height: 3.2rem; border-radius: 50%; border: 2px solid #00fff5; object-fit: cover; flex-shrink: 0; background: #16213e; }
     .speech-bubble {
@@ -103,7 +103,7 @@
       border-width: 6px 8px 6px 0; border-style: solid; border-color: transparent #f8f9fa transparent; display: block;
     }
     
-    /* ═══ 切り替え用イメージイラストのレスポンシブ対応 ═══ */
+    /* ═══ 切り替え用イメージイラスト ═══ */
     .banner-slide-box {
       position: absolute; top: 0; left: 0; width: 100%; height: 100%;
       border: 2px solid #00fff5;
@@ -114,6 +114,7 @@
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
+      z-index: 5;
     }
     .banner-slide-box img {
       width: 100%;
@@ -122,7 +123,7 @@
       display: block;
     }
 
-    /* ═══ 上の世界地図ボックス：下と同じ「contain」表示に統一 ═══ */
+    /* ═══ 世界地図ボックス ═══ */
     .map-box {
       width: 100%; aspect-ratio: 16 / 10; background: url('world_map_bg.jpeg') center / contain no-repeat #0b1224;
       border: 2.5px solid #00fff5; border-radius: .7rem; position: relative; overflow: hidden; flex-shrink: 0;
@@ -133,7 +134,7 @@
       100% { border-color: #ffde59; box-shadow: 0 0 14px rgba(255,222,89,0.9), inset 0 0 8px rgba(255,222,89,0.4); }
     }
 
-    /* ═══ スポットピン：重ならないようコンパクトサイズ ＆ 正しい位置に修正 ═══ */
+    /* ═══ スポットピン ═══ */
     .spot {
       position: absolute; background: #16213e; border: 1.5px solid #00fff5; color: #fff;
       padding: .2rem .4rem; min-height: 1.5rem; border-radius: .4rem; font-size: 0.65rem; font-weight: bold;
@@ -191,7 +192,7 @@
       .area-image-box { grid-area: img; }
     }
 
-    /* ═══ 下部フッター（ベストな大きさ） ═══ */
+    /* ═══ 下部フッター ═══ */
     .nav {
       flex-shrink: 0; position: relative; z-index: 50; background: #16213e; border-top: 2px solid #1f293d;
       display: flex; justify-content: space-around; align-items: stretch; gap: .3rem;
@@ -278,7 +279,7 @@
           </div>
         </div>
 
-        <!-- イメージイラスト表示エリア（初期は非表示） -->
+        <!-- イメージイラスト表示エリア -->
         <div class="banner-slide-box" id="banner-slide-box" style="display: none;">
           <img id="banner-slide-img" src="" alt="マップイメージイラスト" onerror="this.style.display='none'">
         </div>
@@ -323,7 +324,7 @@
       </div>
     </div>
 
-    <!-- 統一フッターナビゲーション -->
+    <!-- フッターナビゲーション -->
     <div class="nav">
       <div class="nav-item active" onclick="location.href='map.html'"><span class="nav-ico">🗺️</span>マップ</div>
       <div class="nav-item" onclick="location.href='seisei.html'"><span class="nav-ico">🧪</span>精製</div>
@@ -391,7 +392,7 @@
       }
     }
 
-    /* ═══ フキダシとイメージイラストを確実に交互に切り替えるローテーション機能 ═══ */
+    /* ═══ ローテーション機能 ═══ */
     function initBannerRotation() {
       const guideBox = document.getElementById('chara-guide-box');
       const bannerBox = document.getElementById('banner-slide-box');
