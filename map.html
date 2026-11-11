@@ -399,26 +399,23 @@
       const bannerBox = document.getElementById('banner-slide-box');
       const bannerImg = document.getElementById('banner-slide-img');
 
-      // 実際のファイル名（拡張子付き）に合わせて指定します
+      // 確実に正しいファイル名を設定
       const allImages = ['map_pair1.jpg', 'map_pair2.jpg', 'map_pair3.jpg'];
 
-      // 他のページから戻ってきた時に異なる2種類をランダム選出するためのセッション管理（キーをv2に変更）
       let chosenImages = [];
       try {
-        let stored = sessionStorage.getItem('mapRandPairImages_v2');
+        let stored = sessionStorage.getItem('mapRandPairImages_v3');
         if (stored) {
           chosenImages = JSON.parse(stored);
         } else {
-          // 3枚からランダムに2枚を選ぶ
           let shuffled = [...allImages].sort(() => 0.5 - Math.random());
           chosenImages = shuffled.slice(0, 2);
-          sessionStorage.setItem('mapRandPairImages_v2', JSON.stringify(chosenImages));
+          sessionStorage.setItem('mapRandPairImages_v3', JSON.stringify(chosenImages));
         }
       } catch (e) {
         chosenImages = ['map_pair1.jpg', 'map_pair2.jpg'];
       }
 
-      // 状態管理：0 = フキダシ, 1 = 1枚目の画像, 2 = フキダシ, 3 = 2枚目の画像
       let stateIndex = 0;
 
       function updateDisplay() {
@@ -427,25 +424,21 @@
           guideBox.style.display = 'flex';
           bannerBox.style.display = 'none';
         } else if (stateIndex === 1) {
-          // 1枚目の画像を表示
+          // 1枚目の画像を表示（確実にファイル名を直接代入）
           guideBox.style.display = 'none';
           bannerBox.style.display = 'flex';
           bannerImg.src = chosenImages[0];
         } else if (stateIndex === 3) {
-          // 2枚目の画像を表示
+          // 2枚目の画像を表示（確実にファイル名を直接代入）
           guideBox.style.display = 'none';
           bannerBox.style.display = 'flex';
           bannerImg.src = chosenImages[1];
         }
 
-        // 次の状態へ（0 -> 1 -> 2 -> 3 -> 0 のループ）
         stateIndex = (stateIndex + 1) % 4;
       }
 
-      // 初回実行
       updateDisplay();
-
-      // 適度な秒数（約4秒おきに切り替え）
       setInterval(updateDisplay, 7000);
     }
 
