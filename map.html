@@ -399,19 +399,20 @@
       const bannerBox = document.getElementById('banner-slide-box');
       const bannerImg = document.getElementById('banner-slide-img');
 
+      // 実際のファイル名（拡張子付き）に合わせて指定します
       const allImages = ['map_pair1.jpg', 'map_pair2.jpg', 'map_pair3.jpg'];
 
-      // 他のページから戻ってきた時に異なる2種類をランダム選出するためのセッション管理
+      // 他のページから戻ってきた時に異なる2種類をランダム選出するためのセッション管理（キーをv2に変更）
       let chosenImages = [];
       try {
-        let stored = sessionStorage.getItem('mapRandPairImages');
+        let stored = sessionStorage.getItem('mapRandPairImages_v2');
         if (stored) {
           chosenImages = JSON.parse(stored);
         } else {
           // 3枚からランダムに2枚を選ぶ
           let shuffled = [...allImages].sort(() => 0.5 - Math.random());
           chosenImages = shuffled.slice(0, 2);
-          sessionStorage.setItem('mapRandPairImages', JSON.stringify(chosenImages));
+          sessionStorage.setItem('mapRandPairImages_v2', JSON.stringify(chosenImages));
         }
       } catch (e) {
         chosenImages = ['map_pair1.jpg', 'map_pair2.jpg'];
@@ -445,7 +446,7 @@
       updateDisplay();
 
       // 適度な秒数（約4秒おきに切り替え）
-      setInterval(updateDisplay, 7000);
+      setInterval(updateDisplay, 4000);
     }
 
     window.addEventListener('load', () => {
