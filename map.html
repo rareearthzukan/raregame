@@ -78,7 +78,17 @@
       flex: 1; min-height: 0; padding: .6rem .7rem; display: flex; flex-direction: column; gap: .6rem;
       overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
     }
+
+    /* ═══ フキダシとイメージイラストを収める固定ハイトコンテナ ═══ */
+    .top-display-slot {
+      width: 100%;
+      aspect-ratio: 1000 / 333;
+      flex-shrink: 0;
+      position: relative;
+    }
+
     .chara-guide {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
       display: flex; align-items: center; gap: .6rem; background: rgba(22,33,62,0.9);
       border: 1px solid #00fff5; border-radius: .7rem; padding: .5rem .6rem; flex-shrink: 0;
     }
@@ -90,6 +100,25 @@
     .speech-bubble::after {
       content: ''; position: absolute; left: -8px; top: 50%; transform: translateY(-50%);
       border-width: 6px 8px 6px 0; border-style: solid; border-color: transparent #f8f9fa transparent; display: block;
+    }
+    
+    /* ═══ 切り替え用イメージイラストのレスポンシブ対応 ═══ */
+    .banner-slide-box {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      border: 2px solid #00fff5;
+      border-radius: .7rem;
+      overflow: hidden;
+      background: rgba(22,33,62,0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .banner-slide-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
     }
 
 /* ═══ 上の世界地図ボックス：下と同じ「contain」表示に統一 ═══ */
@@ -157,7 +186,7 @@
         display: grid; grid-template-columns: 1.3fr 1fr; grid-template-rows: auto auto 1fr;
         grid-template-areas: "map guide" "map info" "map img"; align-content: start; align-items: start; gap: .7rem;
       }
-      .chara-guide { grid-area: guide; }
+      .top-display-slot { grid-area: guide; }
       #map-card { grid-area: map; }
       #info-card { grid-area: info; }
       .area-image-box { grid-area: img; }
@@ -240,10 +269,19 @@
 
     <div class="content">
       
-      <div class="chara-guide">
-        <img src="navtb.png" alt="テルビウム" class="chara-icon" onerror="this.src='hata_cn.png'">
-        <div class="speech-bubble" id="guide-text">
-          世界地図から気になるエリアをポチッと選んでね！どんなレアアースが眠っているかワクワクしちゃうね✨
+      <!-- フキダシおよびイメージイラストを同じ高さを保つコンテナでラップ -->
+      <div class="top-display-slot">
+        <!-- フキダシ表示エリア -->
+        <div class="chara-guide" id="chara-guide-box">
+          <img src="navtb.png" alt="テルビウム" class="chara-icon" onerror="this.src='hata_cn.png'">
+          <div class="speech-bubble" id="guide-text">
+            世界地図から気になるエリアをポチッと選んでね！どんなレアアースが眠っているかワクワクしちゃうね✨
+          </div>
+        </div>
+
+        <!-- イメージイラスト表示エリア（初期は非表示） -->
+        <div class="banner-slide-box" id="banner-slide-box" style="display: none;">
+          <img id="banner-slide-img" src="" alt="マップイメージイラスト" onerror="this.style.display='none'">
         </div>
       </div>
 
@@ -269,7 +307,7 @@
         </div>
         <div class="spot-desc" id="spot-desc">ピンを選ぶと、それぞれの土地の特徴が表示されます。</div>
         <div class="spot-detail" id="spot-detail">（初期解放：中国・アメリカ）</div>
-        <button class="btn" id="action-btn" style="background: #00fff5; color: #0f3460;" onclick="goToMine()" disabled>👆 先に地図でエリアを選んでね</button>
+        <button class="btn" id="action-btn" style="background: #00fff5; color: #0f3460;" onclick="goToMine()" disabled>👆 先に地図でエリアを選ね</button>
       </div>
 
       <div class="area-image-box">
@@ -355,6 +393,61 @@
       }
     }
 
+    /* ═══ フキダシと3枚のイメージイラストを交互に切り替えるローテーション機能 ═══ */
+    function initBannerRotation() {
+      const guideBox = document.getElementById('chara-guide-box');
+      const bannerBox = document.getElementById('banner-slide-box');
+      const bannerImg = document.getElementById('banner-slide-img');
+
+      const allImages = ['map_pair1.jpg', 'map_pair2.jpg', 'map_pair3.jpg'];
+
+      // 他のページから戻ってきた時に異なる2種類をランダム選出するためのセッション管理
+      let chosenImages = [];
+      try {
+        let stored = sessionStorage.getItem('mapRandPairImages');
+        if (stored) {
+          chosenImages = JSON.parse(stored);
+        } else {
+          // 3枚からランダムに2枚を選ぶ
+          let shuffled = [...allImages].sort(() => 0.5 - Math.random());
+          chosenImages = shuffled.slice(0, 2);
+          sessionStorage.setItem('mapRandPairImages', JSON.stringify(chosenImages));
+        }
+      } catch (e) {
+        chosenImages = ['map_pair1.jpg', 'map_pair2.jpg'];
+      }
+
+      // 状態管理：0 = フキダシ, 1 = 1枚目の画像, 2 = フキダシ, 3 = 2枚目の画像
+      let stateIndex = 0;
+
+      function updateDisplay() {
+        if (stateIndex === 0 || stateIndex === 2) {
+          // フキダシを表示
+          guideBox.style.display = 'flex';
+          bannerBox.style.display = 'none';
+        } else if (stateIndex === 1) {
+          // 1枚目の画像を表示
+          guideBox.style.display = 'none';
+          bannerBox.style.display = 'flex';
+          bannerImg.src = chosenImages[0];
+        } else if (stateIndex === 3) {
+          // 2枚目の画像を表示
+          guideBox.style.display = 'none';
+          bannerBox.style.display = 'flex';
+          bannerImg.src = chosenImages[1];
+        }
+
+        // 次の状態へ（0 -> 1 -> 2 -> 3 -> 0 のループ）
+        stateIndex = (stateIndex + 1) % 4;
+      }
+
+      // 初回実行
+      updateDisplay();
+
+      // 適度な秒数（約4秒おきに切り替え）
+      setInterval(updateDisplay, 7000);
+    }
+
     window.addEventListener('load', () => {
       updateBgmUI();
       if (!isMuted) {
@@ -365,11 +458,12 @@
         });
       }
       initMapLocks();
-    applyElementRecommendation();
+      applyElementRecommendation();
       updateHeader();
       fitMapBox();
+      initBannerRotation(); // ローテーション機能の起動
       if ((gameState.level || 1) >= 3) {
-        document.getElementById('guide-text').innerText = 'このゲームは基本的に自動保存されるけれど、心配な時は念のためホーム🏠からデータセーブをしておいてね！';
+        document.getElementById('guide-text').innerText = 'ゲームは基本的に自動保存されるけれど、心配な時は念のためホーム🏠からデータセーブをしておいてね！';
       }
     });
 
@@ -482,21 +576,21 @@
       gameState.money -= data.cost;
       gameState.miles = (gameState.miles || 0) + data.milesGain;
       
-      // 経験値は全ページ共通の表（areaconfig.js）で判定。レベルアップしたら解放演出を見せてから移動する
-      const lvBefore = gameState.level || 1;
-      RE.addExp(gameState, 10);
+      let currentExp = (gameState.exp || 0) + 10;
+      let requiredExp = (gameState.level || 1) * 100;
+      if (currentExp >= requiredExp) {
+        gameState.level = (gameState.level || 1) + 1;
+        gameState.exp = currentExp - requiredExp;
+        showModal('🎉 レベルアップ！', `プレイヤーレベルが Lv.${gameState.level} に上がりました！新しい鉱山やレシピが解放されたかも？`);
+      } else {
+        gameState.exp = currentExp;
+      }
 
       localStorage.setItem('rareEarthGameState', JSON.stringify(gameState));
       localStorage.setItem('currentSelectedSpot', selectedSpotId);
 
-      if ((gameState.level || 1) > lvBefore) {
-        RE.announceUnlocks(gameState, { fromLevel: lvBefore, page: 'map', onClose: () => { location.href = 'mine.html'; } });
-        return;
-      }
       location.href = 'mine.html';
     }
-  
-    RE.initCommon(gameState, { page: 'map' });
   </script>
 <script src="tutorial.js"></script>
 </body>
