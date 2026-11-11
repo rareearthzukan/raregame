@@ -281,7 +281,7 @@
 
         <!-- イメージイラスト表示エリア -->
         <div class="banner-slide-box" id="banner-slide-box" style="display: none;">
-          <img id="banner-slide-img" src="" alt="マップイメージイラスト" onerror="this.style.display='none'">
+          <img id="banner-slide-img" alt="マップイメージイラスト">
         </div>
       </div>
 
@@ -394,28 +394,45 @@
 
     /* ═══ ローテーション機能 ═══ */
     function initBannerRotation() {
-      const guideBox = document.getElementById('chara-guide-box');
+      const guideBox  = document.getElementById('chara-guide-box');
       const bannerBox = document.getElementById('banner-slide-box');
       const bannerImg = document.getElementById('banner-slide-img');
 
-      const images = ['map_pair1.jpg', 'map_pair2.jpg', 'map_pair3.jpg'];
-      let stateIndex = 0;
+      // ★実際のファイル名・拡張子に合わせてください
+      const candidates = ['map_pair1.jpg', 'map_pair2.jpg', 'map_pair3.jpg'];
 
-      function updateDisplay() {
-        if (stateIndex % 2 === 0) {
-          guideBox.style.display = 'flex';
-          bannerBox.style.display = 'none';
-        } else {
-          guideBox.style.display = 'none';
-          bannerBox.style.display = 'flex';
-          let imgIndex = Math.floor(stateIndex / 2) % images.length;
-          bannerImg.src = images[imgIndex];
+      // 先に読み込みチェックをして、表示できる画像だけを残す
+      Promise.all(candidates.map(src => new Promise(resolve => {
+        const im = new Image();
+        im.onload  = () => resolve(src);
+        im.onerror = () => { console.warn('画像が読み込めません:', src); resolve(null); };
+        im.src = src;
+      }))).then(results => {
+        const images = results.filter(Boolean);
+        if (images.length === 0) return; // 1枚も無ければフキダシのままにする
+
+        let showBanner = false;
+        let lastIdx = -1;
+
+        function updateDisplay() {
+          if (!showBanner) {
+            guideBox.style.display = 'flex';
+            bannerBox.style.display = 'none';
+          } else {
+            let idx;
+            do { idx = Math.floor(Math.random() * images.length); }
+            while (images.length > 1 && idx === lastIdx);
+            lastIdx = idx;
+            bannerImg.src = images[idx];
+            guideBox.style.display = 'none';
+            bannerBox.style.display = 'flex';
+          }
+          showBanner = !showBanner;
         }
-        stateIndex = (stateIndex + 1) % (images.length * 2);
-      }
 
-      updateDisplay();
-      setInterval(updateDisplay, 7000);
+        updateDisplay();
+        setInterval(updateDisplay, 7000);
+      });
     }
 
     window.addEventListener('load', () => {
