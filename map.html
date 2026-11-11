@@ -82,6 +82,7 @@
     /* ═══ フキダシとイメージイラストを収める固定ハイトコンテナ ═══ */
     .top-display-slot {
       width: 100%;
+      min-height: 90px;
       aspect-ratio: 1000 / 333;
       flex-shrink: 0;
       position: relative;
@@ -119,10 +120,9 @@
       height: 100%;
       object-fit: cover;
       display: block;
-      border: 5px solid red; /* ← テスト用に赤い枠線をつけます */
     }
 
-/* ═══ 上の世界地図ボックス：下と同じ「contain」表示に統一 ═══ */
+    /* ═══ 上の世界地図ボックス：下と同じ「contain」表示に統一 ═══ */
     .map-box {
       width: 100%; aspect-ratio: 16 / 10; background: url('world_map_bg.jpeg') center / contain no-repeat #0b1224;
       border: 2.5px solid #00fff5; border-radius: .7rem; position: relative; overflow: hidden; flex-shrink: 0;
@@ -168,7 +168,6 @@
       transition: background 0.2s; touch-action: manipulation; font-family: inherit;
     }
     .btn:active { transform: scale(0.98); }
-    /* エリア未選択のときは押せない見た目 */
     .btn:disabled { background: #2b3350 !important; color: #7b859c !important; border: 1px dashed #4a5578; cursor: not-allowed; opacity: .85; }
     .btn:disabled:active { transform: none; }
 
@@ -178,7 +177,6 @@
       justify-content: center; align-items: center; flex-shrink: 0;
     }
     .area-image-box img { width: 100%; height: 100%; object-fit: cover; transition: filter .4s; }
-    /* エリア未選択のあいだは下の地図を暗くして「まだ何も選ばれていない」ことを示す */
     .area-image-box img.dim { filter: brightness(.35) saturate(.6); }
 
     /* 横長（タブレット横・PC）：左右2カラム */
@@ -289,7 +287,6 @@
       <div class="card" id="map-card">
         <div class="map-title">🗺️ 採掘エリアを選択してください</div>
         <div class="map-box">
-          <!-- 各ピンの座標を地理的に正しい位置に再調整＆文字は小さめに維持 -->
           <div class="spot" id="spot-greenland" style="top: 22%; left: 34%;" onclick="selectSpot('greenland')"><img src="hata_greenisland.png" alt="GL">グリーンランド</div>
           <div class="spot" id="spot-america" style="top: 36%; left: 18%;" onclick="selectSpot('america')"><img src="hata_us.png" alt="US">マウンテンパス</div>
           <div class="spot" id="spot-baiyun" style="top: 32%; left: 83%;" onclick="selectSpot('baiyun')"><img src="hata_cn.png" alt="CN">白雲鄂博</div>
@@ -347,7 +344,7 @@
     };
     if (gameState.miles === undefined) gameState.miles = 500;
 
-    let selectedSpotId = null;   // 未選択のあいだは移動ボタンを無効にする
+    let selectedSpotId = null;
 
     function showModal(title, desc) {
       document.getElementById('modalTitle').innerText = title;
@@ -400,34 +397,23 @@
       const bannerBox = document.getElementById('banner-slide-box');
       const bannerImg = document.getElementById('banner-slide-img');
 
-      // 使う画像ファイルを直接指定
       const images = ['map_pair1.jpg', 'map_pair2.jpg', 'map_pair3.jpg'];
       let stateIndex = 0;
 
       function updateDisplay() {
-        // stateIndex: 0=フキダシ, 1=画像1枚目, 2=フキダシ, 3=画像2枚目...
         if (stateIndex % 2 === 0) {
-          // 偶数のときはフキダシを表示
           guideBox.style.display = 'flex';
           bannerBox.style.display = 'none';
         } else {
-          // 奇数のときは画像を順番に表示
           guideBox.style.display = 'none';
           bannerBox.style.display = 'flex';
-          
-          // インデックスに応じて画像を切り替え（0, 1, 2をループ）
           let imgIndex = Math.floor(stateIndex / 2) % images.length;
           bannerImg.src = images[imgIndex];
         }
-
-        // 状態を進める（0 -> 1 -> 2 -> 3 -> 4 ...）
         stateIndex = (stateIndex + 1) % (images.length * 2);
       }
 
-      // 初回実行
       updateDisplay();
-
-      // 約7秒おきに切り替え
       setInterval(updateDisplay, 7000);
     }
 
@@ -444,17 +430,16 @@
       applyElementRecommendation();
       updateHeader();
       fitMapBox();
-      initBannerRotation(); // ローテーション機能の起動
+      initBannerRotation();
       if ((gameState.level || 1) >= 3) {
         document.getElementById('guide-text').innerText = 'ゲームは基本的に自動保存されるけれど、心配な時は念のためホーム🏠からデータセーブをしておいてね！';
       }
     });
 
-    // 地図ボックスの縦横比を画像に合わせて上下の隙間をなくし、ピンの位置も画像に対して同じ場所に補正する
     function fitMapBox() {
       const box = document.querySelector('.map-box'), im = new Image();
       im.onload = () => {
-        const ratio = im.naturalWidth / im.naturalHeight, frac = 1.6 / ratio; // 旧ボックス(16:10)に対する画像の高さの割合
+        const ratio = im.naturalWidth / im.naturalHeight, frac = 1.6 / ratio;
         if (!(frac < 1)) return;
         box.style.aspectRatio = `${im.naturalWidth} / ${im.naturalHeight}`;
         const gap = (1 - frac) / 2 * 100;
@@ -493,7 +478,6 @@
       });
     }
 
-    // 工場などから「この元素を集めたい」で来たときに、出やすいエリアのピンを光らせる
     function applyElementRecommendation() {
       let key = null;
       try { key = localStorage.getItem('recommendElement'); localStorage.removeItem('recommendElement'); } catch (e) {}
@@ -531,7 +515,6 @@
         <span class="spot-title">${data.title}</span>
       `;
       document.getElementById('spot-desc').innerText = data.desc;
-      document.getElementById('spot-detail').innerText = `コスト: ${data.cost}G / 獲得マイル: +${data.milesGain}m / 主な元素: ${data.target}`;
       document.getElementById('spot-detail').innerText = `コスト: ${data.cost}G / 獲得マイル: +${data.milesGain}m\n${RE.areaOddsText(id)}`;
       
       const btn = document.getElementById('action-btn');
