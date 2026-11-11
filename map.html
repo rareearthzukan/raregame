@@ -393,40 +393,36 @@
       }
     }
 
-    /* ═══ フキダシとイメージイラストを確実に交互に切り替えるローテーション機能 ═══ */
+    /* ═══ フキダシとイメージイラストを確実に交互に切り替えるローテーション機能（デバッグ版） ═══ */
     function initBannerRotation() {
       const guideBox = document.getElementById('chara-guide-box');
       const bannerBox = document.getElementById('banner-slide-box');
       const bannerImg = document.getElementById('banner-slide-img');
 
-      // 使う画像ファイルを直接指定
       const images = ['map_pair1.jpg', 'map_pair2.jpg', 'map_pair3.jpg'];
       let stateIndex = 0;
 
       function updateDisplay() {
-        // stateIndex: 0=フキダシ, 1=画像1枚目, 2=フキダシ, 3=画像2枚目...
         if (stateIndex % 2 === 0) {
-          // 偶数のときはフキダシを表示
           guideBox.style.display = 'flex';
           bannerBox.style.display = 'none';
         } else {
-          // 奇数のときは画像を順番に表示
           guideBox.style.display = 'none';
           bannerBox.style.display = 'flex';
           
-          // インデックスに応じて画像を切り替え（0, 1, 2をループ）
           let imgIndex = Math.floor(stateIndex / 2) % images.length;
-          bannerImg.src = images[imgIndex];
+          let targetImg = images[imgIndex];
+          
+          // 【デバッグ用】実際にセットしようとしている画像名を確認する
+          console.log("読み込み試行:", targetImg);
+          
+          bannerImg.src = targetImg;
         }
 
-        // 状態を進める（0 -> 1 -> 2 -> 3 -> 4 ...）
         stateIndex = (stateIndex + 1) % (images.length * 2);
       }
 
-      // 初回実行
       updateDisplay();
-
-      // 約7秒おきに切り替え
       setInterval(updateDisplay, 7000);
     }
 
