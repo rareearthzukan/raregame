@@ -281,8 +281,9 @@
 
         <!-- イメージイラスト表示エリア（初期は非表示） -->
         <div class="banner-slide-box" id="banner-slide-box" style="display: none;">
-          <img id="banner-slide-img" src="" alt="マップイメージイラスト" onerror="console.log('画像読み込み失敗:', this.src); alert('画像が見つかりません: ' + this.src);">
+          <img id="banner-slide-img" src="" alt="マップイメージイラスト" onerror="this.style.display='none'">
         </div>
+      </div>
 
       <div class="card" id="map-card">
         <div class="map-title">🗺️ 採掘エリアを選択してください</div>
