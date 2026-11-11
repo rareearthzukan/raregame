@@ -78,7 +78,17 @@
       flex: 1; min-height: 0; padding: .6rem .7rem; display: flex; flex-direction: column; gap: .6rem;
       overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
     }
+
+    /* ═══ フキダシとイメージイラストを収める固定ハイトコンテナ ═══ */
+    .top-display-slot {
+      width: 100%;
+      aspect-ratio: 1000 / 333;
+      flex-shrink: 0;
+      position: relative;
+    }
+
     .chara-guide {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
       display: flex; align-items: center; gap: .6rem; background: rgba(22,33,62,0.9);
       border: 1px solid #00fff5; border-radius: .7rem; padding: .5rem .6rem; flex-shrink: 0;
     }
@@ -94,8 +104,7 @@
     
     /* ═══ 切り替え用イメージイラストのレスポンシブ対応 ═══ */
     .banner-slide-box {
-      width: 100%;
-      aspect-ratio: 1000 / 333;
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
       border: 2px solid #00fff5;
       border-radius: .7rem;
       overflow: hidden;
@@ -177,7 +186,7 @@
         display: grid; grid-template-columns: 1.3fr 1fr; grid-template-rows: auto auto 1fr;
         grid-template-areas: "map guide" "map info" "map img"; align-content: start; align-items: start; gap: .7rem;
       }
-      .chara-guide { grid-area: guide; }
+      .top-display-slot { grid-area: guide; }
       #map-card { grid-area: map; }
       #info-card { grid-area: info; }
       .area-image-box { grid-area: img; }
@@ -260,17 +269,20 @@
 
     <div class="content">
       
-      <!-- フキダシ表示エリア -->
-      <div class="chara-guide" id="chara-guide-box">
-        <img src="navtb.png" alt="テルビウム" class="chara-icon" onerror="this.src='hata_cn.png'">
-        <div class="speech-bubble" id="guide-text">
-          世界地図から気になるエリアをポチッと選んでね！どんなレアアースが眠っているかワクワクしちゃうね✨
+      <!-- フキダシおよびイメージイラストを同じ高さを保つコンテナでラップ -->
+      <div class="top-display-slot">
+        <!-- フキダシ表示エリア -->
+        <div class="chara-guide" id="chara-guide-box">
+          <img src="navtb.png" alt="テルビウム" class="chara-icon" onerror="this.src='hata_cn.png'">
+          <div class="speech-bubble" id="guide-text">
+            世界地図から気になるエリアをポチッと選んでね！どんなレアアースが眠っているかワクワクしちゃうね✨
+          </div>
         </div>
-      </div>
 
-      <!-- イメージイラスト表示エリア（初期は非表示） -->
-      <div class="banner-slide-box" id="banner-slide-box" style="display: none;">
-        <img id="banner-slide-img" src="" alt="マップイメージイラスト" onerror="this.style.display='none'">
+        <!-- イメージイラスト表示エリア（初期は非表示） -->
+        <div class="banner-slide-box" id="banner-slide-box" style="display: none;">
+          <img id="banner-slide-img" src="" alt="マップイメージイラスト" onerror="this.style.display='none'">
+        </div>
       </div>
 
       <div class="card" id="map-card">
