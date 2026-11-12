@@ -200,12 +200,12 @@
     }
     .nav-item {
       color: #a0aec0; cursor: pointer; text-align: center; background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(0, 255, 245, 0.2); border-radius: .7rem; padding: .3rem .2rem;
-      min-height: 3rem; font-size: .72rem; font-weight: bold; flex: 1;
+      border: 1px solid rgba(0, 255, 245, 0.2); border-radius: .7rem; padding: .3rem .1rem;
+      min-height: 3rem; font-size: .68rem; font-weight: bold; flex: 1;
       display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .1rem;
       transition: all 0.2s; touch-action: manipulation;
     }
-    .nav-ico { font-size: 1.15rem; line-height: 1; display: block; }
+    .nav-ico { font-size: 1.05rem; line-height: 1; display: block; }
     .nav-item:active { transform: scale(0.95); }
     .nav-item.active { color: #00fff5; background: rgba(0, 255, 245, 0.15); border-color: #00fff5; box-shadow: 0 0 8px rgba(0, 255, 245, 0.3); }
 
@@ -329,6 +329,7 @@
       <div class="nav-item active" onclick="location.href='map.html'"><span class="nav-ico">🗺️</span>マップ</div>
       <div class="nav-item" onclick="location.href='seisei.html'"><span class="nav-ico">🧪</span>精製</div>
       <div class="nav-item" onclick="location.href='factory.html'"><span class="nav-ico">🏭</span>工場</div>
+      <div class="nav-item" id="nav-export-item" onclick="location.href='export.html'" style="display:none;"><span class="nav-ico">🌐</span>貿易</div>
       <div class="nav-item" onclick="location.href='zukan.html'"><span class="nav-ico">📖</span>図鑑</div>
       <div class="nav-item" onclick="location.href='home.html'"><span class="nav-ico">🏠</span>ホーム</div>
     </div>
@@ -445,6 +446,12 @@
         });
       }
       initMapLocks();
+      // 貿易の解放レベル(areaconfig.js の TRADE_UNLOCK_LEVEL)に達したら「🌐 貿易」を表示
+      try {
+        if (typeof RE !== 'undefined' && RE.isTradeUnlocked(gameState)) {
+          document.getElementById('nav-export-item').style.display = 'flex';
+        }
+      } catch (e) { console.warn('貿易ナビの判定に失敗:', e); }
       applyElementRecommendation();
       updateHeader();
       fitMapBox();
