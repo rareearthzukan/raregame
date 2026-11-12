@@ -138,6 +138,12 @@ rt{font-size:.42em;letter-spacing:0;font-weight:400}
 .side{width:calc(var(--k)*28)}
 .eu img{width:calc(var(--k)*18)}
 .ov h1{font-size:clamp(30px,10vw,52px);letter-spacing:.05em;white-space:nowrap}
+.vr{display:flex;align-items:center;gap:10px;font-size:calc(var(--k)*4);margin:6px 0}.vr input{flex:1;accent-color:#ffd86b}
+#spT button{font-size:calc(var(--k)*3.4);padding:5px 10px;margin:3px;border-radius:999px;border:1px solid #d9ae4a;background:#0a3822;color:#fff;cursor:pointer;box-shadow:none}
+#sp .panel{display:block!important;text-align:left;padding:14px 16px}
+#spT{display:flex;flex-wrap:wrap}
+#gTxt{font-size:calc(var(--k)*4.1)!important}
+#gTxt div,.bubble div{word-break:auto-phrase;line-break:strict;text-wrap:pretty;overflow-wrap:anywhere}
 </style>
 </head>
 <body>
@@ -161,7 +167,11 @@ rt{font-size:.42em;letter-spacing:0;font-weight:400}
   <div class="rhands"><div><small>キミ</small><div class="hnd" id="hY">❔</div></div><div class="gt" style="font-size:calc(var(--k)*7)">VS</div><div><small>ユウロピウム</small><div class="hnd" id="hE">❔</div></div></div>
   <div class="rbtns" id="rBtns"><button class="rb" data-h="0"><span>✊</span>グー</button><button class="rb" data-h="1"><span>✌️</span>チョキ</button><button class="rb" data-h="2"><span>✋</span>パー</button></div>
   <div class="act"><button id="rGo" hidden>勝負をはじめる</button></div></div>
- <div class="ov" id="pv" hidden><div id="pvT" class="gt" style="font-size:calc(var(--k)*6)"></div><div id="pvC"></div><div class="panel bubble2" id="pvD"></div><div class="act"><button id="pvGo"></button><button class="sub" id="pvBack">もどる</button></div></div>
+ <div class="ov" id="sp" hidden style="z-index:20;justify-content:center"><div class="gt" style="font-size:calc(var(--k)*6)">おと の せってい</div>
+<div class="panel bubble2" style="width:100%"><label class="vr">BGM<input type="range" id="vB" min="0" max="100"></label><label class="vr">効果音<input type="range" id="vS" min="0" max="100"></label>
+<div style="font-size:calc(var(--k)*3.2);margin-top:6px">▼タップすると音が鳴ります</div><div id="spT"></div><div id="spS" style="font-size:calc(var(--k)*3);margin-top:6px;opacity:.85"></div></div>
+<div class="act" style="margin-top:0"><button id="spM"></button><button class="sub" id="spX">とじる</button></div></div>
+<div class="ov" id="pv" hidden><div id="pvT" class="gt" style="font-size:calc(var(--k)*6)"></div><div id="pvC"></div><div class="panel bubble2" id="pvD"></div><div class="act"><button id="pvGo"></button><button class="sub" id="pvBack">もどる</button></div></div>
  <div class="ov" id="guide" hidden><button class="mini" id="skipG">スキップ</button><img class="big" id="gEu" alt="ユウロピウム" style="width:calc(var(--k)*44)"><div class="panel bubble2" id="gTxt"></div><div class="dots" id="gDots"></div><div class="act"><button id="gNext">つぎへ</button></div></div>
  <div class="ov" id="title"><button class="mini" id="snd2"></button><div style="margin-top:calc(var(--k)*3)"><div class="gt" style="font-size:calc(var(--k)*5);letter-spacing:.2em">～ レアアース図鑑 ～</div><h1 class="gt"><ruby>鉱物<rt>こうぶつ</rt></ruby><ruby>鑑定<rt>かんてい</rt></ruby><br>ハイアンドロー</h1></div><div class="tdeco" id="tdeco"></div><img class="big" id="tEu" alt="ユウロピウム"><div class="tsub">ユウロピウムと、ピカピカ勝負！</div><div class="act"><button id="tStart">はじめる</button><button class="sub" id="tHow">あそびかた</button></div><div class="act" style="flex-direction:row"><a class="lnk" href="home.html">homeに戻る</a><a class="lnk" href="map.html">mapに戻る</a></div></div>
 </div>
@@ -223,13 +233,13 @@ function play(i){if(phase!=="pick")return;phase="reveal";status();const y=hand[i
  const jk=eh.find(g=>g.id===100),e=jk&&Math.random()<.4?jk:Math.random()<.7?s2[0]:pick_(s2.slice(0,Math.min(2,s2.length))),j=eh.indexOf(e);
  [...$("hand").children][i].classList.add("used");[...$("backs").children][j].classList.add("gone");hand.splice(i,1);eh.splice(j,1);
  show("cYou",y);$("nYou").textContent=y.n;say("せーの、オープン！");setAct([["…","",1]]);
- setTimeout(()=>{se("kira");show("cEu",e);$("nEu").textContent=e.n;let d=0;const fin=()=>{if(++d<2)return;judge(y,e)};count("vYou",y.v,fin);count("vEu",e.v,fin)},700)}
+ setTimeout(()=>{kiraP=se("kira");show("cEu",e);$("nEu").textContent=e.n;let d=0;const fin=()=>{if(++d<2)return;judge(y,e)};count("vYou",y.v,fin);count("vEu",e.v,fin)},700)}
 function judge(y,e){const jk2=y.id===100||e.id===100;const w=y.id===100?1:e.id===100?-1:y.v===e.v?0:(call==="hi"?(y.v>e.v?1:-1):(y.v<e.v?1:-1));
  const ex=jk2?"ジョーカーだ！ハイでもローでも、ぜったい勝つんだ！\n":`キミは${y.v}、ボクは${e.v}。\n`+(call==="hi"?"ハイだから、大きい方の勝ち！":"ローだから、小さい方の勝ち！")+"\n";
  if(w>0){wy++;$("vYou").classList.add("w");say(ex+pick_(LOSE))}else if(w<0){we++;$("vEu").classList.add("w");say(ex+pick_(WIN))}else say(pick_(TIE));
- $("msg").textContent=(w>0?"キミの勝ち！":w<0?"ボクの勝ち…":"ひきわけ")+(jk2?"（ジョーカー）":call==="hi"?"（大きい方が勝ち）":"（小さい方が勝ち）");status();setTimeout(()=>se(w>0?"kingaku":w<0?"syogeru":"peta"),350);
- setAct([[R>=MAX?"結果を見る":"次のラウンドへ",()=>{se("suzu");(R>=MAX?finish:newRound)()}]])}
-function finish(){phase="end";status();let bonus=0;const m=wy>we?"win":wy<we?"lose":"tie";let extra="";setTimeout(()=>se(m==="win"?"oomoriagari":m==="lose"?"noroino":"peta"),450);
+ $("msg").textContent=(w>0?"キミの勝ち！":w<0?"ボクの勝ち…":"ひきわけ")+(jk2?"（ジョーカー）":call==="hi"?"（大きい方が勝ち）":"（小さい方が勝ち）");status();Promise.race([kiraP||Promise.resolve(),new Promise(r=>setTimeout(r,2200))]).then(()=>se(w>0?"kingaku":w<0?"syogeru":"peta"));
+ setAct([[R>=MAX?"結果を見る":"次のラウンドへ",()=>{suzuP=se("suzu");(R>=MAX?finish:newRound)()}]])}
+function finish(){phase="end";status();let bonus=0;const m=wy>we?"win":wy<we?"lose":"tie";let extra="";Promise.race([suzuP||Promise.resolve(),new Promise(r=>setTimeout(r,1500))]).then(()=>se(m==="win"?"oomoriagari":m==="lose"?"noroino":"peta"));
  if(m==="win"){SV.streak=(SV.streak||0)+1;bonus=SV.streak>=2?Math.min(SV.streak-1,3)*50:0;pay(200+bonus);const un=[];for(let i=101;i<=120;i++)if(!SV.houseki[i])un.push(i);
   const id=un.length?pick_(un):1+(Math.random()*120|0),isNew=!SV.houseki[id];
   SV.jewelCounts=SV.jewelCounts||{};SV.jewelCounts[id]=(SV.jewelCounts[id]!==undefined?SV.jewelCounts[id]:(SV.houseki[id]?1:0))+1;SV.houseki[id]=true;
@@ -243,9 +253,9 @@ $("again").onclick=()=>{$("end").hidden=true;startRps()};
 $("toTitle").onclick=()=>{$("end").hidden=true;$("title").hidden=false};
 /* ---- タイトル・ガイド・じゃんけん ---- */
 $("tdeco").innerHTML=[1,2,99,4,3].map(i=>`<div class="td">${art(mk(i))}</div>`).join("");
-const GUIDE=["やあ！ボクはユウロピウム、よろしくね！\n赤くピカピカ光るのが自慢なんだ！","ここは<ruby>鉱物<rt>こうぶつ</rt></ruby>で勝負するゲームだよ。\n遊ぶのに100G（ゴールド）を使うよ。\n5枚のカードをもらって、5回勝負！","カードには、ひみつの「<ruby>値段<rt>ねだん</rt></ruby>」の数字があるんだ。\n数字はカードを出すまで見えないよ。\n★が多いほど、値段が高いんだ！","勝負のやり方はカンタン！\n「ハイ」をえらんだら、数字が【大きい】方が勝ち。\n「ロー」をえらんだら、【小さい】方が勝ち！","「ハイ」か「ロー」をえらぶ「えらぶ係」は、かわりばんこ。\nえらぶ係は、自分のカードを見て、\n勝てそうな方をえらべるからトクなんだ！","「<ruby>原石<rt>げんせき</rt></ruby>」は、掘り出したままの石のこと。\n「<ruby>宝石<rt>ほうせき</rt></ruby>」は、きれいに磨いた石のことだよ。\nカードをタップすると大きく見えて、\n名前や説明も読めるよ！","ブラックライトを使うと、ボクのカードが\n3枚だけ、数字が見えちゃうんだ。\n勝つと、もらえることがあるよ！","「ジョーカー」のカードは特別！\nハイでもローでも、ぜったい勝つんだ。\nボクがえらぶときの話し方にも注目してね！","勝ったら、200Gと特別な<ruby>鉱物<rt>こうぶつ</rt></ruby>をプレゼント！\n連勝するとごほうびが増えるよ。\n引き分けは100Gが戻るよ。\n困ったら右上の「？」を押してね！"];
+const GUIDE=["やあ！ボクはユウロピウム、よろしくね！\n赤くピカピカ光るのが自慢なんだ！","ここは<ruby>鉱物<rt>こうぶつ</rt></ruby>で勝負するゲームだよ。\n遊ぶのに100G（ゴールド）を使うよ。\n5枚のカードをもらって、5回勝負！","カードには、ひみつの「<ruby>値段<rt>ねだん</rt></ruby>」の数字があるんだ。\n数字はカードを出すまで見えないよ。\n★が多いほど、値段が高いんだ！","勝負のやり方はカンタン！\n「ハイ」をえらんだら、数字が【大きい】方が勝ち。\n「ロー」をえらんだら、【小さい】方が勝ち！","「ハイ」か「ロー」をえらぶ「えらぶ係」は、かわりばんこ。\nえらぶ係は、自分のカードを見て、\n勝てそうな方をえらべるからトクなんだ！","「<ruby>原石<rt>げんせき</rt></ruby>」は、掘り出したままの石。\n「<ruby>宝石<rt>ほうせき</rt></ruby>」は、きれいに磨いた石だよ。\nカードをタップすると大きく見えて、\n名前や説明も読めるよ！","ブラックライトを使うと、ボクのカードが\n3枚だけ、数字が見えちゃうんだ。\n勝つと、もらえることがあるよ！","「ジョーカー」のカードは特別！\nハイでもローでも、ぜったい勝つんだ。\nボクがえらぶときの話し方にも注目してね！","勝ったら、200Gと特別な<ruby>鉱物<rt>こうぶつ</rt></ruby>をプレゼント！\n連勝するとごほうびが増えるよ。\n引き分けは100Gが戻るよ。\n困ったら右上の「？」を押してね！"];
 let gi=0,gmode="intro";
-function showG(){$("gTxt").innerHTML=GUIDE[gi];$("gDots").textContent=GUIDE.map((_,i)=>i===gi?"◆":"◇").join(" ");$("gNext").textContent=gi===GUIDE.length-1?(gmode==="intro"?"じゃんけんへ":"とじる"):"つぎへ"}
+function showG(){$("gTxt").innerHTML="<div>"+GUIDE[gi]+"</div>";$("gDots").textContent=GUIDE.map((_,i)=>i===gi?"◆":"◇").join(" ");$("gNext").textContent=gi===GUIDE.length-1?(gmode==="intro"?"じゃんけんへ":"とじる"):"つぎへ"}
 function openGuide(m){gmode=m;gi=0;$("guide").hidden=false;showG();$("gNext").focus()}
 function endG(){$("guide").hidden=true;if(gmode==="intro"){try{localStorage.setItem("gem_seen","1")}catch(x){}startRps()}}
 $("gNext").onclick=()=>{se("suzu");if(gi<GUIDE.length-1){gi++;showG()}else endG()};$("skipG").onclick=endG;
@@ -263,20 +273,45 @@ $("rGo").onclick=()=>{se("suzu");if(gold<100){$("rTxt").textContent="Gがたり�
  hand=d.slice(0,5).map(mk);eh=d.slice(5,10).map(mk);lit=new Set();blUsed=false;R=0;wy=we=0;$("rps").hidden=true;newRound()};
 $("lampB").onclick=useBL;$("gold").textContent=fmt(gold);$("lamp").textContent=SV.blacklight;$("lampB").disabled=true;
 const SEB="https://raw.githubusercontent.com/rareearthzukan/raregame/main/";
-let muted=false,started=false,seDone=false;try{muted=localStorage.getItem("bgmMuted")==="1"}catch(e){}
-function mkA(f,loop,vol){let a=null;try{a=new Audio(f);a.loop=!!loop;a.volume=vol;a.preload="auto";let t=false;a.addEventListener("error",()=>{if(t)return;t=true;a.src=SEB+f;if(loop)bgmPlay()})}catch(e){}return a}
-const bgm=mkA("minigame_Eu.ogg",1,.3),AU={};
-["suzu","dodon","kira","kawaiidousa","kingaku","syogeru","oomoriagari","noroino","peta"].forEach(n=>{AU[n]=mkA("SE_"+n+".mp3",0,.7)});
-function bgmPlay(){if(bgm&&!muted&&!document.hidden){started=true;const r=bgm.play();if(r&&r.catch)r.catch(()=>{})}}
-function se(n){seDone=true;if(muted||document.hidden)return;const a=AU[n];if(!a)return;try{a.currentTime=0;const r=a.play();if(r&&r.catch)r.catch(()=>{})}catch(e){}}
-function stopAll(){try{if(bgm)bgm.pause();Object.values(AU).forEach(a=>{if(a){a.pause();a.currentTime=0}})}catch(e){}}
-const sndUpd=()=>{$("snd").textContent=muted?"🔇":"🔊";$("snd2").textContent=muted?"🔇 音":"🔊 音"};
-const sndTg=()=>{muted=!muted;try{localStorage.setItem("bgmMuted",muted?"1":"0")}catch(e){}if(muted)stopAll();else bgmPlay();sndUpd()};
-$("snd").onclick=sndTg;$("snd2").onclick=sndTg;sndUpd();
+const SEN=["suzu","dodon","kira","kawaiidousa","kingaku","syogeru","oomoriagari","noroino","peta"];
+const SEV={suzu:.6,dodon:.4,kira:.6,kawaiidousa:.6,kingaku:.6,syogeru:.6,oomoriagari:.6,noroino:.6,peta:.5}; // 効果音ごとの音量(0〜1)。変なら数字を下げてね
+const SEL={dodon:.7}; // 効果音の長さの上限(秒)。超えた分は自然に消える
+let AC=null,gB=null,gS=null,muted=false,started=false,seDone=false,kiraP=null,suzuP=null,bgmSrc=null,bgmEl=null;
+let vol={b:.35,s:1};try{muted=localStorage.getItem("bgmMuted")==="1";const v=JSON.parse(localStorage.getItem("hlVol"));if(v)vol=v}catch(e){}
+const BUF={},ALT={},ST={};
+try{AC=new(window.AudioContext||window.webkitAudioContext)();gB=AC.createGain();gS=AC.createGain();gB.connect(AC.destination);gS.connect(AC.destination);gB.gain.value=vol.b;gS.gain.value=vol.s}catch(e){AC=null}
+async function fetchBuf(urls){for(const u of urls){try{const r=await fetch(u);if(!r.ok)continue;return await AC.decodeAudioData(await r.arrayBuffer())}catch(e){}}return null}
+function altA(f,loop){try{const a=new Audio(f);a.loop=!!loop;let t=false;a.addEventListener("error",()=>{if(t)return;t=true;a.src=SEB+f});return a}catch(e){return null}}
+SEN.forEach(async n=>{const f="SE_"+n+".mp3";if(AC){const b=await fetchBuf([f,SEB+f]);if(b){BUF[n]=b;ST[n]="ok";return}}ALT[n]=altA(f);ST[n]=ALT[n]?"alt":"err"});
+(async()=>{if(AC){const b=await fetchBuf(["minigame_Eu.ogg",SEB+"minigame_Eu.ogg","minigame_Eu.mp3",SEB+"minigame_Eu.mp3"]);if(b){BUF.bgm=b;ST.bgm="ok";if(started)bgmPlay();return}}bgmEl=altA("minigame_Eu.ogg",1);ST.bgm=bgmEl?"alt":"err";if(started)bgmPlay()})();
+function resume(){if(AC&&AC.state==="suspended")AC.resume()}
+function bgmPlay(){if(muted||document.hidden||!started)return;resume();
+ if(BUF.bgm){if(!bgmSrc){bgmSrc=AC.createBufferSource();bgmSrc.buffer=BUF.bgm;bgmSrc.loop=true;bgmSrc.connect(gB);bgmSrc.start()}}
+ else if(bgmEl){bgmEl.volume=vol.b;const r=bgmEl.play();if(r&&r.catch)r.catch(()=>{})}}
+function se(n){seDone=true;return new Promise(res=>{if(muted||document.hidden){res();return}resume();
+ const b=BUF[n],v=SEV[n]||.6;
+ if(b&&AC){const s=AC.createBufferSource(),g=AC.createGain();s.buffer=b;g.gain.value=v;s.connect(g);g.connect(gS);const t=AC.currentTime;s.start(t);
+  if(SEL[n]&&b.duration>SEL[n]){g.gain.setValueAtTime(v,t+SEL[n]-.15);g.gain.linearRampToValueAtTime(0,t+SEL[n]);s.stop(t+SEL[n]+.02)}
+  s.onended=res;setTimeout(res,Math.min(b.duration,SEL[n]||99)*1000+400)}
+ else if(ALT[n]){try{const a=ALT[n];a.volume=Math.min(1,v*vol.s);a.currentTime=0;a.onended=res;const r=a.play();if(r&&r.catch)r.catch(res);if(SEL[n])setTimeout(()=>a.pause(),SEL[n]*1000)}catch(e){res()}setTimeout(res,2500)}
+ else res()})}
+function stopAll(){try{if(AC&&AC.state==="running")AC.suspend();if(bgmEl)bgmEl.pause();Object.values(ALT).forEach(a=>a&&a.pause())}catch(e){}}
+const sndUpd=()=>{$("snd").textContent=muted?"🔇":"🔊";$("snd2").textContent=muted?"🔇 音":"🔊 音";$("spM").textContent=muted?"音を出す":"ミュートにする"};
+function refreshSP(){const mk=c=>c==="ok"?"✓":c==="alt"?"○":c?"×":"…";
+ $("spT").innerHTML=SEN.map(n=>`<button data-n="${n}">♪ ${n} ${mk(ST[n])}</button>`).join("");
+ [...$("spT").children].forEach(b=>b.onclick=()=>se(b.dataset.n));
+ $("spS").textContent="BGM："+(ST.bgm==="ok"?"読み込みOK":ST.bgm==="alt"?"かんたん再生":ST.bgm?"読み込めません（ファイルの場所・形式を確認）":"読み込み中…")+"　／　✓=OK ○=かんたん再生 ×=見つからない"}
+function openSP(){sndUpd();$("vB").value=vol.b*100;$("vS").value=vol.s*100;refreshSP();$("sp").hidden=false}
+const saveVol=()=>{try{localStorage.setItem("hlVol",JSON.stringify(vol))}catch(e){}};
+$("vB").oninput=()=>{vol.b=$("vB").value/100;if(gB)gB.gain.value=vol.b;if(bgmEl)bgmEl.volume=vol.b;saveVol()};
+$("vS").oninput=()=>{vol.s=$("vS").value/100;if(gS)gS.gain.value=vol.s;saveVol()};
+$("snd").onclick=openSP;$("snd2").onclick=openSP;$("spX").onclick=()=>{$("sp").hidden=true};
+$("spM").onclick=()=>{muted=!muted;try{localStorage.setItem("bgmMuted",muted?"1":"0")}catch(e){}if(muted)stopAll();else bgmPlay();sndUpd()};
+sndUpd();
 document.addEventListener("click",()=>{seDone=false},true);
 document.addEventListener("click",e=>{if(!seDone&&e.target.closest&&e.target.closest("button,a"))se("peta")});
-document.addEventListener("pointerdown",()=>{if(bgm&&bgm.paused)bgmPlay()});
-document.addEventListener("visibilitychange",()=>{if(document.hidden)stopAll();else if(started)bgmPlay()});
+document.addEventListener("pointerdown",()=>{started=true;bgmPlay()});
+document.addEventListener("visibilitychange",()=>{if(document.hidden)stopAll();else bgmPlay()});
 window.addEventListener("pagehide",stopAll);
 </script>
 </body>
