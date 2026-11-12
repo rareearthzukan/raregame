@@ -944,7 +944,7 @@ const IMGS = {}; for (const k in IMG) { IMGS[k] = new Image(); IMGS[k].src = IMG
       let stars = S.shotsUsed <= par ? 3 : S.shotsUsed <= par + 1 ? 2 : 1; if (S.hints > 0) stars = Math.min(stars, 2);
       const best = progress.stars[st.id] || 0, first = best === 0;
       const money = (first ? 200 + 120 * st.d + 60 * st.n : 0) + 80 * Math.max(0, stars - best);
-      const ho = first ? 1 + (st.n === PER - 1 ? 1 : 0) : 0, exp = first ? 20 + 10 * st.d + (st.n === PER - 1 ? 30 : 0) : 0;
+      const ho = first ? 1 + (st.n === PER - 1 ? 1 : 0) : 0, exp = first ? RE.capExp(reGS(), 20 + 10 * st.d + (st.n === PER - 1 ? 30 : 0), 0.15) : 0;
       S.result = { win, stars, money, ho, exp, first, best }; S.claimed = false;
       sfx('clear'); setFoeMood('win'); setHoMood('happy'); say(D.kana, D.lines.win, 2200);
       setTimeout(() => showResult(), 900);
@@ -959,7 +959,7 @@ const IMGS = {}; for (const k in IMG) { IMGS[k] = new Image(); IMGS[k].src = IMG
     let gs = {}; try { gs = JSON.parse(localStorage.getItem('rareEarthGameState')) || {}; } catch (e) {}
     if (gs.money == null) gs.money = 1500; if (gs.level == null) { gs.level = 1; gs.mudStock = gs.mudStock == null ? 5 : gs.mudStock; }
     gs.money += r.money; gs.elements = gs.elements || {}; gs.elements.Ho = (gs.elements.Ho || 0) + r.ho;
-    const lv = calcLevel(r.exp); gs.level = lv.level; gs.exp = lv.exp;
+    RE.addExp(gs, r.exp, { raw: true });
     try { localStorage.setItem('rareEarthGameState', JSON.stringify(gs)); } catch (e) {}
     progress.stars[st.id] = Math.max(progress.stars[st.id] || 0, r.stars); saveProgress();
   }
@@ -1125,5 +1125,7 @@ const IMGS = {}; for (const k in IMG) { IMGS[k] = new Image(); IMGS[k].src = IMG
     requestAnimationFrame(frame);
 })();
   </script>
+<script src="areaconfig.js"></script>
+<script>function reGS(){try{return JSON.parse(localStorage.getItem("rareEarthGameState"))||{}}catch(e){return {}}}</script>
 </body>
 </html>

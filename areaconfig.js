@@ -243,11 +243,27 @@
     }
     return gs.level !== from;
   }
+  // チュートリアル進行中か（tutorial.js の rareEarthTutorialStep が 0 以上の間）
+  function tutorialActive() {
+    try { const v = localStorage.getItem('rareEarthTutorialStep'); return v !== null && v !== '' && Number(v) >= 0; } catch (e) { return false; }
+  }
+  // 1回の獲得量の上限＝「いまのレベルの必要EXP × frac」。序盤の稼ぎすぎを防ぐ（既定 15%）
+  //   目安: 採掘 4% / 精製 8% / 製造・売却 10% / ミニゲーム 15%（ここだけ直せば全ページに効く）
+  function capExp(gs, raw, frac) {
+    const lv = (gs && gs.level) || 1;
+    const cap = Math.max(1, Math.ceil(getRequiredExp(lv) * (frac == null ? 0.15 : frac)));
+    return Math.max(0, Math.min(Math.floor(raw || 0), cap));
+  }
   // 経験値を加えてレベル判定まで行う。戻り値＝加算前のレベル
-  function addExp(gs, amount) {
+  //   opts.frac: 上限の割合 / opts.raw: true なら上限をかけずそのまま加算
+  //   チュートリアル中はレベルが上がらない（必要EXPの手前で止める）。終了後の次の獲得でレベルアップ
+  function addExp(gs, amount, opts) {
+    opts = opts || {};
     const from = gs.level || 1;
-    gs.exp = (gs.exp || 0) + (amount || 0);
-    syncLevel(gs);
+    const add = opts.raw ? Math.max(0, Math.floor(amount || 0)) : capExp(gs, amount, opts.frac);
+    gs.exp = (gs.exp || 0) + add;
+    if (tutorialActive() && from < MAX_LEVEL) gs.exp = Math.min(gs.exp, getRequiredExp(from) - 1);
+    else syncLevel(gs);
     return from;
   }
 
@@ -535,7 +551,7 @@
     announceQueued = true;
     queuedFrom = opts.fromLevel != null ? opts.fromLevel : null;
     queuedClosers = opts.onClose ? [opts.onClose] : [];
-    whenIdle(() => !!modalEl || (opts.busy ? !!opts.busy() : false), () => {
+    whenIdle(() => !!modalEl || tutorialActive() || (opts.busy ? !!opts.busy() : false), () => {
       announceQueued = false;
       const closers = queuedClosers; queuedClosers = [];
       try {
@@ -628,7 +644,7 @@
     expectedElements: expectedElements, recommendAreasFor: recommendAreasFor, goToAreaFor: goToAreaFor,
     areaShort: areaShort, flagHTML: flagHTML, originHTML: originHTML, areaOddsText: areaOddsText,
     TRADE_UNLOCK_LEVEL: TRADE_UNLOCK_LEVEL, MAX_LEVEL: MAX_LEVEL, isTradeUnlocked: isTradeUnlocked,
-    getRequiredExp: getRequiredExp, syncLevel: syncLevel, addExp: addExp, UNLOCKS: UNLOCKS,
+    getRequiredExp: getRequiredExp, syncLevel: syncLevel, addExp: addExp, capExp: capExp, tutorialActive: tutorialActive, UNLOCKS: UNLOCKS,
     announceUnlocks: announceUnlocks, setupTradeNav: setupTradeNav, initCommon: initCommon
   };
 })(window);

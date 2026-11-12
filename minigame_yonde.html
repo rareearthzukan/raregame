@@ -815,13 +815,13 @@
 
       const bonusG = Math.max(100, (LIMIT_TIME - timeSpent) * 50);
       goldEl.innerText = `${bonusG} G`;
-      expEl.innerText = '+100';
+      expEl.innerText = '+' + RE.capExp(reGS(), 100, 0.15);
       if (!rewardClaimed) {
     rewardClaimed = true;
     const el = {};
     ['Sc','Y','La','Ce','Pr','Nd','Pm','Sm','Eu','Gd','Tb','Dy','Ho','Er','Tm','Yb','Lu'].forEach(k => el[k] = 10);
     el.Tm += 5;
-    grantReward(bonusG, 100, el);
+    grantReward(bonusG, RE.capExp(reGS(), 100, 0.15), el);
 }
 itemRewardContainer.style.display = 'block';
     } else {
@@ -832,8 +832,8 @@ itemRewardContainer.style.display = 'block';
       msgEl.innerText = 'ざんねん…制限時間になっちゃった。';
 
       goldEl.innerText = '0 G';
-      expEl.innerText = '+50';
-      if (!rewardClaimed) { rewardClaimed = true; grantReward(0, 50, null); }
+      expEl.innerText = '+' + RE.capExp(reGS(), 50, 0.15);
+      if (!rewardClaimed) { rewardClaimed = true; grantReward(0, RE.capExp(reGS(), 50, 0.15), null); }
 itemRewardContainer.style.display = 'none';
     }
   }
@@ -845,8 +845,7 @@ function grantReward(g,e,elem){
   if(gs.level==null){gs.level=1;if(gs.mudStock==null)gs.mudStock=5}
   gs.money+=g;
   if(elem){gs.elements=gs.elements||{};for(const k in elem)gs.elements[k]=(gs.elements[k]||0)+elem[k]}
-  let lv=gs.level,ex=(gs.exp||0)+e;while(ex>=lv*100){ex-=lv*100;lv++}
-  gs.level=lv;gs.exp=ex;
+  RE.addExp(gs,e,{raw:true});
   try{localStorage.setItem('rareEarthGameState',JSON.stringify(gs))}catch(x){}
 }
 function resetGame() {
@@ -857,5 +856,7 @@ function resetGame() {
   }
 </script>
 
+<script src="areaconfig.js"></script>
+<script>function reGS(){try{return JSON.parse(localStorage.getItem("rareEarthGameState"))||{}}catch(e){return {}}}</script>
 </body>
 </html>

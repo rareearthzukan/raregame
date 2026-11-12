@@ -672,19 +672,14 @@
 
         function addRewards(goldAdd, expAdd) {
             state.money = Math.max(0, (state.money || 0) + goldAdd);
-            state.exp += expAdd;
-            const reqExp = state.level * 100;
-            if (state.exp >= reqExp) {
-                state.exp -= reqExp;
-                state.level++;
-                createFloatingText('LEVEL UP!!', 'text-amber-300 text-base', 120, 150);
-            }
+            const lvB = state.level; RE.addExp(state, expAdd, { raw: true });
+                if (state.level > lvB) { createFloatingText('LEVEL UP!!', 'text-amber-300 text-base', 120, 150); }
             saveState();
             updateUIState();
         }
 
         function updateUIState() {
-            const reqExp = state.level * 100;
+            const reqExp = RE.getRequiredExp(state.level);
             const pct = Math.min(100, (state.exp / reqExp) * 100);
             document.getElementById('exp-bar').style.width = `${pct}%`;
         }
@@ -938,7 +933,8 @@
             let totalG = correctCount * 45;
             if (wrongCount === 0 && correctCount > 0) totalG += 300;
 
-            addRewards(totalG, earnedExp);
+            earnedExp = RE.capExp(state, earnedExp, 0.15);
+             addRewards(totalG, earnedExp);
 
             document.getElementById('res-score').textContent = score;
             document.getElementById('res-correct').textContent = correctCount;
@@ -1094,5 +1090,7 @@
             });
         });
     </script>
+<script src="areaconfig.js"></script>
+<script>function reGS(){try{return JSON.parse(localStorage.getItem("rareEarthGameState"))||{}}catch(e){return {}}}</script>
 </body>
 </html>

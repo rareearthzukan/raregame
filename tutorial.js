@@ -277,7 +277,7 @@
     pn.querySelector('.go').onclick = () => { playSE('peta'); setTimeout(() => { location.href = s.page; }, 120); };
   }
   // ゲーム側のポップアップが開いているか（開いている間はチュートリアルを出さず、閉じるまで待つ）
-  const modalOpen = () => [...document.querySelectorAll('.modal-overlay, .overlay')].some(m => {
+  const modalOpen = () => [...document.querySelectorAll('.modal-overlay, .overlay, .re-lu-ov')].some(m => {
     const c = getComputedStyle(m);
     return c.display !== 'none' && c.visibility !== 'hidden' && c.opacity !== '0' && m.getBoundingClientRect().width > 0;
   });

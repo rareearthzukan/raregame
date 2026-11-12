@@ -462,11 +462,10 @@
       b.innerHTML = (newKit ? '🆕 新リサイクルキット！<br>' : '') + (challenge ? '🔥 高難度モード！高速・ヒントなし<br>' : '') + `報酬 ×${rewardMult()}`;
       b.classList.add('show'); setTimeout(() => b.classList.remove('show'), 2600);
     }
-    function calcLevel(add) {   // 経験値を足したあとのレベル（map.htmlと同じ：必要経験値＝レベル×100）
-      const gs = JSON.parse(localStorage.getItem('rareEarthGameState')) || {};
-      let lv = gs.level || 1, ex = (gs.exp || 0) + add, up = false;
-      while (ex >= lv * 100) { ex -= lv * 100; lv++; up = true; }
-      return { level: lv, exp: ex, up };
+    function calcLevel(add) {   // 経験値を足したあとのレベル（共通の経験値表：areaconfig.js）
+      const gs = reGS(); const l0 = gs.level || 1;
+      RE.addExp(gs, add, { raw: true });
+      return { level: gs.level || 1, exp: gs.exp || 0, up: (gs.level || 1) > l0 };
     }
 
     // チュートリアルのページ切り替え
@@ -552,7 +551,7 @@
       const bonus = complete ? COMPLETE_BONUS : 0;
       const mult = rewardMult();
       const totalEarn = Math.max(0, earnBoard + earnMagnet - totalPenalty + bonus) * mult;
-      const earnedExp = (EXP_BASE + (challenge ? EXP_HARD : 0)) * expMult();
+      const earnedExp = RE.capExp(reGS(), (EXP_BASE + (challenge ? EXP_HARD : 0)) * expMult(), 0.15);
       const lvInfo = calcLevel(earnedExp);
 
       document.getElementById('countBoard').innerText = collectedBoard;
@@ -672,5 +671,7 @@
       setTimeout(() => el.remove(), 260);
     }
   </script>
+<script src="areaconfig.js"></script>
+<script>function reGS(){try{return JSON.parse(localStorage.getItem("rareEarthGameState"))||{}}catch(e){return {}}}</script>
 </body>
 </html>

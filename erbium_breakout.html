@@ -370,15 +370,14 @@ function claim() {
   if (s.level == null) { s.level = 1; if (s.mudStock == null) s.mudStock = 5 }
   s.money += result.money;
   if (result.er) { s.elements = s.elements || {}; s.elements.Er = (s.elements.Er || 0) + result.er }
-  let lv = s.level, ex = (s.exp || 0) + result.exp; while (ex >= lv * 100) { ex -= lv * 100; lv++ }
-  s.level = lv; s.exp = ex;
+  RE.addExp(s, result.exp, { raw: true });
   try { localStorage.setItem('rareEarthGameState', JSON.stringify(s)) } catch (e) {}
 }
 function endGame(clear) {
   if (state === 'clear' || state === 'over') return;
   state = clear ? 'clear' : 'over'; $('pause-btn').style.display = 'none';
   const d = DIFFS[diff];
-  result = { money: clear ? d.money : 100, exp: clear ? d.exp : 0, er: clear ? 10 : 0 };
+  result = { money: clear ? d.money : 100, exp: clear ? RE.capExp(reGS(), d.exp, 0.15) : 0, er: clear ? 10 : 0 };
   claim();
   if (clear) { se('clear', SFX.clearSynth); flash = 1; for (let i = 0; i < 4; i++) setTimeout(() => burst(rnd(40, W - 40), rnd(60, 220), ['#ffd23f', '#ff7eb3', '#7fe0ee', '#ffffff'][i], 40, 5, .05), i * 160); banner('✨ つるつる肌に！', 1500); say('✨ ぴかぴかお肌、完成！'); cheer() }
   else { SFX.over(); say('💦 エネルギー切れ…') }
@@ -399,7 +398,7 @@ function buildMenu() {
   Object.keys(DIFFS).forEach(k => {
     const d = DIFFS[k], b = document.createElement('button');
     b.className = 'diff-btn ' + d.cls;
-    b.innerHTML = `<span>${d.ic} ${d.name}<br><small>${d.sub}／EXP ${d.exp.toLocaleString()}・${d.money.toLocaleString()}G</small></span><span>▶ 挑戦</span>`;
+    b.innerHTML = `<span>${d.ic} ${d.name}<br><small>${d.sub}／EXP ${RE.capExp(reGS(), d.exp, 0.15).toLocaleString()}・${d.money.toLocaleString()}G</small></span><span>▶ 挑戦</span>`;
     b.onclick = () => { diff = k; $('selectModal').style.display = 'none'; startGame() };
     m.appendChild(b);
   });
@@ -433,5 +432,7 @@ function loop(n) { const dt = Math.min(2.5, (n - last) / 16.67); last = n; updat
 initBlocks(); balls = [newBall(false)]; layout(); requestAnimationFrame(loop);
 })();
 </script>
+<script src="areaconfig.js"></script>
+<script>function reGS(){try{return JSON.parse(localStorage.getItem("rareEarthGameState"))||{}}catch(e){return {}}}</script>
 </body>
 </html>
