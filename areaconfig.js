@@ -226,9 +226,24 @@
     850000, 1050000, 1300000, 1600000, 2000000, 2500000, 3100000, 3800000, 4700000, 5800000,
     7200000, 9000000, 11200000, 14000000, 17500000, 22000000, 28000000, 36000000, 48000000
   ];
-  function getRequiredExp(level) {
+  // 表どおりの必要EXP（難易度をかける前）
+  function getBaseRequiredExp(level) {
     if (level >= MAX_LEVEL) return 50000000;
     return EXP_TABLE[level] || (level * 2000000);
+  }
+  // ★ レベルの上がりにくさ（全ページ共通。ここの3つの数字だけ直せばOK）
+  //   Lv1〜HARD_UNTIL は必要EXPを EARLY_MULT 倍。HARD_UNTIL〜FADE_UNTIL でなだらかに 1 倍へ戻す。
+  //   全レベルを同じ重さにしたいときは FADE_UNTIL を MAX_LEVEL にして EARLY_MULT だけ変える／元に戻すなら EARLY_MULT = 1
+  const EARLY_MULT = 3, HARD_UNTIL = 10, FADE_UNTIL = 20;
+  function difficultyAt(level) {
+    if (level <= HARD_UNTIL) return EARLY_MULT;
+    if (level >= FADE_UNTIL) return 1;
+    return EARLY_MULT - (EARLY_MULT - 1) * (level - HARD_UNTIL) / (FADE_UNTIL - HARD_UNTIL);
+  }
+  // 各ページが使う「必要EXP」。経験値バー・レベル判定は全部ここを通る
+  function getRequiredExp(level) {
+    if (level >= MAX_LEVEL) return getBaseRequiredExp(level);
+    return Math.round(getBaseRequiredExp(level) * difficultyAt(level));
   }
   // exp が足りていればレベルを上げる（複数レベル分まとめて）。レベルが変わったら true
   function syncLevel(gs) {
@@ -247,11 +262,12 @@
   function tutorialActive() {
     try { const v = localStorage.getItem('rareEarthTutorialStep'); return v !== null && v !== '' && Number(v) >= 0; } catch (e) { return false; }
   }
-  // 1回の獲得量の上限＝「いまのレベルの必要EXP × frac」。序盤の稼ぎすぎを防ぐ（既定 15%）
+  // 1回の獲得量の上限＝「いまのレベルの（難易度をかける前の）必要EXP × frac」。序盤の稼ぎすぎを防ぐ（既定 15%）
   //   目安: 採掘 4% / 精製 8% / 製造・売却 10% / ミニゲーム 15%（ここだけ直せば全ページに効く）
+  //   ※ 上限は難易度をかける前の値を基準にするので、難易度ぶんだけ「レベル1つに必要な回数」が増える
   function capExp(gs, raw, frac) {
     const lv = (gs && gs.level) || 1;
-    const cap = Math.max(1, Math.ceil(getRequiredExp(lv) * (frac == null ? 0.15 : frac)));
+    const cap = Math.max(1, Math.ceil(getBaseRequiredExp(lv) * (frac == null ? 0.15 : frac)));
     return Math.max(0, Math.min(Math.floor(raw || 0), cap));
   }
   // 経験値を加えてレベル判定まで行う。戻り値＝加算前のレベル
@@ -644,7 +660,7 @@
     expectedElements: expectedElements, recommendAreasFor: recommendAreasFor, goToAreaFor: goToAreaFor,
     areaShort: areaShort, flagHTML: flagHTML, originHTML: originHTML, areaOddsText: areaOddsText,
     TRADE_UNLOCK_LEVEL: TRADE_UNLOCK_LEVEL, MAX_LEVEL: MAX_LEVEL, isTradeUnlocked: isTradeUnlocked,
-    getRequiredExp: getRequiredExp, syncLevel: syncLevel, addExp: addExp, capExp: capExp, tutorialActive: tutorialActive, UNLOCKS: UNLOCKS,
+    getRequiredExp: getRequiredExp, getBaseRequiredExp: getBaseRequiredExp, difficultyAt: difficultyAt, EARLY_MULT: EARLY_MULT, syncLevel: syncLevel, addExp: addExp, capExp: capExp, tutorialActive: tutorialActive, UNLOCKS: UNLOCKS,
     announceUnlocks: announceUnlocks, setupTradeNav: setupTradeNav, initCommon: initCommon
   };
 })(window);

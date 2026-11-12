@@ -1017,7 +1017,7 @@
       });
       const exp = BASE_EXP_PER_ITEM * n;
       // 経験値の加算とレベルアップ判定（共通表）。解放のお知らせは、ミニゲーム／イベントが終わってから表示
-      const lvBefore = RE.addExp(gameState, exp);
+      const lvBefore = RE.addExp(gameState, exp, { frac: 0.08 });   // 精製の上限 8%
       if ((gameState.level || 1) > lvBefore) {
         RE.announceUnlocks(gameState, { fromLevel: lvBefore, page: 'seisei', busy: seiseiBusy, exclude: SEISEI_OWN_REPORTS });
       }

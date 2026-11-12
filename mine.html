@@ -542,13 +542,13 @@
 
     function getRequiredExp(level) { return RE.getRequiredExp(level); }   // 経験値表は areaconfig.js に集約
 
+    // 経験値の加算。上限（1回の獲得量）とチュートリアル中のレベル固定は areaconfig.js の RE.addExp に任せる
+    //   frac: 1回の獲得量の上限（そのレベルの必要EXPに対する割合）。採掘0.04／精製0.08／製造・売却0.10／ミニゲーム0.15
     function addExp(amount, frac) {
-      const lvBefore = gameState.level;
-      RE.addExp(gameState, amount, { frac: frac });   // 共通の上限・チュートリアル保護つき（areaconfig.js）
-      const leveledUp = gameState.level > lvBefore;
+      const lvBefore = RE.addExp(gameState, amount, { frac: frac });
       saveGameState();
       updateUI();
-      if (leveledUp) {
+      if ((gameState.level || 1) > lvBefore) {
         triggerLevelUpEffect(gameState.level, lvBefore);
       }
     }
@@ -1023,11 +1023,11 @@
     addEventListener('message', e => {
       if (e.source !== document.getElementById('drillFrame').contentWindow || !e.data || e.data.type !== 'drillResult') return;
       playSeById('se-gacha');
-      const mud = Math.max(DRILL.minMud, Math.min(DRILL.maxMud, Math.round(e.data.mud || 0))), exp = RE.capExp(gameState, mud * DRILL.expPerMud, 0.06);
+      const mud = Math.max(DRILL.minMud, Math.min(DRILL.maxMud, Math.round(e.data.mud || 0))), exp = mud * DRILL.expPerMud;
       closeDrill();
       RE.addMud(gameState, spotId in RE.AREAS ? spotId : areaKey, mud);   // 元素の割合は、精製時の産地設定（Pm・Tm・Dy・Tbなど）がそのまま効く
       gameState.lastMinedSpot = spotId;
-      addExp(exp, 0.06);
+      addExp(exp, 0.04);   // 深海ドリル：採掘と同じ上限
       const jewels = [];
       for (let k = 0; k < Math.min(DRILL.maxGems, e.data.gems || 0); k++) { const j = RE.rollGem(areaKey, gemsMaster); registerJewel(j); jewels.push(j); }
       saveGameState(); updateUI();
