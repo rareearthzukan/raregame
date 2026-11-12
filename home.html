@@ -574,12 +574,8 @@ function ensureCharas(){
     let added=0; const addedNames=[];
     while(gameState.charaOwned.length<want){
       const rest=ids.filter(i=>!gameState.charaOwned.includes(i)); if(!rest.length) break;
-      let id;
-      if(!gameState.charaOwned.includes('Er') && rest.includes('Er')) {
-        id = 'Er';
-      } else {
-        id = rest[Math.floor(Math.random()*rest.length)];
-      }
+      // 最初の仲間も含めて、まだ来ていない子（全17人）からランダムに選ぶ
+      const id = rest[Math.floor(Math.random()*rest.length)];
       gameState.charaOwned.push(id);
       gameState.placedItems.push({type:'chara',id,dir:0,s:1,x:25+Math.random()*50,y:90}); added++; addedNames.push((CHARAS[id]&&CHARAS[id].name)||id);
     }
@@ -602,7 +598,7 @@ function ensureCharas(){
 const MINIGAMES={
   Nd:{name:'METALS SORTING',emoji:'🧲',url:'minigame_reametal.html'},
   Tm:{name:'お名前よんで！',emoji:'📖',url:'minigame_yonde.html'},
-  Er:{name:'美肌ブロック崩し',emoji:'🎮',url:'erbium_breakout.html'},
+  Er:{name:'美肌ブロック崩し',emoji:'🎮',url:'minigame_Er.html'},
   Ce:{name:'キラメキ万華鏡',emoji:'💎',url:'kaleidoscope.html'},
   Y: {name:'レアアース性格診断',emoji:'🔮',fn:'openGameUranai'},
   Ho:{name:'レーザービリヤード',emoji:'🎱',url:'ho_billiards.html'},
