@@ -55,6 +55,7 @@ canvas{flex:1 1 0;min-height:0;width:100%;height:0;object-fit:contain}
 button{padding:10px}#dig{font-size:1.05rem}
 body.embed{padding-top:calc(2.7rem + env(safe-area-inset-top,0px))}
 </style>
+<style>html,body{touch-action:manipulation;-webkit-user-select:none;user-select:none}</style>
 </head>
 <body>
 <div class="wrap">
@@ -242,9 +243,9 @@ function ui(){
 const HIT=['いいぞ！その調子で掘り進めよう。','ジャスト！泥の層が変わってきたよ。','リズムを保てばコンボが伸びるよ！'];
 function burst(x,y,c,n){for(let i=0;i<n;i++)parts.push({x,y,vx:(Math.random()-.5)*5,vy:-Math.random()*4,l:30+Math.random()*20,c,r:2+Math.random()*2});
   const cc=chunkCols();for(let i=0;i<n*2;i++){const a=-Math.PI/2+(Math.random()-.5)*2.6,sp=3+Math.random()*7;parts.push({x:x+(Math.random()-.5)*30,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,g:.28,l:45+Math.random()*25,k:cc[Math.floor(Math.random()*cc.length)],r:2+Math.random()*4,rot:0,vr:(Math.random()-.5)*.5})}}
-function finish(){if(done)return;done=true;jet=0;jetN=0;try{seJet.pause()}catch(e){}stock+=ree;depth=GOAL;doneAt=performance.now();burst(PX,yOf(GOAL)+30,'253,224,71',40);shake=14;flash=1;flashCol='253,224,71';say('🎉 ミッション達成！');ui();
+function finish(){if(done)return;done=true;jet=0;stopJet();stock+=ree;depth=GOAL;doneAt=performance.now();burst(PX,yOf(GOAL)+30,'253,224,71',40);shake=14;flash=1;flashCol='253,224,71';say('🎉 ミッション達成！');ui();
   setTimeout(()=>{$('resb').innerHTML=`到達深度 <b>${GOAL}m</b><br>獲得掘削物 <b style="color:#fde047">${ree}個</b><br>きれいな鉱物 <b style="color:#f0abfc">${minerals}個</b><br>クリティカル <b>${crits}</b>回 / ジェット <b>${jets}</b>回 / ミス <b>${misses}</b>回<br>📦 ストック <b>${stock}</b>個 ／ ドリル耐久 <b>${Math.round(dur)}</b>%`;$('res').style.display='flex'},1100)}
-function reset(){depth=dDepth=0;prevDy=SEA;combo=0;ree=0;repCost=0;stockSpent=0;jetN=0;try{seJet.pause()}catch(e){}bonus=reeAcc=crits=misses=jets=minerals=jetTick=0;jet=0;hyper=false;started=false;done=false;parts=[];texts=[];$('res').style.display='none';say(dur<=0?'🚨 ドリルが故障中…修繕が必要だ！':dur<100?'前回の摩耗が残っている。ミスに注意！':'もう一度、掘削開始！');ui()}
+function reset(){depth=dDepth=0;prevDy=SEA;combo=0;ree=0;repCost=0;stockSpent=0;stopJet();bonus=reeAcc=crits=misses=jets=minerals=jetTick=0;jet=0;hyper=false;started=false;done=false;parts=[];texts=[];$('res').style.display='none';say(dur<=0?'🚨 ドリルが故障中…修繕が必要だ！':dur<100?'前回の摩耗が残っている。ミスに注意！':'もう一度、掘削開始！');ui()}
 
 function dig(){
   const now=performance.now();
@@ -275,7 +276,9 @@ function dig(){
 }
 function repair(){if(ree+stock<30||dur>=100)return;const fr=Math.min(ree,30);ree-=fr;stock-=30-fr;stockSpent+=30-fr;repCost+=30;dur=Math.min(100,dur+40);say('🔧 修繕完了！耐久度が40%回復したよ。');ui()}
 
-$('dig').onpointerdown=e=>{e.preventDefault();dig()};$('rep').onclick=repair;$('again').onclick=reset;
+$('dig').onpointerdown=e=>{e.preventDefault();dig()};
+// 画面のどこをタップしても掘削（ボタン類は除く）
+document.addEventListener('pointerdown',e=>{if(e.target.closest('button,a,input,select,textarea'))return;if(e.pointerType==='mouse'&&e.button!==0)return;e.preventDefault();dig()},{passive:false});$('rep').onclick=repair;$('again').onclick=reset;
 const Q=new URLSearchParams(location.search),EMBED=Q.get('embed')==='1',MUTE=Q.get('mute')==='1';
 document.body.classList.toggle('embed',EMBED);
 // BGM（ミュート設定なら鳴らさない）。自動再生が止められても、最初のタップで鳴る
@@ -284,9 +287,26 @@ const startBgm=()=>{if(!MUTE&&bgm.paused)bgm.play().catch(()=>{})};
 startBgm();addEventListener('pointerdown',startBgm);addEventListener('pagehide',()=>bgm.pause());
 // 掘削SE：当たりのたびに頭から鳴らす（ジェット時は少し速く）
 const seDrill=new Audio('SE_drill.mp3');
-// ジェット掘削：同じ効果音を3回続けて鳴らす
+// ジェット掘削：同じ効果音を3回、休止（無音）部分を削って切れ目なくつなげて鳴らす（Web Audio）
+//   読み込めない環境（file:// など）では、従来どおり3回続けて再生にフォールバック
 const seJet=new Audio('SE_drill.mp3');let jetN=0;
-function playDrillJet(){try{seDrill.pause()}catch(e){}jetN=3;
+let jetCtx=null,jetBuf=null,jetRange=null,jetSrc=[];
+(async()=>{try{
+  const AC=window.AudioContext||window.webkitAudioContext;jetCtx=new AC();
+  const buf=await jetCtx.decodeAudioData(await (await fetch('SE_drill.mp3')).arrayBuffer());
+  const ch=buf.getChannelData(0),th=0.02;let a=0,b=ch.length-1;
+  while(a<b&&Math.abs(ch[a])<th)a++;while(b>a&&Math.abs(ch[b])<th)b--;
+  jetRange=[Math.max(0,a/buf.sampleRate-0.005),Math.min(buf.duration,b/buf.sampleRate+0.005)];jetBuf=buf;
+}catch(e){jetBuf=null}})();
+function stopJet(){jetN=0;try{seJet.pause()}catch(e){}jetSrc.forEach(s=>{try{s.stop()}catch(e){}});jetSrc=[]}
+function playDrillJet(){try{seDrill.pause()}catch(e){}
+  stopJet();
+  if(jetCtx&&jetBuf&&jetRange){
+    try{jetCtx.resume()}catch(e){}
+    const rate=1.3,span=jetRange[1]-jetRange[0],t0=jetCtx.currentTime+0.02;
+    for(let i=0;i<3;i++){const s=jetCtx.createBufferSource();s.buffer=jetBuf;s.playbackRate.value=rate;s.connect(jetCtx.destination);s.start(t0+i*span/rate,jetRange[0],span);jetSrc.push(s)}
+    return}
+  jetN=3;
   const step=()=>{if(jetN<=0)return;jetN--;try{seJet.currentTime=0}catch(e){}seJet.playbackRate=1.3;seJet.volume=1;seJet.play().catch(()=>{jetN=0})};
   seJet.onended=step;step()}
 function playDrill(rate){try{seDrill.pause();seDrill.currentTime=0;seDrill.playbackRate=rate;seDrill.volume=1;seDrill.play().catch(()=>{})}catch(e){}}
