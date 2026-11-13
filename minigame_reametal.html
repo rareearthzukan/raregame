@@ -480,7 +480,9 @@
     </div>
 
     <!-- JavaScript -->
-    <script>
+    <script src="areaconfig.js"></script>
+<script>function reGS(){try{return JSON.parse(localStorage.getItem("rareEarthGameState"))||{}}catch(e){return {}}}</script>
+<script>
         const ELEMENTS_DATA = [
             // --- ベースメタル (7) ---
             { symbol: 'Fe', name: '鉄', kana: 'てつ', category: 'base', catName: 'ベースメタル', desc: '建築・インフラ・自動車など構造材料の主役。', icon: 'fa-cubes' },
@@ -1090,7 +1092,5 @@
             });
         });
     </script>
-<script src="areaconfig.js"></script>
-<script>function reGS(){try{return JSON.parse(localStorage.getItem("rareEarthGameState"))||{}}catch(e){return {}}}</script>
 </body>
 </html>

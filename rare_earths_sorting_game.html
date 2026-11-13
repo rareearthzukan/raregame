@@ -10,176 +10,359 @@
       user-select: none;
       -webkit-user-select: none;
       -webkit-touch-callout: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    :root {
+      --light: #f43f5e;
+      --light-bg: #fff1f2;
+      --heavy: #4f46e5;
+      --heavy-bg: #eef2ff;
+      --special: #a855f7;
+      --special-bg: #faf5ff;
     }
 
     body {
       margin: 0;
-      padding: 6px;
+      padding: 8px 6px 28px;
       font-family: 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif;
-      background: #f0f4f8;
-      color: #333;
+      background: linear-gradient(160deg, #bfdbfe 0%, #fbcfe8 50%, #fef08a 100%);
+      background-attachment: fixed;
+      color: #334155;
       display: flex;
       flex-direction: column;
       align-items: center;
       min-height: 100vh;
+      overflow-x: hidden;
     }
+
+    /* ===== 背景のふわふわ元素記号 ===== */
+    #bg-layer {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 0;
+    }
+    .bg-bubble {
+      position: absolute;
+      bottom: -80px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.45);
+      border: 2px solid rgba(255, 255, 255, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      color: rgba(79, 70, 229, 0.45);
+      animation: floatUp linear infinite;
+    }
+    @keyframes floatUp {
+      0%   { transform: translateY(0) rotate(0deg); opacity: 0; }
+      10%  { opacity: 1; }
+      90%  { opacity: 1; }
+      100% { transform: translateY(-115vh) rotate(25deg); opacity: 0; }
+    }
+
+    /* ===== トップバー ===== */
+    .topbar {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      max-width: 960px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 4px;
+    }
+    .topbar .links { display: flex; gap: 6px; }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.9);
+      color: #4338ca;
+      font-size: 0.78rem;
+      font-weight: bold;
+      text-decoration: none;
+      border: 2px solid #c7d2fe;
+      box-shadow: 0 2px 0 #c7d2fe;
+      cursor: pointer;
+      font-family: inherit;
+      transition: transform 0.1s;
+    }
+    .pill:active { transform: translateY(2px); box-shadow: none; }
 
     h1 {
-      font-size: 1.25rem;
-      margin: 4px 0 8px;
+      position: relative;
+      z-index: 2;
+      font-size: 1.45rem;
+      margin: 2px 0 8px;
       text-align: center;
-      color: #2c3e50;
+      letter-spacing: 0.05em;
+      background: linear-gradient(90deg, #f43f5e, #a855f7, #4f46e5);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      filter: drop-shadow(0 2px 0 rgba(255,255,255,0.9));
     }
 
-    /* ゲームコンテナ */
+    /* ===== ナビゲーター ===== */
+    .nav-container {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      max-width: 960px;
+      background: rgba(255,255,255,0.95);
+      border-radius: 16px;
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 4px 0 rgba(99,102,241,0.18), 0 6px 14px rgba(0,0,0,0.06);
+      border: 2.5px solid #c7d2fe;
+    }
+    .nav-avatar {
+      width: 56px;
+      height: 56px;
+      flex-shrink: 0;
+      animation: bob 2.2s ease-in-out infinite;
+    }
+    .nav-avatar img { width: 100%; height: 100%; object-fit: contain; }
+    @keyframes bob {
+      0%, 100% { transform: translateY(0) rotate(-2deg); }
+      50%      { transform: translateY(-5px) rotate(2deg); }
+    }
+    .nav-avatar.jump { animation: jump 0.5s ease 3; }
+    @keyframes jump {
+      0%, 100% { transform: translateY(0); }
+      50%      { transform: translateY(-14px) scale(1.08); }
+    }
+    .nav-speech {
+      position: relative;
+      background: #eef2ff;
+      border-radius: 12px;
+      padding: 8px 10px;
+      flex-grow: 1;
+      font-size: 0.82rem;
+      line-height: 1.45;
+    }
+    .nav-speech::before {
+      content: '';
+      position: absolute;
+      left: -8px;
+      top: 50%;
+      transform: translateY(-50%);
+      border-width: 6px 9px 6px 0;
+      border-style: solid;
+      border-color: transparent #eef2ff transparent transparent;
+    }
+
+    /* ===== 進捗バー ===== */
+    .progress-wrap {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      max-width: 960px;
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.75rem;
+      font-weight: bold;
+      color: #4338ca;
+    }
+    .progress-bar {
+      flex: 1;
+      height: 12px;
+      background: rgba(255,255,255,0.85);
+      border: 2px solid #c7d2fe;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #f43f5e, #f59e0b, #22c55e);
+      border-radius: 999px;
+      transition: width 0.3s;
+    }
+
+    /* ===== ゲーム領域 ===== */
     #game-container {
+      position: relative;
+      z-index: 2;
       width: 100%;
       max-width: 960px;
       display: flex;
       flex-direction: column;
       gap: 10px;
+      margin-top: 8px;
     }
 
-    /* エリア設定 (3列構造) */
-    .boards-wrapper {
-      display: flex;
-      gap: 4px;
-      width: 100%;
-    }
-
+    .boards-wrapper { display: flex; gap: 5px; width: 100%; }
     .board-container {
       display: flex;
       flex-direction: column;
       align-items: center;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+      background: #fff;
     }
-
-    .board-light { flex: 5; }
-    .board-special { flex: 2.5; min-width: 65px; } /* どちらでもない枠 */
-    .board-heavy { flex: 5; }
+    .board-light { flex: 5; border: 3px solid var(--light); }
+    .board-special { flex: 2.5; min-width: 68px; border: 3px solid var(--special); }
+    .board-heavy { flex: 5; border: 3px solid var(--heavy); }
 
     .board-title {
       width: 100%;
-      padding: 5px 2px;
-      border-radius: 6px 6px 0 0;
+      padding: 6px 2px;
       font-weight: bold;
-      font-size: 0.8rem;
+      font-size: 0.82rem;
       text-align: center;
       color: white;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      line-height: 1.15;
-      word-break: break-all;
+      line-height: 1.2;
+      position: relative;
+    }
+    .light-title { background: linear-gradient(135deg, #fb7185, #f43f5e); }
+    .special-title { background: linear-gradient(135deg, #c084fc, #a855f7); }
+    .heavy-title { background: linear-gradient(135deg, #6366f1, #3730a3); }
+    .board-title .count {
+      display: inline-block;
+      min-width: 20px;
+      margin-left: 3px;
+      padding: 0 5px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.9);
+      color: #475569;
+      font-size: 0.7rem;
     }
 
     .board-desc {
       width: 100%;
-      font-size: 0.6rem;
+      font-size: 0.62rem;
       text-align: center;
-      padding: 3px 2px;
-      line-height: 1.2;
-      min-height: 38px;
+      padding: 4px 3px;
+      line-height: 1.25;
+      min-height: 40px;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: #f8fafc;
-      border-left: 1px solid #cbd5e1;
-      border-right: 1px solid #cbd5e1;
       color: #475569;
     }
-
-    .light-title { background: #e74c3c; }
-    .special-title { background: #8e44ad; }
-    .heavy-title { background: #34495e; }
+    .board-light .board-desc { background: var(--light-bg); }
+    .board-special .board-desc { background: var(--special-bg); }
+    .board-heavy .board-desc { background: var(--heavy-bg); }
 
     .drop-zone {
       width: 100%;
-      min-height: 130px;
-      background: #ffffff;
-      border: 2px dashed #cbd5e1;
-      border-top: none;
-      border-radius: 0 0 6px 6px;
-      padding: 4px 2px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 3px;
-      align-content: flex-start;
-      justify-content: center;
-      transition: background 0.2s, border-color 0.2s;
-    }
-
-    .drop-zone.drag-over {
-      background: #e8f8f5;
-      border-color: #2ecc71;
-    }
-
-    /* 待機エリア */
-    .unassigned-container {
-      width: 100%;
-      background: #fff;
-      border: 2px solid #cbd5e1;
-      border-radius: 8px;
-      padding: 6px 4px;
-    }
-
-    .unassigned-title {
-      font-size: 0.8rem;
-      font-weight: bold;
-      margin-bottom: 4px;
-      color: #64748b;
-      text-align: center;
-    }
-
-    .unassigned-zone {
-      min-height: 85px;
+      min-height: 140px;
+      padding: 5px 3px;
       display: flex;
       flex-wrap: wrap;
       gap: 4px;
+      align-content: flex-start;
       justify-content: center;
-      align-items: center;
+      transition: background 0.2s, box-shadow 0.2s;
+    }
+    .board-light .drop-zone { background: repeating-linear-gradient(45deg, #fff, #fff 8px, var(--light-bg) 8px, var(--light-bg) 16px); }
+    .board-special .drop-zone { background: repeating-linear-gradient(45deg, #fff, #fff 8px, var(--special-bg) 8px, var(--special-bg) 16px); }
+    .board-heavy .drop-zone { background: repeating-linear-gradient(45deg, #fff, #fff 8px, var(--heavy-bg) 8px, var(--heavy-bg) 16px); }
+
+    .drop-zone.drag-over {
+      background: #dcfce7 !important;
+      box-shadow: inset 0 0 0 3px #22c55e;
+    }
+    .drop-zone.deny {
+      background: #fee2e2 !important;
+      box-shadow: inset 0 0 0 3px #ef4444;
+    }
+    .selecting .board-container .drop-zone { animation: zonePulse 1s ease-in-out infinite; }
+    @keyframes zonePulse {
+      0%, 100% { box-shadow: inset 0 0 0 0 rgba(34,197,94,0); }
+      50%      { box-shadow: inset 0 0 0 3px rgba(34,197,94,0.7); }
+    }
+    .shake { animation: shake 0.4s; }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-6px); }
+      40% { transform: translateX(6px); }
+      60% { transform: translateX(-4px); }
+      80% { transform: translateX(4px); }
+    }
+    .special-hint {
+      animation: hintGlow 1.4s ease-in-out infinite;
+    }
+    @keyframes hintGlow {
+      0%, 100% { box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
+      50%      { box-shadow: 0 0 16px 4px rgba(168,85,247,0.55); }
     }
 
-    /* キャラクターカード（2列に収まるサイズ） */
+    /* ===== 待機エリア ===== */
+    .unassigned-container {
+      width: 100%;
+      background: rgba(255,255,255,0.92);
+      border: 3px dashed #94a3b8;
+      border-radius: 16px;
+      padding: 6px 4px 8px;
+    }
+    .unassigned-title {
+      font-size: 0.82rem;
+      font-weight: bold;
+      margin-bottom: 4px;
+      color: #475569;
+      text-align: center;
+    }
+    .unassigned-zone {
+      min-height: 88px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      justify-content: center;
+      align-items: center;
+      background: transparent !important;
+      padding: 2px;
+    }
+    .unassigned-container.drag-over-wrap { background: #e0f2fe; }
+
+    /* ===== キャラクターカード ===== */
     .char-card {
       width: 47%;
-      max-width: 68px;
-      background: white;
-      border: 1.5px solid #cbd5e1;
-      border-radius: 6px;
-      padding: 2px;
+      max-width: 70px;
+      border: 2px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 3px 2px 2px;
       display: flex;
       flex-direction: column;
       align-items: center;
       cursor: grab;
       touch-action: none;
       position: relative;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-      transition: transform 0.1s, box-shadow 0.1s;
+      box-shadow: 0 3px 0 rgba(100,116,139,0.25);
+      transition: transform 0.12s, box-shadow 0.12s;
     }
-
-    /* 待機ゾーンではより柔軟に配置 */
-    .unassigned-zone .char-card {
-      width: 58px;
+    .unassigned-zone .char-card { width: 60px; }
+    .board-special .char-card { width: 90%; max-width: 76px; }
+    .char-card:hover { transform: translateY(-2px); }
+    .char-card.dragging { opacity: 0.35; }
+    .char-card.selected {
+      border-color: #22c55e;
+      box-shadow: 0 0 0 3px rgba(34,197,94,0.45), 0 3px 0 rgba(100,116,139,0.25);
+      transform: translateY(-3px) scale(1.06);
     }
-
-    /* 特別枠内のカード幅 */
-    .board-special .char-card {
-      width: 90%;
+    .char-card.pop { animation: pop 0.35s; }
+    @keyframes pop {
+      0%   { transform: scale(0.6); }
+      60%  { transform: scale(1.18); }
+      100% { transform: scale(1); }
     }
+    .char-card.result-ok { border-color: #22c55e; background: #f0fdf4 !important; }
+    .char-card.result-ng { border-color: #ef4444; background: #fef2f2 !important; }
 
-    .char-card:active {
-      cursor: grabbing;
-    }
-
-    .char-card.dragging {
-      opacity: 0.4;
-    }
-
-    .char-img {
-      width: 38px;
-      height: 38px;
-      object-fit: contain;
-      pointer-events: none;
-    }
-
+    .char-img { width: 40px; height: 40px; object-fit: contain; pointer-events: none; }
     .char-name {
       font-size: 0.55rem;
       font-weight: bold;
@@ -187,23 +370,23 @@
       line-height: 1.05;
       margin-top: 1px;
       word-break: break-all;
+      pointer-events: none;
     }
-
-    .char-symbol {
-      font-size: 0.55rem;
-      color: #64748b;
-    }
-
-    /* 強調用赤字スタイル */
-    .highlight-red {
-      color: #e74c3c;
+    .char-symbol { font-size: 0.55rem; color: #64748b; pointer-events: none; }
+    .char-ans {
+      font-size: 0.5rem;
       font-weight: bold;
+      color: #fff;
+      background: #ef4444;
+      border-radius: 4px;
+      padding: 0 3px;
+      margin-top: 1px;
+      pointer-events: none;
     }
 
-    /* 判定マーク overlay */
     .result-mark {
       position: absolute;
-      top: 50%;
+      top: 40%;
       left: 50%;
       transform: translate(-50%, -50%);
       font-size: 2.4rem;
@@ -211,253 +394,304 @@
       pointer-events: none;
       z-index: 10;
       line-height: 1;
+      animation: stamp 0.35s cubic-bezier(.2,1.6,.4,1);
     }
-
-    .mark-correct { color: #22c55e; text-shadow: 0 0 4px white; }
-    .mark-wrong { color: #ef4444; text-shadow: 0 0 4px white; }
-
-    /* 操作ボタン */
-    .controls {
-      display: flex;
-      justify-content: center;
-      gap: 12px;
-      margin-top: 2px;
+    @keyframes stamp {
+      0%   { transform: translate(-50%, -50%) scale(3); opacity: 0; }
+      100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
     }
+    .mark-correct { color: #22c55e; text-shadow: 0 0 4px white, 0 0 4px white; }
+    .mark-wrong { color: #ef4444; text-shadow: 0 0 4px white, 0 0 4px white; }
 
-    .btn {
-      padding: 8px 20px;
-      font-size: 0.95rem;
-      font-weight: bold;
-      border: none;
-      border-radius: 20px;
-      cursor: pointer;
-      box-shadow: 0 3px 5px rgba(0,0,0,0.1);
-      transition: background 0.2s, transform 0.1s;
-    }
+    .highlight-red { color: #e11d48; font-weight: bold; }
 
-    .btn:active {
-      transform: scale(0.96);
-    }
-
-    .btn-submit {
-      background: #3b82f6;
-      color: white;
-    }
-
-    .btn-reset {
-      background: #94a3b8;
-      color: white;
-    }
-
-    /* ナビゲーターエリア */
-    .nav-container {
-      width: 100%;
-      max-width: 960px;
-      background: white;
-      border-radius: 10px;
-      padding: 8px 12px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      box-shadow: 0 3px 5px rgba(0,0,0,0.05);
-      border: 1.5px solid #e2e8f0;
-    }
-
-    .nav-avatar {
-      width: 52px;
-      height: 52px;
-      flex-shrink: 0;
-    }
-
-    .nav-avatar img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-    }
-
-    .nav-speech {
-      position: relative;
-      background: #f1f5f9;
-      border-radius: 8px;
-      padding: 8px 10px;
-      flex-grow: 1;
-      font-size: 0.8rem;
-      line-height: 1.4;
-    }
-
-    .nav-speech::before {
-      content: '';
-      position: absolute;
-      left: -8px;
-      top: 50%;
-      transform: translateY(-50%);
-      border-width: 5px 8px 5px 0;
-      border-style: solid;
-      border-color: transparent #f1f5f9 transparent transparent;
-    }
-
-    /* タッチ追従用のクローン要素 */
     .drag-clone {
       position: fixed;
       pointer-events: none;
       z-index: 9999;
-      opacity: 0.85;
-      transform: translate(-50%, -50%) scale(1.05);
-      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+      opacity: 0.92;
+      transform: translate(-50%, -50%) scale(1.12) rotate(4deg);
+      box-shadow: 0 10px 18px rgba(0,0,0,0.25);
     }
 
-    /* モーダル（チュートリアル） */
+    /* ===== ボタン ===== */
+    .controls { display: flex; justify-content: center; gap: 12px; margin-top: 2px; }
+    .btn {
+      padding: 10px 26px;
+      font-size: 1rem;
+      font-weight: bold;
+      font-family: inherit;
+      border: none;
+      border-radius: 999px;
+      cursor: pointer;
+      color: #fff;
+      transition: transform 0.1s, box-shadow 0.1s;
+      text-decoration: none;
+      display: inline-block;
+      text-align: center;
+    }
+    .btn:active { transform: translateY(3px); box-shadow: none !important; }
+    .btn-submit { background: linear-gradient(180deg, #60a5fa, #2563eb); box-shadow: 0 4px 0 #1d4ed8; }
+    .btn-submit.ready { animation: readyPulse 1s ease-in-out infinite; }
+    @keyframes readyPulse {
+      0%, 100% { transform: scale(1); }
+      50%      { transform: scale(1.07); }
+    }
+    .btn-reset { background: linear-gradient(180deg, #fbbf24, #f59e0b); box-shadow: 0 4px 0 #d97706; }
+    .btn-map { background: linear-gradient(180deg, #4ade80, #16a34a); box-shadow: 0 4px 0 #15803d; }
+    .btn-home { background: linear-gradient(180deg, #a78bfa, #7c3aed); box-shadow: 0 4px 0 #6d28d9; }
+
+    /* ===== 結果パネル ===== */
+    #result-panel {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      max-width: 960px;
+      margin-top: 10px;
+      background: #fff;
+      border: 3px solid #fbbf24;
+      border-radius: 18px;
+      padding: 14px 14px 16px;
+      text-align: center;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+      animation: slideIn 0.5s ease;
+    }
+    @keyframes slideIn {
+      0%   { transform: translateY(30px); opacity: 0; }
+      100% { transform: translateY(0); opacity: 1; }
+    }
+    .result-rank { font-size: 1.2rem; font-weight: bold; color: #b45309; }
+    .result-score { font-size: 2.4rem; font-weight: bold; color: #1e293b; line-height: 1.2; }
+    .result-score small { font-size: 1rem; color: #64748b; }
+    .result-stars { font-size: 1.8rem; letter-spacing: 4px; margin: 2px 0; }
+    .result-reward {
+      display: inline-flex;
+      gap: 10px;
+      margin: 6px 0;
+      padding: 6px 14px;
+      background: #fef9c3;
+      border-radius: 999px;
+      font-weight: bold;
+      font-size: 0.9rem;
+      color: #854d0e;
+    }
+    .result-talk {
+      text-align: left;
+      font-size: 0.8rem;
+      line-height: 1.6;
+      background: #eef2ff;
+      border-radius: 12px;
+      padding: 10px 12px;
+      margin: 8px 0 12px;
+      color: #334155;
+    }
+    .result-links {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    /* ===== 紙吹雪 ===== */
+    #confetti-layer { position: fixed; inset: 0; pointer-events: none; z-index: 9998; overflow: hidden; }
+    .confetti {
+      position: absolute;
+      top: -20px;
+      width: 10px;
+      height: 14px;
+      animation: fall linear forwards;
+    }
+    @keyframes fall {
+      0%   { transform: translateY(0) rotate(0deg); }
+      100% { transform: translateY(110vh) rotate(720deg); }
+    }
+
+    /* ===== 導入モーダル ===== */
     .modal-overlay {
       position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.5);
+      inset: 0;
+      background: rgba(30, 27, 75, 0.6);
       display: flex;
       justify-content: center;
       align-items: center;
       z-index: 10000;
-      padding: 15px;
+      padding: 12px;
+      overflow-y: auto;
     }
-
     .modal-content {
-      background: white;
-      border-radius: 12px;
-      padding: 18px;
-      max-width: 420px;
+      background: #fff;
+      border-radius: 20px;
+      padding: 16px 16px 18px;
+      max-width: 440px;
       width: 100%;
       text-align: center;
+      border: 4px solid #a5b4fc;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      animation: slideIn 0.5s ease;
     }
-
-    .modal-content h2 {
-      margin-top: 0;
-      font-size: 1.15rem;
-      color: #1e293b;
-    }
-
-    .modal-content p {
+    .modal-content h2 { margin: 2px 0 6px; font-size: 1.2rem; color: #4338ca; }
+    .intro-lead { font-size: 0.82rem; line-height: 1.5; color: #475569; margin: 4px 0 8px; text-align: left; }
+    .intro-card {
+      display: flex;
+      align-items: center;
+      gap: 8px;
       text-align: left;
-      font-size: 0.85rem;
-      line-height: 1.5;
-      color: #475569;
+      border-radius: 12px;
+      padding: 8px 10px;
+      margin-bottom: 7px;
+      font-size: 0.78rem;
+      line-height: 1.45;
     }
+    .intro-card .badge {
+      flex-shrink: 0;
+      width: 64px;
+      padding: 6px 2px;
+      border-radius: 10px;
+      color: #fff;
+      font-weight: bold;
+      font-size: 0.72rem;
+      text-align: center;
+      line-height: 1.2;
+    }
+    .intro-light { background: var(--light-bg); border: 2px solid #fecdd3; }
+    .intro-light .badge { background: var(--light); }
+    .intro-heavy { background: var(--heavy-bg); border: 2px solid #c7d2fe; }
+    .intro-heavy .badge { background: var(--heavy); }
+    .intro-special { background: var(--special-bg); border: 2px solid #e9d5ff; }
+    .intro-special .badge { background: var(--special); }
+    .intro-call {
+      margin: 10px 0 6px;
+      font-weight: bold;
+      color: #be185d;
+      font-size: 0.92rem;
+    }
+    .modal-sub { font-size: 0.7rem; color: #64748b; margin-top: 8px; }
+    .modal-sub a { color: #4338ca; font-weight: bold; }
 
-    .hidden {
-      display: none !important;
-    }
+    .hidden { display: none !important; }
 
     @media (min-width: 600px) {
-      .char-card {
-        width: 72px;
-        max-width: 72px;
-        padding: 4px;
-      }
-      .unassigned-zone .char-card {
-        width: 72px;
-      }
-      .char-img {
-        width: 48px;
-        height: 48px;
-      }
-      .char-name { font-size: 0.65rem; }
-      .char-symbol { font-size: 0.6rem; }
-      .drop-zone { min-height: 160px; padding: 6px; gap: 6px; }
-      .board-title { font-size: 0.95rem; }
-      .board-desc { font-size: 0.7rem; }
-      .nav-speech { font-size: 0.9rem; }
+      .char-card { width: 76px; max-width: 76px; padding: 4px; }
+      .unassigned-zone .char-card { width: 76px; }
+      .char-img { width: 52px; height: 52px; }
+      .char-name { font-size: 0.68rem; }
+      .char-symbol { font-size: 0.62rem; }
+      .drop-zone { min-height: 170px; padding: 8px; gap: 6px; }
+      .board-title { font-size: 1rem; }
+      .board-desc { font-size: 0.74rem; }
+      .nav-speech { font-size: 0.92rem; }
+      h1 { font-size: 1.9rem; }
+      .result-talk { font-size: 0.9rem; }
     }
   </style>
 </head>
 <body>
 
-  <h1>レアアース仕分けゲーム</h1>
+  <div id="bg-layer"></div>
+  <div id="confetti-layer"></div>
 
-  <!-- ナビゲーターエリア -->
+  <!-- トップバー（ホーム・マップ・サウンド） -->
+  <nav class="topbar">
+    <div class="links">
+      <a class="pill" href="home.html" id="link-home-top">🏠 ホーム</a>
+      <a class="pill" href="map.html" id="link-map-top">🗺️ マップ</a>
+    </div>
+    <button class="pill" id="btn-sound" type="button" aria-label="サウンド切り替え">🔊 サウンド</button>
+  </nav>
+
+  <h1>⚗️ レアアース仕分けゲーム ⚗️</h1>
+
+  <!-- ナビゲーター -->
   <div class="nav-container">
-    <div class="nav-avatar">
+    <div class="nav-avatar" id="nav-avatar">
       <img src="chara0_La.png" alt="ランタン" id="nav-img">
     </div>
     <div class="nav-speech" id="nav-text">
-      「僕、ランタンだよ！17キャラクターを正しいグループへドラッグ（スワイプ）してね！『どちらでもない』枠は1人だけだよ！」
+      「僕、ランタンだよ！17人のキャラクターを、軽・重どちらかのグループにドラッグ（またはタップ→エリアをタップ）してね！『どちらでもない』枠は1人だけだよ！」
     </div>
   </div>
 
-  <div id="game-container" style="margin-top: 6px;">
-    <!-- ドロップエリア（看板・解説・枠） -->
+  <!-- 進捗 -->
+  <div class="progress-wrap">
+    <span id="progress-text">仕分け 0 / 17</span>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+  </div>
+
+  <div id="game-container">
     <div class="boards-wrapper">
       <!-- 軽レアアース -->
-      <div class="board-container board-light">
-        <div class="board-title light-title">軽レアアース</div>
-        <div class="board-desc">比較的埋蔵量が多く、私たちの生活を支える働き者。</div>
+      <div class="board-container board-light" data-board="light">
+        <div class="board-title light-title">🎈 軽レアアース<span class="count" id="cnt-light">0</span></div>
+        <div class="board-desc">比較的たくさんあって、私たちの生活を支える働き者。</div>
         <div class="drop-zone" id="zone-light" data-type="light"></div>
       </div>
 
-      <!-- どちらでもない（特別枠・テキスト折り返し対応） -->
-      <div class="board-container board-special">
-        <div class="board-title special-title">どちらでも<br>ない</div>
+      <!-- どちらでもない -->
+      <div class="board-container board-special special-hint" id="board-special" data-board="special">
+        <div class="board-title special-title">❓ どちらでも<br>ない<span class="count" id="cnt-special">0</span></div>
         <div class="board-desc">1人だけ！</div>
         <div class="drop-zone" id="zone-special" data-type="special" data-limit="1"></div>
       </div>
 
       <!-- 重レアアース -->
-      <div class="board-container board-heavy">
-        <div class="board-title heavy-title">重レアアース</div>
-        <div class="board-desc">希少性が極めて高く、エリート揃い。産業の最前線を支える。</div>
+      <div class="board-container board-heavy" data-board="heavy">
+        <div class="board-title heavy-title">⚓ 重レアアース<span class="count" id="cnt-heavy">0</span></div>
+        <div class="board-desc">とても希少で高価。産業の最前線を支えるエリート。</div>
         <div class="drop-zone" id="zone-heavy" data-type="heavy"></div>
       </div>
     </div>
 
     <!-- 未配置エリア -->
-    <div class="unassigned-container">
-      <div class="unassigned-title">仕分けるキャラクター（ドラッグして移動）</div>
+    <div class="unassigned-container" id="unassigned-wrap" data-board="unassigned">
+      <div class="unassigned-title">🧪 仕分けるキャラクター（ドラッグ／タップで移動）</div>
       <div class="unassigned-zone drop-zone" id="zone-unassigned" data-type="unassigned"></div>
     </div>
 
-    <!-- コントロールボタン -->
     <div class="controls">
-      <button class="btn btn-submit" id="btn-submit">回答する</button>
-      <button class="btn btn-reset hidden" id="btn-reset">もう一度遊ぶ</button>
+      <button class="btn btn-submit" id="btn-submit" type="button">回答する</button>
+      <button class="btn btn-reset hidden" id="btn-reset" type="button">もう一度遊ぶ</button>
     </div>
   </div>
 
-  <!-- チュートリアルモーダル（2ページ構成） -->
+  <!-- 結果パネル -->
+  <div id="result-panel" class="hidden"></div>
+
+  <!-- 導入モーダル -->
   <div class="modal-overlay" id="tutorial-modal">
     <div class="modal-content">
-      <div style="text-align: center; margin-bottom: 6px;">
-        <img src="chara0_La.png" style="width: 60px; height: 60px;" id="tut-img">
+      <div style="text-align:center;">
+        <img src="chara0_La.png" style="width:68px;height:68px;" id="tut-img" alt="ランタン">
+      </div>
+      <h2>レアアースって、なあに？</h2>
+      <p class="intro-lead">
+        レアアース（希土類）は、スマホやモーター、電池など、身の回りのハイテク製品に欠かせない17人の仲間たち。<b>「軽」と「重」</b>の2グループに分けられるよ！
+      </p>
+
+      <div class="intro-card intro-light">
+        <div class="badge">🎈<br>軽レアアース</div>
+        <div>地球に<b>比較的たくさん</b>ある元素。カメラのレンズや電池など、くらしの身近で大活躍！</div>
+      </div>
+      <div class="intro-card intro-heavy">
+        <div class="badge">⚓<br>重レアアース</div>
+        <div>とても<b>希少で高価</b>な元素。強い磁石を高温でも使えるようにするなど、産業の最前線で活躍！</div>
+      </div>
+      <div class="intro-card intro-special">
+        <div class="badge">❓<br>どちらでもない</div>
+        <div>17人の中に、軽にも重にもぴったり入らない<b>特別な子が1人だけ</b>いるよ！</div>
       </div>
 
-      <!-- 1ページ目 -->
-      <div id="tut-page-1">
-        <h2>レアアースって？</h2>
-        <p>
-          レアアースは、大きく分けると<b>「軽レアアース」</b>と<b>「重レアアース」</b>の2つのグループに分類されるよ！<br><br>
-          でも実は…どちらにも当てはまらない<b>「特別な子」</b>が1人だけ混ざっているんだ！
-        </p>
-        <button class="btn btn-submit" id="btn-tut-next" style="margin-top: 8px;">次へ ➔</button>
-      </div>
-
-      <!-- 2ページ目 -->
-      <div id="tut-page-2" class="hidden">
-        <h2>遊び方</h2>
-        <p>
-          1. 下のキャラクターたちを<b>ドラッグ（スワイプ）</b>して各エリアに運ぼう！<br>
-          2. <b>「どちらでもない」枠には1人しか入れられないよ！</b>探してみてね。<br>
-          3. 全員仕分けたら「<b>回答する</b>」を押すと正解数に応じて<b>お金（Ｇ）</b>や<b>経験値（EXP）</b>がもらえるよ！
-        </p>
-        <button class="btn btn-submit" id="btn-start" style="margin-top: 8px;">ゲームスタート！</button>
-      </div>
+      <div class="intro-call">さあ、17人を正しいグループに仕分けよう！</div>
+      <button class="btn btn-submit" id="btn-start" type="button">ゲームスタート！</button>
+      <div class="modal-sub">やめたいときは <a href="home.html">ホーム</a> ／ <a href="map.html">マップ</a> へ</div>
     </div>
   </div>
 
-  <!-- 効果音読み込み -->
-  <audio id="se-pochi" src="SE_pochi.mp3" preload="auto"></audio>
-  <audio id="se-hayaoshi" src="SE_hayaoshi.mp3" preload="auto"></audio>
-
-  <script>
-    // 17キャラクターデータ定義
+  <script src="areaconfig.js"></script>
+<script>function reGS(){try{return JSON.parse(localStorage.getItem("rareEarthGameState"))||{}}catch(e){return {}}}</script>
+<script>
+    // ===================== データ =====================
     const charactersData = [
-      // どちらでもない (特別枠)
       { id: "Sc", name: "スカンジウム", symbol: "Sc", type: "special", img: "chara0_Sc.png", color: "#f8fafc" },
-      // 軽レアアース
       { id: "La", name: "ランタン", symbol: "La", type: "light", img: "chara0_La.png", color: "#e0f2fe" },
       { id: "Ce", name: "セリウム", symbol: "Ce", type: "light", img: "chara0_Ce.png", color: "#fef08a" },
       { id: "Pr", name: "プラセオジム", symbol: "Pr", type: "light", img: "chara0_Pr.png", color: "#d9f99d" },
@@ -465,7 +699,6 @@
       { id: "Pm", name: "プロメチウム", symbol: "Pm", type: "light", img: "chara0_Pm.png", color: "#e9d5ff" },
       { id: "Sm", name: "サマリウム", symbol: "Sm", type: "light", img: "chara0_Sm.png", color: "#ffedd5" },
       { id: "Eu", name: "ユウロピウム", symbol: "Eu", type: "light", img: "chara0_Eu.png", color: "#fecaca" },
-      // 重レアアース
       { id: "Y",  name: "イットリウム", symbol: "Y",  type: "heavy", img: "chara0_Y.png",  color: "#bae6fd" },
       { id: "Gd", name: "ガドリニウム", symbol: "Gd", type: "heavy", img: "chara0_Gd.png", color: "#e2e8f0" },
       { id: "Tb", name: "テルビウム", symbol: "Tb", type: "heavy", img: "chara0_Tb.png", color: "#bbf7d0" },
@@ -476,312 +709,572 @@
       { id: "Yb", name: "イッテルビウム", symbol: "Yb", type: "heavy", img: "chara0_Yb.png", color: "#fef08a" },
       { id: "Lu", name: "ルテチウム", symbol: "Lu", type: "heavy", img: "chara0_Lu.png", color: "#f1f5f9" }
     ];
+    const TYPE_LABEL = { light: "軽", heavy: "重", special: "特別" };
+    const INITIAL_NAV = "「僕、ランタンだよ！17人のキャラクターを、軽・重どちらかのグループにドラッグ（またはタップ→エリアをタップ）してね！『どちらでもない』枠は1人だけだよ！」";
 
     let isGameActive = true;
-    let draggedElement = null;
-    let touchClone = null;
+    let drag = null;          // ドラッグ中の情報
+    let selectedCard = null;  // タップ選択中のカード
 
-    function playSE(id) {
-      const audio = document.getElementById(id);
-      if (audio) {
-        audio.currentTime = 0;
-        audio.play().catch(() => {});
+    // ===================== サウンド（Web Audioで生成） =====================
+    const SND = (() => {
+      let ctx = null, master = null, bgmGain = null, sfxGain = null, noiseBuf = null;
+      let muted = false, bgmRunning = false, timer = null, step = 0, nextTime = 0;
+      try { muted = localStorage.getItem('rareEarthMuted') === '1'; } catch (e) {}
+
+      const BPM = 112;
+      const STEP = 60 / BPM / 2; // 8分音符
+      const mtof = m => 440 * Math.pow(2, (m - 69) / 12);
+
+      // C - Am - F - G
+      const CHORDS = [[60,64,67,72],[57,60,64,69],[53,57,60,65],[55,59,62,67]];
+      const BASS = [36,33,29,31];
+      const ARP = [0,1,2,3,2,1,2,1];
+      const MELODY = [
+        79,null,76,null,72,null,76,null,
+        76,null,72,null,69,null,72,null,
+        72,null,69,null,72,null,76,null,
+        74,null,79,null,74,null,71,null
+      ];
+
+      function ensure() {
+        if (ctx) return ctx;
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return null;
+        ctx = new AC();
+        master = ctx.createGain();
+        master.gain.value = muted ? 0 : 1;
+        master.connect(ctx.destination);
+        bgmGain = ctx.createGain(); bgmGain.gain.value = 0.16; bgmGain.connect(master);
+        sfxGain = ctx.createGain(); sfxGain.gain.value = 0.5; sfxGain.connect(master);
+        const len = ctx.sampleRate * 0.5;
+        noiseBuf = ctx.createBuffer(1, len, ctx.sampleRate);
+        const d = noiseBuf.getChannelData(0);
+        for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+        return ctx;
       }
+
+      function tone(freq, t, dur, type, vol, dest, slideTo) {
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = type;
+        o.frequency.setValueAtTime(freq, t);
+        if (slideTo) o.frequency.exponentialRampToValueAtTime(slideTo, t + dur);
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(vol, t + 0.01);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+        o.connect(g); g.connect(dest);
+        o.start(t); o.stop(t + dur + 0.02);
+      }
+
+      function noise(t, dur, vol, dest, freq) {
+        const s = ctx.createBufferSource();
+        s.buffer = noiseBuf;
+        const f = ctx.createBiquadFilter();
+        f.type = 'highpass'; f.frequency.value = freq || 6000;
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(vol, t);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+        s.connect(f); f.connect(g); g.connect(dest);
+        s.start(t); s.stop(t + dur + 0.02);
+      }
+
+      function scheduleStep(i, t) {
+        const bar = Math.floor(i / 8) % 4;
+        const pos = i % 8;
+        const chord = CHORDS[bar];
+        // アルペジオ
+        tone(mtof(chord[ARP[pos]]), t, STEP * 1.6, 'triangle', 0.5, bgmGain);
+        // ベース
+        if (pos === 0 || pos === 4) tone(mtof(BASS[bar]), t, STEP * 3.6, 'sine', 0.9, bgmGain);
+        // メロディ
+        const m = MELODY[i % 32];
+        if (m) tone(mtof(m), t, STEP * 1.9, 'sine', 0.55, bgmGain);
+        // ドラム
+        if (pos === 0 || pos === 4) tone(140, t, 0.12, 'sine', 0.9, bgmGain, 45);
+        if (pos % 2 === 1) noise(t, 0.04, 0.22, bgmGain, 7000);
+        if (pos === 2 || pos === 6) noise(t, 0.09, 0.25, bgmGain, 2500);
+      }
+
+      function scheduler() {
+        while (nextTime < ctx.currentTime + 0.25) {
+          scheduleStep(step, nextTime);
+          nextTime += STEP;
+          step++;
+        }
+      }
+
+      function startBgm() {
+        if (!ensure() || bgmRunning) return;
+        if (ctx.state === 'suspended') ctx.resume();
+        bgmRunning = true;
+        step = 0;
+        nextTime = ctx.currentTime + 0.1;
+        timer = setInterval(scheduler, 50);
+      }
+
+      function sfx(name, n) {
+        if (!ensure() || muted) return;
+        if (ctx.state === 'suspended') ctx.resume();
+        const t = ctx.currentTime;
+        const d = sfxGain;
+        switch (name) {
+          case 'click':
+            tone(800, t, 0.06, 'triangle', 0.6, d); break;
+          case 'pick':
+            tone(520, t, 0.09, 'square', 0.25, d, 880); break;
+          case 'drop':
+            tone(420, t, 0.14, 'sine', 0.8, d, 260);
+            tone(880, t + 0.02, 0.06, 'triangle', 0.35, d); break;
+          case 'select':
+            tone(660, t, 0.07, 'triangle', 0.5, d);
+            tone(990, t + 0.06, 0.07, 'triangle', 0.5, d); break;
+          case 'error':
+            tone(160, t, 0.16, 'sawtooth', 0.35, d);
+            tone(130, t + 0.17, 0.2, 'sawtooth', 0.35, d); break;
+          case 'roll':
+            for (let i = 0; i < 12; i++) noise(t + i * (0.09 - i * 0.003), 0.05, 0.5, d, 1800);
+            break;
+          case 'ding': {
+            const sc = [72,74,76,79,81,84,86,88];
+            const m = sc[Math.min(n || 0, 7)];
+            tone(mtof(m), t, 0.35, 'triangle', 0.6, d);
+            tone(mtof(m + 12), t, 0.2, 'sine', 0.25, d);
+            break;
+          }
+          case 'buzz':
+            tone(200, t, 0.18, 'square', 0.25, d, 120); break;
+          case 'fanfare':
+            [72,76,79,84].forEach((m, i) => {
+              tone(mtof(m), t + i * 0.14, 0.35, 'square', 0.22, d);
+              tone(mtof(m - 12), t + i * 0.14, 0.35, 'triangle', 0.4, d);
+            });
+            [76,79,84].forEach(m => tone(mtof(m), t + 0.62, 0.9, 'triangle', 0.45, d));
+            break;
+          case 'nice':
+            [67,72,76].forEach((m, i) => tone(mtof(m), t + i * 0.12, 0.3, 'triangle', 0.5, d));
+            break;
+          case 'sad':
+            [67,64,60].forEach((m, i) => tone(mtof(m), t + i * 0.22, 0.4, 'sine', 0.55, d));
+            break;
+        }
+      }
+
+      function setMuted(v) {
+        muted = v;
+        try { localStorage.setItem('rareEarthMuted', v ? '1' : '0'); } catch (e) {}
+        if (master) master.gain.value = v ? 0 : 1;
+      }
+      function isMuted() { return muted; }
+      function pause() { if (ctx && ctx.state === 'running') ctx.suspend(); }
+      function resume() { if (ctx && ctx.state === 'suspended' && !muted) ctx.resume(); }
+
+      return { ensure, startBgm, sfx, setMuted, isMuted, pause, resume };
+    })();
+
+    // ===================== 画像フォールバック =====================
+    function fallbackImage(char) {
+      const canvas = document.createElement('canvas');
+      canvas.width = 100; canvas.height = 100;
+      const c = canvas.getContext('2d');
+      c.fillStyle = char.color || '#e2e8f0';
+      c.beginPath(); c.arc(50, 50, 45, 0, Math.PI * 2); c.fill();
+      c.lineWidth = 3; c.strokeStyle = '#94a3b8'; c.stroke();
+      c.fillStyle = '#334155';
+      c.font = 'bold 32px sans-serif';
+      c.textAlign = 'center'; c.textBaseline = 'middle';
+      c.fillText(char.symbol || '元素', 50, 52);
+      return canvas.toDataURL();
+    }
+    function attachFallback(img, char) {
+      img.onerror = function () { this.onerror = null; this.src = fallbackImage(char); };
     }
 
+    // ===================== 初期化 =====================
     document.addEventListener('DOMContentLoaded', () => {
+      buildBackground();
+      const navImg = document.getElementById('nav-img');
+      const tutImg = document.getElementById('tut-img');
+      const laChar = charactersData.find(c => c.id === 'La');
+      attachFallback(navImg, laChar);
+      attachFallback(tutImg, laChar);
+
       initGame();
-      setupFallbackImages();
 
-      // チュートリアル1ページ目 ➔ 2ページ目
-      const nextBtn = document.getElementById('btn-tut-next');
-      if (nextBtn) {
-        nextBtn.addEventListener('click', () => {
-          playSE('se-pochi');
-          document.getElementById('tut-page-1').classList.add('hidden');
-          document.getElementById('tut-page-2').classList.remove('hidden');
-        });
-      }
-
-      // スタートボタン
-      const startBtn = document.getElementById('btn-start');
-      if (startBtn) {
-        startBtn.addEventListener('click', closeTutorial);
-        startBtn.addEventListener('touchend', (e) => {
-          e.preventDefault();
-          closeTutorial();
-        });
-      }
-
+      document.getElementById('btn-start').addEventListener('click', startGame);
       document.getElementById('btn-submit').addEventListener('click', submitAnswers);
       document.getElementById('btn-reset').addEventListener('click', resetGame);
+
+      const soundBtn = document.getElementById('btn-sound');
+      updateSoundButton();
+      soundBtn.addEventListener('click', () => {
+        SND.ensure();
+        SND.setMuted(!SND.isMuted());
+        updateSoundButton();
+        SND.sfx('click');
+      });
+
+      // エリアのタップ（カード選択中に配置）
+      document.querySelectorAll('[data-board]').forEach(board => {
+        board.addEventListener('click', (e) => {
+          if (!isGameActive || !selectedCard) return;
+          if (e.target.closest('.char-card')) return;
+          const zone = board.querySelector('.drop-zone');
+          const card = selectedCard;
+          clearSelection();
+          placeCard(card, zone);
+        });
+      });
+
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) SND.pause(); else SND.resume();
+      });
     });
 
-    function closeTutorial() {
-      const modal = document.getElementById('tutorial-modal');
-      if (modal) {
-        modal.classList.add('hidden');
+    function updateSoundButton() {
+      document.getElementById('btn-sound').textContent = SND.isMuted() ? '🔇 サウンドOFF' : '🔊 サウンドON';
+    }
+
+    function startGame() {
+      SND.ensure();
+      SND.sfx('click');
+      SND.startBgm();
+      document.getElementById('tutorial-modal').classList.add('hidden');
+      document.getElementById('nav-avatar').classList.add('jump');
+      setTimeout(() => document.getElementById('nav-avatar').classList.remove('jump'), 1600);
+    }
+
+    function buildBackground() {
+      const layer = document.getElementById('bg-layer');
+      const syms = charactersData.map(c => c.symbol);
+      for (let i = 0; i < 16; i++) {
+        const b = document.createElement('div');
+        const size = 34 + Math.random() * 50;
+        b.className = 'bg-bubble';
+        b.textContent = syms[i % syms.length];
+        b.style.width = b.style.height = size + 'px';
+        b.style.fontSize = (size * 0.38) + 'px';
+        b.style.left = (Math.random() * 100) + '%';
+        b.style.animationDuration = (14 + Math.random() * 16) + 's';
+        b.style.animationDelay = (-Math.random() * 20) + 's';
+        layer.appendChild(b);
       }
-      playSE('se-pochi');
     }
 
     function initGame() {
-      const unassignedZone = document.getElementById('zone-unassigned');
-      unassignedZone.innerHTML = '';
-      document.getElementById('zone-light').innerHTML = '';
-      document.getElementById('zone-special').innerHTML = '';
-      document.getElementById('zone-heavy').innerHTML = '';
-
+      ['zone-unassigned', 'zone-light', 'zone-special', 'zone-heavy'].forEach(id => {
+        document.getElementById(id).innerHTML = '';
+      });
+      const unassigned = document.getElementById('zone-unassigned');
       const shuffled = [...charactersData].sort(() => Math.random() - 0.5);
-
-      shuffled.forEach(char => {
-        const card = createCharCard(char);
-        unassignedZone.appendChild(card);
-      });
-
-      const dropZones = document.querySelectorAll('.drop-zone');
-      dropZones.forEach(zone => {
-        zone.addEventListener('dragover', handleDragOver);
-        zone.addEventListener('dragleave', handleDragLeave);
-        zone.addEventListener('drop', handleDrop);
-      });
+      shuffled.forEach(char => unassigned.appendChild(createCharCard(char)));
+      selectedCard = null;
+      document.body.classList.remove('selecting');
+      updateCounts();
     }
 
     function createCharCard(char) {
       const card = document.createElement('div');
       card.className = 'char-card';
-      card.draggable = true;
       card.dataset.id = char.id;
       card.dataset.type = char.type;
+      card.style.background = `linear-gradient(180deg, ${char.color}, #ffffff 75%)`;
 
-      card.innerHTML = `
-        <img src="${char.img}" alt="${char.name}" class="char-img">
-        <div class="char-name">${char.name}</div>
-        <div class="char-symbol">${char.symbol}</div>
-      `;
+      const img = document.createElement('img');
+      img.src = char.img;
+      img.alt = char.name;
+      img.className = 'char-img';
+      img.draggable = false;
+      attachFallback(img, char);
 
-      card.addEventListener('dragstart', handleDragStart);
-      card.addEventListener('dragend', handleDragEnd);
+      const name = document.createElement('div');
+      name.className = 'char-name';
+      name.textContent = char.name;
+      const sym = document.createElement('div');
+      sym.className = 'char-symbol';
+      sym.textContent = char.symbol;
 
-      card.addEventListener('touchstart', handleTouchStart, { passive: false });
-      card.addEventListener('touchmove', handleTouchMove, { passive: false });
-      card.addEventListener('touchend', handleTouchEnd);
+      card.append(img, name, sym);
 
+      card.addEventListener('pointerdown', onPointerDown);
+      card.addEventListener('pointermove', onPointerMove);
+      card.addEventListener('pointerup', onPointerUp);
+      card.addEventListener('pointercancel', onPointerCancel);
       return card;
     }
 
-    function canDropToZone(zone) {
-      const limit = zone.dataset.limit ? parseInt(zone.dataset.limit) : null;
-      if (limit !== null && zone.children.length >= limit) {
-        return false;
-      }
-      return true;
+    // ===================== ドラッグ＆タップ =====================
+    function canDropToZone(zone, card) {
+      if (card && card.parentElement === zone) return true;
+      const limit = zone.dataset.limit ? parseInt(zone.dataset.limit, 10) : null;
+      return !(limit !== null && zone.children.length >= limit);
     }
 
-    function handleDragStart(e) {
+    function zoneAt(x, y) {
+      const el = document.elementFromPoint(x, y);
+      if (!el) return null;
+      const dz = el.closest('.drop-zone');
+      if (dz) return dz;
+      const board = el.closest('[data-board]');
+      return board ? board.querySelector('.drop-zone') : null;
+    }
+
+    function clearZoneHighlights() {
+      document.querySelectorAll('.drop-zone').forEach(z => z.classList.remove('drag-over', 'deny'));
+    }
+
+    function onPointerDown(e) {
       if (!isGameActive) return;
-      draggedElement = this;
-      this.classList.add('dragging');
-      playSE('se-pochi');
-      e.dataTransfer.setData('text/plain', this.dataset.id);
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      const card = e.currentTarget;
+      SND.ensure();
+      drag = { card, sx: e.clientX, sy: e.clientY, moved: false, clone: null, id: e.pointerId };
+      try { card.setPointerCapture(e.pointerId); } catch (err) {}
     }
 
-    function handleDragEnd() {
-      this.classList.remove('dragging');
-      draggedElement = null;
-    }
-
-    function handleDragOver(e) {
-      if (!isGameActive) return;
-      e.preventDefault();
-      if (canDropToZone(this)) {
-        this.classList.add('drag-over');
+    function onPointerMove(e) {
+      if (!drag || drag.card !== e.currentTarget) return;
+      const dx = e.clientX - drag.sx, dy = e.clientY - drag.sy;
+      if (!drag.moved && Math.hypot(dx, dy) > 6) {
+        drag.moved = true;
+        clearSelection();
+        const rect = drag.card.getBoundingClientRect();
+        drag.clone = drag.card.cloneNode(true);
+        drag.clone.classList.add('drag-clone');
+        drag.clone.style.width = rect.width + 'px';
+        document.body.appendChild(drag.clone);
+        drag.card.classList.add('dragging');
+        SND.sfx('pick');
+      }
+      if (drag.moved) {
+        e.preventDefault();
+        drag.clone.style.left = e.clientX + 'px';
+        drag.clone.style.top = e.clientY + 'px';
+        clearZoneHighlights();
+        const zone = zoneAt(e.clientX, e.clientY);
+        if (zone) zone.classList.add(canDropToZone(zone, drag.card) ? 'drag-over' : 'deny');
       }
     }
 
-    function handleDragLeave() {
-      this.classList.remove('drag-over');
-    }
-
-    function handleDrop(e) {
-      if (!isGameActive) return;
-      e.preventDefault();
-      this.classList.remove('drag-over');
-
-      if (draggedElement && canDropToZone(this)) {
-        this.appendChild(draggedElement);
+    function onPointerUp(e) {
+      if (!drag || drag.card !== e.currentTarget) return;
+      const d = drag;
+      drag = null;
+      if (d.clone) d.clone.remove();
+      d.card.classList.remove('dragging');
+      clearZoneHighlights();
+      if (d.moved) {
+        const zone = zoneAt(e.clientX, e.clientY);
+        if (zone) placeCard(d.card, zone);
+      } else if (isGameActive) {
+        toggleSelect(d.card);
       }
     }
 
-    function handleTouchStart(e) {
-      if (!isGameActive) return;
-      playSE('se-pochi');
-      draggedElement = this;
-      
-      const touch = e.touches[0];
-      const rect = this.getBoundingClientRect();
-
-      touchClone = this.cloneNode(true);
-      touchClone.classList.add('drag-clone');
-      touchClone.style.width = rect.width + 'px';
-      touchClone.style.left = touch.clientX + 'px';
-      touchClone.style.top = touch.clientY + 'px';
-      document.body.appendChild(touchClone);
-
-      this.classList.add('dragging');
+    function onPointerCancel() {
+      if (!drag) return;
+      if (drag.clone) drag.clone.remove();
+      drag.card.classList.remove('dragging');
+      clearZoneHighlights();
+      drag = null;
     }
 
-    function handleTouchMove(e) {
-      if (!isGameActive || !touchClone) return;
-      e.preventDefault();
+    function toggleSelect(card) {
+      if (selectedCard === card) { clearSelection(); return; }
+      clearSelection();
+      selectedCard = card;
+      card.classList.add('selected');
+      document.body.classList.add('selecting');
+      SND.sfx('select');
+      setNav("「<b>" + card.querySelector('.char-name').textContent + "</b>を選んだよ！入れたいエリアをタップしてね！」");
+    }
 
-      const touch = e.touches[0];
-      touchClone.style.left = touch.clientX + 'px';
-      touchClone.style.top = touch.clientY + 'px';
+    function clearSelection() {
+      if (selectedCard) selectedCard.classList.remove('selected');
+      selectedCard = null;
+      document.body.classList.remove('selecting');
+    }
 
-      const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
-      const dropZone = elementBelow ? elementBelow.closest('.drop-zone') : null;
-
-      document.querySelectorAll('.drop-zone').forEach(z => z.classList.remove('drag-over'));
-      if (dropZone && canDropToZone(dropZone)) {
-        dropZone.classList.add('drag-over');
+    function placeCard(card, zone) {
+      if (!zone || card.parentElement === zone) return;
+      if (!canDropToZone(zone, card)) {
+        zone.classList.add('shake');
+        setTimeout(() => zone.classList.remove('shake'), 450);
+        SND.sfx('error');
+        setNav("「『どちらでもない』枠には<b>1人しか</b>入れないよ！ほかの子と入れ替えたいときは、先に今いる子を外に出してね。」");
+        return;
+      }
+      zone.appendChild(card);
+      card.classList.remove('pop');
+      void card.offsetWidth;
+      card.classList.add('pop');
+      SND.sfx('drop');
+      updateCounts();
+      const left = document.getElementById('zone-unassigned').children.length;
+      if (left === 0) {
+        setNav("「全員仕分けたね！自信があったら『<b>回答する</b>』を押してね！直したいときは動かしてもOKだよ！」");
+        document.getElementById('nav-avatar').classList.add('jump');
+        setTimeout(() => document.getElementById('nav-avatar').classList.remove('jump'), 1600);
+      } else {
+        setNav("「のこり<b>" + left + "人</b>！その調子！」");
       }
     }
 
-    function handleTouchEnd(e) {
-      if (!isGameActive) return;
+    function setNav(html) { document.getElementById('nav-text').innerHTML = html; }
 
-      if (touchClone) {
-        touchClone.remove();
-        touchClone = null;
-      }
-
-      if (draggedElement) {
-        draggedElement.classList.remove('dragging');
-
-        const touch = e.changedTouches[0];
-        const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
-        const dropZone = elementBelow ? elementBelow.closest('.drop-zone') : null;
-
-        if (dropZone && canDropToZone(dropZone)) {
-          dropZone.appendChild(draggedElement);
-        }
-
-        document.querySelectorAll('.drop-zone').forEach(z => z.classList.remove('drag-over'));
-        draggedElement = null;
-      }
+    function updateCounts() {
+      const total = charactersData.length;
+      ['light', 'special', 'heavy'].forEach(t => {
+        document.getElementById('cnt-' + t).textContent = document.getElementById('zone-' + t).children.length;
+      });
+      const left = document.getElementById('zone-unassigned').children.length;
+      const done = total - left;
+      document.getElementById('progress-text').textContent = '仕分け ' + done + ' / ' + total;
+      document.getElementById('progress-fill').style.width = (done / total * 100) + '%';
+      document.getElementById('btn-submit').classList.toggle('ready', left === 0 && isGameActive);
     }
 
+    // ===================== 回答 =====================
     function submitAnswers() {
       if (!isGameActive) return;
-
-      playSE('se-hayaoshi');
-
+      SND.ensure();
       const unassignedZone = document.getElementById('zone-unassigned');
-
       if (unassignedZone.children.length > 0) {
-        document.getElementById('nav-text').innerText = 
-          "「まだ仕分けられていないキャラクターがいるよ！全員をエリアに配置してね！」";
+        SND.sfx('error');
+        const wrap = document.getElementById('unassigned-wrap');
+        wrap.classList.add('shake');
+        setTimeout(() => wrap.classList.remove('shake'), 450);
+        setNav("「まだ仕分けられていないキャラクターがいるよ！全員をエリアに配置してね！」");
         return;
       }
 
       isGameActive = false;
+      clearSelection();
+      document.getElementById('btn-submit').classList.add('hidden');
+      document.getElementById('btn-submit').classList.remove('ready');
+      document.getElementById('board-special').classList.remove('special-hint');
+      setNav("「さあ、結果はどうかな…？ドキドキ…！」");
+      SND.sfx('roll');
 
+      const cards = Array.from(document.querySelectorAll('#game-container .char-card'));
       let correctCount = 0;
       const totalCount = charactersData.length;
 
-      const cards = document.querySelectorAll('.char-card');
-      cards.forEach(card => {
-        card.draggable = false;
-        const parentZone = card.parentElement;
-        const targetType = parentZone.dataset.type;
-        const correctType = card.dataset.type;
+      cards.forEach((card, i) => {
+        setTimeout(() => {
+          const targetType = card.parentElement.dataset.type;
+          const correctType = card.dataset.type;
+          const mark = document.createElement('div');
+          mark.className = 'result-mark';
+          if (targetType === correctType) {
+            correctCount++;
+            mark.textContent = '◯';
+            mark.classList.add('mark-correct');
+            card.classList.add('result-ok');
+            SND.sfx('ding', correctCount - 1);
+          } else {
+            mark.textContent = '✕';
+            mark.classList.add('mark-wrong');
+            card.classList.add('result-ng');
+            const ans = document.createElement('div');
+            ans.className = 'char-ans';
+            ans.textContent = '正解:' + TYPE_LABEL[correctType];
+            card.appendChild(ans);
+            SND.sfx('buzz');
+          }
+          card.appendChild(mark);
 
-        const mark = document.createElement('div');
-        mark.className = 'result-mark';
-
-        if (targetType === correctType) {
-          correctCount++;
-          mark.innerText = '◯';
-          mark.classList.add('mark-correct');
-        } else {
-          mark.innerText = '✕';
-          mark.classList.add('mark-wrong');
-        }
-        card.appendChild(mark);
+          if (i === cards.length - 1) setTimeout(() => showResult(correctCount, totalCount), 500);
+        }, 900 + i * 140);
       });
+    }
 
+    function showResult(correctCount, totalCount) {
       const rewardG = correctCount * 100;
       const rewardEXP = RE.capExp(reGS(), correctCount * 50, 0.15);
-    try { grantReward(rewardG, rewardEXP, null); } catch (e) {}
+      try { grantReward(rewardG, rewardEXP, null); } catch (e) {}
 
-      // 指定された改行と赤字強調（スカンジウム・ランタン）のセリフ
-      const lanthanumTalk = `<br><br>💡 <b>「ちなみに、<span class="highlight-red">スカンジウム</span>は軽・重のどちらにもぴったり当てはまらない特別な元素なんだよ！<br>あとね、重レアアースはとっても希少で採るのも大変だから、お値段がすごく高価（プレミアム）なんだ！<br><br>それに比べて僕、<span class="highlight-red">ランタン</span>は地球上にたくさんあってリーズナブル！カメラのレンズやハイブリッドカーの電池でも大活躍してる、とっても身近で頼もしい存在なんだ〜！」</b>`;
-
-      const navText = document.getElementById('nav-text');
+      let rank, stars, tip;
       if (correctCount === totalCount) {
-        navText.innerHTML = `「<b>パーフェクト！素晴らしいよ！</b><br>全${totalCount}問大正解！<br>報酬: <b>${rewardG} G</b> / <b>${rewardEXP} EXP</b> をゲットしたよ！」${lanthanumTalk}`;
-      } else if (correctCount >= 12) {
-        navText.innerHTML = `「<b>すごい！もう少し！</b><br>${totalCount}問中 <b>${correctCount}問</b> 正解だよ！<br>報酬: <b>${rewardG} G</b> / <b>${rewardEXP} EXP</b> をゲット！」${lanthanumTalk}`;
+        rank = '🏆 レアアースマスター！'; stars = '⭐⭐⭐'; tip = 'パーフェクト！素晴らしいよ！';
+        SND.sfx('fanfare'); confetti(80);
+      } else if (correctCount >= 15) {
+        rank = '✨ もう少しで完璧！'; stars = '⭐⭐⭐'; tip = 'すごい！あと少しでパーフェクトだよ！';
+        SND.sfx('fanfare'); confetti(50);
+      } else if (correctCount >= 10) {
+        rank = '👍 いい調子！'; stars = '⭐⭐☆'; tip = 'なかなかやるね！間違えたところを見直そう！';
+        SND.sfx('nice'); confetti(25);
       } else {
-        navText.innerHTML = `「結果は ${totalCount}問中 <b>${correctCount}問</b> 正解だったよ。<br>間違えたところを見直してもう一度挑戦してみよう！<br>報酬: <b>${rewardG} G</b> / <b>${rewardEXP} EXP</b>」${lanthanumTalk}`;
+        rank = '🌱 これからだよ！'; stars = '⭐☆☆'; tip = '赤い✕のカードの「正解」を見て、もう一度挑戦してみよう！';
+        SND.sfx('sad');
       }
 
-      document.getElementById('btn-submit').classList.add('hidden');
+      setNav("「" + tip + "」");
+
+      const panel = document.getElementById('result-panel');
+      panel.innerHTML = `
+        <div class="result-rank">${rank}</div>
+        <div class="result-stars">${stars}</div>
+        <div class="result-score">${correctCount}<small> / ${totalCount} 問正解</small></div>
+        <div class="result-reward"><span>💰 ${rewardG} G</span><span>📈 ${rewardEXP} EXP</span></div>
+        <div class="result-talk">
+          💡 <b>「ちなみに、<span class="highlight-red">スカンジウム</span>は軽・重のどちらにもぴったり当てはまらない特別な元素なんだよ！<br>
+          あとね、重レアアースはとっても希少で採るのも大変だから、お値段がすごく高価（プレミアム）なんだ！<br><br>
+          それに比べて僕、<span class="highlight-red">ランタン</span>は地球上にたくさんあってリーズナブル！カメラのレンズやハイブリッドカーの電池でも大活躍してる、とっても身近で頼もしい存在なんだ〜！」</b>
+        </div>
+        <div class="result-links">
+          <button class="btn btn-reset" id="btn-reset2" type="button">🔁 もう一度遊ぶ</button>
+          <a class="btn btn-map" href="map.html">🗺️ マップへ</a>
+          <a class="btn btn-home" href="home.html">🏠 ホームへ</a>
+        </div>`;
+      panel.classList.remove('hidden');
+      document.getElementById('btn-reset2').addEventListener('click', resetGame);
       document.getElementById('btn-reset').classList.remove('hidden');
+      setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'center' }), 200);
     }
 
-    function grantReward(g,e,elem){
-  let gs={};try{gs=JSON.parse(localStorage.getItem('rareEarthGameState'))||{}}catch(x){}
-  if(gs.money==null)gs.money=1500;
-  if(gs.level==null){gs.level=1;if(gs.mudStock==null)gs.mudStock=5}
-  gs.money+=g;
-  if(elem){gs.elements=gs.elements||{};for(const k in elem)gs.elements[k]=(gs.elements[k]||0)+elem[k]}
-  RE.addExp(gs,e,{raw:true});
-  try{localStorage.setItem('rareEarthGameState',JSON.stringify(gs))}catch(x){}
-}
-function resetGame() {
-      playSE('se-pochi');
+    function confetti(n) {
+      const layer = document.getElementById('confetti-layer');
+      const colors = ['#f43f5e', '#f59e0b', '#22c55e', '#3b82f6', '#a855f7', '#facc15'];
+      for (let i = 0; i < n; i++) {
+        const p = document.createElement('div');
+        p.className = 'confetti';
+        p.style.left = (Math.random() * 100) + '%';
+        p.style.background = colors[i % colors.length];
+        p.style.animationDuration = (2 + Math.random() * 2.5) + 's';
+        p.style.animationDelay = (Math.random() * 0.8) + 's';
+        p.style.transform = 'rotate(' + (Math.random() * 360) + 'deg)';
+        layer.appendChild(p);
+        setTimeout(() => p.remove(), 5500);
+      }
+    }
+
+    // ===================== 報酬（共通セーブデータ） =====================
+    function grantReward(g, e, elem) {
+      let gs = {};
+      try { gs = JSON.parse(localStorage.getItem('rareEarthGameState')) || {}; } catch (x) {}
+      if (gs.money == null) gs.money = 1500;
+      if (gs.level == null) { gs.level = 1; if (gs.mudStock == null) gs.mudStock = 5; }
+      gs.money += g;
+      if (elem) { gs.elements = gs.elements || {}; for (const k in elem) gs.elements[k] = (gs.elements[k] || 0) + elem[k]; }
+      RE.addExp(gs, e, { raw: true });
+      try { localStorage.setItem('rareEarthGameState', JSON.stringify(gs)); } catch (x) {}
+    }
+
+    // ===================== リセット =====================
+    function resetGame() {
+      SND.ensure();
+      SND.sfx('click');
       isGameActive = true;
-      document.querySelectorAll('.result-mark').forEach(m => m.remove());
-      document.getElementById('nav-text').innerText = 
-        "「僕、ランタンだよ！17キャラクターを正しいグループへドラッグ（スワイプ）してね！『どちらでもない』枠は1人だけだよ！」";
-      
+      document.getElementById('result-panel').classList.add('hidden');
+      document.getElementById('result-panel').innerHTML = '';
       document.getElementById('btn-submit').classList.remove('hidden');
       document.getElementById('btn-reset').classList.add('hidden');
-
+      document.getElementById('board-special').classList.add('special-hint');
+      setNav(INITIAL_NAV);
       initGame();
-    }
-
-    function setupFallbackImages() {
-      const images = document.querySelectorAll('img');
-      images.forEach(img => {
-        img.onerror = function() {
-          const name = this.alt || '元素';
-          const charObj = charactersData.find(c => c.name === name) || { color: '#e2e8f0', symbol: '元素' };
-          
-          const canvas = document.createElement('canvas');
-          canvas.width = 100;
-          canvas.height = 100;
-          const ctx = canvas.getContext('2d');
-
-          ctx.fillStyle = charObj.color || '#e2e8f0';
-          ctx.beginPath();
-          ctx.arc(50, 50, 45, 0, Math.PI * 2);
-          ctx.fill();
-
-          ctx.fillStyle = '#334155';
-          ctx.font = 'bold 30px sans-serif';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(charObj.symbol || '元素', 50, 50);
-
-          this.src = canvas.toDataURL();
-        };
-      });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   </script>
-<script src="areaconfig.js"></script>
-<script>function reGS(){try{return JSON.parse(localStorage.getItem("rareEarthGameState"))||{}}catch(e){return {}}}</script>
 </body>
 </html>

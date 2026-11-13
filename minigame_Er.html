@@ -119,6 +119,8 @@ body{margin:0;background:linear-gradient(160deg,#ffc9de,#fff1f7 55%,#d9f3ff);col
   </div>
 </div>
 
+<script src="areaconfig.js"></script>
+<script>function reGS(){try{return JSON.parse(localStorage.getItem("rareEarthGameState"))||{}}catch(e){return {}}}</script>
 <script>
 (() => {
 const $ = id => document.getElementById(id);
@@ -432,7 +434,5 @@ function loop(n) { const dt = Math.min(2.5, (n - last) / 16.67); last = n; updat
 initBlocks(); balls = [newBall(false)]; layout(); requestAnimationFrame(loop);
 })();
 </script>
-<script src="areaconfig.js"></script>
-<script>function reGS(){try{return JSON.parse(localStorage.getItem("rareEarthGameState"))||{}}catch(e){return {}}}</script>
 </body>
 </html>

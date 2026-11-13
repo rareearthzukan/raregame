@@ -347,7 +347,9 @@
     </div>
   </div>
 
-  <script>
+  <script src="areaconfig.js"></script>
+<script>function reGS(){try{return JSON.parse(localStorage.getItem("rareEarthGameState"))||{}}catch(e){return {}}}</script>
+<script>
     // BGMの設定・再生制御（自動再生ブロック対応）
     const bgm = document.getElementById('bgm');
     const bgmBtn = document.getElementById('bgm-btn');
@@ -671,7 +673,5 @@
       setTimeout(() => el.remove(), 260);
     }
   </script>
-<script src="areaconfig.js"></script>
-<script>function reGS(){try{return JSON.parse(localStorage.getItem("rareEarthGameState"))||{}}catch(e){return {}}}</script>
 </body>
 </html>

@@ -77,6 +77,8 @@ button small{display:block;font-weight:400;color:var(--sub);font-size:12px}
 <p class="lnk"><a href="home.html">home.html</a>　<a href="map.html">map.html</a></p>
 </div></div>
 </div>
+<script src="areaconfig.js"></script>
+<script>function reGS(){try{return JSON.parse(localStorage.getItem("rareEarthGameState"))||{}}catch(e){return {}}}</script>
 <script>
 const EL=[
 ["Sc","スカンジウム","#b9c6dc","軽くて強い合金に使われる"],
@@ -250,7 +252,14 @@ const STAR=[[650,1250,1900],[400,750,1050],[600,1150,1700],[500,1000,1500],[500,
 function end(){g.run=false;bgm(false);stopSE();$("quit").classList.add("hide");const gk=g.C.gk||1,TH=STAR[ri]||[600,1300,2000],st=g.coin>=TH[2]?3:g.coin>=TH[1]?2:g.coin>=TH[0]?1:0;
  $("rt").textContent="閉店！おつかれさま";
  $("rb").innerHTML=luRow(st)+`<span class="flag">${FLAGS[g.C.flag]}</span><br><small>${g.C.n}</small><br>仕事っぷり<br><span style="font-size:28px;color:#e0a800">${"★".repeat(st)}${"☆".repeat(3-st)}</span><br><small>星の数は「仕事っぷり」を表す値です<br>（売上${TH[0]}・${TH[1]}・${TH[2]}コインで★1〜3）${st<3?`<br>つぎの★まであと ${TH[st]-g.coin} コイン`:""}</small><br><small>完成させたドリンク（${g.made.length}杯）</small><div class="cups">${g.made.map(cupSVG).join("")}</div>売上 <b>${g.coin}</b> コイン<br>提供 <b>${g.served}</b>人　帰ったお客さん <b>${g.lost}</b>人${g.guests.length?`<br>ゲスト元素：<span class="gst">${[...new Set(g.guests)].map(k=>`<img src="${SP[k]}" alt="${k}" title="${NAME[k]}">`).join("")}</span>`:""}`+(g.C.ideal?`<br><small>※南鳥島店の元素配合は、研究データなどを参考にしたゲーム用の理想的な仮設定です。実際の海底泥の元素組成や含有量を示すものではありません。</small>`:"");
- fixFlags($("rb"));save();buildTitle();$("result").classList.remove("hide")}
+ /* 本編へ報酬を反映（調整はここの3つ） */
+  const LU_GOLD_RATE=0.5, LU_EXP_BASE=20+0, LU_EXP_STAR=15, LU_ELEM_PER_STAR=3;
+  try{const gs=reGS();if(gs.money==null)gs.money=1500;if(gs.level==null){gs.level=1;if(gs.mudStock==null)gs.mudStock=5}
+   const money=Math.round(g.coin*LU_GOLD_RATE),xp=RE.capExp(gs,LU_EXP_BASE+LU_EXP_STAR*st,0.15),el=st*LU_ELEM_PER_STAR;
+   gs.money+=money;if(el){gs.elements=gs.elements||{};gs.elements.Lu=(gs.elements.Lu||0)+el}
+   RE.addExp(gs,xp,{raw:true});localStorage.setItem("rareEarthGameState",JSON.stringify(gs));
+   $("rb").insertAdjacentHTML("beforeend",`<br><small>💰 +${money.toLocaleString()} G ／ ⭐ +${xp} EXP${el?` ／ Lu ×${el}`:""}</small>`)}catch(e){}
+  fixFlags($("rb"));save();buildTitle();$("result").classList.remove("hide")}
 $("again").onclick=()=>start(ri);
 $("home").onclick=()=>{$("result").classList.add("hide");$("title").classList.remove("hide")};
 let qArm=0;$("quit").onclick=()=>{if(!g||!g.run)return;if(!qArm){qArm=1;$("quit").textContent="もう一度タップで中止";setTimeout(()=>{qArm=0;$("quit").textContent="✕ やめてタイトルへ"},3000);return}

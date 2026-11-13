@@ -109,16 +109,23 @@ body{background:var(--wood) repeating-linear-gradient(90deg,#33200f 0 38px,#2b18
   <div class="bub" id="introSay"></div>
   <button class="btn" id="introBtn"></button>
 </div>
+<script src="areaconfig.js"></script>
+<script>function reGS(){try{return JSON.parse(localStorage.getItem("rareEarthGameState"))||{}}catch(e){return {}}}</script>
 <script>
 // ===== ゲーム本編との連携 =====
-// 本編側が同じキーで {gold, exp} を読み書きすればそのまま反映されます。
+// 報酬は本編の rareEarthGameState（money / exp / level）へ直接加算します。
 const SAVE_KEY = 'rareEarthSave';
 function loadSave(){ try{ return JSON.parse(localStorage.getItem(SAVE_KEY)||'{}'); }catch(e){ return {}; } }
-function addReward(g,e){
-  try{ const d=loadSave(); d.gold=(d.gold||0)+g; d.exp=(d.exp||0)+e; localStorage.setItem(SAVE_KEY,JSON.stringify(d)); }catch(err){}
+function reGS(){ try{ return JSON.parse(localStorage.getItem('rareEarthGameState'))||{}; }catch(e){ return {}; } }
+function addReward(g,e){   // 本編の保存データ(rareEarthGameState)へ直接反映：お金とEXP
+  try{
+    const gs=reGS(); if(gs.money==null) gs.money=1500; if(gs.level==null){ gs.level=1; if(gs.mudStock==null) gs.mudStock=5; }
+    gs.money+=g; RE.addExp(gs,e,{raw:true});
+    localStorage.setItem('rareEarthGameState',JSON.stringify(gs));
+  }catch(err){}
   showBar();
 }
-function showBar(){ const d=loadSave(); $('#gv').textContent=d.gold||0; $('#ev').textContent=d.exp||0; }
+function showBar(){ const d=reGS(); $('#gv').textContent=(d.money||0).toLocaleString(); $('#ev').textContent=d.exp||0; }
 
 const $=s=>document.querySelector(s);
 const ELS=[
@@ -259,7 +266,7 @@ function result(){
   const q3=(R.perfect+.75*R.good)/12;
   const total=.25*R.q1+.2*R.q2+.35*q3+.2*R.q4;
   const rank=total>=.88?'S':total>=.7?'A':total>=.5?'B':'C';
-  const m=ORD==='ingot'?1.3:1; const g=Math.round((15+150*total*total)*m), e=Math.round((5+30*total*total)*m);
+  const m=ORD==='ingot'?1.3:1; const g=Math.round((15+150*total*total)*m), e=RE.capExp(reGS(),Math.round((5+30*total*total)*m),0.15);
   addReward(g,e);
   const word={S:'極上！こりゃ店の看板だ！',A:'いい仕事だ。また頼むぜ',B:'まずまずだな。次は純度を上げよう',C:'まだ修行が足りねぇな…品質も報酬もイマイチだ'}[rank];
   say(word);
