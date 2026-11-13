@@ -418,8 +418,14 @@ const DECOR={
   plain:{win:false}
 };
 Object.keys(DECOR).forEach(k=>Object.assign(themesMaster[k],DECOR[k]));
-const dirNames = ['北の壁','東の壁','南の壁','西の壁','🌿 お庭'];
-const dirLabels = ['北','東','南','西','🌿'];
+const dirNames = ['北の壁','東の壁','南の壁','西の壁','🌿 お庭','🔭 観測室'];
+const dirLabels = ['北','東','南','西','🌿','🔭'];
+/* ═════════ 観測室（Lv50で解放される6つ目の部屋） ═════════
+   ・壁紙／ゆか（テイスト）とBGMは、ホームとは独立して観測室だけに設定できる
+   ・家具の配置は dir=5 として保存（ほかの部屋と同じしくみ）
+   ・テスト用：URLの末尾に ?obs=1 を付けると、Lv50未満でも観測室が表示される */
+const OBS_DIR=5, OBS_LEVEL=50, OBS_DEFAULT_THEME='space';
+const obsOpen=()=>(gameState.level||1)>=OBS_LEVEL||/[?&]obs=1/.test(location.search);
 
 /* ═════════ 状態管理 ═════════ */
 let gameState = {};
@@ -428,19 +434,56 @@ try {
 } catch(e) { gameState = {}; }
 const defaults = {
   miles:500, level:1, money:1500, mudStock:5, products:{}, homeFurnishings:[], placedItems:[],
-  currentTheme:'natural', currentBgm:'room', charaOwned:[], charaTasks:{}, tutorialShown6:false, newFurn:[]
+  currentTheme:'natural', currentBgm:'room', charaOwned:[], charaTasks:{}, tutorialShown6:false, newFurn:[],
+  obsTheme:null, obsBgm:null, obsAnnounced:false
 };
 Object.keys(defaults).forEach(k=>{ if(gameState[k]===undefined) gameState[k]=defaults[k]; });
 const save = ()=>{ try{ localStorage.setItem('rareEarthGameState',JSON.stringify(gameState)); }catch(e){} };
 const $ = id=>document.getElementById(id);
 let dir = 0, tab = 'shop';
 
+/* いまの部屋のテイスト／BGMを返す（観測室だけ別設定。'home' ならホームと同じ） */
+function roomThemeKey(){
+  const base=gameState.currentTheme||'natural';
+  if(dir!==OBS_DIR) return base;
+  const k=gameState.obsTheme||OBS_DEFAULT_THEME;
+  return (k!=='home'&&themesMaster[k])?k:base;
+}
+function roomBgmKey(){
+  const base=gameState.currentBgm||'room';
+  if(dir!==OBS_DIR) return base;
+  const k=gameState.obsBgm;
+  return (k&&k!=='home'&&bgmMaster[k])?k:base;
+}
+function buildDirBtns(){
+  const db=$('dirBtns'); if(!db) return;
+  const n=obsOpen()?dirLabels.length:5;
+  if(db.dataset.n===String(n)) return;
+  db.dataset.n=String(n);
+  db.innerHTML=dirLabels.slice(0,n).map((l,i)=>`<button class="dir ${i===dir?'on':''}" id="dir${i}" onclick="changeDirection(${i})">${l}</button>`).join('');
+}
+/* Lv50到達時、いちどだけテルビウムが観測室の解放を知らせる */
+function checkObsUnlock(tries){
+  try{
+    if((gameState.level||1)<OBS_LEVEL||gameState.obsAnnounced) return;
+    if(homeBusy()){ if((tries||0)<8) setTimeout(()=>checkObsUnlock((tries||0)+1),1500); return; }
+    gameState.obsAnnounced=true; save();
+    askModal('🔭 新しい部屋が解放されました！',
+      `<div style="display:flex;gap:.6rem;align-items:flex-start"><img src="${CHARA_PREFIX}Tb.png" alt="テルビウム" style="width:3.6rem;height:3.6rem;border-radius:50%;object-fit:contain;background:#fff;flex-shrink:0" onerror="this.style.visibility='hidden'"><div style="font-size:.82rem;line-height:1.6;text-align:left"><b>テルビウム</b><br>「ホームに新しい部屋ができましたよ。<b>観測室</b>です。あなたの支援がどんな結果になったのか、私がここで報告します。気軽に覗きにきてください。」</div></div>`,
+      '観測室へ行く',()=>changeDirection(OBS_DIR),'あとで');
+  }catch(e){}
+}
+
 const bgm=$('bgm'), bgmBtn=$('bgm-btn'); 
 if(bgm) bgm.volume=.3;
 let isMuted = false;
 try { isMuted = localStorage.getItem('bgmMutedHome')==='true'; } catch(e){}
 
-function updateBgmSource(){ try{ if(bgm) bgm.src=(bgmMaster[gameState.currentBgm]||bgmMaster.room).file; }catch(e){} }
+function updateBgmSource(){ try{
+  if(!bgm) return;
+  const f=(bgmMaster[roomBgmKey()]||bgmMaster.room).file;
+  if(bgm.getAttribute('src')!==f){ bgm.src=f; if(!isMuted) bgm.play().catch(()=>{}); }   // 部屋で曲が変わるときだけ切り替える
+}catch(e){} }
 function updateBgmUI(){ if(!bgmBtn) return; bgmBtn.innerText=isMuted?'🔇 OFF':'🎵 ON'; bgmBtn.className='bgm-btn'+(isMuted?' muted':''); }
 function toggleBGM(){ 
   isMuted=!isMuted; 
@@ -455,7 +498,7 @@ function scene(){
   try {
     const t=curTheme||themesMaster.natural;
     const winEl=$('win'), doorEl=$('door'), phoneEl=$('phone'), stageEl=$('stage');
-    if(winEl) winEl.style.display=(dir===2&&t.win!==false)?'block':'none';
+    if(winEl) winEl.style.display=((dir===2||dir===OBS_DIR)&&t.win!==false)?'block':'none';
     if(doorEl) doorEl.style.display=(t.door&&dir===(t.doorDir===undefined?1:t.doorDir))?'block':'none';
     if(phoneEl) phoneEl.style.setProperty('--floor',((dir===1||dir===3)&&t.floorH)?t.floorH:t.floor);
     if(stageEl) stageEl.classList.toggle('flat',!!t.flat);
@@ -494,17 +537,17 @@ function closeModal(){ const mO=$('modal'); if(mO) mO.style.display='none'; csCl
 
 function buildControls(){
   try {
-    const db=$('dirBtns'); if(db) db.innerHTML=dirLabels.map((l,i)=>`<button class="dir" id="dir${i}" onclick="changeDirection(${i})">${l}</button>`).join('');
+    buildDirBtns();
     const tabs={shop:'🛒ショップ',display:'📦配置',theme:'🎨テイスト',music:'🎵音楽',save:'💾セーブ'};
     const tb=$('tabs'); if(tb) tb.innerHTML=Object.keys(tabs).map(k=>`<button class="tab" id="tab-${k}" onclick="switchTab('${k}')">${tabs[k]}</button>`).join('');
   } catch(e){}
 }
 function changeDirection(d){
   dir=d; const dt=$('dirTitle'); if(dt) dt.innerText=dirNames[d];
-  for(let i=0;i<5;i++){ const dBtn=$('dir'+i); if(dBtn) dBtn.classList.toggle('on',i===d); }
+  for(let i=0;i<dirLabels.length;i++){ const dBtn=$('dir'+i); if(dBtn) dBtn.classList.toggle('on',i===d); }
   const ind=$('indoor'), gar=$('garden');
   if(ind) ind.style.display=d===4?'none':'block'; if(gar) gar.style.display=d===4?'block':'none';
-  scene(); renderRoom();
+  applyTheme(roomThemeKey()); updateBgmSource(); scene(); renderRoom(); renderTheme(); renderMusic();
 }
 function switchTab(t){
   tab=t;
@@ -516,7 +559,7 @@ function switchTab(t){
 }
 function updateUI(){
   try {
-    checkTaskCompletions();
+    checkTaskCompletions(); buildDirBtns();
     const mil=$('miles'), lev=$('money'), lvl=$('level'), rlvl=$('roomLevel'), bon=$('bonus');
     if(mil) mil.innerText=(gameState.miles||0).toLocaleString();
     if(lvl) lvl.innerText=gameState.level||1;
@@ -1081,19 +1124,47 @@ function place(type,id){
 function renderTheme(){
   const L=$('L-theme'); if(!L) return;
   if((gameState.level||1)<3){ L.innerHTML='<div style="text-align:center;opacity:.7;padding:1rem;font-size:.75rem">🔒 Lv.3 到達でテイスト変更が解放されます！</div>'; return; }
-  L.innerHTML=Object.keys(themesMaster).map(k=>{ const t=themesMaster[k], cur=gameState.currentTheme===k;
+  const inObs=dir===OBS_DIR;
+  const sel=inObs?(gameState.obsTheme||OBS_DEFAULT_THEME):gameState.currentTheme;
+  let h='';
+  if(inObs){
+    h+='<div class="sec">🔭 観測室だけの壁紙・ゆかを選べます（ほかの部屋は変わりません）</div>';
+    h+=row('<div class="thumb"><span class="emoji-ph" style="display:block">🏠</span></div>','ホームと同じ','',{own:sel==='home',html:sel==='home'?'<button class="btn done">適用中</button>':`<button class="btn" onclick="setTheme('home')">変更</button>`});
+  } else if(obsOpen()){
+    h+='<div class="sec">🏠 ホーム（北・東・南・西・お庭）の壁紙・ゆかです</div>';
+  }
+  h+=Object.keys(themesMaster).map(k=>{ const t=themesMaster[k], cur=sel===k;
     const sw=`<div class="swatch"><i style="background:${t.wall}"></i><i style="background:${t.floor}"></i></div>`;
     return row(sw,t.name,'',{own:cur,html:cur?'<button class="btn done">適用中</button>':`<button class="btn" onclick="setTheme('${k}')">変更</button>`}); }).join('');
+  L.innerHTML=h;
 }
-function setTheme(k){ gameState.currentTheme=k; save(); applyTheme(k); updateUI(); toast('🎨 テイストを変更しました！'); }
+function setTheme(k){
+  if(dir===OBS_DIR) gameState.obsTheme=k; else gameState.currentTheme=k;
+  save(); applyTheme(roomThemeKey()); updateUI();
+  toast(dir===OBS_DIR?'🎨 観測室のテイストを変更しました！':'🎨 テイストを変更しました！');
+}
 
 function renderMusic(){
   const L=$('L-music'); if(!L) return;
   if((gameState.level||1)<5){ L.innerHTML='<div style="text-align:center;opacity:.7;padding:1rem;font-size:.75rem">🔒 Lv.5 到達でジュークボックスが解放されます！</div>'; return; }
-  L.innerHTML=Object.keys(bgmMaster).map(k=>{ const cur=gameState.currentBgm===k;
+  const inObs=dir===OBS_DIR;
+  const sel=inObs?(gameState.obsBgm||'home'):gameState.currentBgm;
+  let h='';
+  if(inObs){
+    h+='<div class="sec">🔭 観測室だけのBGMを選べます（ほかの部屋は変わりません）</div>';
+    h+=row('','🏠 ホームと同じBGM','',{own:sel==='home',html:sel==='home'?'<button class="btn done">再生中</button>':`<button class="btn" onclick="setBgm('home')">再生</button>`});
+  } else if(obsOpen()){
+    h+='<div class="sec">🏠 ホーム（北・東・南・西・お庭）のBGMです</div>';
+  }
+  h+=Object.keys(bgmMaster).map(k=>{ const cur=sel===k;
     return row('',`🎵 ${bgmMaster[k].name}`,'',{own:cur,html:cur?'<button class="btn done">再生中</button>':`<button class="btn" onclick="setBgm('${k}')">再生</button>`}); }).join('');
+  L.innerHTML=h;
 }
-function setBgm(k){ gameState.currentBgm=k; save(); updateBgmSource(); if(!isMuted && bgm) bgm.play().catch(()=>{}); updateUI(); toast(`🎶 「${bgmMaster[k].name}」に変更`); }
+function setBgm(k){
+  if(dir===OBS_DIR) gameState.obsBgm=k; else gameState.currentBgm=k;
+  save(); updateBgmSource(); if(!isMuted && bgm) bgm.play().catch(()=>{}); updateUI();
+  toast(k==='home'?'🎶 観測室のBGMをホームと同じにしました':`🎶 「${bgmMaster[k].name}」に変更${dir===OBS_DIR?'（観測室）':''}`);
+}
 
 function exportSave(){
   try{ const enc=btoa(unescape(encodeURIComponent(localStorage.getItem('rareEarthGameState')||JSON.stringify(gameState))));
@@ -1108,7 +1179,7 @@ function importSave(){
     try{ const p=JSON.parse(decodeURIComponent(escape(atob(c)))); if(!p||typeof p!=='object') throw 0;
       localStorage.setItem('rareEarthGameState',JSON.stringify(p)); gameState=p;
       Object.keys(defaults).forEach(k=>{ if(gameState[k]===undefined) gameState[k]=defaults[k]; });
-      applyTheme(gameState.currentTheme); updateBgmSource(); ensureCharas(); syncCrafted(); updateUI(); toast('✨ 復元しました！');
+      applyTheme(roomThemeKey()); updateBgmSource(); ensureCharas(); syncCrafted(); updateUI(); toast('✨ 復元しました！');
     }catch(e){ toast('⚠️ 無効なセーブコードです'); } });
 }
 
@@ -1123,7 +1194,9 @@ function restore(s){ gameState.placedItems=JSON.parse(s); save(); updateUI(); hi
 function undo(){ if(!past.length) return; future.push(cur()); restore(past.pop()); }
 function redo(){ if(!future.length) return; past.push(cur()); restore(future.pop()); }
 function resetRoom(){
-  askModal('お部屋のリセット','本当にリセットしてよいですか？\n置いた家具・製品・キャラをすべて片付けます。','はい',()=>{ hist(); gameState.placedItems=[]; save(); updateUI(); toast('🧹 リセットしました'); },'いいえ');
+  const name=dirNames[dir]||'この部屋';
+  askModal('お部屋のリセット',`本当にリセットしてよいですか？<br><b>${name}</b>に置いた家具・製品・キャラを片付けます。<br>ほかの部屋はそのままです。`,'はい',()=>{
+    hist(); gameState.placedItems=(gameState.placedItems||[]).filter(it=>it.dir!==dir); save(); updateUI(); toast(`🧹 ${name}をリセットしました`); },'いいえ');
 }
 
 /* ═════════ キャラクターの動き（息・ぐにぐに・ときどきしぐさ） ═════════
@@ -1177,7 +1250,7 @@ window.addEventListener('load',()=>{
   try {
     try { RE.initCommon(gameState,{page:'home',busy:homeBusy,delay:1500}); } catch(e){}   // 他ページで貯まった経験値のレベル確定＋貿易ナビ＋解放のお知らせ
     buildControls(); switchTab('shop'); changeDirection(0);
-    updateBgmSource(); updateBgmUI(); applyTheme(gameState.currentTheme||'natural'); ensureCharas(); syncCrafted(); updateUI(); histBtns(); showGdReward();
+    updateBgmSource(); updateBgmUI(); applyTheme(gameState.currentTheme||'natural'); ensureCharas(); syncCrafted(); updateUI(); histBtns(); showGdReward(); checkObsUnlock();
     if(!isMuted && bgm) bgm.play().catch(()=>['click','touchstart'].forEach(e=>document.addEventListener(e,unlock)));
   } catch(e){}
 });
