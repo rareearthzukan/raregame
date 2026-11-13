@@ -489,17 +489,11 @@
 
     <!-- きれいな鉱物・宝石発見ポップアップ（zukanと完全同期・堅牢保存） -->
     <div id="firstJewelModal" class="modal-overlay" style="display: none;" onclick="closeFirstJewelModal()">
-      <div class="modal-content" onclick="event.stopPropagation()">
+      <div class="modal-content" onclick="event.stopPropagation()" style="max-height:88vh;display:flex;flex-direction:column;">
         <div class="modal-icon">💎</div>
-        <div class="modal-title">
-          奇跡の発見！【<span id="popup-jewel-name">トパーズ</span>】をGET！
-        </div>
-        <div>
-          <img id="popup-jewel-img" class="jewel-img" src="houseki1.png" alt="鉱物" onerror="this.src='kouseki3.png'">
-        </div>
-        <div id="popup-jewel-desc" class="jewel-desc">
-          図鑑コレクションに登録されました！
-        </div>
+        <div class="modal-title" id="popup-jewel-title" style="white-space:pre-line;">奇跡の発見！</div>
+        <div id="popup-jewel-list" style="overflow-y:auto;flex:1;min-height:0;display:flex;flex-direction:column;gap:.5rem;"></div>
+        <div class="jewel-desc" style="margin-top:.5rem;">図鑑コレクションに登録されました！</div>
         <button class="btn-mine" style="margin-top:0; background:#00fff5; color:#0f3460;" onclick="closeFirstJewelModal()">やったね！</button>
       </div>
     </div>
@@ -1023,19 +1017,19 @@
     addEventListener('message', e => {
       if (e.source !== document.getElementById('drillFrame').contentWindow || !e.data || e.data.type !== 'drillResult') return;
       playSeById('se-gacha');
-      const mud = Math.max(DRILL.minMud, Math.min(DRILL.maxMud, Math.round(e.data.mud || 0))), exp = mud * DRILL.expPerMud;
+      const mud = Math.max(DRILL.minMud, Math.min(DRILL.maxMud, Math.round(e.data.mud || 0))), exp = RE.capExp(gameState, mud * DRILL.expPerMud, 0.04);
       closeDrill();
       RE.addMud(gameState, spotId in RE.AREAS ? spotId : areaKey, mud);   // 元素の割合は、精製時の産地設定（Pm・Tm・Dy・Tbなど）がそのまま効く
       gameState.lastMinedSpot = spotId;
       addExp(exp, 0.04);   // 深海ドリル：採掘と同じ上限
       const jewels = [];
-      for (let k = 0; k < Math.min(DRILL.maxGems, e.data.gems || 0); k++) { const j = RE.rollGem(areaKey, gemsMaster); registerJewel(j); jewels.push(j); }
+      for (let k = 0; k < Math.min(DRILL.maxGems, e.data.gems || 0); k++) { const j = RE.rollGem(areaKey, gemsMaster); const wasNew = !(gameState.jewels || []).includes(j.id); registerJewel(j); jewels.push({ ...j, isNew: wasNew }); }
       saveGameState(); updateUI();
       const st = document.getElementById('mining-status');
       st.innerText = jewels.length ? `💎 奇跡の発見！\n泥${mud}個 ＋ 鉱物${jewels.length}個` : `🚢 レアアース泥を\n${mud} 個 引き上げた！ (+${exp}EXP)`;
       st.classList.remove('pop', 'rare'); void st.offsetWidth; st.classList.add('pop'); if (jewels.length) st.classList.add('rare');
       playMineFx(mud, jewels.length > 0, jewels[0]);
-      if (jewels.length) setTimeout(() => showFirstJewelModal(jewels[0]), 1100);
+      if (jewels.length) setTimeout(() => showFirstJewelModal(jewels), 1100);
     });
 
 
@@ -1063,6 +1057,7 @@
       if (isRareJewel) {
         // 産地の石が出やすい（レアアース・プリズム鉱は南鳥島だけ）
         obtainedJewel = RE.rollGem(areaKey, gemsMaster);
+        obtainedJewel = { ...obtainedJewel, isNew: !(gameState.jewels || []).includes(obtainedJewel.id) };
         
         // 🔒 図鑑と確実に同期するための堅牢な保存（配列＆オブジェクト両方に登録）
         if (!gameState.jewels) gameState.jewels = [];
@@ -1122,10 +1117,22 @@
       if (Math.random() < .12) setTimeout(showCameo, 1800);
     }
 
-    function showFirstJewelModal(jewel) {
-      document.getElementById('popup-jewel-name').innerText = jewel.name;
-      document.getElementById('popup-jewel-img').src = jewel.img;
-      document.getElementById('popup-jewel-desc').innerText = jewel.desc + ' 【産地：' + RE.gemHomeName(jewel.id) + '】';
+    function showFirstJewelModal(arg) {   // 1個でも複数でも、出た分すべての画像・名前を紹介（同じ石は ×個数 にまとめる）
+      const list = (Array.isArray(arg) ? arg : [arg]).filter(Boolean);
+      const groups = [];
+      list.forEach(j => { const g = groups.find(x => x.id === j.id); if (g) { g.n++; g.isNew = g.isNew || j.isNew; } else groups.push({ ...j, n: 1 }); });
+      const newN = groups.filter(g => g.isNew).length;
+      document.getElementById('popup-jewel-title').innerText = list.length === 1
+        ? `奇跡の発見！【${list[0].name}】をGET！`
+        : `奇跡の発見！きれいな鉱物を${list.length}個GET！` + (newN ? `\n（はじめて見つけた鉱物 ${newN}種）` : '');
+      document.getElementById('popup-jewel-list').innerHTML = groups.map(g => `
+        <div style="display:flex;gap:.7rem;align-items:center;text-align:left;background:rgba(15,23,42,.8);border:1px solid ${g.isNew ? '#ffde59' : '#00fff5'};border-radius:.7rem;padding:.5rem;">
+          <img class="jewel-img" src="${g.img}" alt="${g.name}" onerror="this.src='kouseki3.png'" style="width:4.2rem;height:4.2rem;object-fit:contain;flex:none;margin:0;">
+          <div style="min-width:0;">
+            <div style="font-weight:900;color:#ffde59;">${g.name}${g.n > 1 ? ` ×${g.n}` : ''}${g.isNew ? ' <span style="background:#e94560;color:#fff;font-size:.65rem;padding:.05rem .4rem;border-radius:.6rem;vertical-align:middle;">🆕 はじめて！</span>' : ''}</div>
+            <div style="font-size:.72rem;color:#dcdde1;line-height:1.45;">${g.desc} 【産地：${RE.gemHomeName(g.id)}】</div>
+          </div>
+        </div>`).join('');
       document.getElementById('firstJewelModal').style.display = 'flex';
     }
 
