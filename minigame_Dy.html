@@ -20,7 +20,7 @@ body{background:var(--wood) repeating-linear-gradient(90deg,#33200f 0 38px,#2b18
 .nav:active{transform:scale(.95)}
 /* 大将 */
 .oyaji{display:flex;align-items:flex-end;gap:6px;position:relative}
-.chef{position:relative;width:132px;flex:none}
+.chef{position:relative;width:clamp(86px,24vw,132px);flex:none}
 .chef img{width:100%;display:block;filter:drop-shadow(0 4px 0 #0006);transform-origin:50% 100%}
 .chef img.bounce{animation:bounce .5s}.chef img.sad{animation:droop .6s}
 @keyframes bounce{0%{transform:scale(1)}30%{transform:scale(1.12,.9) translateY(4px)}60%{transform:scale(.95,1.1) translateY(-10px)}100%{transform:none}}
@@ -45,7 +45,7 @@ body{background:var(--wood) repeating-linear-gradient(90deg,#33200f 0 38px,#2b18
 .order b{color:var(--noren)}
 .order small{display:block;font-weight:700;color:#6b4a2a;font-size:.72rem}
 /* カード */
-.card{background:var(--paper);border:4px solid #6b4423;outline:2px solid #1a0f09;border-radius:12px;padding:12px;text-align:center;position:relative;overflow:hidden}
+.card{background:var(--paper);border:4px solid #6b4423;outline:2px solid #1a0f09;border-radius:12px;padding:12px;text-align:center;position:relative;overflow:visible}
 .ttl{font-weight:900;font-size:1.1rem;color:var(--noren)}
 .how{display:flex;align-items:center;justify-content:center;gap:8px;background:#fff;border:3px dashed var(--noren);border-radius:12px;padding:6px 8px;margin:7px 0;font-weight:900;font-size:1.02rem;color:var(--ink)}
 .how .fg{font-size:1.6rem;animation:poke .7s infinite}
@@ -62,6 +62,8 @@ body{background:var(--wood) repeating-linear-gradient(90deg,#33200f 0 38px,#2b18
 @keyframes hitO{0%{box-shadow:0 0 0 0 #ffb25a}100%{box-shadow:0 0 0 26px #ffb25a00}}
 @keyframes hitT{0%{box-shadow:0 0 0 0 #6cf3ea}100%{box-shadow:0 0 0 26px #6cf3ea00}}
 .row{display:flex;gap:10px}
+.act{position:sticky;bottom:8px;z-index:30;padding-top:6px}
+.act .btn{box-shadow:0 8px 16px #0009}
 .fb{font-variant-numeric:tabular-nums;min-height:1.6em;font-weight:900;margin:5px 0;font-size:1.1rem}
 .memo{margin-top:8px;text-align:left;background:#efe0bd;border-radius:8px;padding:5px 9px;font-size:.74rem;line-height:1.55;color:#5a4636}
 .memo summary{font-weight:900;cursor:pointer;color:#7a4a1a;list-style:none;display:flex;align-items:center;justify-content:center;gap:8px;padding:4px 6px;margin:-5px -9px;background:#f7e7b8;border:2px solid #b98a3e;border-radius:8px;font-size:.82rem}
@@ -94,7 +96,7 @@ body{background:var(--wood) repeating-linear-gradient(90deg,#33200f 0 38px,#2b18
 .meter{height:14px;background:#d9c7a3;border-radius:7px;overflow:hidden;margin:6px 0;border:2px solid #6b4423}
 .meter i{display:block;height:100%;background:linear-gradient(90deg,#ffb52e,#ff5a2e);width:100%}
 /* 二の型：攪拌 */
-.pot{position:relative;width:min(70vw,250px);aspect-ratio:1;margin:8px auto;border-radius:50%;border:10px solid #4a4a52;background:#222;box-shadow:0 8px 0 #111,inset 0 0 0 4px #888;overflow:hidden}
+.pot{position:relative;width:min(60vw,30vh,240px);aspect-ratio:1;margin:6px auto;border-radius:50%;border:10px solid #4a4a52;background:#222;box-shadow:0 8px 0 #111,inset 0 0 0 4px #888;overflow:hidden}
 .pot .lay{position:absolute;inset:0;border-radius:50%}
 .pot .sw1,.pot .sw2{animation:spin 3s linear infinite}
 .pot .sw1{background:conic-gradient(from 0deg,var(--c1),color-mix(in srgb,var(--c1) 55%,#fff),var(--c1),color-mix(in srgb,var(--c1) 55%,#fff),var(--c1))}
@@ -282,7 +284,7 @@ function s1(){
   $('#main').innerHTML=`<div class="card" id="cd"><div class="ttl">① 粉をスープに溶かせ！</div>
   <div class="how"><span class="fg">👇</span>長押しで注ぐ → 目標ラインで離す</div>
   <div class="stage"><div class="bottle" id="bt">🧴</div><div class="bk" id="bk"><div class="st" id="st"></div><div class="tl" style="bottom:calc(${T}% - 1px)"><span>ここ！</span></div><div class="lq" id="lq" style="background:${E.sol}"></div><div class="pw" id="pw">${powder(E.ox,E.o)}</div></div></div>
-  <div class="fb" id="fb">現在 0%</div><button class="btn big" id="pb">🧪 塩酸を注ぐ（長押し）</button>
+  <div class="fb" id="fb">現在 0%</div><div class="act"><button class="btn big" id="pb">🧪 塩酸を注ぐ（長押し）</button></div>
   <details class="memo"><summary>🎓 ものしりメモ</summary><p>${tip1()}</p></details></div>`;
   const upd=()=>{ $('#lq').style.height=p+'%'; $('#pw').style.transform=`scale(1,${clamp(1-p/T,0,1)})`; $('#pw').style.opacity=p>=T?0:1; $('#st').style.height=(100-p)+'%'; $('#fb').textContent='現在 '+Math.floor(p)+'%'; };
   const b=$('#pb');
@@ -309,7 +311,7 @@ function s2(){
   <div class="combo" id="cmb"></div>
   <div class="meter"><i id="pm" style="width:0"></i></div>
   <div class="fb" id="fb">移行 0%　残り 6.0秒</div>
-  <button class="btn big orange" id="mb">🥄 まぜる！！</button>
+  <div class="act"><button class="btn big orange" id="mb">🥄 まぜる！！</button></div>
   <details class="memo"><summary>🎓 ものしりメモ</summary><p>実際は有機溶媒（P507やPC-88Aなど）を灯油で薄めて水と混ぜ、元素ごとの「油へのなじみやすさ」の差で分けます。混ぜたあとは静置して2層に分けます。</p></details></div>`;
   const spinFast=()=>{ ['sw1','sw2','ld'].forEach(id=>$('#'+id).style.animationDuration='.35s'); clearTimeout(bladeT); bladeT=setTimeout(()=>{ ['sw1','sw2','ld'].forEach(id=>{ const e=$('#'+id); if(e)e.style.animationDuration='3s'; }); },420); };
   const upd=()=>{ $('#sw1').style.opacity=1-.75*prog/100; $('#sw2').style.opacity=.2+.8*prog/100; $('#pm').style.width=prog+'%'; $('#fb').textContent=`移行 ${Math.floor(prog)}%　残り ${left.toFixed(1)}秒`; $('#tf').style.width=left/6*100+'%'; $('#tf').style.background=left<2?'#e0483a':'#41b86a'; };
@@ -342,7 +344,7 @@ function s3(){
   <div class="cells" id="cl">${'<i></i>'.repeat(N)}</div>
   <div class="hostwrap" id="hw"><div class="lane" id="ln"><div class="jc"></div></div></div>
   <div class="fb" id="fb">来るぞ…！</div>
-  <div class="row"><button class="btn big orange" id="bd">🥁 まぜ</button><button class="btn big teal" id="bk2">🔔 しずめ</button></div>
+  <div class="act row"><button class="btn big orange" id="bd">🥄 まぜ</button><button class="btn big teal" id="bk2">🔔 しずめ</button></div>
   <div class="keys">キーボード：F・D＝まぜ　J・K＝しずめ</div>
   <details class="memo"><summary>🎓 ものしりメモ</summary><p>1段ごとに少しずつ純度が上がります。実際の工場では数十〜数百段を連ねたカスケード（ミキサーセトラー）で、99.9%以上に仕上げます。</p></details></div>`;
   const ln=$('#ln'), hw=$('#hw'), cd=$('#cd'), cells=[...document.querySelectorAll('#cl i')];
@@ -397,7 +399,7 @@ function s4(){
   <div class="how"><span class="fg">👇</span>黒い針が緑のゾーンに入った瞬間にタップ！</div>
   <div class="gauge"><div class="zone" style="left:${(c-hw)*100}%;width:${hw*200}%"></div><div class="mk" id="mk"></div></div>
   <div id="ig" style="min-height:96px;font-size:2.6rem;padding-top:14px">🔥</div>
-  <div class="fb" id="fb">低温 ⇄ 高温</div><button class="btn big gold" id="cb">${ORD==='ingot'?'🔥 <ruby>鋳込む<rt>いこむ</rt></ruby>！':'🔥 <ruby>焙焼<rt>ばいしょう</rt></ruby>完了！'}</button>
+  <div class="fb" id="fb">低温 ⇄ 高温</div><div class="act"><button class="btn big gold" id="cb">${ORD==='ingot'?'🔥 <ruby>鋳込む<rt>いこむ</rt></ruby>！':'🔥 <ruby>焙焼<rt>ばいしょう</rt></ruby>完了！'}</button></div>
   <details class="memo"><summary>🎓 ものしりメモ</summary><p>${ORD==='ingot'?'<b><ruby>鋳込む<rt>いこむ</rt></ruby></b>＝溶けた金属を型に入れて冷やし固めること。精製した酸化物はフッ化物にして金属カルシウムで還元するか、溶融塩電解で金属にします。':'希土類はシュウ酸塩として沈殿します。ろ過・洗浄して900℃前後で<ruby>焙焼<rt>ばいしょう</rt></ruby>すると酸化物の粉になります。'}${E.s}の主な用途：${E.use}。</p></details></div>`;
   function loop(now){ const dt=(now-last)/1000; last=now; pos+=dir*dt*1.25; if(pos>1){pos=1;dir=-1;} if(pos<0){pos=0;dir=1;} $('#mk').style.left=pos*96+'%'; if(!stopped)rafs.push(requestAnimationFrame(loop)); }
   rafs.push(requestAnimationFrame(loop));
