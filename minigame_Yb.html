@@ -49,7 +49,7 @@ p{font-size:13.5px;line-height:1.7;color:var(--mute);margin:5px 0}
 .big.pk:active{box-shadow:0 2px 0 #9d174d}
 .big.sub{background:rgba(10,18,70,.85);color:var(--ink);box-shadow:none;border:2px solid #4f6dff;font-size:15px;padding:10px 22px}
 .big small{display:block;font-size:11.5px;font-weight:500;opacity:.85}
-.hero img{height:132px;filter:drop-shadow(0 0 16px rgba(34,211,238,.6));animation:bob 2.6s ease-in-out infinite}
+.hero img{height:150px;filter:drop-shadow(0 0 16px rgba(34,211,238,.6));animation:bob 2.6s ease-in-out infinite}
 .lk{display:flex;gap:14px;margin-top:14px}.lk a{color:var(--mute);font-size:13px;text-decoration:underline}
 .card{background:var(--card);border:1.5px solid #4458c8;border-radius:14px;padding:9px 12px;margin:6px 0;width:100%;text-align:left;font-size:13px;line-height:1.7;color:#dbe4ff}
 .card b{color:#fde68a}
@@ -77,12 +77,12 @@ p{font-size:13.5px;line-height:1.7;color:var(--mute);margin:5px 0}
 
   <!-- タイトル -->
   <div class="ov on" id="title">
-    <div class="hero"><img id="heroimg" src="chara0_Yb.png" alt="イッテルビウム"></div>
+    <div class="hero"><img id="heroimg" src="chara_Yb_glow.png" alt="イッテルビウム"></div>
     <p style="margin:6px 0 0;font-size:12px;letter-spacing:.2em">RARE EARTH MINI GAME</p>
     <h1>イッテルビウムの<br>ひかりラボ</h1>
     <p>遊びたいモードを えらんでね！</p>
     <button class="big" id="bm" type="button">🔦 ミラー・レーザー<small>ミラーを まわして 光を とどけるパズル</small></button>
-    <button class="big pk" id="bc" type="button">⚛️ ひかりのカゴ<small>ふらふら原子を 冷やして つかまえるアクション</small></button>
+    <button class="big pk" id="bc" type="button">⚛️ ひかりのカゴ<small>みどりの線の下を れんだして 原子を ひきよせ冷却！</small></button>
     <button class="big sub" id="bh" type="button">あそびかた</button>
     <div class="lk"><a href="home.html">homeに戻る</a><a href="map.html">mapに戻る</a></div>
   </div>
@@ -97,7 +97,7 @@ p{font-size:13.5px;line-height:1.7;color:var(--mute);margin:5px 0}
       <div><b>🔀 とうめいミラー</b><br>光を まっすぐ通しつつ、曲げて<b>2本に分ける</b></div>
       <div><b>⬛ かべ</b><br>光が通れない</div>
     </div>
-    <div class="card"><b>⚛️ ひかりのカゴ</b><br>ふらふら飛ぶ<b>イッテルビウム原子</b>を<b>タップ</b>するとレーザーで冷えて、<b>🔴→🟠→🔵</b>とゆっくりになるよ。<b>青くなった原子</b>をドラッグして、下の<b>光のカゴ</b>に入れよう！冷やしても時間がたつと、また熱くなっちゃう。制限時間内に ぜんぶ つかまえてね。</div>
+    <div class="card"><b>⚛️ ひかりのカゴ</b><br>ふらふら飛ぶ<b>イッテルビウム原子</b>が <b>みどりの線</b>に ちかづいたら、線の<b>下</b>を <b>れんだ</b>しよう！原子が ひきよせられて、レーザーで冷えて <b>🔴→🟠→🔵</b>と ゆっくりになるよ。<b>青くなった原子</b>は 光のカゴに すいこまれる！手をとめると また熱くなるし、はなれた原子は <b>ゆび2本</b>で 同時に冷やそう。ステージが すすむほど むずかしくなるよ。</div>
     <div class="card"><b>💡 イッテルビウムって？</b><br>スウェーデンの<b>イッテルビー村</b>が名前のもと。レーザーで冷やして光の格子にとじこめた原子を使う<b>光格子時計</b>は、宇宙の年齢でも1秒ずれないほど正確！金属を切る<b>ファイバーレーザー</b>にも使われているよ。</div>
     <button class="big" id="hb" type="button">もどる</button>
   </div>
@@ -114,7 +114,7 @@ p{font-size:13.5px;line-height:1.7;color:var(--mute);margin:5px 0}
 
   <!-- 最終結果 -->
   <div class="ov" id="end">
-    <div class="hero"><img id="endimg" src="chara0_Yb.png" alt="" style="height:110px"></div>
+    <div class="hero"><img id="endimg" src="chara_Yb_glow.png" alt="" style="height:140px"></div>
     <h1 id="et"></h1>
     <p id="ed"></p>
     <div class="rw" id="erw"></div>
@@ -165,6 +165,7 @@ case'cool':{const f=[900,1300,1800][Math.min(k,2)];tone(f,t,.18,'sine',.35,d,f*1
 case'warm':tone(300,t,.2,'sawtooth',.15,d,180);break;
 case'trap':{const m=[72,76,79,84,86,88][Math.min(k,5)];tone(mf(m),t,.22,'triangle',.6,d);tone(mf(m-12),t,.18,'sine',.4,d);noise(t,.06,.2,d,5000);break}
 case'tick':tone(1400,t,.04,'square',.18,d);break;
+case'pulse':tone(620+k*70,t,.05,'triangle',.22,d,900+k*80);break;
 case'low':tone(1000,t,.05,'square',.14,d);break;
 case'clear':[72,76,79,84].forEach((m,i)=>{tone(mf(m),t+i*.13,.35,'square',.18,d);tone(mf(m-12),t+i*.13,.35,'triangle',.4,d)});[76,79,84].forEach(m=>tone(mf(m),t+.58,.9,'triangle',.4,d));break;
 case'fail':[67,64,60,55].forEach((m,i)=>tone(mf(m),t+i*.2,.4,'sine',.5,d));break}}
@@ -236,30 +237,48 @@ function genOnce(cfg){
   ms.forEach(m=>{m.s0=m.s;m.ang=m.s===0?-45:45});
   L.rot=R;L.solved=solved;L.par=par;return L}
 function genLevel(cfg){for(let i=0;i<800;i++){const L=genOnce(cfg);if(L)return L}
+  let c={...cfg};for(let k=0;k<4;k++){c={...c,minPar:Math.max(1,c.minPar-1),m:Math.max(2,c.m-(k%2)),maxSol:(c.maxSol||10)+2};for(let i=0;i<500;i++){const L=genOnce(c);if(L)return L}}
   const easy={n:5,m:2,fx:0,sp:0,w:1,dc:0,minPar:1};for(let i=0;i<800;i++){const L=genOnce(easy);if(L)return L}return null}
 const CFG=[
  {n:5,m:2,fx:0,sp:0,w:2,dc:0,minPar:2},
  {n:5,m:3,fx:0,sp:1,w:3,dc:0,minPar:2},
  {n:6,m:4,fx:1,sp:1,w:4,dc:1,minPar:3},
  {n:6,m:5,fx:1,sp:1,w:4,dc:2,minPar:3},
- {n:7,m:6,fx:1,sp:2,w:6,dc:2,minPar:4}];
+ {n:7,m:6,fx:1,sp:2,w:6,dc:2,minPar:4},
+ {n:7,m:7,fx:2,sp:2,w:6,dc:3,minPar:4},
+ {n:8,m:8,fx:2,sp:2,w:8,dc:3,minPar:5}];
 const MFACT=[
  'イッテルビウムは、金属を切ったり つなげたりする ファイバーレーザーの なかまだよ！',
  '光を2本に分けるミラーは、レーザー装置でも 使われているよ！',
  '光は まっすぐ進んで、ミラーで 向きを変えられるんだ。',
  '工場のレーザーも ミラーや ファイバーで 光を あやつって いるよ！',
+ '光ファイバーの なかでも、光は かべで はねかえりながら 進むんだよ！',
+ 'ミラーを いくつも くみあわせて、レーザーの 向きを ぴったり あわせるんだ。',
  'ぜんぶクリア！ 光のあやつり名人だね！'];
 
 /* ===================== ひかりのカゴ（冷却原子） ===================== */
+// n:原子の数 time:制限 T:冷やす段階 need:1段階に必要なタップ数 heat:放っておくと熱くなるまで(秒)
+// rad:タップが届く半径(画面幅比) pull:ひきよせの強さ k:速さ sink:下へ落ちやすさ big:熱いほど大きい wave:線のゆれ flee:冷え途中で逃げる
 const CC=[
- {n:4,time:40,heat:6.5,k:1.0},
- {n:6,time:50,heat:5.8,k:1.1},
- {n:8,time:60,heat:5.2,k:1.2},
- {n:10,time:70,heat:4.6,k:1.3}];
+ {n:3,time:50,T:2,need:4,heat:5.0,rad:.38,pull:.10,k:1.0,sink:14},
+ {n:4,time:50,T:2,need:6,heat:4.0,rad:.30,pull:.08,k:1.1,sink:10},
+ {n:5,time:55,T:2,need:7,heat:3.5,rad:.24,pull:.07,k:1.2,sink:8},
+ {n:6,time:55,T:2,need:8,heat:3.0,rad:.19,pull:.06,k:1.3,sink:5},
+ {n:6,time:60,T:2,need:7,heat:3.2,rad:.20,pull:.06,k:1.3,sink:5,wave:.08},
+ {n:5,time:70,T:4,need:6,heat:2.4,rad:.18,pull:.05,k:1.35,sink:5,big:.55,flee:true}];
+const CSAY=[
+ 'みどりの線の 下を れんだ！ 原子が ちかづいたら ひきよせて 冷やそう…！',
+ 'ステージ2！ 原子が 4こ。線に ちかづくのを まとう…！',
+ 'ステージ3！ はなれた原子は ゆび2本で 同時に れんだ…！',
+ 'ステージ4！ 手を とめると すぐ 熱くなるよ…！',
+ '⚡ レーザーの線が ゆらゆら ゆれるよ！ 線を 目で おって れんだ…！',
+ '🌡️ さいごは 大きな原子！ 4だんかい 冷やすよ。手を とめると にげちゃう…！'];
 const CFACT=[
  'レーザーを あてると 原子の動きが ゆっくりに なるんだ。これが「レーザー冷却」だよ！',
  '冷やした原子を 光の格子（こうし）に とじこめると 光格子時計に なるよ！',
  'イッテルビウムの光格子時計は 宇宙の年齢でも 1秒ずれないほど せいかく！',
+ '熱い原子は 少しずつ 何だんかいかに わけて 冷やすのが コツ。',
+ 'レーザーの色（しゅうはすう）が ゆれると 冷却が うまくいかないから、ぴったり そろえるんだ。',
  'ぜんぶ つかまえた！ 時計が チクタク うごきだしたよ！'];
 
 /* ===================== 状態 ===================== */
@@ -268,8 +287,8 @@ let W=0,H=0,DPR=1,t=0;
 let M=null,A=null;                 // モード別の状態
 const PT=[],POP=[];                // パーティクルとテキスト
 const IMGY=new Image();IMGY.src='chara0_Yb.png';
-function fallbackImg(el,sym){el.onerror=()=>{el.onerror=null;const c=document.createElement('canvas');c.width=c.height=100;const g=c.getContext('2d');g.fillStyle='#bae6fd';g.beginPath();g.arc(50,50,45,0,7);g.fill();g.fillStyle='#334155';g.font='bold 34px sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(sym,50,52);el.src=c.toDataURL()};if(el.complete&&el.naturalWidth===0)el.onerror()}
-['navimg','heroimg','endimg'].forEach(i=>fallbackImg($(i),'Yb'));
+function fallbackImg(el,sym,alt){el.onerror=()=>{if(alt&&!el.dataset.t){el.dataset.t=1;el.src=alt;return}el.onerror=null;const c=document.createElement('canvas');c.width=c.height=100;const g=c.getContext('2d');g.fillStyle='#bae6fd';g.beginPath();g.arc(50,50,45,0,7);g.fill();g.fillStyle='#334155';g.font='bold 34px sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(sym,50,52);el.src=c.toDataURL()};if(el.complete&&el.naturalWidth===0)el.onerror()}
+fallbackImg($('navimg'),'Yb');['heroimg','endimg'].forEach(i=>fallbackImg($(i),'Yb','chara0_Yb.png'));
 
 function say(h){$('say').innerHTML=h}
 function cheer(){const e=$('navimg');e.classList.remove('cheer');void e.offsetWidth;e.classList.add('cheer');setTimeout(()=>e.classList.remove('cheer'),1900)}
@@ -323,6 +342,7 @@ function resize(){const r=$('stagewrap').getBoundingClientRect();DPR=Math.min(de
 function layout(){if(mode==='m'&&M){const n=M.L.n;M.cs=Math.floor(Math.min(W,H)/n);M.bx=(W-M.cs*n)/2;M.by=(H-M.cs*n)/2}
   if(mode==='c'&&A){const N=A.cfg.n,cols=N<=4?N:Math.ceil(N/2),rows=N<=4?1:2;A.cols=cols;A.rows=rows;A.sp=Math.min((W-40)/cols,64);A.r=Math.max(13,Math.min(20,W/20));
     A.cages.length=0;let i=0;for(let j=0;j<rows;j++)for(let c=0;c<cols&&i<N;c++,i++){A.cages.push({x:W/2+(c-(cols-1)/2)*A.sp,y:H-A.sp*.7-(rows-1-j)*A.sp*.95,filled:false,ph:Math.random()*6})}
+    A.zoneBase=A.cages[0].y-A.sp*1.25;A.zy=A.zoneBase;
     A.atoms.forEach(a=>{if(a.trapped){const c=A.cages[a.cage];a.tx=c.x;a.ty=c.y;c.filled=true}else{a.x=Math.min(Math.max(a.x,A.r),W-A.r);a.y=Math.min(Math.max(a.y,A.r),H-A.r)}})}}
 addEventListener('resize',resize);
 
@@ -367,32 +387,39 @@ function mirrorFinish(){
 
 /* ===================== ひかりのカゴ ===================== */
 function startCold(){
-  const cfg=CC[stg];A={cfg,atoms:[],cages:[],t:cfg.time,trapped:0,fin:0,finT:0,drag:null,sp:60,r:16,cols:1,rows:1,rings:[],warnT:0,lastSec:-1};
+  const cfg=CC[stg];A={cfg,atoms:[],cages:[],t:cfg.time,trapped:0,fin:0,finT:0,drag:null,sp:60,r:16,cols:1,rows:1,rings:[],taps:[],miss:0,zy:0,zoneBase:0,warnT:0,lastSec:-1};
   layout0();
   $('stn').textContent='STAGE '+(stg+1)+'/'+CC.length;$('bar').style.display='block';
   setCtl([['🏁 ここで おわる',coldQuit]]);
-  hudCold();say(stg===0?'原子を タップして 冷やそう！青くなったら ドラッグして カゴへ…！':'ステージ'+(stg+1)+'！ 原子が '+cfg.n+'こ いるよ！');
+  hudCold();say(CSAY[stg]);
   banner('STAGE '+(stg+1))}
 function layout0(){const r=$('stagewrap').getBoundingClientRect();W=r.width;H=r.height;A.r=Math.max(13,Math.min(20,W/20));
-  for(let i=0;i<A.cfg.n;i++)A.atoms.push({x:A.r+Math.random()*(W-2*A.r),y:A.r+Math.random()*(H*.5),a:Math.random()*6.28,temp:2,h:0,trapped:false,cage:-1,turn:Math.random(),tx:0,ty:0,w:Math.random()*6});
+  for(let i=0;i<A.cfg.n;i++)A.atoms.push({x:A.r+Math.random()*(W-2*A.r),y:A.r+Math.random()*(H*.5),a:Math.random()*6.28,temp:A.cfg.T,p:0,hit:0,fl:false,h:0,trapped:false,cage:-1,turn:Math.random(),tx:0,ty:0,w:Math.random()*6});
   layout()}
 function hudCold(){$('info').textContent='⏱ '+Math.max(0,Math.ceil(A.t))+'びょう';$('goal').textContent='⚛️ つかまえた '+A.trapped+'/'+A.cfg.n;$('barf').style.width=(Math.max(0,A.t)/A.cfg.time*100)+'%';$('barf').className=A.t<10?'low':''}
 function coldQuit(){mid({t:'おわる？',d:run.cleared?'ここまでの ごほうびを もらって おわるよ。':'まだ1ステージも クリアしていないよ。<br>やめると ごほうびは もらえないよ。',b:[['つづける',()=>show('')],[run.cleared?'ごほうびを もらう':'おわる',()=>endRun(false),'sub']]})}
-function atomAt(x,y){let b=null,bd=(A.r*2.1)**2;A.atoms.forEach(a=>{if(a.trapped)return;const d=(a.x-x)**2+(a.y-y)**2;if(d<bd){bd=d;b=a}});return b}
 function trapAtom(a,ci){const c=A.cages[ci];a.trapped=true;a.cage=ci;a.tx=c.x;a.ty=c.y;c.filled=true;A.trapped++;
   SND.sfx('trap',A.trapped-1);burst(c.x,c.y,'#a7f3d0',16,150);pop(c.x,c.y-A.r*1.6,'つかまえた！','#a7f3d0');hudCold();
   if(A.trapped===A.cfg.n){A.fin=1;A.finT=0;A.timeLeft=A.t;cheer();say('ぜんいん つかまえた…！ 時計が うごきだすよ！')}else say(pick(['ナイス…！ のこり '+(A.cfg.n-A.trapped)+'こ！','いいね、その調子…！','カゴに すっぽり…！']))}
 function nearestCage(a,rad){let b=-1,bd=rad*rad;A.cages.forEach((c,i)=>{if(c.filled)return;const d=(c.x-a.x)**2+(c.y-a.y)**2;if(d<bd){bd=d;b=i}});return b}
-function coldDown(x,y){if(A.fin)return;const a=atomAt(x,y);if(!a)return;
-  if(a.temp>0){a.temp--;a.h=0;SND.sfx('cool',a.temp);A.rings.push({x:a.x,y:a.y,l:1});burst(a.x,a.y,a.temp===0?'#bae6fd':'#fed7aa',8,90);if(a.temp===0)pop(a.x,a.y-A.r*1.5,'ひんやり！','#7dd3fc')}
-  else{A.drag=a;a.h=0;SND.sfx('click')}}
-function coldMove(x,y){if(!A.drag)return;A.drag.x=Math.min(Math.max(x,A.r),W-A.r);A.drag.y=Math.min(Math.max(y,A.r),H-A.r)}
-function coldUp(){if(!A.drag)return;const a=A.drag;A.drag=null;const ci=nearestCage(a,A.sp*.8);if(ci>=0)trapAtom(a,ci);else{a.a=Math.random()*6.28}}
+function coldDown(x,y){if(A.fin)return;
+  const zy=A.zy,rad=A.cfg.rad*W;
+  if(y<zy-4){A.miss++;A.taps.push({x,y,l:1,r:A.r*1.3,m:1});SND.sfx('low');if(A.miss%4===1)say('みどりの線より <b>下</b>を タップ！ 原子が ちかづくのを まとう…！');return}
+  A.taps.push({x,y,l:1,r:rad});let hit=0;
+  A.atoms.forEach(a=>{if(a.trapped)return;const d=Math.hypot(a.x-x,a.y-y);if(d>rad)return;hit++;
+    const above=a.y<zy-A.r*.5,k=above?A.cfg.pull:.04;a.x+=(x-a.x)*k;a.y+=(y-a.y)*k;a.hit=.8;
+    if(a.y>=zy-A.r*.5&&a.temp>0){a.p++;a.h=0;a.fl=false;
+      if(a.p>=A.cfg.need){a.p=0;a.temp--;SND.sfx('cool',Math.min(2,A.cfg.T-a.temp-1));A.rings.push({x:a.x,y:a.y,l:1});burst(a.x,a.y,a.temp===0?'#bae6fd':'#fed7aa',8,90);if(a.temp===0){pop(a.x,a.y-A.r*1.5,'ひんやり！','#7dd3fc');say(pick(['青くなった！ カゴに すいこまれるよ…！','ナイス、ひんやり…！']))}}
+      else SND.sfx('pulse',Math.min(6,a.p))}
+    else if(above&&!a.pm){a.pm=true;pop(a.x,a.y-A.r*1.5,'ひきよせ！','#86efac')}});
+  if(!hit)SND.sfx('low')}
+function coldMove(){}
+function coldUp(){}
 function coldFinish(){
   const bonus=Math.round(A.timeLeft)*4,g=100+bonus;addReward(g,50);
   stageEnd({stars:'⏱ のこり '+Math.round(A.timeLeft)+'びょう',d:CFACT[stg]+'<br><br>ごほうび 💰'+g+' G（タイムボーナス '+bonus+'）'})}
 function coldFail(){paused=true;SND.sfx('fail');
-  mid({t:'じかんぎれ…',d:'あと '+(A.cfg.n-A.trapped)+'こ だった！<br>原子は すぐ 熱くなるから、冷やしたら すぐ カゴへ！',b:[['このステージを やりなおす',()=>startStage()],[run.cleared?'ここで おわる（ごほうびを もらう）':'タイトルへ もどる',()=>endRun(false),'sub']]})}
+  mid({t:'じかんぎれ…',d:'あと '+(A.cfg.n-A.trapped)+'こ だった！<br>手を とめると 原子は すぐ 熱くなるよ。みどりの線の 下で れんだ！',b:[['このステージを やりなおす',()=>startStage()],[run.cleared?'ここで おわる（ごほうびを もらう）':'タイトルへ もどる',()=>endRun(false),'sub']]})}
 
 /* ===================== 更新 ===================== */
 function banner(s){}
@@ -406,17 +433,24 @@ function update(dt){t+=dt;
     if(M.cleared){M.finT+=dt;if(M.finT>1.5&&!M.shown){M.shown=true;mirrorFinish()}}}
   if(mode==='c'&&A){
     for(const r of A.rings)r.l-=dt*2;A.rings=A.rings.filter(r=>r.l>0);
+    for(const p of A.taps)p.l-=dt*3.2;A.taps=A.taps.filter(p=>p.l>0);
+    A.zy=A.zoneBase+(A.cfg.wave?Math.sin(t*1.1)*A.cfg.wave*H:0);
     A.cages.forEach(c=>c.ph+=dt*2);
-    const k=A.cfg.k;
+    const k=A.cfg.k,T=A.cfg.T,zy=A.zy;
     A.atoms.forEach(a=>{a.w+=dt*3;
       if(a.trapped){a.x+=(a.tx-a.x)*Math.min(1,dt*10);a.y+=(a.ty-a.y)*Math.min(1,dt*10);return}
-      if(A.drag===a)return;
-      const sp=[16,W*.15*k,W*.33*k][a.temp];
+      a.hit=Math.max(0,a.hit-dt);if(a.y<zy-A.r)a.pm=false;
+      const f=a.temp/T;
+      if(!A.fin&&a.temp===0&&a.y>=zy-A.r*.5){const ci=nearestCage(a,1e9);
+        if(ci>=0){const c=A.cages[ci],dx=c.x-a.x,dy=c.y-a.y,d=Math.hypot(dx,dy)||1,v=Math.min(d,170*dt);a.x+=dx/d*v;a.y+=dy/d*v;a.h=0;if(d<A.sp*.2||d<5)trapAtom(a,ci);return}}
+      let sp=16+(W*.33*k-16)*Math.pow(f,1.25);
       a.turn-=dt;if(a.turn<=0){a.a+=(Math.random()-.5)*(a.temp===0?3:1.7);a.turn=.5+Math.random()}
+      if(a.hit>0)sp*=.35;
+      if(A.cfg.flee&&!A.fin&&a.temp>0&&a.temp<T&&a.h>A.cfg.heat*.45){if(!a.fl){a.fl=true;pop(a.x,a.y-A.r*1.6,'にげる！','#f87171')}a.a=-Math.PI/2+Math.sin(a.w)*.5;sp*=1.9}
       a.x+=Math.cos(a.a)*sp*dt;a.y+=Math.sin(a.a)*sp*dt;
+      if(a.y<zy-A.r&&a.temp>0)a.y+=A.cfg.sink*f*dt;
       if(a.x<A.r){a.x=A.r;a.a=Math.PI-a.a}if(a.x>W-A.r){a.x=W-A.r;a.a=Math.PI-a.a}if(a.y<A.r){a.y=A.r;a.a=-a.a}if(a.y>H-A.r){a.y=H-A.r;a.a=-a.a}
-      if(!A.fin&&a.temp<2){a.h+=dt;const need=a.temp===0?A.cfg.heat:A.cfg.heat*.7;if(a.h>=need){a.temp++;a.h=0;SND.sfx('warm');pop(a.x,a.y-A.r*1.5,'あつい…','#fb923c')}}
-      if(!A.fin&&a.temp===0){const ci=nearestCage(a,A.sp*.3);if(ci>=0)trapAtom(a,ci)}});
+      if(!A.fin&&a.temp<T){a.h+=dt;if(a.h>=A.cfg.heat){a.temp++;a.h=0;a.p=0;a.fl=false;SND.sfx('warm');pop(a.x,a.y-A.r*1.5,'あつい…','#fb923c')}}});
     if(A.fin){A.finT+=dt;const tk=Math.floor(A.finT*4);if(tk!==A.lastTk){A.lastTk=tk;if(tk<=8)SND.sfx('tick')}if(A.finT>2.6&&!A.shown){A.shown=true;coldFinish()}}
     else{A.t-=dt;const s=Math.ceil(A.t);if(s!==A.lastSec){A.lastSec=s;hudCold();if(s<=8&&s>0)SND.sfx('low')}
       if(A.t<=0){A.t=0;hudCold();coldFail()}}}}
@@ -470,23 +504,33 @@ function drawCold(){
     ctx.save();const g=ctx.createLinearGradient(0,ly,0,ly1);g.addColorStop(0,'rgba(34,211,238,0)');g.addColorStop(1,'rgba(34,211,238,.18)');ctx.fillStyle=g;rr(x0-A.sp*.8,ly,x1-x0+A.sp*1.6,ly1-ly,16);ctx.fill();
     ctx.strokeStyle='rgba(125,211,252,.25)';ctx.lineWidth=2;for(let c=0;c<A.cols;c++){const x=A.cages[c].x;ctx.beginPath();ctx.moveTo(x,ly+8);ctx.lineTo(x,ly1-6);ctx.stroke()}
     A.cages.forEach(c=>{const pl=.5+.5*Math.sin(c.ph);ctx.beginPath();ctx.arc(c.x,c.y,A.sp*.34,0,7);ctx.fillStyle=c.filled?'rgba(167,243,208,.28)':'rgba(34,211,238,'+(.08+.1*pl)+')';ctx.fill();ctx.lineWidth=2.5;ctx.strokeStyle=c.filled?'#a7f3d0':'rgba(103,232,249,'+(.55+.35*pl)+')';ctx.setLineDash(c.filled?[]:[5,5]);ctx.stroke();ctx.setLineDash([])});ctx.restore()}
+  // れいきゃくゾーン（みどりの線）
+  {const zy=A.zy;ctx.save();const zg=ctx.createLinearGradient(0,zy,0,H);zg.addColorStop(0,'rgba(74,222,128,.17)');zg.addColorStop(1,'rgba(34,211,238,.05)');ctx.fillStyle=zg;ctx.fillRect(0,zy,W,H-zy);
+   ctx.beginPath();for(let x=0;x<=W;x+=8){const y=zy+Math.sin(x*.05+t*3)*1.6;x?ctx.lineTo(x,y):ctx.moveTo(x,y)}
+   ctx.shadowColor='#4ade80';ctx.shadowBlur=12;ctx.lineWidth=3;ctx.strokeStyle='#4ade80';ctx.stroke();ctx.shadowBlur=0;
+   ctx.fillStyle='rgba(187,247,208,.9)';ctx.font='900 11px sans-serif';ctx.textAlign='left';ctx.textBaseline='bottom';ctx.fillText('▼ れいきゃくレーザー：ここを れんだ！',8,zy-5);ctx.restore()}
+  for(const tp of A.taps){ctx.beginPath();ctx.arc(tp.x,tp.y,tp.r*(.35+.65*(1-tp.l)),0,7);ctx.lineWidth=2;ctx.strokeStyle=(tp.m?'rgba(148,163,184,':'rgba(134,239,172,')+tp.l*.55+')';ctx.stroke()}
   // 冷却リング
   for(const r of A.rings){ctx.beginPath();ctx.arc(r.x,r.y,A.r*(1+(1-r.l)*2.2),0,7);ctx.lineWidth=3;ctx.strokeStyle='rgba(125,211,252,'+r.l+')';ctx.stroke()}
   // 原子
   const order=[...A.atoms].sort((a,b)=>(a.trapped?0:1)-(b.trapped?0:1));
   order.forEach(a=>drawAtom(a));
   if(A.fin)drawClock()}
-function drawAtom(a){const r=A.r*(A.drag===a?1.2:1),col=a.trapped?['#d1fae5','#34d399']:[['#bae6fd','#38bdf8'],['#fed7aa','#fb923c'],['#fecaca','#ef4444']][a.temp];
+const PAL3=[['#bae6fd','#38bdf8'],['#fed7aa','#fb923c'],['#fecaca','#ef4444']],PAL5=[['#bae6fd','#38bdf8'],['#fef9c3','#facc15'],['#fed7aa','#fb923c'],['#fecaca','#f87171'],['#fca5a5','#dc2626']];
+function drawAtom(a){const T=A.cfg.T,f=a.temp/T,pal=T===2?PAL3:PAL5,col=a.trapped?['#d1fae5','#34d399']:pal[a.temp];
+  const r=a.trapped?A.r:A.r*(1+(A.cfg.big||0)*f)*(a.hit>.4?1.08:1);
   ctx.save();ctx.translate(a.x,a.y+(a.trapped?Math.sin(a.w)*1.5:0));
-  if(!a.trapped&&a.temp===2){ctx.shadowColor='#ef4444';ctx.shadowBlur=10+4*Math.sin(t*10)}if(a.trapped){ctx.shadowColor='#6ee7b7';ctx.shadowBlur=14}
-  if(a.temp>0&&!a.trapped){const jig=a.temp*1.2;ctx.translate(Math.sin(t*40+a.w)*jig*.4,Math.cos(t*37+a.w)*jig*.4)}
+  if(!a.trapped&&f===1){ctx.shadowColor='#ef4444';ctx.shadowBlur=10+4*Math.sin(t*10)}if(a.trapped){ctx.shadowColor='#6ee7b7';ctx.shadowBlur=14}
+  if(a.temp>0&&!a.trapped){const jig=f*2.4;ctx.translate(Math.sin(t*40+a.w)*jig*.4,Math.cos(t*37+a.w)*jig*.4)}
   const g=ctx.createRadialGradient(-r*.3,-r*.3,r*.1,0,0,r);g.addColorStop(0,col[0]);g.addColorStop(1,col[1]);ctx.beginPath();ctx.arc(0,0,r,0,7);ctx.fillStyle=g;ctx.fill();ctx.lineWidth=2;ctx.strokeStyle='rgba(0,0,0,.55)';ctx.stroke();ctx.shadowBlur=0;
   ctx.fillStyle='#1f2937';
   if(a.trapped||a.temp===0){ctx.beginPath();ctx.arc(-r*.32,-r*.12,r*.1,0,7);ctx.arc(r*.32,-r*.12,r*.1,0,7);ctx.fill();ctx.beginPath();ctx.arc(0,r*.08,r*.3,.15*Math.PI,.85*Math.PI);ctx.lineWidth=2;ctx.strokeStyle='#1f2937';ctx.stroke()}
-  else if(a.temp===1){ctx.beginPath();ctx.arc(-r*.32,-r*.12,r*.1,0,7);ctx.arc(r*.32,-r*.12,r*.1,0,7);ctx.fill();ctx.beginPath();ctx.moveTo(-r*.25,r*.35);ctx.lineTo(r*.25,r*.35);ctx.lineWidth=2;ctx.strokeStyle='#1f2937';ctx.stroke()}
+  else if(f<=.5){ctx.beginPath();ctx.arc(-r*.32,-r*.12,r*.1,0,7);ctx.arc(r*.32,-r*.12,r*.1,0,7);ctx.fill();ctx.beginPath();ctx.moveTo(-r*.25,r*.35);ctx.lineTo(r*.25,r*.35);ctx.lineWidth=2;ctx.strokeStyle='#1f2937';ctx.stroke()}
   else{ctx.lineWidth=2.2;ctx.strokeStyle='#1f2937';ctx.beginPath();ctx.moveTo(-r*.5,-r*.32);ctx.lineTo(-r*.15,-r*.12);ctx.moveTo(r*.5,-r*.32);ctx.lineTo(r*.15,-r*.12);ctx.stroke();ctx.beginPath();ctx.arc(-r*.28,-r*.02,r*.08,0,7);ctx.arc(r*.28,-r*.02,r*.08,0,7);ctx.fill();ctx.beginPath();ctx.arc(0,r*.5,r*.26,1.15*Math.PI,1.85*Math.PI);ctx.stroke()}
   ctx.restore();
-  if(!a.trapped&&a.temp<2&&!A.fin&&A.drag!==a){const need=a.temp===0?A.cfg.heat:A.cfg.heat*.7,f=1-a.h/need;ctx.beginPath();ctx.arc(a.x,a.y,r+4,-Math.PI/2,-Math.PI/2+6.283*f);ctx.lineWidth=3;ctx.strokeStyle=f<.3?'#f87171':a.temp===0?'#7dd3fc':'#fdba74';ctx.stroke()}}
+  if(!a.trapped&&!A.fin){
+    if(a.temp<T){const fr=1-a.h/A.cfg.heat;ctx.beginPath();ctx.arc(a.x,a.y,r+4,-Math.PI/2,-Math.PI/2+6.283*Math.max(0,fr));ctx.lineWidth=3;ctx.strokeStyle=fr<.3?'#f87171':a.temp===0?'#7dd3fc':'#fdba74';ctx.stroke()}
+    if(a.temp>0&&a.p>0){ctx.beginPath();ctx.arc(a.x,a.y,r+9,-Math.PI/2,-Math.PI/2+6.283*a.p/A.cfg.need);ctx.lineWidth=3;ctx.strokeStyle='#a5f3fc';ctx.stroke()}}}
 function drawClock(){const cx=W/2,cy=H*.34,R=Math.min(W,H)*.22,p=Math.min(1,A.finT/.5);ctx.save();ctx.globalAlpha=Math.min(1,p);ctx.translate(cx,cy);ctx.scale(.6+.4*p,.6+.4*p);
   ctx.beginPath();ctx.arc(0,0,R,0,7);ctx.fillStyle='rgba(6,14,50,.92)';ctx.fill();ctx.lineWidth=6;ctx.strokeStyle='#fde047';ctx.shadowColor='#fde047';ctx.shadowBlur=18;ctx.stroke();ctx.shadowBlur=0;
   for(let i=0;i<12;i++){const a=i/12*6.283;ctx.beginPath();ctx.moveTo(Math.sin(a)*R*.82,-Math.cos(a)*R*.82);ctx.lineTo(Math.sin(a)*R*.94,-Math.cos(a)*R*.94);ctx.lineWidth=3;ctx.strokeStyle='#e0f2fe';ctx.stroke()}
