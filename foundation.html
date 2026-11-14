@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>みんなのレアアース17元素財団</title>
+<style>
+:root{--maxw:720px;--bg:#0f172a;--card:#1e293b;--text:#f8fafc;--line:#334155;--accent:#3b82f6;--item:#0f172a;--tb:#a8e6a1;--tbd:#14301c}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:"Hiragino Sans","Noto Sans JP",system-ui,sans-serif}
+.page{max-width:var(--maxw);margin:0 auto;min-height:100vh;display:flex;flex-direction:column;padding-bottom:calc(1rem + env(safe-area-inset-bottom,0px))}
+.header{display:flex;justify-content:space-between;align-items:center;background:var(--card);border-bottom:2px solid var(--line);padding:.55rem .8rem;font-size:.8rem;font-weight:bold;position:sticky;top:0;z-index:5}
+.btn{background:var(--accent);color:#fff;border:none;border-radius:.6rem;min-height:2.2rem;padding:.35rem .9rem;font-size:.78rem;font-weight:bold;cursor:pointer;font-family:inherit}
+.btn.sub{background:#475569}.btn.tb{background:var(--tb);color:var(--tbd)}.btn:disabled{opacity:.4;cursor:default}
+.wrap{padding:.7rem;display:flex;flex-direction:column;gap:.7rem}
+.card{background:var(--card);border:1px solid var(--line);border-radius:.8rem;padding:.7rem .8rem}
+h1{font-size:1rem;margin:0}h2{font-size:.85rem;margin:0 0 .5rem}
+.sub-t{font-size:.7rem;opacity:.75;line-height:1.5}
+.axes{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
+.axis{border:1px solid var(--line);border-radius:.6rem;padding:.4rem .5rem;background:var(--item)}
+.axis b{font-size:.75rem}.axis .v{float:right;font-size:.85rem;font-weight:bold;color:var(--tb)}
+.bar{height:.5rem;border-radius:1rem;background:#0b1224;overflow:hidden;margin-top:.35rem}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,#34d399,var(--tb));width:0;transition:width .5s}
+.bar.neg i{background:#f87171}
+.chips{display:flex;gap:.3rem;flex-wrap:wrap;margin-top:.5rem}
+.chip{border:1px solid var(--tb);color:var(--tb);border-radius:1rem;padding:.1rem .6rem;font-size:.7rem;font-weight:bold}
+.news{border-left:3px solid var(--tb);padding:.2rem 0 .2rem .6rem;margin:.4rem 0;font-size:.8rem;line-height:1.65}
+.line{display:flex;gap:.5rem;align-items:flex-start;margin:.35rem 0;font-size:.8rem;line-height:1.65}
+.who{flex-shrink:0;font-size:.62rem;font-weight:bold;border-radius:.5rem;padding:.1rem .4rem;background:var(--tbd);color:var(--tb);border:1px solid var(--tb);margin-top:.15rem}
+.who.o{background:#1e293b;color:#cbd5e1;border-color:#64748b}
+.tip{font-size:.72rem;background:#0b1224;border:1px dashed #475569;border-radius:.5rem;padding:.4rem .5rem;margin:.4rem 0}
+.opt{display:flex;justify-content:space-between;align-items:center;gap:.5rem;width:100%;text-align:left;background:var(--item);color:var(--text);border:1px solid var(--line);border-radius:.6rem;padding:.55rem .6rem;margin-top:.4rem;font-size:.78rem;font-weight:bold;cursor:pointer;font-family:inherit}
+.opt small{font-weight:normal;opacity:.75;display:block;font-size:.66rem}
+.opt .c{flex-shrink:0;color:#fbbf24}
+.opt.skip{opacity:.8}.opt.no{opacity:.4}
+.row{display:flex;justify-content:space-between;align-items:center;gap:.5rem;border-bottom:1px solid var(--line);padding:.4rem 0;font-size:.76rem}
+.row:last-child{border-bottom:none}
+.tag{font-size:.62rem;font-weight:bold;border-radius:.5rem;padding:.05rem .4rem;border:1px solid var(--line)}
+.r-great{color:#fbbf24;border-color:#fbbf24}.r-good{color:#34d399;border-color:#34d399}.r-bitter{color:#fb923c;border-color:#fb923c}.r-odd{color:#a78bfa;border-color:#a78bfa}.r-skip{color:#94a3b8}
+.tbbox{display:flex;gap:.6rem;align-items:flex-start;background:var(--tbd);border:1px solid var(--tb);border-radius:.7rem;padding:.5rem}
+.tbbox img{width:3.2rem;height:3.2rem;object-fit:contain;border-radius:50%;background:#fff;flex-shrink:0}
+.tbbox div{font-size:.78rem;line-height:1.6}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:50;padding:1rem}
+.modal{background:#1e293b;border:2px solid var(--tb);border-radius:1rem;padding:1rem;width:100%;max-width:24rem;text-align:center}
+.modal h3{margin:.1rem 0 .5rem;font-size:.95rem}.modal p{font-size:.8rem;line-height:1.6;margin:.3rem 0}
+.modal .btns{display:flex;gap:.5rem;margin-top:.8rem}.modal .btns .btn{flex:1}
+.empty{text-align:center;opacity:.7;font-size:.78rem;padding:.8rem 0;line-height:1.7}
+.dbg{border:1px dashed #f59e0b;color:#fcd34d;font-size:.72rem}
+.dbg .btn{min-height:1.8rem;font-size:.68rem;padding:.2rem .6rem;margin:.15rem}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <span>🏛 みんなのレアアース17元素財団</span>
+    <span>💰 <span id="money">0</span> G</span>
+    <button class="btn sub" onclick="location.href='home.html#obs'">🔭 観測室へ</button>
+  </div>
+  <div class="wrap" id="app"></div>
+</div>
+
+<div class="overlay" id="ov"><div class="modal" id="mdl"></div></div>
+
+<script src="areaconfig.js"></script>
+<script src="foundation.js"></script>
+<script>
+const Q = new URLSearchParams(location.search), FORCE = Q.has('force'), DEBUG = Q.has('debug') || FORCE;
+const $ = id => document.getElementById(id);
+const fmt = n => (n||0).toLocaleString();
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let gs = FD.loadGS();
+
+function save(){ FD.persist(gs); }
+function reload(){ gs = FD.loadGS(); FD.ensure(gs); FD.tick(gs, {force: FORCE}); }
+
+function axisCard(a, F){
+  const v = F.axes[a.k] || 0, pct = Math.max(0, Math.min(100, (v + 3) / 18 * 100));
+  return `<div class="axis"><span class="v">${v>0?'+':''}${v}</span><b>${a.e} ${a.n}</b><div class="bar ${v<0?'neg':''}"><i style="width:${pct}%"></i></div></div>`;
+}
+function lines(ev, F){
+  return ev.news.filter(n => !n[2] || F.flags[n[2]]).map(n => {
+    const who = n[0] ? `<span class="who">${FD.WHO[n[0]]||n[0]}</span>` : `<span class="who o">知らせ</span>`;
+    return `<div class="line">${who}<div>${esc(n[1])}</div></div>`;
+  }).join('');
+}
+function offerCard(F){
+  const o = F.open; if (!o) return `<div class="card"><h2>📨 届いている知らせ</h2><div class="empty">いまは新しい知らせはありません。<br>採掘・精製・貿易をすすめると、次の知らせが届きます。</div></div>`;
+  const ev = FD.byId(o.id), opts = FD.optionsFor(ev, o.retry);
+  const kindTag = ev.kind === 'quake' ? '🌏 災害支援' : ev.kind === 'bad' ? '⚠️ 課題' : '🌟 応援';
+  return `<div class="card"><h2>📨 ${ev.icon} ${esc(ev.title)} <span class="tag">${kindTag}</span>${o.retry?' <span class="tag r-odd">もう一度のご相談（半額）</span>':''}</h2>
+    ${lines(ev, F)}
+    ${ev.tip?`<div class="tip">💡 ${esc(ev.tip)}</div>`:''}
+    <div class="sub-t" style="margin-top:.5rem">支援のしかたを選んでください。結果は、行動（採掘・精製・貿易）を<b>${ev.wait}回</b>すすめると観測室に届きます。</div>
+    ${opts.map(x => x.id==='skip'
+      ? `<button class="opt skip" onclick="choose('skip')">${esc(x.label)}</button>`
+      : `<button class="opt ${gs.money<x.cost?'no':''}" onclick="choose('${x.id}')"><span>${esc(x.label)}<small>${FD.TIER[x.tier].n}</small></span><span class="c">${fmt(x.cost)} G</span></button>`).join('')}
+  </div>`;
+}
+function pendingCard(F){
+  if (!F.pending.length) return '';
+  const a = FD.acts(gs);
+  return `<div class="card"><h2>⏳ 結果を待っている支援</h2>${F.pending.map(p => {
+    const ev = FD.byId(p.id), left = Math.max(0, p.due - a);
+    return `<div class="row"><span>${ev.icon} ${esc(ev.title)}</span><span class="sub-t">あと ${left} 回の行動で届きます</span></div>`;
+  }).join('')}</div>`;
+}
+function historyCard(F){
+  const rows = F.log.slice().reverse().map(l => {
+    const ev = FD.byId(l.id); const t = l.skipped ? '<span class="tag r-skip">見送り</span>' : `<span class="tag r-${l.result}">${FD.RESULT_NAME[l.result]}</span>`;
+    return `<div class="row"><span>${ev.icon} ${esc(ev.title)}</span>${t}</div>`;
+  }).join('');
+  return `<div class="card"><h2>📖 これまでの歩み</h2>${rows || '<div class="empty">まだ記録はありません</div>'}</div>`;
+}
+function debugCard(F){
+  if (!DEBUG) return '';
+  return `<div class="card dbg"><h2>🛠 テスト用（?debug=1 のときだけ表示）</h2>
+    行動の回数：<b>${FD.acts(gs)}</b>（採掘 ${(gs.actCount||{}).mine||0} ／ 精製 ${(gs.actCount||{}).refine||0} ／ 貿易 ${FD.tradeCount(gs)}）<br>
+    南鳥島の採掘 ${((gs.actCount||{}).mineBy||{}).okinotori||0} 回 ／ 所持金 ${fmt(gs.money)} G<br>
+    <button class="btn" onclick="dbgAct(1)">行動 +1</button><button class="btn" onclick="dbgAct(5)">行動 +5</button>
+    <button class="btn" onclick="dbgMoney()">+10万G</button><button class="btn" onclick="dbgOki()">南鳥島の採掘 +1</button>
+    <button class="btn" onclick="dbgSeen()">Tb・Dy・Euを持った扱い</button>
+    <button class="btn sub" onclick="dbgReset()">財団を最初から</button><br>
+    <span class="sub-t">フラグ：${Object.keys(F.flags).join('、')||'なし'}</span></div>`;
+}
+function render(){
+  FD.ensure(gs); const F = gs.foundation;
+  $('money').textContent = fmt(gs.money);
+  if ((gs.level||1) < FD.FOUND_LEVEL && !FORCE){
+    $('app').innerHTML = `<div class="card"><h1>🔒 Lv.${FD.FOUND_LEVEL} で財団が設立されます</h1><div class="empty">いまは Lv.${gs.level||1} です。<br>レベルをあげて、また来てくださいね。</div></div>`; return;
+  }
+  const unread = gs.observatory.unread.length;
+  $('app').innerHTML = `
+    <div class="card"><h1>🏛 みんなのレアアース17元素財団</h1>
+      <div class="sub-t">資源を採り、精製し、輸出して、社会に還元する。あなたの支援が、まわりの「評判」になります。</div>
+      <h2 style="margin-top:.7rem">財団の評判</h2>
+      <div class="axes">${FD.AXES.map(a => axisCard(a, F)).join('')}</div>
+      ${F.titles.length?`<div class="chips">${F.titles.map(t=>`<span class="chip">🏅 ${esc(t)}</span>`).join('')}</div>`:''}
+    </div>
+    ${unread?`<div class="tbbox"><img src="Tb00.png" onerror="this.src='chara0_Tb.png';this.onerror=function(){this.style.visibility='hidden'}"><div><b>テルビウム</b><br>観測室に、まだ見ていない結果が${unread}件あります。時間があるときにどうぞ。<br><button class="btn tb" style="margin-top:.4rem" onclick="location.href='home.html#obs'">観測室へ</button></div></div>`:''}
+    ${offerCard(F)}${pendingCard(F)}${historyCard(F)}${debugCard(F)}`;
+}
+function modal(html){ $('mdl').innerHTML = html; $('ov').style.display = 'flex'; }
+function closeModal(){ $('ov').style.display = 'none'; }
+function choose(id){
+  const F = gs.foundation, ev = FD.byId(F.open.id), x = FD.optionsFor(ev, F.open.retry).find(o => o.id === id);
+  if (id === 'skip') return modal(`<h3>見送りますか？</h3><p>${ev.kind==='bad'?'このまま見送ると、財団の評判に影響が出るかもしれません。':'今回は支援しないことにします。'}</p><div class="btns"><button class="btn sub" onclick="closeModal()">やめる</button><button class="btn" onclick="doSpend('skip')">見送る</button></div>`);
+  if (gs.money < x.cost) return modal(`<h3>所持金が足りません</h3><p>${fmt(x.cost)} G が必要です。<br>採掘・精製・貿易で貯めてから、また来てください。</p><div class="btns"><button class="btn" onclick="closeModal()">わかった</button></div>`);
+  modal(`<h3>この支援でよいですか？</h3><p><b>${esc(x.label)}</b><br>${fmt(x.cost)} G を使います</p><div class="btns"><button class="btn sub" onclick="closeModal()">やめる</button><button class="btn" onclick="doSpend('${id}')">支援する</button></div>`);
+}
+function doSpend(id){
+  const r = FD.spend(gs, id);
+  if (!r.ok){ modal(`<h3>うまくいきませんでした</h3><p>${esc(r.msg)}</p><div class="btns"><button class="btn" onclick="closeModal()">閉じる</button></div>`); return; }
+  render();
+  if (r.skipped) modal(`<h3>見送りました</h3><p>${esc(r.text)}</p>${r.tb?`<p style="color:var(--tb)">Tb${esc(r.tb)}</p>`:''}${r.retry?'<p class="sub-t">しばらくすると、半額でもう一度ご相談が届きます。</p>':''}<div class="btns"><button class="btn" onclick="closeModal()">閉じる</button></div>`);
+  else modal(`<h3>支援しました</h3><p>ありがとうございます。<br>行動を <b>${r.wait}回</b> すすめると、結果が観測室に届きます。</p><div class="btns"><button class="btn" onclick="closeModal()">閉じる</button></div>`);
+}
+// ── テスト用 ──
+function dbgAct(n){ gs.actCount = gs.actCount || {mine:0,refine:0,mineBy:{}}; gs.actCount.mine += n; save(); reload(); render(); }
+function dbgMoney(){ gs.money = (gs.money||0) + 100000; save(); render(); }
+function dbgOki(){ gs.actCount = gs.actCount || {mine:0,refine:0,mineBy:{}}; gs.actCount.mineBy = gs.actCount.mineBy || {}; gs.actCount.mineBy.okinotori = (gs.actCount.mineBy.okinotori||0)+1; gs.actCount.mine += 1; save(); reload(); render(); }
+function dbgSeen(){ gs.elements = gs.elements || {}; ['Tb','Dy','Eu'].forEach(k => gs.elements[k] = Math.max(1, gs.elements[k]||0)); save(); reload(); render(); }
+function dbgReset(){ if (!confirm('財団の進行・結果・おみやげを最初に戻します。よいですか？')) return; delete gs.foundation; gs.observatory = {unread:[],souvenirs:[],decor:[],silhouettes:true}; save(); reload(); render(); }
+
+reload(); render();
+document.addEventListener('visibilitychange', () => { if (!document.hidden){ reload(); render(); } });
+</script>
+</body>
+</html>

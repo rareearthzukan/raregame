@@ -130,14 +130,22 @@
     }
     return bag;
   }
+  // ───── 行動の回数（財団イベントの「N回後」に使う）：採掘＝addMud、精製＝drawFromBag、貿易＝友好度の合計 ─────
+  function bumpAct(gs, kind, areaId) {
+    const c = gs.actCount || (gs.actCount = { mine: 0, refine: 0, mineBy: {} });
+    c[kind] = (c[kind] || 0) + 1;
+    if (kind === 'mine' && areaId) { c.mineBy = c.mineBy || {}; c.mineBy[areaId] = (c.mineBy[areaId] || 0) + 1; }
+  }
   function addMud(gs, areaId, n) {
     syncBag(gs);
+    bumpAct(gs, 'mine', areaId);
     gs.mudStock = (gs.mudStock || 0) + n;
     gs.mudByArea[areaId] = (gs.mudByArea[areaId] || 0) + n;
   }
   // バッグから n 個を（産地の割合どおりに）引く。mudStock の減算は呼び出し側で行う。
   function drawFromBag(gs, n) {
     syncBag(gs);
+    if (n > 0) bumpAct(gs, 'refine');
     const bag = gs.mudByArea, out = [];
     for (let i = 0; i < n; i++) {
       const keys = Object.keys(bag);
@@ -428,6 +436,8 @@
   U(40, 'zukan-40', 'zukan', '🎁', 'シークレットイラストの解放条件を達成', '大好物の鉱物をプレゼントして、特別な姿を見せてもらおう');
   // 貿易（既存プレイヤーにも必ず一度お知らせする：retro）
   U(TRADE_UNLOCK_LEVEL, 'trade', 'trade', '🌐', '国際貿易公社がオープン！', '余った元素を世界のパートナーへ輸出して大きな利益に。下のメニューに「貿易」が追加されました', { hot: true, retro: true });
+  // 観測室（Lv50でホームに追加。既存プレイヤーにも一度お知らせする：retro）
+  U(50, 'obs-room', 'home', '🔭', '新しい部屋「観測室」', '財団の結果とおみやげが届く部屋です。ホームの「🔭」から入れます', { hot: true, retro: true });
   UNLOCKS.sort((a, b) => a.lv - b.lv);
 
   // 古いセーブでも、過去に解放済みのものを一気に表示しないための初期化
@@ -609,6 +619,28 @@
     if (item && !unlocked) item.style.display = 'none';
   }
 
+  // ───── 財団イベント（Lv50〜）：行動が進んだら、結果／知らせが届いたかを各ページで確認して小さく通知する ─────
+  //   foundation.js は、Lv50以上のときだけ読み込む（foundation.html／home.html は自分で読み込み済み）
+  function loadFoundation(cb) {
+    if (global.FD) { cb(global.FD); return; }
+    const s = document.createElement('script');
+    s.src = 'foundation.js';
+    s.onload = function () { if (global.FD) cb(global.FD); };
+    s.onerror = function () { /* foundation.js がないときは何もしない */ };
+    document.head.appendChild(s);
+  }
+  function foundationHook(gs, opts) {
+    if (opts && opts.page === 'foundation') return;
+    if ((gs.level || 1) < 50) return;
+    loadFoundation(function (FD) {
+      try {
+        const r = FD.tick(gs);
+        if (r.newResults) FD.notify('result'); else if (r.newOffer) FD.notify('offer');
+        if (typeof global.onFoundationTick === 'function') global.onFoundationTick(r);   // ホームなど、画面の表示を更新したいページ用
+      } catch (e) { console.warn('RE.foundationHook', e); }
+    });
+  }
+
   // ───── 共通初期化：各ページの最後に1回だけ呼ぶ ─────
   function initCommon(gs, opts) {
     opts = opts || {};
@@ -617,6 +649,7 @@
       if (ensureUnlockState(gs)) persist(gs);
       setupTradeNav(gs);
       setTimeout(() => announceUnlocks(gs, opts), opts.delay != null ? opts.delay : 600);
+      setTimeout(() => foundationHook(gs, opts), 900);
     } catch (e) { console.warn('RE.initCommon', e); }
   }
 
@@ -661,6 +694,6 @@
     areaShort: areaShort, flagHTML: flagHTML, originHTML: originHTML, areaOddsText: areaOddsText,
     TRADE_UNLOCK_LEVEL: TRADE_UNLOCK_LEVEL, MAX_LEVEL: MAX_LEVEL, isTradeUnlocked: isTradeUnlocked,
     getRequiredExp: getRequiredExp, getBaseRequiredExp: getBaseRequiredExp, difficultyAt: difficultyAt, EARLY_MULT: EARLY_MULT, syncLevel: syncLevel, addExp: addExp, capExp: capExp, tutorialActive: tutorialActive, UNLOCKS: UNLOCKS,
-    announceUnlocks: announceUnlocks, setupTradeNav: setupTradeNav, initCommon: initCommon
+    announceUnlocks: announceUnlocks, setupTradeNav: setupTradeNav, initCommon: initCommon, loadFoundation: loadFoundation
   };
 })(window);

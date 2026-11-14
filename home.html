@@ -165,6 +165,34 @@ textarea{width:100%;height:5rem;font-size:.65rem;border:1px solid var(--line);bo
 .new{display:inline-block;background:#ef4444;color:#fff;border-radius:.5rem;font-size:.55rem;padding:0 .3rem;font-weight:bold;vertical-align:middle}
 .price.ok{color:#16a34a;font-weight:bold}.price.no{opacity:.6}
 .dot{display:inline-block;background:#ef4444;color:#fff;border-radius:1rem;font-size:.55rem;min-width:1rem;padding:0 .25rem;margin-left:.15rem;line-height:1.1rem}
+/* ───── 観測室：財団・結果・おみやげ ───── */
+.obsbar{position:absolute;left:.4rem;right:.4rem;bottom:.4rem;z-index:11;display:flex;gap:.3rem;justify-content:center;pointer-events:none}
+.obsbar .btn{pointer-events:auto;background:#14301c;color:#e9ffe9;border:1px solid #a8e6a1;min-height:1.9rem;padding:.2rem .6rem;font-size:.68rem;opacity:.96}
+.obsbar .btn.new{background:#a8e6a1;color:#14301c;animation:fdPulse 1.4s ease-in-out infinite}
+@keyframes fdPulse{0%,100%{box-shadow:0 0 0 0 rgba(168,230,161,.7)}50%{box-shadow:0 0 0 .45rem rgba(168,230,161,0)}}
+.fdov{position:fixed;inset:0;background:rgba(10,15,30,.78);z-index:210;display:flex;align-items:center;justify-content:center;padding:1rem}
+.fdcard{background:#10261a;border:2px solid #a8e6a1;border-radius:1rem;padding:1rem;width:100%;max-width:25rem;max-height:92vh;overflow:auto;color:#f1fff1;text-align:center}
+.fdcard h3{margin:.2rem 0 .4rem;font-size:.95rem}
+.fdtb{width:6.5rem;height:6.5rem;object-fit:contain;margin:.1rem auto .2rem;display:block}
+.fdtb.big{animation:fdStretch .7s ease-out}.fdtb.small{animation:fdShrink .8s ease-out;transform:scale(.88)}
+@keyframes fdStretch{0%{transform:scale(1.25,.35)}55%{transform:scale(.92,1.28)}100%{transform:scale(1,1)}}
+@keyframes fdShrink{0%{transform:scale(1)}100%{transform:scale(.88)}}
+.fdsay{background:#14301c;border:1px solid #a8e6a1;border-radius:.7rem;padding:.45rem .6rem;font-size:.78rem;line-height:1.6;text-align:left;margin:.3rem 0}
+.fdres{font-size:.72rem;font-weight:bold;border-radius:1rem;display:inline-block;padding:.1rem .7rem;border:1px solid;margin:.3rem 0}
+.fdres.great{color:#fbbf24}.fdres.good{color:#34d399}.fdres.bitter{color:#fb923c}.fdres.odd{color:#a78bfa}
+.fdtext{font-size:.8rem;line-height:1.7;text-align:left;white-space:pre-wrap;margin:.3rem 0}
+.fdax{display:flex;gap:.3rem;justify-content:center;flex-wrap:wrap;margin:.3rem 0}
+.fdax span{font-size:.7rem;border:1px solid #a8e6a1;border-radius:1rem;padding:.05rem .5rem}
+.fdax span.neg{border-color:#f87171;color:#fca5a5}
+.fditem{display:flex;align-items:center;gap:.5rem;background:#0b1224;border:1px solid #fbbf24;border-radius:.7rem;padding:.4rem .5rem;margin:.4rem 0;text-align:left;font-size:.76rem}
+.fditem .em{font-size:1.8rem}
+.fdbtns{display:flex;gap:.4rem;margin-top:.6rem;flex-wrap:wrap}.fdbtns .btn{flex:1;min-width:7rem}
+.fdbtns .btn{background:#a8e6a1;color:#14301c}.fdbtns .btn.sub{background:#475569;color:#fff}
+.shelf-c{border:1px solid #2f5a3a;border-radius:.7rem;padding:.4rem;margin:.4rem 0;text-align:left}
+.shelf-c b{font-size:.78rem}
+.shelf-g{display:grid;grid-template-columns:repeat(4,1fr);gap:.3rem;margin-top:.3rem}
+.shelf-s{border:1px solid #2f5a3a;border-radius:.5rem;padding:.25rem .1rem;text-align:center;font-size:.56rem;line-height:1.3;min-height:4rem;background:#0b1224}
+.shelf-s .e{font-size:1.5rem;display:block}.shelf-s.sil .e{filter:brightness(0);opacity:.4}.shelf-s.sil{opacity:.7}
 </style>
 </head>
 <body>
@@ -197,6 +225,7 @@ textarea{width:100%;height:5rem;font-size:.65rem;border:1px solid var(--line);bo
       </div>
       <div class="layer" id="garden"></div>
       <div class="layer" id="objs"></div>
+      <div class="obsbar" id="obsBar" style="display:none"><button class="btn" onclick="location.href='foundation.html'">🏛 財団へ</button><button class="btn" id="obsRepBtn" onclick="openReports()">📮 結果</button><button class="btn" onclick="openShelf()">🎁 おみやげ棚</button></div>
     </div>
 
     <div class="card menu">
@@ -233,6 +262,7 @@ textarea{width:100%;height:5rem;font-size:.65rem;border:1px solid var(--line);bo
 <div class="cs-ov" id="csOv" onclick="if(event.target===this)csClose()"><div class="cs" id="cs"></div></div>
 
 <script src="areaconfig.js"></script>
+<script src="foundation.js"></script>
 <script>
 try { ['gesturestart','gesturechange','gestureend'].forEach(e=>document.addEventListener(e,x=>x.preventDefault())); } catch(e){}
 
@@ -324,6 +354,8 @@ const GOLD_ROWS=[
 ];
 MILE_ROWS.forEach(r=>furnitureMaster[r[0]]={name:r[1],emoji:r[2],cost:r[3],bonus:r[4],size:r[5],x:50,y:r[6],img:IMG_PREFIX+r[0]+'.png'});
 GOLD_ROWS.forEach(r=>furnitureMaster[r[0]]={name:r[1],emoji:r[2],gold:r[3],cost:0,bonus:r[4],size:r[5],x:50,y:r[6],img:IMG_PREFIX+r[0]+'.png'});
+/* 財団のおみやげ・観測室の飾り（foundation.js のデータ）。ショップには並ばず、観測室で受け取ると「📦配置」に入る。絵は kagu_<ID>.png を置くと表示される */
+if(window.FD){ [FD.SOUVENIRS,FD.DECOR].forEach(M=>Object.keys(M).forEach(id=>{ const o=M[id]; furnitureMaster[id]={name:o.name,emoji:o.emoji,cost:0,bonus:o.bonus,size:o.size,x:50,y:o.y,img:IMG_PREFIX+id+'.png',obs:true}; })); }
 
 /* ═════════ 家具の分類（ショップ・配置の絞り込み用） ═════════
    ■ シリーズ：IDの末尾（_natural/_mono/_stand/_lab）で自動判定。末尾なし→マイル品は「ふつう」、G品は「ごうか」
@@ -331,7 +363,7 @@ GOLD_ROWS.forEach(r=>furnitureMaster[r[0]]={name:r[1],emoji:r[2],gold:r[3],cost:
    ■ しゅるい：名前のことば（CAT_RULES）で自動判定。合わないものは CAT_OVERRIDE に {id:'種類'} で指定 */
 const SERIES=[
   {k:'all',e:'🌈',n:'ぜんぶ'},{k:'std',e:'🏠',n:'ふつう'},{k:'natural',e:'🌿',n:'ナチュラル'},{k:'mono',e:'🎱',n:'モノトーン'},
-  {k:'stand',e:'🧍',n:'シンプル'},{k:'lab',e:'🔬',n:'けんきゅうしつ'},{k:'lux',e:'👑',n:'ごうか'}
+  {k:'stand',e:'🧍',n:'シンプル'},{k:'lab',e:'🔬',n:'けんきゅうしつ'},{k:'lux',e:'👑',n:'ごうか'},{k:'obs',e:'🔭',n:'観測室'}
 ];
 const CATS=[
   {k:'all',e:'🌈',n:'ぜんぶ'},{k:'seat',e:'🛋️',n:'すわる・ねる'},{k:'desk',e:'🪵',n:'つくえ'},{k:'store',e:'🗄️',n:'たな'},
@@ -348,7 +380,7 @@ const CAT_RULES=[
 ];
 const CAT_OVERRIDE={cleanbench_lab:'machine'};
 const _fc={};
-function furnSeries(id){ const f=furnitureMaster[id]; if(!f) return 'std'; const m=id.match(/_(natural|mono|stand|lab)$/); return m?m[1]:(f.gold?'lux':'std'); }
+function furnSeries(id){ const f=furnitureMaster[id]; if(!f) return 'std'; if(f.obs) return 'obs'; const m=id.match(/_(natural|mono|stand|lab)$/); return m?m[1]:(f.gold?'lux':'std'); }
 function furnCat(id){ if(_fc[id]) return _fc[id]; const f=furnitureMaster[id]; let c='deco';
   if(CAT_OVERRIDE[id]) c=CAT_OVERRIDE[id]; else if(f){ const r=CAT_RULES.find(r=>r[1].test(f.name)); if(r) c=r[0]; } return _fc[id]=c; }
 const seriesName=k=>(SERIES.find(x=>x.k===k)||{}).n||'';
@@ -463,6 +495,75 @@ function buildDirBtns(){
   db.innerHTML=dirLabels.slice(0,n).map((l,i)=>`<button class="dir ${i===dir?'on':''}" id="dir${i}" onclick="changeDirection(${i})">${l}</button>`).join('');
 }
 /* Lv50到達時、いちどだけテルビウムが観測室の解放を知らせる */
+/* ───── 観測室：財団の結果の報告・おみやげ棚 ───── */
+const TB_IMG={intro:'Tb3.png',great:'Tb2.png',good:'Tb2.png',odd:'Tb3.png',bitter:'Tb00.png'};   // テルビウムの3つの見た目（ファイル名はここで変更）
+const TB_FALLBACK='chara0_Tb.png';
+const tbImg=(k,cls)=>`<img class="fdtb ${cls||''}" src="${TB_IMG[k]||TB_IMG.intro}" alt="テルビウム" onerror="this.onerror=function(){this.style.visibility='hidden'};this.src='${TB_FALLBACK}'">`;
+function obsUnread(){ return ((gameState.observatory||{}).unread||[]).length; }
+function updateObsBar(){
+  const bar=$('obsBar'); if(!bar) return;
+  bar.style.display=(dir===OBS_DIR&&obsOpen())?'flex':'none';
+  const b=$('obsRepBtn'), n=obsUnread();
+  if(b){ b.textContent=n?`📮 結果が届いています（${n}）`:'📮 結果'; b.classList.toggle('new',n>0); }
+}
+function fdClose(){ const o=$('fdOv'); if(o) o.remove(); updateObsBar(); updateUI(); }
+function fdOpen(html){ fdClose(); const o=document.createElement('div'); o.className='fdov'; o.id='fdOv'; o.innerHTML=`<div class="fdcard">${html}</div>`; document.body.appendChild(o); }
+function axesHtml(ax){
+  return Object.keys(ax||{}).filter(k=>ax[k]).map(k=>{ const a=FD.AXES.find(x=>x.k===k); const v=ax[k]; return `<span class="${v<0?'neg':''}">${a.e}${a.n} ${v>0?'+':''}${v}</span>`; }).join('');
+}
+function openReports(){
+  if(!window.FD){ toast('財団のデータが読み込めません（foundation.js）'); return; }
+  FD.ensure(gameState);
+  const F=gameState.foundation, rid=gameState.observatory.unread[0];
+  if(!rid){
+    fdOpen(`${tbImg('intro')}<div class="fdsay"><b>テルビウム</b><br>「まだ見ていない結果はありません。次の知らせが届くまで、ゆっくりどうぞ。」</div><div class="fdbtns"><button class="btn" onclick="location.href='foundation.html'">🏛 財団へ</button><button class="btn sub" onclick="fdClose()">閉じる</button></div>`); return;
+  }
+  const rep=F.reports.find(r=>r.rid===rid);
+  const big=(rep.result==='great'||rep.result==='good'), small=rep.result==='bitter';
+  fdOpen(`${tbImg('intro','big')}<div class="fdsay"><b>テルビウム</b><br>「結果が出ました。一緒に見てみましょう。」</div><div class="fdbtns"><button class="btn" onclick="showReport('${rid}')">結果を見る</button><button class="btn sub" onclick="fdClose()">あとで</button></div>`);
+}
+function showReport(rid){
+  const F=gameState.foundation, rep=F.reports.find(r=>r.rid===rid); if(!rep) return fdClose();
+  const big=(rep.result==='great'||rep.result==='good'), small=rep.result==='bitter';
+  const itemId=rep.souvenir||rep.decor, it=itemId?FD.itemInfo(itemId):null;
+  const body=rep.choice
+    ? `<div class="fdbtns">${rep.choice.map((c,i)=>`<button class="btn ${i?'sub':''}" onclick="claimReport('${rid}',${i})">${c.label}</button>`).join('')}</div>`
+    : `<div class="fdbtns"><button class="btn" onclick="claimReport('${rid}')">${it?'おみやげを受け取る':'受け取る'}</button></div>`;
+  fdOpen(`${tbImg(rep.result,big?'big':small?'small':'')}
+    <h3>${rep.icon} ${rep.title}</h3>
+    <span class="fdres ${rep.result}">${FD.RESULT_NAME[rep.result]}</span>
+    <div class="fdtext">${rep.text.replace(/</g,'&lt;')}</div>
+    <div class="fdax">${rep.choice?'':axesHtml(rep.axes)}</div>
+    ${it?`<div class="fditem"><span class="em">${it.emoji}</span><div>観測室に届いたもの<br><b>${it.name}</b></div></div>`:''}
+    <div class="fdsay">${FD.TB_LINE[rep.result]}</div>
+    ${rep.closing&&!rep.choice?`<div class="fdsay">「${rep.closing}」</div>`:''}
+    ${body}`);
+}
+function claimReport(rid,idx){
+  const r=FD.claim(gameState,rid,idx);
+  if(!r.ok){ fdClose(); return; }
+  save();
+  const names=(r.items||[]).map(id=>(FD.itemInfo(id)||{}).name).filter(Boolean);
+  if(names.length) toast(`🎁 『${names[0]}』が届きました。「📦配置」で飾れます`);
+  const nxt=gameState.observatory.unread[0];
+  if(nxt) fdOpen(`${tbImg('intro')}<div class="fdsay"><b>テルビウム</b><br>「まだ見ていない結果があります。続けて見ますか？」</div><div class="fdbtns"><button class="btn" onclick="showReport('${nxt}')">続けて見る</button><button class="btn sub" onclick="fdClose()">あとで</button></div>`);
+  else fdClose();
+}
+function openShelf(){
+  if(!window.FD){ toast('財団のデータが読み込めません（foundation.js）'); return; }
+  FD.ensure(gameState);
+  const own=new Set(gameState.observatory.souvenirs);
+  const blocks=FD.shelf(gameState).map(c=>{
+    let inner='';
+    if(c.state==='wait') inner=`<div style="font-size:.7rem;opacity:.75;margin-top:.2rem">🔒 まだ地震は起きていません</div>`;
+    else inner=`<div class="shelf-g">${c.slots.map(s=>{ const it=FD.itemInfo(s.id); return s.got?`<div class="shelf-s"><span class="e">${it.emoji}</span>${it.name}</div>`:`<div class="shelf-s sil"><span class="e">${it.emoji}</span>？？？</div>`; }).join('')}</div>${c.state==='skipped'?'<div style="font-size:.66rem;opacity:.75;margin-top:.2rem">この地震は見送りました</div>':''}`;
+    return `<div class="shelf-c"><b>${c.flag} ${c.name}</b>${inner}</div>`;
+  }).join('');
+  const decor=Object.keys(FD.DECOR).map(id=>{ const it=FD.DECOR[id]; return own.has(id)?`<span class="fdax"><span>${it.emoji} ${it.name}</span></span>`:`<span class="fdax"><span style="opacity:.5">？？？</span></span>`; }).join('');
+  fdOpen(`<h3>🎁 おみやげ棚</h3><div class="fdsay" style="font-size:.72rem">届かなかった結果のおみやげは、影で表示されます。</div>${blocks}<div class="shelf-c"><b>🌅 島からの飾り</b>${decor}</div><div class="fdbtns"><button class="btn sub" onclick="fdClose()">閉じる</button></div>`);
+}
+window.onFoundationTick=function(){ try{ updateObsBar(); }catch(e){} };      // areaconfig.js の財団チェックのあとで呼ばれる
+window.addEventListener('hashchange',()=>{ if(location.hash==='#obs'&&obsOpen()) changeDirection(OBS_DIR); });
 function checkObsUnlock(tries){
   try{
     if((gameState.level||1)<OBS_LEVEL||gameState.obsAnnounced) return;
@@ -547,7 +648,7 @@ function changeDirection(d){
   for(let i=0;i<dirLabels.length;i++){ const dBtn=$('dir'+i); if(dBtn) dBtn.classList.toggle('on',i===d); }
   const ind=$('indoor'), gar=$('garden');
   if(ind) ind.style.display=d===4?'none':'block'; if(gar) gar.style.display=d===4?'block':'none';
-  applyTheme(roomThemeKey()); updateBgmSource(); scene(); renderRoom(); renderTheme(); renderMusic();
+  applyTheme(roomThemeKey()); updateBgmSource(); scene(); renderRoom(); renderTheme(); renderMusic(); updateObsBar();
 }
 function switchTab(t){
   tab=t;
@@ -558,6 +659,7 @@ function switchTab(t){
   });
 }
 function updateUI(){
+  try{ updateObsBar(); }catch(e){}
   try {
     checkTaskCompletions(); buildDirBtns();
     const mil=$('miles'), lev=$('money'), lvl=$('level'), rlvl=$('roomLevel'), bon=$('bonus');
@@ -1001,7 +1103,7 @@ function setShopT(k){ shopF.t=k; renderShop(true); }
 function renderShop(toTop){
   const L=$('L-shop'); if(!L) return;
   const top=L.scrollTop, own=new Set(gameState.homeFurnishings||[]);
-  const ids=Object.keys(furnitureMaster);
+  const ids=Object.keys(furnitureMaster).filter(id=>!furnitureMaster[id].obs);   // 観測室のおみやげはショップに出さない
   const okS=id=>shopF.s==='all'||furnSeries(id)===shopF.s, okT=id=>shopF.t==='all'||furnCat(id)===shopF.t;
   const cS=countBy(ids,furnSeries,okT), cT=countBy(ids,furnCat,okS);
   const shown=ids.filter(id=>okS(id)&&okT(id));
@@ -1248,9 +1350,9 @@ setInterval(()=>{
 
 window.addEventListener('load',()=>{
   try {
-    try { RE.initCommon(gameState,{page:'home',busy:homeBusy,delay:1500}); } catch(e){}   // 他ページで貯まった経験値のレベル確定＋貿易ナビ＋解放のお知らせ
+    try { RE.initCommon(gameState,{page:'home',busy:homeBusy,delay:1500,onClose:()=>checkObsUnlock()}); } catch(e){}   // 他ページで貯まった経験値のレベル確定＋貿易ナビ＋解放のお知らせ
     buildControls(); switchTab('shop'); changeDirection(0);
-    updateBgmSource(); updateBgmUI(); applyTheme(gameState.currentTheme||'natural'); ensureCharas(); syncCrafted(); updateUI(); histBtns(); showGdReward(); checkObsUnlock();
+    updateBgmSource(); updateBgmUI(); applyTheme(gameState.currentTheme||'natural'); ensureCharas(); syncCrafted(); updateUI(); histBtns(); showGdReward(); if(location.hash==='#obs'&&obsOpen()) changeDirection(OBS_DIR);
     if(!isMuted && bgm) bgm.play().catch(()=>['click','touchstart'].forEach(e=>document.addEventListener(e,unlock)));
   } catch(e){}
 });
