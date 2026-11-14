@@ -334,15 +334,15 @@
 
     .cc-layer { position:fixed; inset:0; z-index:400; pointer-events:none; overflow:hidden; }
     .cc-img { position:absolute; object-fit:contain; filter:drop-shadow(0 6px 10px rgba(0,0,0,.45)); will-change:transform,opacity; }
-    .cc-flash { position:absolute; inset:0; background:radial-gradient(circle at 50% 48%, rgba(255,240,150,.85), rgba(255,222,89,0) 60%); }
+    .cc-flash { position:absolute; inset:0; background:radial-gradient(circle at 50% 48%, rgba(255,255,255,.9), rgba(255,255,255,0) 60%); }
     .cc-spark { position:absolute; font-size:1.4rem; will-change:transform,opacity; }
-    .cc-mini { position:absolute; top:-1.35rem; width:2.1rem; height:2.1rem; object-fit:contain; pointer-events:none;
+    .cc-mini { position:absolute; top:calc(-1.35rem + 7mm); width:2.1rem; height:2.1rem; object-fit:contain; pointer-events:none;
       filter:drop-shadow(0 2px 3px rgba(0,0,0,.35)); animation:ccFloat 1.5s ease-in-out infinite; transition:opacity .5s; z-index:5; }
     @keyframes ccFloat { 0%,100%{ transform:translate(-50%,0);} 50%{ transform:translate(-50%,-.35rem);} }
     @keyframes ccShake { 0%,100%{transform:translate(0,0);} 20%{transform:translate(-5px,3px);} 40%{transform:translate(5px,-3px);} 60%{transform:translate(-3px,-2px);} 80%{transform:translate(3px,2px);} }
     body.cc-shake { animation:ccShake .35s linear; }
 
-    .mem-wrap { position:absolute; left:.1rem; bottom:.1rem; z-index:4; display:flex; flex-direction:column; align-items:flex-start; gap:.15rem; pointer-events:none; }
+    .mem-wrap { position:absolute; left:.1rem; bottom:.1rem; z-index:4; display:flex; flex-direction:column; align-items:flex-start; gap:.15rem; pointer-events:auto; cursor:pointer; touch-action:manipulation; }
     .mem-bubble { pointer-events:auto; position:relative; margin-left:.3rem; max-width:8.5rem; padding:.35rem .7rem; border:2px solid #94a3b8; border-radius:1.3rem;
       background:#fff; color:#475569; font-size:.72rem; font-weight:bold; line-height:1.3; cursor:pointer; font-family:inherit;
       box-shadow:0 3px 8px rgba(0,0,0,.2); animation:ccFloat2 2.6s ease-in-out infinite; touch-action:manipulation; }
@@ -1077,7 +1077,7 @@
       const flights = imgs.map((img, i) => {
         const ir = img.getBoundingClientRect();
         const tx = r.left + r.width * (i + 1) / (count + 1);
-        const ty = r.top - 4;
+        const ty = r.top - 4 + 7 * 96 / 25.4;   // 浮遊位置（約7mm下げ）
         const dx = tx - (ir.left + ir.width / 2), dy = ty - (ir.top + ir.height / 2);
         const a = img.animate([
           { transform: 'translate(0,0) scale(1)', opacity: 1 },
@@ -1130,8 +1130,9 @@
       if (!ev || !done) { w.style.display = 'none'; w.innerHTML = ''; return; }
       const imgs = memoryCharas(ev).map(sym =>
         `<img class="mem-chara" src="${elementsMaster[sym].img}" alt="${elementsMaster[sym].name}" onerror="this.style.display='none'">`).join('');
-      w.innerHTML = `<button type="button" class="mem-bubble" id="memBubble" data-state="0" onclick="memoryBubbleClick(event)">💭 …</button>
+      w.innerHTML = `<button type="button" class="mem-bubble" id="memBubble" data-state="0" >💭 …</button>
                      <div class="mem-charas">${imgs}</div>`;
+      w.onclick = memoryBubbleClick;
       w.style.display = 'flex';
     }
     function memoryBubbleClick(e) {
