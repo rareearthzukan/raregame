@@ -176,7 +176,7 @@ input[type=range]::-moz-range-thumb{width:32px;height:32px;border-radius:50%;bac
 .rs-title{text-align:center;font-size:28px;font-weight:900;color:var(--yellow);-webkit-text-stroke:2px var(--ink);paint-order:stroke fill;text-shadow:0 4px 0 var(--ink)}
 .rs-title.ng{color:#9fd8ff}
 .rs-hero{display:flex;justify-content:center;align-items:center;gap:6px}
-.rs-hero img{height:130px;object-fit:contain;filter:drop-shadow(0 6px 0 rgba(0,0,0,.25));animation:floaty 2s ease-in-out infinite}
+.rs-hero img{height:108px;object-fit:contain;filter:drop-shadow(0 6px 0 rgba(0,0,0,.25));animation:floaty 2s ease-in-out infinite}
 .rs-stars{display:flex;gap:4px;font-size:44px;line-height:1}
 .rs-stars span{color:#31506a;-webkit-text-stroke:2px var(--ink);paint-order:stroke fill;transform:scale(1)}
 .rs-stars span.on{color:var(--yellow);animation:starIn .5s cubic-bezier(.2,1.8,.4,1) both}
@@ -217,7 +217,7 @@ input[type=range]::-moz-range-thumb{width:32px;height:32px;border-radius:50%;bac
     <div class="modes" id="modeList"></div>
     <div class="master" id="masterBadge">🏅 スカンジウム博士！ ぜんぶクリア！</div>
     <div class="nav">
-      <button class="btn btn-yellow" id="factBtn">📖 ずかん</button>
+      <button class="btn btn-yellow" id="factBtn">📖 ひみつ</button>
       <a class="btn btn-cyan" href="home.html">🏠 ホームへ</a>
       <a class="btn btn-white" href="map.html">🗺️ マップへ</a>
     </div>
@@ -246,18 +246,20 @@ input[type=range]::-moz-range-thumb{width:32px;height:32px;border-radius:50%;bac
       <button class="icon snd" aria-label="おと">🔊</button>
     </div>
 
-    <!-- ① ひび止め -->
-    <div class="mode" id="crackUI">
+    <!-- ② ナイター点灯 -->
+    <div class="mode" id="lightUI">
       <div class="hud">
-        <div class="chip" id="ckLeftChip"><small>のこりの Sc つぶ</small><b id="ckLeft">4</b></div>
-        <div class="chip"><small>とまったひび</small><b id="ckState">0 / 0</b></div>
+        <div class="chip"><small>てらした ばしょ</small><b id="liLit">0 / 13</b></div>
+        <div class="chip"><small>Sc ランプ</small><b id="liSc">0</b></div>
+        <div class="chip" id="liComboChip"><small>コンボ</small><b id="liCombo">0</b></div>
       </div>
-      <div class="say"><img id="ckAv" data-img="N" alt=""><div class="bubble" id="ckSay"></div></div>
-      <div class="stagebox" id="ckWrap">
-        <canvas class="game" id="ckCv"></canvas>
-        <div class="startov" id="ckStart"><button class="btn btn-mint big" id="ckGo">▶ スタート！</button></div>
+      <div class="gauge"><i id="liGauge"></i><span id="liGaugeTx">テレビ中継ゲージ 0%</span></div>
+      <div class="say"><img id="liAv" data-img="N" alt=""><div class="bubble" id="liSay"></div></div>
+      <div class="stagebox" id="liWrap">
+        <canvas class="game" id="liCv"></canvas>
+        <div class="startov" id="liStart"><button class="btn btn-mint big" id="liGo">▶ スタート！</button></div>
       </div>
-      <div class="row-btns"><button class="btn btn-white" id="ckReset">↺ やりなおし</button></div>
+      <div class="row-btns"><button class="btn btn-yellow big" id="liTap">💡 ライト オン！</button></div>
     </div>
 
     <!-- ③ 酸素イオン -->
@@ -330,7 +332,7 @@ input[type=range]::-moz-range-thumb{width:32px;height:32px;border-radius:50%;bac
     <button class="btn btn-pink" id="cfQuit">🔬 ラボにもどる</button>
   </div></div>
   <div class="modal" id="factModal"><div class="modal-card">
-    <h3>📖 スカンジウムずかん</h3><div id="factBody"></div>
+    <h3>📖 スカンジウムの ひみつ</h3><div id="factBody"></div>
     <button class="btn btn-cyan" id="factOk">とじる</button>
   </div></div>
   <canvas id="fxCanvas"></canvas>
@@ -362,15 +364,15 @@ const REWARD = {
 };
 
 const MODES = {
-  crack: {
-    icon: '🔧', title: 'ひびを止めろ！', sub: 'アルミ強化大作戦', tag: 'Scを ほんの少し まぜるだけで アルミが強くなる！',
-    stages: [{ name: 'じてんしゃ', icon: '🚲' }, { name: 'バット', icon: '⚾' }, { name: 'ひこうき', icon: '✈️' }, { name: 'ロケット', icon: '🚀' }],
-    tut: [['🔴', '赤い点線は、ひびが のびていく道だよ！'], ['👆', 'ひびの先の 点線を タップして、スカンジウム(Sc)の つぶで ストップ！'], ['🍴', 'ひびが 分かれる前に 止めると、少ない つぶで クリアできるよ！']],
+  light: {
+    icon: '🏟️', title: 'ナイター点灯！', sub: 'スタジアムを 照らせ', tag: 'Scの ランプは 太陽みたいに しぜんな ひかり！',
+    stages: [{ name: 'ならしライト', icon: '💡' }, { name: 'ナイトゲーム', icon: '🌙' }, { name: 'ダブル点灯', icon: '✨' }, { name: '決勝戦', icon: '🏆' }],
+    tut: [['⭕', 'リングが タワーに ちぢんでくるよ！ まんなかに ぴったり かさなった しゅんかんに タップ！'], ['☀️', 'ぴったりなら Scランプで 太陽みたいに まぶしい！ ずれると 黄色くて くらい ランプに…'], ['📺', '選手と 観客席を たくさん 照らして「テレビ中継OK！」を めざそう！']],
     facts: [
-      'スカンジウムを アルミに 0.2〜0.5%ほど まぜると、軽いまま ぐっと強くなるよ。自転車の フレームにも 使われているんだ。',
-      '野球の バットにも、スカンジウム入りの アルミ合金が 使われているよ。軽くて 折れにくいんだ。',
-      '戦闘機の 部品にも 使われてきたと いわれているよ。軽さと 強さが 大事な 場所だね。',
-      'Al3Sc という ものすごく 小さな つぶが、金属の 結晶が 大きくなるのを じゃまして、強くしているんだ。'
+      'スタジアムの 照明には、スカンジウムなどを 入れた「メタルハライドランプ」が 使われているよ。',
+      'スカンジウム入りの 照明は、太陽に 近い しぜんな 色に 見えるんだ。テレビ中継でも 色が きれいに うつるよ。',
+      'ふつうの 水銀ランプより 明るくて、電気を ムダに しにくいと いわれているよ。',
+      '大きな 照明は、つけてから 明るさが 安定するまで 数分 かかることが あるんだ。だから 試合の まえに はやめに つけるよ。'
     ]
   },
   ion: {
@@ -396,7 +398,7 @@ const MODES = {
     ]
   }
 };
-const ORDER = ['crack', 'ion', 'radio'];
+const ORDER = ['light', 'ion', 'radio'];
 
 /* ============================================================
  * 1. サウンド（Web Audio）
@@ -447,6 +449,13 @@ const SE = {
   hop() { tone(520 + Math.random() * 180, .08, 'sine', .12, 0); },
   bulb() { [784, 988, 1319, 1568].forEach((f, i) => tone(f, .25, 'triangle', .16, i * .07)); },
   tick() { tone(1320, .05, 'square', .07, 0); },
+  beep(hi) { tone(hi ? 1175 : 660, hi ? .45 : .16, 'square', .14, 0); if (hi) tone(1568, .45, 'triangle', .12, 0); },
+  combo() { [523, 659, 784, 1047].forEach((f, i) => tone(f, .2, 'triangle', .16, i * .06)); },
+  lightSc() { tone(160, .5, 'sawtooth', .12, 0, 400); [1047, 1319, 1568, 2093].forEach((f, i) => tone(f, .28, 'triangle', .15, .04 + i * .05)); noise(.14, .1, 0, 6000); },
+  lightN() { tone(140, .5, 'sawtooth', .1, 0, 60); tone(660, .2, 'triangle', .09, .05); },
+  fizz() { noise(.28, .14, 0, 2000); tone(300, .25, 'sawtooth', .1, 0, -200); },
+  cheer() { noise(.9, .12, 0, 700); noise(.7, .1, .15, 1400); [523, 659, 784, 1047, 1319].forEach((f, i) => tone(f, .35, 'triangle', .15, i * .09)); },
+  camera() { noise(.04, .1, 0, 5000); tone(2200, .04, 'square', .05, 0); },
   star(i) { tone(660 + i * 220, .3, 'triangle', .2, 0); tone(1320 + i * 220, .3, 'sine', .1, .05); },
   win() { [523, 659, 784, 1047, 1319].forEach((f, i) => { tone(f, .38, 'triangle', .17, i * .1); tone(f / 2, .38, 'sine', .12, i * .1); }); },
   lose() { [392, 330, 262, 196].forEach((f, i) => tone(f, .32, 'triangle', .16, i * .14)); },
@@ -455,7 +464,7 @@ const SE = {
 // BGM（先読みスケジューラ。テーマごとに雰囲気をかえる）
 const THEMES = {
   hub:   { bpm: 104, wave: 'triangle', mel: [72,0,76,0,79,0,76,0, 74,0,77,0,81,0,77,0, 72,0,76,0,79,0,84,0, 83,0,79,0,76,0,0,0], bass: [48,53,48,43] },
-  crack: { bpm: 132, wave: 'square',   mel: [69,0,72,69, 76,0,72,0, 67,0,71,67, 74,0,71,0, 65,0,69,65, 72,0,69,0, 64,67,71,74, 76,0,0,0], bass: [45,43,41,40], vol: .07 },
+  light: { bpm: 108, wave: 'triangle', mel: [67,0,72,0,76,0,79,0, 76,0,72,0,67,0,0,0, 69,0,74,0,77,0,81,0, 79,0,77,0,74,0,0,0], bass: [48,53,45,43], vol: .09 },
   ion:   { bpm: 108, wave: 'triangle', mel: [67,71,74,79,74,71,67,0, 65,69,72,77,72,69,65,0, 64,67,71,76,71,67,64,0, 62,67,71,74,71,67,62,0], bass: [43,41,40,43] },
   radio: { bpm: 136, wave: 'square',   mel: [72,0,72,79, 0,76,0,79, 72,0,72,81, 0,77,0,81, 71,0,71,79, 0,74,0,79, 72,76,79,84, 0,0,79,0], bass: [48,41,43,48], vol: .07 }
 };
@@ -529,7 +538,7 @@ function flash(color) { const f = $('flash'); f.style.setProperty('--c', color);
 function splash(text) { const s = $('splash'); s.textContent = text; s.classList.remove('go'); void s.offsetWidth; s.classList.add('go'); }
 function vibrate(p) { try { if (navigator.vibrate) navigator.vibrate(p); } catch (e) {} }
 function bumpEl(el) { el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); }
-const UI = { crack: ['ckAv', 'ckSay'], ion: ['ioAv', 'ioSay'], radio: ['raAv', 'raSay'] };
+const UI = { light: ['liAv', 'liSay'], ion: ['ioAv', 'ioSay'], radio: ['raAv', 'raSay'] };
 let moodTimer = 0;
 function say(mode, text, kind, mood, anim) {
   const [av, sy] = UI[mode], b = $(sy), a = $(av);
@@ -643,7 +652,7 @@ function showResult(r) {
   } else rows.push(`<div class="rs-row"><span>💡 ヒント</span><b style="font-size:12px;text-align:right;max-width:70%">${r.tip || 'もういちど ちょうせん！'}</b></div>`);
   $('rsCard').innerHTML = rows.join('');
   const fact = $('rsFact'); fact.className = 'fact';
-  if (r.win) fact.innerHTML = `<b>💡 スカンジウム豆知識${first ? '（ずかんに のったよ！）' : ''}</b>${M.facts[r.idx]}`; else fact.innerHTML = '';
+  if (r.win) fact.innerHTML = `<b>💡 スカンジウム豆知識${first ? '（ひみつに のったよ！）' : ''}</b>${M.facts[r.idx]}`; else fact.innerHTML = '';
   fact.style.display = r.win ? 'block' : 'none';
   const hasNext = r.win && r.idx < 3;
   $('rsNext').style.display = hasNext ? 'block' : 'none';
@@ -660,235 +669,212 @@ function showResult(r) {
 }
 
 /* ============================================================
- * 5. ① ひびを止めろ！（アルミ強化大作戦）
+ * 5. ② ナイター点灯！ スタジアムを照らせ
  * ============================================================ */
-Games.crack = (() => {
-  const W = 360, H = 520, R = 34;
-  const cv = $('ckCv'), ctx = cv.getContext('2d');
-  let S = null, raf = 0, last = 0, k = 1, cssW = 0, cssH = 0;
-  const SHAPES = {
-    rect:   [[30, 90], [330, 90], [330, 470], [30, 470]],
-    bat:    [[95, 95], [265, 95], [280, 140], [280, 290], [235, 370], [215, 455], [225, 470], [135, 470], [145, 455], [125, 370], [80, 290], [80, 140]],
-    wing:   [[35, 130], [330, 90], [330, 260], [205, 470], [35, 470]],
-    rocket: [[180, 78], [238, 140], [262, 200], [262, 410], [312, 466], [250, 466], [250, 440], [110, 440], [110, 466], [48, 466], [98, 410], [98, 200], [122, 140]]
-  };
-  // ひびの設定: start/end=はじまりと おわり, at=わかれる場所(親の長さの割合), delay=はじまる秒
+Games.light = (() => {
+  const W = 360, H = 520, CX = 180, CY = 262, RL = 230, QN = .55;   // QN = ふつうのランプ(ずれたとき)の明るさ。Scランプは 1
+  const cv = $('liCv'), ctx = cv.getContext('2d');
+  const base = document.createElement('canvas'), bctx = base.getContext('2d');   // うごかない背景
+  const dark = document.createElement('canvas'), dctx = dark.getContext('2d');   // くらやみの層
+  let S = null, raf = 0, last = 0, k = 1;
+  const rad = d => d * Math.PI / 180;
+  const TOWERS = [...Array(8)].map((_, i) => [CX + 160 * Math.cos(rad(-90 + 22.5 + i * 45)), CY + 232 * Math.sin(rad(-90 + 22.5 + i * 45))]);
+  const CROWD = [...Array(8)].map((_, j) => [CX + 124 * Math.cos(rad(-90 + j * 45)), CY + 172 * Math.sin(rad(-90 + j * 45))]);
+  const PLAYERS = [[132, 196], [228, 206], [180, 262], [130, 330], [232, 322]];
+  const TARGETS = CROWD.concat(PLAYERS);   // 照らしたい場所: 観客席8 + 選手5
+  const COLS = ['#ff6b6b', '#ffd93d', '#6bcb77', '#4d96ff', '#ff9ff3', '#ffffff', '#ff8a4f'];
+  const JERSEY = ['#ff4f6d', '#4d96ff', '#ffd93d', '#ff4f6d', '#4d96ff'];
+  const DOTS = (() => { const r = rng(11); return CROWD.map((c, j) => { const th = rad(-90 + j * 45 + 90), out = []; for (let n = 0; n < 34; n++) { const a = r() * 6.283, rr = Math.sqrt(r()), ex = Math.cos(a) * rr * 25, ey = Math.sin(a) * rr * 15; out.push({ x: c[0] + ex * Math.cos(th) - ey * Math.sin(th), y: c[1] + ex * Math.sin(th) + ey * Math.cos(th), col: COLS[r() * COLS.length | 0], ph: r() * 6.28 }); } return out; }); })();
+  // calls: [タワー番号(0〜7), 出てくる拍]  bpm=曲のはやさ appr=リングが ちぢむ長さ(拍) pw/gw=パーフェクト/グッドの許容(秒) thr=「てらせた」になる明るさ
   const STAGES = [
-    { shape: 'rect', emoji: '🚲', speed: 34, budget: 4, par: 2, cracks: [
-      { id: 'A', start: [80, 98], end: [185, 452], delay: .8, seed: 3, amp: 30 },
-      { id: 'A1', parent: 'A', at: .4, end: [78, 452], seed: 5, amp: 22 },
-      { id: 'B', start: [325, 150], end: [290, 452], delay: 2.5, seed: 9, amp: 26 }] },
-    { shape: 'bat', emoji: '⚾', speed: 40, budget: 5, par: 3, cracks: [
-      { id: 'A', start: [110, 102], end: [165, 456], delay: .8, seed: 4, amp: 24 },
-      { id: 'A1', parent: 'A', at: .4, end: [198, 452], seed: 7, amp: 20 },
-      { id: 'B', start: [262, 124], end: [188, 456], delay: 3, seed: 12, amp: 22 },
-      { id: 'C', start: [88, 200], end: [158, 452], delay: 6, seed: 15, amp: 22 }] },
-    { shape: 'wing', emoji: '✈️', speed: 46, budget: 5, par: 3, cracks: [
-      { id: 'A', start: [58, 148], end: [120, 462], delay: .5, seed: 21, amp: 26 },
-      { id: 'A1', parent: 'A', at: .5, end: [190, 438], seed: 22, amp: 18 },
-      { id: 'B', start: [315, 108], end: [216, 418], delay: 3.5, seed: 24, amp: 22 },
-      { id: 'C', start: [42, 300], end: [82, 462], delay: 5.5, seed: 27, amp: 16 }],
-      decoys: [[[120, 140], [150, 170], [172, 190]], [[250, 200], [290, 236], [272, 276]], [[100, 380], [132, 396], [150, 392]]] },
-    { shape: 'rocket', emoji: '🚀', speed: 52, budget: 5, par: 3, cracks: [
-      { id: 'A', start: [128, 152], end: [132, 432], delay: .6, seed: 31, amp: 22 },
-      { id: 'A1', parent: 'A', at: .5, end: [80, 452], seed: 33, amp: 16 },
-      { id: 'B', start: [255, 204], end: [226, 432], delay: 2.5, seed: 35, amp: 20 },
-      { id: 'B1', parent: 'B', at: .55, end: [286, 454], seed: 37, amp: 14 },
-      { id: 'C', start: [180, 100], end: [180, 432], delay: 5, seed: 39, amp: 18 }] }
+    { bpm: 96,  appr: 3,   pw: .15, gw: .32, thr: .56, calls: [[0, 2], [4, 5], [2, 8], [6, 11], [1, 14], [5, 17]] },
+    { bpm: 108, appr: 3,   pw: .13, gw: .28, thr: .75, calls: [[0, 2], [3, 4], [6, 6], [1, 8], [4, 10], [7, 12], [2, 14], [5, 16]] },
+    { bpm: 118, appr: 2.5, pw: .12, gw: .26, thr: .85, calls: [[0, 2], [4, 2.5], [2, 4], [6, 5], [1, 7], [5, 7.5], [3, 9], [7, 10], [0, 12], [4, 13]] },
+    { bpm: 128, appr: 2,   pw: .10, gw: .22, thr: .9,  calls: [[0, 2], [4, 2.5], [2, 4], [6, 4.5], [1, 6], [5, 6.5], [3, 8], [7, 8.5], [0, 9.5], [5, 10.5], [2, 11.5], [6, 12.5], [3, 13.5], [7, 14.5], [1, 15.5], [5, 16.5]] }
   ];
+  const bright = (p, q) => { let s = 0; for (let i = 0; i < 8; i++) if (q[i] > 0) { const d = Math.hypot(p[0] - TOWERS[i][0], p[1] - TOWERS[i][1]); s += q[i] * Math.max(0, 1 - d / RL); } return s; };
+  const qNow = i => { const q = S.q[i]; if (!q) return 0; const a = clamp((S.t - S.tOn[i]) / (q === 1 ? .35 : .8), 0, 1), e = a * a * (3 - 2 * a); let b = q * e; if (q < 1) b *= .88 + .12 * Math.sin(S.t * 37 + i * 5); return b; };
+  const litCount = () => S.pot.filter(j => bright(TARGETS[j], S.q) >= S.D.thr).length;
 
-  function buildPath(start, end, seed, amp) {
-    const r = rng(seed), dx = end[0] - start[0], dy = end[1] - start[1], L = Math.hypot(dx, dy), nx = -dy / L, ny = dx / L;
-    const n = Math.max(8, Math.round(L / 16)), p1 = r() * 6.28, p2 = r() * 6.28, pts = [];
-    for (let i = 0; i <= n; i++) {
-      const t = i / n, env = Math.sin(Math.PI * t), off = amp * (Math.sin(t * Math.PI * 1.7 + p1) * .6 + Math.sin(t * Math.PI * 3.9 + p2) * .4) * env;
-      const jit = (i > 0 && i < n) ? (r() - .5) * 7 : 0;
-      pts.push([start[0] + dx * t + nx * (off + jit), start[1] + dy * t + ny * (off + jit)]);
-    }
-    return pts;
-  }
-  function finishPath(c) {
-    c.S = [0]; for (let i = 1; i < c.P.length; i++) c.S.push(c.S[i - 1] + Math.hypot(c.P[i][0] - c.P[i - 1][0], c.P[i][1] - c.P[i - 1][1]));
-    c.len = c.S[c.S.length - 1];
-  }
-  function posAt(c, s) {
-    s = clamp(s, 0, c.len); let i = 1; while (i < c.S.length - 1 && c.S[i] < s) i++;
-    const a = c.P[i - 1], b = c.P[i], t = (s - c.S[i - 1]) / Math.max(.001, c.S[i] - c.S[i - 1]); return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
-  }
   function init(idx) {
-    const D = STAGES[idx], cracks = [];
-    D.cracks.forEach(d => {
-      const c = { id: d.id, delay: d.delay || 0, state: 'pending', tip: 0, stopper: null, children: [], parent: null, at: 0, atS: 0 };
-      if (d.parent) {
-        const p = cracks.find(x => x.id === d.parent); c.parent = p; p.children.push(c);
-        const fi = Math.round(d.at * (p.P.length - 1)); c.forkIdx = fi; c.atS = p.S[fi];
-        const sp = p.P[fi], pts = buildPath(sp, d.end, d.seed, d.amp); pts[0] = [sp[0], sp[1]]; c.P = pts;
-      } else c.P = buildPath(d.start, d.end, d.seed, d.amp);
-      finishPath(c); cracks.push(c);
-    });
-    S = { idx, D, cracks, state: 'ready', t: 0, left: D.budget, used: 0, parts: [], ripples: [], fx: [], winT: 0, loseT: 0, stopped: 0, started: false, shakeT: 0 };
-    $('ckStart').style.display = 'flex'; $('ckWrap').classList.remove('shake');
-    resize(); updateHUD();
-    say('crack', 'ひびが のびる 道を 見てみよう！ 分かれ道は ひとつ手前で ストップが おとく！ じゅんびできたら スタート！', '', 'N');
+    stop(); Music.stop();
+    const D = STAGES[idx], used = new Set(D.calls.map(c => c[0])), beat = 60 / D.bpm, qAll = Array(8).fill(0); used.forEach(i => qAll[i] = 1);
+    const pot = TARGETS.map((_, j) => j).filter(j => bright(TARGETS[j], qAll) >= D.thr);
+    const calls = D.calls.map(c => ({ tw: c[0], t0: c[1] * beat, due: (c[1] + D.appr) * beat, state: 'wait', res: null }));
+    S = { idx, D, state: 'ready', t: -3, beat, calls, lastDue: Math.max(...calls.map(c => c.due)), q: Array(8).fill(0), tOn: Array(8).fill(-9), used, pot,
+      combo: 0, maxCombo: 0, perfect: 0, good: 0, miss: 0, fx: [], waves: [], flares: [], cam: [], reveal: 0, finalT: 0, win: false, done: false, musicOn: false, lastCd: 9, fwT: 0, lit: 0, res: null };
+    $('liStart').style.display = 'flex'; resize(); hud(true);
+    say('light', idx === 0 ? 'リングが タワーに ちぢんできたら ぴったりの タイミングで タップ！' : 'リングが まんなかに かさなる しゅんかんを ねらおう！', '', 'N');
     cancelAnimationFrame(raf); last = performance.now(); raf = requestAnimationFrame(loop);
   }
   function stop() { cancelAnimationFrame(raf); raf = 0; }
   function resize() {
-    const wrap = $('ckWrap'), aw = wrap.clientWidth, ah = wrap.clientHeight; if (!aw || !ah) return;
-    const sc = Math.min(aw / W, ah / H); cssW = Math.floor(W * sc); cssH = Math.floor(H * sc);
-    const dpr = Math.min(window.devicePixelRatio || 1, 2); cv.style.width = cssW + 'px'; cv.style.height = cssH + 'px';
-    cv.width = Math.round(cssW * dpr); cv.height = Math.round(cssH * dpr); k = cv.width / W;
+    const wrap = $('liWrap'), aw = wrap.clientWidth, ah = wrap.clientHeight; if (!aw || !ah) return;
+    const sc = Math.min(aw / W, ah / H), cssW = Math.floor(W * sc), cssH = Math.floor(H * sc), dpr = Math.min(window.devicePixelRatio || 1, 2);
+    cv.style.width = cssW + 'px'; cv.style.height = cssH + 'px'; cv.width = Math.round(cssW * dpr); cv.height = Math.round(cssH * dpr); k = cv.width / W;
+    base.width = dark.width = cv.width; base.height = dark.height = cv.height; buildBase();
+  }
+  function rrect(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
+  function buildBase() {
+    const c = bctx; c.setTransform(k, 0, 0, k, 0, 0); c.clearRect(0, 0, W, H);
+    c.fillStyle = '#0d1b33'; c.fillRect(0, 0, W, H);
+    c.beginPath(); c.ellipse(CX, CY, 172, 242, 0, 0, 6.283); c.fillStyle = '#3a4666'; c.fill(); c.lineWidth = 5; c.strokeStyle = '#1c2742'; c.stroke();
+    for (let r = 0; r < 8; r++) { const f = 1 - r * .05; c.beginPath(); c.ellipse(CX, CY, 172 * f, 242 * f, 0, 0, 6.283); c.strokeStyle = r % 2 ? '#4a5a80' : '#2f3a58'; c.lineWidth = 3; c.stroke(); }
+    rrect(c, 84, 142, 192, 240, 16); c.fillStyle = '#2e9a47'; c.fill(); c.save(); rrect(c, 84, 142, 192, 240, 16); c.clip();
+    for (let i = 0; i < 8; i++) { c.fillStyle = i % 2 ? '#38ad52' : '#2e9a47'; c.fillRect(84, 142 + i * 30, 192, 30); }
+    c.restore(); c.strokeStyle = 'rgba(255,255,255,.85)'; c.lineWidth = 2.5; rrect(c, 90, 148, 180, 228, 10); c.stroke();
+    c.beginPath(); c.moveTo(90, 262); c.lineTo(270, 262); c.stroke(); c.beginPath(); c.arc(CX, 262, 26, 0, 6.283); c.stroke();
+    c.strokeRect(130, 148, 100, 34); c.strokeRect(130, 342, 100, 34); c.strokeRect(156, 148, 48, 14); c.strokeRect(156, 362, 48, 14);
   }
   function begin() {
-    if (!S || S.state !== 'ready') return; initAudio(); SE.click(); S.state = 'run'; $('ckStart').style.display = 'none';
-    say('crack', 'ひびの先の 点線を タップして Scの つぶを おこう！', '', 'N');
+    if (!S || S.state !== 'ready') return; initAudio(); SE.click(); S.state = 'run'; S.t = -3; $('liStart').style.display = 'none';
+    say('light', 'よーい…！ ライトの じゅんびは いいかな？', '', 'N');
   }
-  function reset() { if (S && (S.state === 'run' || S.state === 'ready' || S.state === 'lose')) { SE.click(); init(S.idx); } }
-  function updateHUD() {
-    const tips = S.cracks.filter(c => c.state !== 'cancelled').length;
-    $('ckLeft').textContent = S.left; $('ckState').textContent = `${S.stopped} / ${tips}`;
+  function hud(force) {
+    const n = S.pot.length, lit = S.lit, ratio = n ? lit / n : 0;
+    const set = (id, v) => { const e = $(id); if (e.textContent !== v) e.textContent = v; };
+    set('liLit', `${lit} / ${n}`); set('liSc', String(S.q.filter(q => q === 1).length)); set('liCombo', String(S.combo));
+    $('liGauge').style.transform = `scaleX(${clamp(ratio, 0, 1)})`; set('liGaugeTx', ratio >= .7 ? '📺 テレビ中継 OK！' : `テレビ中継ゲージ ${Math.round(ratio * 100)}%`);
+    $('liGauge').style.background = ratio >= .7 ? 'linear-gradient(90deg,#ffd23f,#fff3a0)' : '';
+    $('liGaugeTx').style.color = ratio >= .7 ? '#0d2438' : ''; $('liGaugeTx').style.textShadow = ratio >= .7 ? 'none' : '';
   }
-  function nearest(x, y) {
-    let best = null;
-    for (const c of S.cracks) {
-      if (c.state === 'stopped' || c.state === 'cancelled') continue;
-      const from = c.state === 'growing' ? c.tip + 10 : 0, to = (c.stopper != null ? c.stopper - 6 : c.len);
-      for (let i = 0; i < c.P.length; i++) {
-        const s = c.S[i]; if (s < from || s > to) continue;
-        const d = Math.hypot(c.P[i][0] - x, c.P[i][1] - y); if (d <= R && (!best || d < best.d)) best = { c, i, d };
-      }
+  function cpos(x, y) { const rc = cv.getBoundingClientRect(); return [rc.left + x * rc.width / W, rc.top + y * rc.height / H]; }
+  function resolve(c, res) {
+    c.state = 'done'; c.res = res; const [x, y] = TOWERS[c.tw], q = res === 'perfect' ? 1 : res === 'good' ? QN : 0, [px, py] = cpos(x, y);
+    if (q > S.q[c.tw]) { S.q[c.tw] = q; S.tOn[c.tw] = S.t; S.waves.push({ x, y, t: 0, sc: q === 1 }); }
+    if (res === 'perfect') {
+      S.perfect++; S.combo++; S.maxCombo = Math.max(S.maxCombo, S.combo); SE.lightSc(); vibrate(25); flash('#bff6ff'); burst(px, py, 34, 10, ['#ffffff', '#bff6ff', '#3de0ff', '#ffd23f']);
+      S.fx.push({ x, y: y - 34, t: 0, text: 'PERFECT!', col: '#fff3a0' }); say('light', pick(['パーフェクト！ Scの ひかりは 太陽みたい！', 'まぶしい〜！ しぜんな 色だね！', 'ばっちり！ ぴったり！']), 'ok', 'C', 'jump');
+      if ([3, 5, 8, 12].includes(S.combo)) { splash(`${S.combo} COMBO!`); SE.combo(); for (let i = 0; i < 3; i++) setTimeout(() => { const r = cv.getBoundingClientRect(); burst(r.left + r.width * (.2 + Math.random() * .6), r.top + r.height * (.15 + Math.random() * .3), 30, 11); }, i * 150); }
+    } else if (res === 'good') {
+      S.good++; S.combo = 0; SE.lightN(); S.fx.push({ x, y: y - 34, t: 0, text: 'GOOD', col: '#ffb347' }); burst(px, py, 10, 5, ['#ffd27a', '#ffb347']);
+      say('light', 'グッド！ でも ちょっと 黄色っぽくて くらいかな…', '', 'N');
+    } else {
+      S.miss++; S.combo = 0; SE.fizz(); vibrate([50]); S.fx.push({ x, y: y - 34, t: 0, text: 'MISS', col: '#b6c2d6' }); burst(px, py, 8, 4, ['#8a97a8', '#ffffff']);
+      say('light', 'あっ ぷすん…！ ライトが つかなかった', 'ng', 'W', 'shake');
     }
-    return best;
+    bumpEl($('liComboChip')); S.lit = litCount(); hud();
   }
-  function tap(x, y) {
-    if (!S || S.state !== 'run' || paused) return; initAudio();
-    const hit = nearest(x, y);
-    if (hit) {
-      if (S.left <= 0) { say('crack', 'もう Sc の つぶが ないよ…！ やりなおして みよう', 'ng', 'W', 'shake'); SE.nope(); return; }
-      const c = hit.c, p = c.P[hit.i], s = c.S[hit.i];
-      c.stopper = c.stopper == null ? s : Math.min(c.stopper, s);
-      S.left--; S.used++; S.parts.push({ x: p[0], y: p[1], t: 0 }); S.ripples.push({ x: p[0], y: p[1], t: 0 });
-      SE.place(); vibrate(15); bumpEl($('ckLeftChip')); updateHUD();
-      say('crack', 'Scの つぶを おいたよ！ ひびが ここまで きたら ストップ！', 'ok', 'C', 'jump');
-      return;
-    }
-    if (S.D.decoys && S.D.decoys.some(pl => pl.some(q => Math.hypot(q[0] - x, q[1] - y) < 26))) { SE.nope(); say('crack', 'それは ただの キズだよ。ほんもののひびは 赤い点線を たどるよ！', '', 'N'); S.fx.push({ x, y, t: 0, text: 'ただのキズ', col: '#cfd8e3' }); return; }
-    SE.nope(); say('crack', 'もっと 赤い点線の ちかくを タップして みよう！', '', 'N'); S.fx.push({ x, y, t: 0, text: 'そこは ちがうよ', col: '#cfd8e3' });
+  function tap(x, y, btn) {
+    if (!S || S.state !== 'run' || paused || S.t < 0) return; initAudio();
+    const act = S.calls.filter(c => c.state === 'active'); if (!act.length) return;
+    let c = null;
+    if (!btn) { let bd = 95; act.forEach(a => { const d = Math.hypot(TOWERS[a.tw][0] - x, TOWERS[a.tw][1] - y); if (d < bd) { bd = d; c = a; } }); }
+    if (!c) c = act.reduce((a, b) => a.due <= b.due ? a : b);
+    const dt = S.t - c.due; if (dt < -.5) { SE.nope(); say('light', 'まだ まだ！ リングが まんなかに ちかづくまで まってね', '', 'N'); return; }
+    const adt = Math.abs(dt); resolve(c, adt <= S.D.pw ? 'perfect' : adt <= S.D.gw ? 'good' : 'miss');
   }
-  function lose(c) {
-    if (S.state !== 'run') return; S.state = 'lose'; S.loseT = 0; S.loseAt = c.P[c.P.length - 1];
-    SE.boom(); vibrate([80, 40, 80]); flash('#ff3b4e'); splash('バキッ！'); $('ckWrap').classList.add('shake');
-    say('crack', 'ひびが とどいちゃった…！ ぶひんが こわれたよ', 'ng', 'W', 'shake');
+  function startFinal() {
+    S.state = 'final'; S.finalT = 0; S.lit = litCount(); const ratio = S.lit / S.pot.length, used = [...S.used];
+    const natural = used.reduce((a, i) => a + S.q[i], 0) / used.length; S.res = { ratio, natural }; S.win = ratio >= .7; hud();
+    if (S.win) { SE.cheer(); splash('テレビ中継 OK！'); flash('#ffffff'); say('light', 'ON AIR！ 世界中に とどけー！', 'ok', 'C', 'jump'); }
+    else { SE.lose(); splash('中継できない…'); say('light', 'まだ くらくて テレビに うつらないよ…', 'ng', 'W', 'shake'); }
+  }
+  function finish() {
+    if (S.done) return; S.done = true; const ratio = S.res.ratio, win = S.win;
+    const stars = !win ? 0 : (ratio >= 1 && S.res.natural >= .8) ? 3 : ratio >= .9 ? 2 : 1;
+    showResult({ mode: 'light', idx: S.idx, win, stars, lines: [['☀️ パーフェクト(Sc)', `${S.perfect} / ${S.calls.length}`], ['🌆 てらせた ばしょ', `${S.lit} / ${S.pot.length}`], ['🎨 色の しぜんさ', `${Math.round(S.res.natural * 100)}%`], ['🔥 さいだいコンボ', String(S.maxCombo)]],
+      tip: 'リングが まんなかに ぴったり かさなった しゅんかんに タップ！ ぴったりなら Scランプで まぶしく 照らせるよ' });
   }
   function update(dt) {
+    if (S.state === 'ready') return;
     S.t += dt;
-    if (S.state === 'run' && !paused) {
-      for (const c of S.cracks) {
-        if (c.state === 'pending') {
-          if (c.parent) {
-            const p = c.parent;
-            if (p.state === 'cancelled') c.state = 'cancelled';
-            else if ((p.state === 'growing' || p.state === 'stopped') && p.tip > c.atS + .5) { c.state = 'growing'; c.tip = 0; SE.crackNew(); say('crack', 'あっ！ ひびが 分かれたよ！', 'ng', 'W'); S.fx.push({ x: c.P[0][0], y: c.P[0][1], t: 0, text: '分かれた！', col: '#ff3b4e' }); updateHUD(); }
-          } else if (S.t >= c.delay) { c.state = 'growing'; c.tip = 0; SE.crackNew(); S.fx.push({ x: c.P[0][0], y: c.P[0][1], t: 0, text: 'ピキッ！', col: '#ff3b4e' }); }
+    if (S.state === 'run') {
+      if (S.t < 0) { const cd = Math.ceil(-S.t); if (cd !== S.lastCd) { S.lastCd = cd; SE.beep(false); } }
+      else {
+        if (S.lastCd !== 0) { S.lastCd = 0; SE.beep(true); }
+        if (!S.musicOn) { S.musicOn = true; THEMES.light.bpm = S.D.bpm; Music.stop(); Music.start('light'); }
+        for (const c of S.calls) {
+          if (c.state === 'wait' && S.t >= c.t0) c.state = 'active';
+          if (c.state === 'active' && S.t > c.due + S.D.gw) resolve(c, 'miss');
         }
-        if (c.state === 'growing') {
-          c.tip += S.D.speed * dt;
-          if (c.stopper != null && c.tip >= c.stopper) {
-            c.tip = c.stopper; c.state = 'stopped'; S.stopped++; const p = posAt(c, c.tip);
-            c.children.forEach(ch => { if (ch.state === 'pending' && c.tip <= ch.atS + .5) ch.state = 'cancelled'; });
-            SE.block(); vibrate(30); flash('#3de0ff'); bumpEl($('ckLeftChip'));
-            S.ripples.push({ x: p[0], y: p[1], t: 0, big: true }); S.fx.push({ x: p[0], y: p[1] - 24, t: 0, text: 'ストップ！', col: '#3de0ff' });
-            const rc = cv.getBoundingClientRect(); burst(rc.left + p[0] * rc.width / W, rc.top + p[1] * rc.height / H, 22, 7, ['#3de0ff', '#7dffd4', '#ffffff']);
-            say('crack', 'ガキン！ ひびが とまったよ！', 'ok', 'C', 'jump'); updateHUD();
-          } else if (c.tip >= c.len) { c.tip = c.len; lose(c); }
-        }
+        if (S.calls.every(c => c.state === 'done') && S.t > S.lastDue + S.D.gw + .9) startFinal();
       }
-      if (S.state === 'run' && S.cracks.every(c => c.state === 'stopped' || c.state === 'cancelled')) {
-        S.state = 'win'; S.winT = 0; SE.lock(); flash('#7dffd4'); splash('荷重テスト！'); say('crack', 'ひびが ぜんぶ とまった！ 強さを テストするよ！', 'ok', 'C', 'jump');
-      }
+    } else if (S.state === 'final') {
+      S.finalT += dt;
+      if (S.win) {
+        S.reveal = clamp(S.finalT / 1.2, 0, 1); S.fwT -= dt;
+        if (S.fwT <= 0 && S.finalT < 2.6) { S.fwT = .38; const r = cv.getBoundingClientRect(); burst(r.left + r.width * (.15 + Math.random() * .7), r.top + r.height * (.12 + Math.random() * .3), 34, 12); SE.camera(); }
+        if (Math.random() < .5) { const j = Math.random() * 8 | 0, d = DOTS[j][Math.random() * 34 | 0]; S.cam.push({ x: d.x, y: d.y, t: 0 }); }
+        if (S.finalT > 3.2) finish();
+      } else if (S.finalT > 2.2) finish();
     }
-    if (S.state === 'win') { S.winT += dt; if (S.winT > 1.5 && !S.done) { S.done = true; finish(true); } }
-    if (S.state === 'lose') { S.loseT += dt; if (S.loseT > 1.3 && !S.done) { S.done = true; finish(false); } }
-    S.parts.forEach(p => p.t += dt); S.ripples.forEach(r => r.t += dt); S.fx.forEach(f => f.t += dt);
-    S.ripples = S.ripples.filter(r => r.t < .7); S.fx = S.fx.filter(f => f.t < 1);
+    S.fx.forEach(f => f.t += dt); S.fx = S.fx.filter(f => f.t < 1);
+    S.waves.forEach(w => w.t += dt); S.waves = S.waves.filter(w => w.t < .9);
+    S.cam.forEach(c => c.t += dt); S.cam = S.cam.filter(c => c.t < .25);
   }
-  function finish(win) {
-    const par = S.D.par, stars = win ? (S.used <= par ? 3 : S.used <= par + 1 ? 2 : 1) : 0;
-    showResult({ mode: 'crack', idx: S.idx, win, stars, lines: [['🔬 つかった Sc の つぶ', `${S.used} こ`], ['🏆 ★3の めやす', `${par} こ`]], tip: 'ひびが 分かれる ひとつ手前の 点線で ストップすると、少ない つぶで すむよ！' });
+  function drawFlare(x, y, b, sc) {
+    const r = (sc ? 44 : 26) * b, rot = S.t * (sc ? .6 : .2);
+    ctx.save(); ctx.translate(x, y); ctx.rotate(rot); ctx.globalCompositeOperation = 'lighter';
+    const g = ctx.createRadialGradient(0, 0, 0, 0, 0, r); g.addColorStop(0, sc ? 'rgba(255,255,255,.95)' : 'rgba(255,200,110,.8)'); g.addColorStop(.35, sc ? 'rgba(190,240,255,.5)' : 'rgba(255,170,60,.35)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, r, 0, 6.283); ctx.fill();
+    ctx.strokeStyle = sc ? 'rgba(220,250,255,.9)' : 'rgba(255,200,120,.6)'; ctx.lineWidth = sc ? 2.5 : 1.8; ctx.lineCap = 'round';
+    for (let i = 0; i < (sc ? 4 : 2); i++) { const a = i * Math.PI / (sc ? 4 : 2), L = r * (sc ? 1.5 : 1.1); ctx.beginPath(); ctx.moveTo(Math.cos(a) * -L, Math.sin(a) * -L); ctx.lineTo(Math.cos(a) * L, Math.sin(a) * L); ctx.stroke(); }
+    ctx.restore();
   }
-  function shapePath(sh) { const pts = SHAPES[sh]; ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]); for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]); ctx.closePath(); }
-  function strokeCrack(c, upto) {
-    ctx.beginPath(); ctx.moveTo(c.P[0][0], c.P[0][1]);
-    for (let i = 1; i < c.P.length && c.S[i] <= upto; i++) ctx.lineTo(c.P[i][0], c.P[i][1]);
-    const tp = posAt(c, upto); ctx.lineTo(tp[0], tp[1]); ctx.stroke();
-  }
-  function hex(x, y, r) { ctx.beginPath(); for (let i = 0; i < 6; i++) { const a = Math.PI / 6 + i * Math.PI / 3; ctx.lineTo(x + Math.cos(a) * r, y + Math.sin(a) * r); } ctx.closePath(); }
   function draw() {
     if (!S || !k) return;
-    ctx.setTransform(k, 0, 0, k, 0, 0); ctx.clearRect(0, 0, W, H);
-    ctx.save();
-    if (S.state === 'lose' && S.loseT < .5) ctx.translate((Math.random() - .5) * 8, (Math.random() - .5) * 8);
-    // 青写真
-    ctx.fillStyle = '#0c2d4a'; ctx.fillRect(0, 0, W, H); ctx.strokeStyle = 'rgba(120,200,255,.12)'; ctx.lineWidth = 1;
-    for (let x = 0; x <= W; x += 30) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
-    for (let y = 0; y <= H; y += 30) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
-    // ぶひん
-    shapePath(S.D.shape); const g = ctx.createLinearGradient(0, 90, W, 470); g.addColorStop(0, '#e8f0f6'); g.addColorStop(.5, '#b9c9d6'); g.addColorStop(1, '#8da2b4');
-    ctx.fillStyle = g; ctx.fill(); ctx.lineJoin = 'round'; ctx.lineWidth = 6; ctx.strokeStyle = '#0d2438'; ctx.stroke();
-    ctx.save(); shapePath(S.D.shape); ctx.clip();
-    ctx.globalAlpha = .13; ctx.font = '170px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#000'; ctx.fillText(S.D.emoji, W / 2, H / 2 + 6); ctx.globalAlpha = 1;
-    ctx.fillStyle = 'rgba(255,255,255,.35)'; ctx.fillRect(0, 100, W, 14);
-    // キズ（ニセモノ）
-    if (S.D.decoys) { ctx.strokeStyle = 'rgba(70,90,110,.55)'; ctx.lineWidth = 2; ctx.lineCap = 'round'; S.D.decoys.forEach(pl => { ctx.beginPath(); pl.forEach((q, i) => i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1])); ctx.stroke(); }); }
-    // 点線ガイド
-    ctx.lineCap = 'round';
-    for (const c of S.cracks) {
-      if (c.state === 'cancelled' || c.state === 'stopped') continue;
-      const from = c.state === 'growing' ? c.tip : 0, end = c.stopper != null ? c.stopper : c.len;
-      if (from >= end) continue;
-      ctx.setLineDash([2, 9]); ctx.lineWidth = 3.4; ctx.strokeStyle = c.state === 'pending' ? 'rgba(255,59,78,.5)' : 'rgba(255,59,78,.85)';
-      ctx.beginPath(); let started = false;
-      for (let i = 0; i < c.P.length; i++) { if (c.S[i] < from - 10) continue; if (c.S[i] > end) break; if (!started) { const sp = posAt(c, from); ctx.moveTo(sp[0], sp[1]); started = true; } ctx.lineTo(c.P[i][0], c.P[i][1]); }
-      const ep = posAt(c, end); if (started) ctx.lineTo(ep[0], ep[1]); ctx.stroke(); ctx.setLineDash([]);
-    }
-    // ひび
-    for (const c of S.cracks) {
-      if (c.state !== 'growing' && c.state !== 'stopped') continue;
-      ctx.lineJoin = 'round'; ctx.lineCap = 'round';
-      ctx.strokeStyle = '#2b0a10'; ctx.lineWidth = 8; strokeCrack(c, c.tip);
-      ctx.strokeStyle = c.state === 'stopped' ? '#7a3a4a' : '#ff3b4e'; ctx.lineWidth = 3.4; ctx.shadowColor = '#ff3b4e'; ctx.shadowBlur = c.state === 'stopped' ? 0 : 10; strokeCrack(c, c.tip); ctx.shadowBlur = 0;
-    }
-    ctx.restore();
-    // 分かれ道のしるし
-    for (const c of S.cracks) if (c.parent && c.state === 'pending') { const p = c.parent.P[c.forkIdx], pu = .5 + .5 * Math.sin(S.t * 6); ctx.beginPath(); ctx.arc(p[0], p[1], 9 + pu * 3, 0, 6.28); ctx.strokeStyle = 'rgba(255,210,63,.95)'; ctx.lineWidth = 3; ctx.stroke(); ctx.fillStyle = '#ffd23f'; ctx.font = '900 11px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('Y', p[0], p[1] + 1); }
-    // ゴール（荷重ポイント）
-    for (const c of S.cracks) {
-      if (c.state === 'cancelled') continue; const e = c.P[c.P.length - 1], pu = .5 + .5 * Math.sin(S.t * 5 + c.len);
-      ctx.beginPath(); ctx.arc(e[0], e[1], 11 + pu * 2, 0, 6.28); ctx.fillStyle = c.state === 'stopped' ? 'rgba(61,224,255,.8)' : 'rgba(255,59,78,.92)'; ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = '#fff'; ctx.stroke();
-      ctx.fillStyle = '#fff'; ctx.font = '900 14px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(c.state === 'stopped' ? '✓' : '!', e[0], e[1] + 1);
-    }
-    // 始まりの合図
-    if (S.state === 'run') for (const c of S.cracks) if (c.state === 'pending' && !c.parent && c.delay - S.t < 1.5) { const p = c.P[0], b = Math.sin(S.t * 14) > 0; if (b) { ctx.fillStyle = '#ff3b4e'; ctx.font = '900 26px sans-serif'; ctx.textAlign = 'center'; ctx.fillText('⚠', p[0], p[1] + 2); } }
-    // 先端のスパーク
-    for (const c of S.cracks) if (c.state === 'growing') { const p = posAt(c, c.tip), r = 7 + Math.random() * 4; const gr = ctx.createRadialGradient(p[0], p[1], 0, p[0], p[1], r * 2); gr.addColorStop(0, '#fff'); gr.addColorStop(.4, '#ffd23f'); gr.addColorStop(1, 'rgba(255,59,78,0)'); ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(p[0], p[1], r * 2, 0, 6.28); ctx.fill(); }
-    // Scのつぶ
-    for (const p of S.parts) { const pu = 1 + Math.sin(p.t * 8) * .06, sc = Math.min(1, p.t * 6); const r = 15 * pu * (.4 + .6 * sc); hex(p.x, p.y, r); const gg = ctx.createLinearGradient(p.x - r, p.y - r, p.x + r, p.y + r); gg.addColorStop(0, '#d6fbff'); gg.addColorStop(1, '#3de0ff'); ctx.fillStyle = gg; ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = '#0d2438'; ctx.stroke(); ctx.fillStyle = '#0d2438'; ctx.font = '900 12px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('Sc', p.x, p.y + 1); }
-    // 波紋
-    for (const r of S.ripples) { const t = r.t / .7; ctx.beginPath(); ctx.arc(r.x, r.y, 10 + t * (r.big ? 50 : 32), 0, 6.28); ctx.strokeStyle = `rgba(61,224,255,${1 - t})`; ctx.lineWidth = 4; ctx.stroke(); }
-    // 文字
-    for (const f of S.fx) { const t = f.t; ctx.globalAlpha = 1 - t; ctx.font = '900 16px sans-serif'; ctx.textAlign = 'center'; ctx.lineWidth = 4; ctx.strokeStyle = '#0d2438'; ctx.strokeText(f.text, f.x, f.y - t * 24); ctx.fillStyle = f.col; ctx.fillText(f.text, f.x, f.y - t * 24); ctx.globalAlpha = 1; }
-    // しけん（かじゅうテスト）
-    if (S.state === 'win') {
-      const t = clamp(S.winT / 1.2, 0, 1); ctx.fillStyle = `rgba(125,255,212,${.15 + .15 * Math.sin(S.winT * 12)})`; shapePath(S.D.shape); ctx.fill();
-      ctx.fillStyle = 'rgba(5,14,28,.8)'; ctx.fillRect(40, 486, 280, 26); ctx.fillStyle = '#7dffd4'; ctx.fillRect(44, 490, 272 * t, 18); ctx.fillStyle = '#fff'; ctx.font = '900 12px sans-serif'; ctx.textAlign = 'center'; ctx.fillText(`荷重テスト ${Math.round(t * 100)}%`, W / 2, 499);
-    }
-    if (S.state === 'lose') { ctx.fillStyle = `rgba(255,59,78,${.25 * Math.max(0, 1 - S.loseT)})`; ctx.fillRect(0, 0, W, H); }
-    ctx.restore();
+    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, cv.width, cv.height); ctx.setTransform(k, 0, 0, k, 0, 0); ctx.globalCompositeOperation = 'source-over';
+    ctx.drawImage(base, 0, 0, W, H);
+    const cq = TOWERS.map((_, i) => qNow(i)), t = S.t;
+    // 観客
+    CROWD.forEach((c, j) => {
+      const cheer = bright(c, cq) >= S.D.thr * .9 || (S.state === 'final' && S.win);
+      DOTS[j].forEach(d => { const dy = cheer ? Math.sin(t * 9 + d.ph) * 2.6 : 0; ctx.fillStyle = d.col; ctx.beginPath(); ctx.arc(d.x, d.y + dy, 3.4, 0, 6.283); ctx.fill(); if (cheer && Math.sin(t * 7 + d.ph * 3) > .8) { ctx.fillStyle = '#fff'; ctx.fillRect(d.x - 1, d.y + dy - 9, 2, 6); } });
+    });
+    // 選手
+    PLAYERS.forEach((p, i) => {
+      const lit = bright(p, cq) >= S.D.thr * .9 || (S.state === 'final' && S.win), x = p[0] + Math.cos(t * .8 + i * 1.7) * 9, y = p[1] + Math.sin(t * 1.1 + i) * 6 - (lit ? Math.abs(Math.sin(t * 6 + i)) * 4 : 0);
+      ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.beginPath(); ctx.ellipse(x, y + 13, 9, 3.5, 0, 0, 6.283); ctx.fill();
+      ctx.fillStyle = JERSEY[i]; ctx.strokeStyle = '#0d2438'; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(x, y + 4, 8, 10, 0, 0, 6.283); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#ffe0bd'; ctx.beginPath(); ctx.arc(x, y - 9, 6.5, 0, 6.283); ctx.fill(); ctx.stroke();
+      if (lit) { ctx.strokeStyle = '#ffe0bd'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(x - 8, y + 2); ctx.lineTo(x - 13, y - 8); ctx.moveTo(x + 8, y + 2); ctx.lineTo(x + 13, y - 8); ctx.stroke(); }
+    });
+    ctx.font = '14px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('⚽', 180 + Math.cos(t * 1.3) * 40, 262 + Math.sin(t * 1.9) * 30);
+    // くらやみ（ランプのまわりだけ明るくなる）
+    const dk = .93 - .45 * S.reveal; dctx.setTransform(1, 0, 0, 1, 0, 0); dctx.globalCompositeOperation = 'source-over'; dctx.clearRect(0, 0, dark.width, dark.height); dctx.fillStyle = `rgba(3,8,20,${dk})`; dctx.fillRect(0, 0, dark.width, dark.height);
+    dctx.setTransform(k, 0, 0, k, 0, 0); dctx.globalCompositeOperation = 'destination-out';
+    TOWERS.forEach((p, i) => { const b = cq[i]; if (b <= 0) return; const g = dctx.createRadialGradient(p[0], p[1], 0, p[0], p[1], RL * (.8 + .2 * Math.min(1, b))); g.addColorStop(0, `rgba(0,0,0,${Math.min(1, b)})`); g.addColorStop(.5, `rgba(0,0,0,${Math.min(1, b) * .6})`); g.addColorStop(1, 'rgba(0,0,0,0)'); dctx.fillStyle = g; dctx.beginPath(); dctx.arc(p[0], p[1], RL, 0, 6.283); dctx.fill(); });
+    ctx.drawImage(dark, 0, 0, W, H);
+    // 色（ふつうは黄色っぽい / Scはしぜんな白い光）
+    ctx.globalCompositeOperation = 'lighter';
+    TOWERS.forEach((p, i) => { const b = cq[i]; if (b <= 0) return; const sc = S.q[i] === 1, g = ctx.createRadialGradient(p[0], p[1], 0, p[0], p[1], RL * .85); g.addColorStop(0, sc ? `rgba(215,245,255,${.2 * b})` : `rgba(255,170,60,${.24 * b})`); g.addColorStop(1, 'rgba(0,0,0,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(p[0], p[1], RL, 0, 6.283); ctx.fill(); });
+    ctx.globalCompositeOperation = 'source-over';
+    // タワー
+    TOWERS.forEach((p, i) => {
+      const b = cq[i], sc = S.q[i] === 1, used = S.used.has(i); ctx.save(); ctx.translate(p[0], p[1]);
+      rrect(ctx, -17, -12, 34, 24, 6); ctx.fillStyle = used ? '#34456a' : '#273250'; ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = '#0d1b33'; ctx.stroke();
+      for (let r = 0; r < 2; r++) for (let c = 0; c < 3; c++) { ctx.beginPath(); ctx.arc(-10 + c * 10, -5 + r * 10, 3.6, 0, 6.283); ctx.fillStyle = b > .05 ? (sc ? '#ffffff' : '#ffd27a') : '#566480'; ctx.fill(); }
+      if (!used) { ctx.fillStyle = 'rgba(255,255,255,.35)'; ctx.font = '900 11px sans-serif'; ctx.textAlign = 'center'; ctx.fillText('おやすみ', 0, 22); }
+      ctx.restore();
+    });
+    TOWERS.forEach((p, i) => { if (cq[i] > .05) drawFlare(p[0], p[1], Math.min(1, cq[i] * (S.q[i] === 1 ? 1.1 : 1)), S.q[i] === 1); });
+    // 衝撃波
+    ctx.globalCompositeOperation = 'lighter';
+    S.waves.forEach(w => { const a = w.t / .9; ctx.beginPath(); ctx.arc(w.x, w.y, 20 + a * (w.sc ? 190 : 110), 0, 6.283); ctx.strokeStyle = w.sc ? `rgba(200,245,255,${.9 * (1 - a)})` : `rgba(255,190,90,${.7 * (1 - a)})`; ctx.lineWidth = w.sc ? 7 : 4; ctx.stroke(); });
+    S.cam.forEach(c => { const a = c.t / .25, r = 14 * (1 - a) + 3; ctx.fillStyle = `rgba(255,255,255,${1 - a})`; ctx.beginPath(); ctx.arc(c.x, c.y, r, 0, 6.283); ctx.fill(); ctx.fillRect(c.x - r * 2, c.y - 1, r * 4, 2); ctx.fillRect(c.x - 1, c.y - r * 2, 2, r * 4); });
+    ctx.globalCompositeOperation = 'source-over';
+    // リング
+    S.calls.forEach(c => {
+      if (c.state === 'wait' && c.t0 - S.t < S.beat * 1.2 && S.state === 'run') { const p = TOWERS[c.tw], pu = .5 + .5 * Math.sin(S.t * 14); ctx.beginPath(); ctx.arc(p[0], p[1], 22 + pu * 4, 0, 6.283); ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.lineWidth = 3; ctx.stroke(); }
+      if (c.state !== 'active') return; const p = TOWERS[c.tw], prog = clamp((S.t - c.t0) / (c.due - c.t0), 0, 1), dtn = S.t - c.due, r = 24 + (1 - prog) * 54, inP = Math.abs(dtn) <= S.D.pw;
+      ctx.beginPath(); ctx.arc(p[0], p[1], 24, 0, 6.283); ctx.setLineDash([5, 5]); ctx.strokeStyle = 'rgba(61,224,255,.95)'; ctx.lineWidth = 3; ctx.stroke(); ctx.setLineDash([]);
+      ctx.beginPath(); ctx.arc(p[0], p[1], Math.max(r, 24), 0, 6.283); ctx.shadowColor = inP ? '#7dffd4' : '#ffffff'; ctx.shadowBlur = 14; ctx.strokeStyle = inP ? '#7dffd4' : `rgba(255,255,255,${.4 + .6 * prog})`; ctx.lineWidth = inP ? 7 : 4.5; ctx.stroke(); ctx.shadowBlur = 0;
+    });
+    // ON AIR
+    const live = S.pot.length && S.lit / S.pot.length >= .7, blink = S.state === 'final' && S.win ? (Math.sin(S.t * 12) > -.3) : true;
+    ctx.save(); ctx.translate(CX, 30); rrect(ctx, -52, -15, 104, 30, 8); ctx.fillStyle = live && blink ? '#ff2e3d' : '#3a2530'; ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = '#0d1b33'; ctx.stroke();
+    if (live && blink) { ctx.shadowColor = '#ff2e3d'; ctx.shadowBlur = 16; ctx.fill(); ctx.shadowBlur = 0; } ctx.fillStyle = live ? '#fff' : '#7a5560'; ctx.font = '900 16px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('● ON AIR', 0, 1); ctx.restore();
+    // もじ
+    S.fx.forEach(f => { ctx.globalAlpha = 1 - f.t; ctx.font = '900 20px sans-serif'; ctx.textAlign = 'center'; ctx.lineWidth = 5; ctx.strokeStyle = '#0d2438'; ctx.strokeText(f.text, f.x, f.y - f.t * 26); ctx.fillStyle = f.col; ctx.fillText(f.text, f.x, f.y - f.t * 26); ctx.globalAlpha = 1; });
+    if (S.state === 'run' && S.t < 0) { const n = Math.ceil(-S.t), a = 1 - ((-S.t) % 1); ctx.globalAlpha = Math.max(.2, 1 - a * .6); ctx.font = '900 110px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineWidth = 8; ctx.strokeStyle = '#0d2438'; ctx.strokeText(String(n), CX, CY); ctx.fillStyle = '#ffd23f'; ctx.fillText(String(n), CX, CY); ctx.globalAlpha = 1; }
+    else if (S.state === 'run' && S.t < .6) { ctx.font = '900 64px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineWidth = 8; ctx.strokeStyle = '#0d2438'; ctx.strokeText('スタート！', CX, CY); ctx.fillStyle = '#7dffd4'; ctx.fillText('スタート！', CX, CY); }
   }
-  function loop(ts) { raf = requestAnimationFrame(loop); const dt = Math.min(.05, (ts - last) / 1000); last = ts; if (S && !paused) update(dt); else if (S) S.t += 0; draw(); }
-  cv.addEventListener('pointerdown', e => { e.preventDefault(); const r = cv.getBoundingClientRect(); tap((e.clientX - r.left) / r.width * W, (e.clientY - r.top) / r.height * H); });
-  $('ckGo').onclick = begin; $('ckReset').onclick = reset;
-  return { init, stop, resize, begin, debug: () => S, tap, posAt };
+  function loop(ts) { raf = requestAnimationFrame(loop); const dt = Math.min(.05, (ts - last) / 1000); last = ts; if (S && !paused) { update(dt); if (S.state === 'run' || S.state === 'final') { const l = litCount(); if (l !== S.lit) { S.lit = l; hud(); } } } draw(); }
+  cv.addEventListener('pointerdown', e => { e.preventDefault(); const r = cv.getBoundingClientRect(); tap((e.clientX - r.left) / r.width * W, (e.clientY - r.top) / r.height * H, false); });
+  $('liTap').addEventListener('pointerdown', e => { e.preventDefault(); tap(0, 0, true); });
+  $('liGo').onclick = begin;
+  return { init, stop, resize, begin, debug: () => S, tap, TOWERS, STAGES };
 })();
 
 /* ============================================================
@@ -1098,7 +1084,7 @@ Games.radio = (() => {
 })();
 
 /* ============================================================
- * 8. ボタンの登録・ずかん
+ * 8. ボタンの登録・ひみつ
  * ============================================================ */
 function openFacts() {
   const box = $('factBody'); box.innerHTML = '';
