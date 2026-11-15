@@ -892,8 +892,14 @@ function csMain(id){
 }
 
 /* ② おしごと（3つの大きなボタンから選ぶだけ） */
+/* おしごとの持ち帰り数は、プレイヤーのレベルに応じてふえる（Lv1が基準。1レベルごとに +HELP_LV_BONUS） */
+const HELP_LV_BONUS=0.02;
+function helpMult(){ return 1+HELP_LV_BONUS*Math.max(0,(gameState.level||1)-1); }
+function helpQ(base){ return Math.max(1,Math.round(base*helpMult())); }
+/* 製造は「作ったことのある製品」からおまかせ（はじめての1個は、自分で作るまで頼めない） */
+function craftedRecipes(){ try{ syncCrafted(); }catch(e){} return recipes.filter(r=>gameState.crafted&&gameState.crafted[r.id]); }
 function csWork(id){
-  const c=CHARAS[id], canProd=(gameState.level||1)>=12;
+  const c=CHARAS[id], canLv=(gameState.level||1)>=12, hasCrafted=craftedRecipes().length>0, canProd=canLv&&hasCrafted;
   const defs=[['mine',c.mH,c.mQ],['refine',c.rH,c.rQ],['prod',c.pH,c.pQ]];
   let h=csHead(id,TYPE_TAG[c.type]||'')+`<div class="cs-bubble c">なにをおねがいする？</div><div class="cs-grid cs-grid3">`;
   defs.forEach(([t,hr,q])=>{
@@ -901,7 +907,7 @@ function csWork(id){
     h+=`<button class="cs-tile" style="background:${w.color}" ${lock?'disabled':''} onclick="startCharaTask('${id}','${t}')">
       ${(c.type===t&&!lock)?'<span class="cs-star">⭐とくい</span>':''}
       <span class="ic">${w.emoji}</span><span class="lb">${w.label}</span>
-      <small>${lock?'🔒 Lv.12から':`⏱️ ${fmtHours(hr)}<br>${w.unit} ×${q}`}</small></button>`;
+      <small>${lock?(!canLv?'🔒 Lv.12から':'🔒 まず自分で<br>1つ作ってね'):`⏱️ ${fmtHours(hr)}<br>${w.unit} ×${helpQ(q)}`}</small></button>`;
   });
   h+=`</div><button class="cs-sub" onclick="csMain('${id}')">◀ もどる</button>`;
   csShow(h);
@@ -933,6 +939,7 @@ function removeChara(id){
 
 function startCharaTask(id, type){
   const c = CHARAS[id]; if(!c) return;
+  if(type==='prod' && !craftedRecipes().length){ toast('🔒 まず自分で、製品を1つ作ってみてね'); return; }
   let hours = type==='mine'? c.mH : type==='refine'? c.rH : c.pH;
   const durationMs = hours * 3600 * 1000; 
   if(!gameState.charaTasks) gameState.charaTasks={};
@@ -951,12 +958,13 @@ function claimTaskReward(id){
   const isFever = Math.random() < 0.10;
   const mult = isFever ? (1.5 + Math.random()*0.5) : 1.0;
   let baseQ = task.type==='mine'? c.mQ : task.type==='refine'? c.rQ : c.pQ;
-  let finalQ = Math.round(baseQ * mult);
+  let finalQ = Math.max(1, Math.round(baseQ * helpMult() * mult));   // レベル補正（helpMult）× フィーバー
 
   if(task.type === 'mine'){ gameState.mudStock = (gameState.mudStock || 0) + finalQ; }
   else if(task.type === 'refine'){ gameState.money = (gameState.money || 0) + finalQ * 250; }
   else {
-    const rId = recipes[Math.floor(Math.random()*recipes.length)].id;
+    const pool = craftedRecipes(), pick = (pool.length ? pool : recipes);   // 作ったことのある製品から、おまかせ
+    const rId = pick[Math.floor(Math.random()*pick.length)].id;
     if(!gameState.products) gameState.products={};
     gameState.products[rId] = (gameState.products[rId] || 0) + finalQ;
   }
