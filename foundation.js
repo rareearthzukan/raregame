@@ -37,25 +37,26 @@
   };
   const WHO = { Tb: 'テルビウム', Dy: 'ジスプロシウム', Er: 'エルビウム', Eu: 'ユウロピウム' };
 
-  // ───── おみやげ（地震イベント）と観測室の飾り。home.html の furnitureMaster にも登録されます ─────
+  // ───── おみやげ（災害支援イベント）と観測室の飾り。home.html の furnitureMaster にも登録されます ─────
+  // 災害支援の3か国は、特定の国を避けた架空の設定（アジア某国は、Lv10のミャンマー採鉱エリアのイメージ）
   const COUNTRIES = {
-    indonesia: { name: 'インドネシア', flag: '🇮🇩', ev: 'E01' },
-    philippines: { name: 'フィリピン', flag: '🇵🇭', ev: 'E16' },
-    peru: { name: 'ペルー', flag: '🇵🇪', ev: 'E17' }
+    asia: { name: 'アジアの某国（台風）', flag: '🌏', ev: 'E01' },
+    africa: { name: 'アフリカの某国（洪水）', flag: '🌍', ev: 'E16' },
+    pacific: { name: '太平洋の島国（火山噴火）', flag: '🏝️', ev: 'E17' }
   };
   const SOUVENIRS = {
-    indo_furniture5: { name: 'アジアン家具5点セット', emoji: '🛖', size: 40, bonus: 1.0, y: 90, country: 'indonesia', slot: 'great' },
-    indo_bali_cat: { name: '特大バリ猫（木彫り人形）', emoji: '🐈', size: 24, bonus: 0.6, y: 90, country: 'indonesia', slot: 'good' },
-    indo_mask: { name: '木彫りの顔のお面', emoji: '🎭', size: 12, bonus: 0.2, y: 60, country: 'indonesia', slot: 'bitter' },
-    indo_table_set: { name: 'インドネシア料理が並ぶテーブルと椅子セット', emoji: '🍛', size: 34, bonus: 0.5, y: 92, country: 'indonesia', slot: 'odd' },
-    phil_rattan5: { name: '南国リゾート風の籐家具5点セット', emoji: '🏝️', size: 40, bonus: 1.0, y: 90, country: 'philippines', slot: 'great' },
-    phil_parol: { name: '特大パロール（星形のクリスマスランタン）', emoji: '⭐', size: 24, bonus: 0.6, y: 55, country: 'philippines', slot: 'good' },
-    phil_tarsier: { name: '木彫りのメガネザルの置物', emoji: '🐒', size: 12, bonus: 0.2, y: 70, country: 'philippines', slot: 'bitter' },
-    phil_table_set: { name: 'ハロハロとパンシットが並ぶテーブルと椅子セット', emoji: '🍧', size: 34, bonus: 0.5, y: 92, country: 'philippines', slot: 'odd' },
-    peru_andes5: { name: 'アンデス風の家具5点セット', emoji: '🏔️', size: 40, bonus: 1.0, y: 90, country: 'peru', slot: 'great' },
-    peru_alpaca: { name: '特大アルパカのぬいぐるみ', emoji: '🦙', size: 24, bonus: 0.6, y: 90, country: 'peru', slot: 'good' },
-    peru_quena: { name: '小さなケーナ（竹の笛）', emoji: '🎶', size: 12, bonus: 0.2, y: 60, country: 'peru', slot: 'bitter' },
-    peru_table_set: { name: 'セビーチェとじゃがいも料理が並ぶテーブルと椅子セット', emoji: '🍲', size: 34, bonus: 0.5, y: 92, country: 'peru', slot: 'odd' }
+    asia_furniture5: { name: 'アジアの暮らしの家具5点セット', emoji: '🛖', size: 40, bonus: 1.0, y: 90, country: 'asia', slot: 'great' },
+    asia_elephant: { name: '特大の木彫りの象', emoji: '🐘', size: 24, bonus: 0.6, y: 90, country: 'asia', slot: 'good' },
+    asia_mask: { name: '木彫りの顔のお面', emoji: '🎭', size: 12, bonus: 0.2, y: 60, country: 'asia', slot: 'bitter' },
+    asia_table_set: { name: '屋台の麺料理が並ぶテーブルと椅子セット', emoji: '🍜', size: 34, bonus: 0.5, y: 92, country: 'asia', slot: 'odd' },
+    afr_furniture5: { name: 'サバンナ風の家具5点セット', emoji: '🏕️', size: 40, bonus: 1.0, y: 90, country: 'africa', slot: 'great' },
+    afr_giraffe: { name: '特大の木彫りのキリン', emoji: '🦒', size: 24, bonus: 0.6, y: 90, country: 'africa', slot: 'good' },
+    afr_djembe: { name: '小さなジャンベ（太鼓）', emoji: '🥁', size: 12, bonus: 0.2, y: 75, country: 'africa', slot: 'bitter' },
+    afr_table_set: { name: 'シチューとパンが並ぶテーブルと椅子セット', emoji: '🍲', size: 34, bonus: 0.5, y: 92, country: 'africa', slot: 'odd' },
+    pac_furniture5: { name: '南の島のリゾート風 家具5点セット', emoji: '🏝️', size: 40, bonus: 1.0, y: 90, country: 'pacific', slot: 'great' },
+    pac_lei: { name: '特大のハイビスカスのレイ', emoji: '🌺', size: 24, bonus: 0.6, y: 55, country: 'pacific', slot: 'good' },
+    pac_ukulele: { name: '小さなウクレレ', emoji: '🎸', size: 12, bonus: 0.2, y: 70, country: 'pacific', slot: 'bitter' },
+    pac_table_set: { name: 'トロピカルフルーツが並ぶテーブルと椅子セット', emoji: '🍍', size: 34, bonus: 0.5, y: 92, country: 'pacific', slot: 'odd' }
   };
   const DECOR = {
     obs_sunset: { name: '観測室の飾り「南鳥島の夕焼け」', emoji: '🌅', size: 30, bonus: 0.4, y: 40 },
@@ -70,7 +71,7 @@
   const spentIn = (F, ids) => ids.some(id => F.spent && F.spent[id]);
 
   /* ═══════════════════════════ イベントのデータ ═══════════════════════════
-   * id / title / icon / kind('quake' 前向き地震・'good' 前向き・'bad' 負の側面) / wait(結果までの行動回数)
+   * id / title / icon / kind('quake' 前向き・災害支援・'good' 前向き・'bad' 負の側面) / wait(結果までの行動回数)
    * cond(c)   : 知らせが届く条件。c = { lv, acts, trade, okiMine, seen, F }
    * news      : 知らせの文。[話し手, 文, (必要なフラグ)]  話し手 '' は地の文
    * opts      : [小, 中, 大] の選択肢の文（E03だけ options で個別指定）
@@ -81,15 +82,16 @@
   const EVENTS = [];
   function E(o) { EVENTS.push(o); return o; }
 
+  const ICONS = { E01: '🌀', E16: '🌊', E17: '🌋' };
   function quake(id, country, title, minOthers, newsLine, tbLine, optTexts, texts, sv) {
     return E({
-      id, title, icon: '🌏', kind: 'quake', wait: 3, country,
-      // 地震イベントは間をあける：地震以外のイベントが minOthers 本おわってから届く（E01は最初、E16は6本後、E17は12本後）
+      id, title, icon: ICONS[id], kind: 'quake', wait: 3, country,
+      // 災害支援は間をあける：災害以外のイベントが minOthers 本おわってから届く（1回目は3本後、2回目は9本後、3回目は12本後）
       cond: (c) => c.lv >= FOUND_LEVEL && Object.keys(c.F.done).filter(k => !byId(k).country).length >= minOthers,
       news: [['', newsLine], ['Tb', tbLine]], opts: optTexts,
       onSpend: (F) => { F.flags.F_AID_DONE = F.flags.F_AID_DONE || (id === 'E01'); },
       results: {
-        great: { text: texts[0], axes: A({ intl: 3, local: 1 }), souvenir: sv[0], flags: [{ E01: 'F_INDO_FRIEND', E16: 'F_PHIL_FRIEND', E17: 'F_PERU_FRIEND' }[id]] },
+        great: { text: texts[0], axes: A({ intl: 3, local: 1 }), souvenir: sv[0], flags: [{ E01: 'F_ASIA_FRIEND', E16: 'F_AFR_FRIEND', E17: 'F_PAC_FRIEND' }[id]] },
         good: { text: texts[1], axes: A({ intl: 2 }), souvenir: sv[1] },
         bitter: { text: texts[2], axes: A({ intl: 1 }), souvenir: sv[2], flags: id === 'E01' ? ['F_AID_LEARN'] : [] },
         odd: { text: texts[3], axes: A({ intl: 2, local: 1 }), souvenir: sv[3] }
@@ -98,19 +100,19 @@
     });
   }
 
-  quake('E01', 'indonesia', '義援金（インドネシア地震）', 0,
-    'インドネシアで大きな地震。多くの家が壊れ、避難所に身を寄せる人が増えています。',
-    'Lv50になる前、現地で採鉱のお手伝いをしましたよね。あの人たちは、無事でしょうか…。私たちにできること、探してみませんか？',
+  quake('E01', 'asia', '義援金（アジアの某国・台風）', 3,
+    'アジアの某国に大型の台風が直撃。洪水で家が流され、避難所に身を寄せる人が増えています。',
+    '以前、現地で採鉱のお手伝いをしましたよね。あの人たちは、無事でしょうか…。私たちにできること、探してみませんか？',
     ['まず水と毛布を', '避難所の仮設トイレと井戸を', '学校の再建まで見すえた長期支援'],
-    ['現地の学校から、子どもたちの寄せ書きが届きました。「再建した校舎の壁に、日本の友だちの名前を書いたよ」。同封の手紙で、現地の鉱山会社の社長が「スズを採るときに出る砂には、レアアースを含む鉱物がまざることがあります。いつか一緒に仕事をしましょう」と。',
+    ['現地の学校から、子どもたちの寄せ書きが届きました。「再建した校舎の壁に、日本の友だちの名前を書いたよ」。同封の手紙で、現地の採掘組合の代表が「あの山の仕事で、また一緒に働けたらうれしい」と。',
      '避難所から感謝のビデオメッセージが届きました。「井戸の水で、はじめて温かいスープを作れました」',
      '道路が寸断され、物資の一部が届くのが遅れました。支援は「届け方」も大切だと知ります。',
-     '混乱で義援金の一部が行方不明に。しかし現地の鉱山仲間が自力で探し出し「恩返しだ」と届けてくれました。'],
-    ['indo_furniture5', 'indo_bali_cat', 'indo_mask', 'indo_table_set']);
+     '混乱で義援金の一部が行方不明に。しかし現地の採掘仲間が自力で探し出し「恩返しだ」と届けてくれました。'],
+    ['asia_furniture5', 'asia_elephant', 'asia_mask', 'asia_table_set']);
 
   E({
     id: 'E02', title: '教育基金', icon: '🎓', kind: 'good', wait: 5,
-    cond: (c) => doneOK(c.F, 'E01'),
+    cond: (c) => doneOK(c.F, 'E07'),
     news: [['', '大学の研究室の先生から。「南鳥島の泥からレアアースを分ける研究をしている学生がいます。ところが奨学金も実験器具も足りません。未来の担い手を、いっしょに育てていただけませんか。」']],
     opts: ['奨学生1名', '奨学生3名＋実験器具', '財団名を冠した寄付講座を設立'],
     results: {
@@ -200,8 +202,8 @@
   });
 
   E({
-    id: 'E07', title: 'レアアース力あわせチーム（産学官の協力）', icon: '🤝', kind: 'good', wait: 6,
-    cond: (c) => doneOK(c.F, 'E02') || doneOK(c.F, 'E05'),
+    id: 'E07', title: 'レアアース力あわせチーム（産学官の協力）', icon: '🤝', kind: 'good', wait: 3,
+    cond: (c) => c.lv >= FOUND_LEVEL,
     news: [['Tb', '大学と会社と役所が力を合わせる『レアアース力あわせチーム』ができました。難しい言葉では『産学官の協力』と言いますが、要するに、得意なことを持ち寄って、みんなで一つの仕事に取り組むチームのことです'],
       ['Tb', '文化祭を思い出してください。劇をやるなら、台本を書く人、衣装を作る人、場所を決めてくれる先生がいますよね。レアアースの仕事も同じです。大学は『調べるチーム』、会社は『作るチーム』、役所は『ルールを作って応援するチーム』。一人ではできないことも、チームなら早くできます！']],
     opts: ['みんなで集まる部屋の費用', 'チームの事務スタッフ', 'みんなで使える実験室'],
@@ -295,7 +297,7 @@
       ['', '豆知識：原料の出どころをたどれる仕組みを「トレーサビリティ」と呼びます。']],
     opts: ['全ロットの検査と記録を始める', '現地調査団を派遣', '取引先と新契約し、認証された原料へ切り替える（やや高価）'],
     skipLabel: '見送る（今回は気づかなかったことにする）',
-    mods: (F) => ({ great: hasF(F, 'F_INDO_FRIEND') ? 10 : 0 }),
+    mods: (F) => ({ great: hasF(F, 'F_ASIA_FRIEND') ? 10 : 0 }),
     results: {
       great: { text: '取引先が自ら改善し、出どころを全部記録する仕組みを導入しました。「ここのレアアースなら安心」と評判に。', axes: A({ intl: 2, local: 1 }), bonus: 'trade_price+3%' },
       good: { text: '混入ルートを特定し、是正しました。', axes: A({ intl: 1 }) },
@@ -360,28 +362,28 @@
     skip: { text: '問い合わせが殺到し、財団の評判が落ちてしまいました。', axes: A({ local: -2, intl: -1 }), retry: 2 }
   });
 
-  quake('E16', 'philippines', '義援金（フィリピン地震）', 6,
-    'フィリピンで大きな地震。多くの家が壊れ、避難所に身を寄せる人が増えています。',
-    '日本とフィリピンは、これまでも助け合ってきた国です。私たちにできること、探してみませんか？',
-    ['まず飲み水と簡易ベッドを', '避難所の仮設トイレと給水設備を', '学校の再建まで見すえた長期支援'],
-    ['現地の学校から、子どもたちの寄せ書きが届きました。「再建した校舎の壁に、日本の友だちの名前を書いたよ」。同封の手紙には、地元の漁協の人から「いつか一緒に何かできたらうれしい」という言葉が。',
+  quake('E16', 'africa', '義援金（アフリカの某国・洪水）', 9,
+    'アフリカの某国で大洪水。川があふれ、村や畑が水に浸かっています。',
+    '以前、現地の鉱山で一緒に働いた人たちがいる地域です。私たちにできること、探してみませんか？',
+    ['安全な飲み水とボートの燃料を', '仮設の橋と給水設備を', '堤防と学校の再建まで見すえた長期支援'],
+    ['現地の学校から、子どもたちの寄せ書きが届きました。「新しい校舎の壁に、日本の友だちの名前を書いたよ」。同封の手紙には、現地の採掘組合の人から「いつか一緒に何かできたらうれしい」という言葉が。',
      '避難所から感謝のビデオメッセージが届きました。「きれいな水で、子どもたちが顔を洗って笑っています」',
-     '島どうしを結ぶ船が出せず、物資の一部が届くのが遅れました。支援は「届け方」も大切だと知ります。',
-     '混乱で義援金の一部の行き先がわからなくなりましたが、地元のボランティアが一軒ずつ探して届けてくれました。お礼に、みんなでハロハロとパンシットをふるまってくれました。'],
-    ['phil_rattan5', 'phil_parol', 'phil_tarsier', 'phil_table_set']);
+     '道が水没し、物資の一部が届くのが遅れました。支援は「届け方」も大切だと知ります。',
+     '混乱で義援金の一部の行き先がわからなくなりましたが、地元のボランティアが一軒ずつ探して届けてくれました。お礼に、みんなでシチューとパンをふるまってくれました。'],
+    ['afr_furniture5', 'afr_giraffe', 'afr_djembe', 'afr_table_set']);
 
-  quake('E17', 'peru', '義援金（ペルー地震）', 12,
-    'ペルーで大きな地震。山あいの村で家が壊れ、避難所に身を寄せる人が増えています。',
-    'ペルーには、日本にルーツを持つ人もたくさん暮らしています。私たちにできること、探してみませんか？',
-    ['まず水と毛布を（山の夜は冷えます）', '避難所の仮設トイレと井戸を', '学校の再建まで見すえた長期支援'],
-    ['現地の学校から、子どもたちの寄せ書きが届きました。「再建した校舎の壁に、日本の友だちの名前を書いたよ」。同封の手紙には、日本にルーツを持つ地元の先生から「遠くから助けてくれて、ありがとう」という言葉が。',
-     '避難所から感謝のビデオメッセージが届きました。「毛布のおかげで、寒い夜も家族みんなで眠れました」',
-     '山道が崩れて、物資の一部が届くのが遅れました。支援は「届け方」も大切だと知ります。',
-     '混乱で義援金の一部の行き先がわからなくなりましたが、村の人たちが山道を歩いて探し出し、届けてくれました。お礼に、みんなでセビーチェとじゃがいも料理をふるまってくれました。'],
-    ['peru_andes5', 'peru_alpaca', 'peru_quena', 'peru_table_set']);
+  quake('E17', 'pacific', '義援金（太平洋の島国・火山噴火）', 12,
+    '太平洋の島国で火山が噴火。降り積もった灰で、家や畑、水源に被害が出ています。',
+    '南太平洋の海でお世話になった島の人たちがいる国です。私たちにできること、探してみませんか？',
+    ['防じんマスクと飲み水を', '避難所の屋根の補強と給水設備を', '学校の再建と火山の見守り体制まで見すえた長期支援'],
+    ['現地の学校から、子どもたちの寄せ書きが届きました。「きれいになった校舎の壁に、日本の友だちの名前を書いたよ」。同封の手紙には、島の漁協の人から「また一緒に海に出ましょう」という言葉が。',
+     '避難所から感謝のビデオメッセージが届きました。「マスクのおかげで、外でまた遊べるようになりました」',
+     '船が出せず、物資の一部が届くのが遅れました。支援は「届け方」も大切だと知ります。',
+     '混乱で義援金の一部の行き先がわからなくなりましたが、島の人たちが船を出して探し出し、届けてくれました。お礼に、みんなでトロピカルフルーツをふるまってくれました。'],
+    ['pac_furniture5', 'pac_lei', 'pac_ukulele', 'pac_table_set']);
 
   // 標準の出す順番（前向きと負の側面を織り交ぜる。条件を満たさないものは飛ばして次を先に出す）
-  const ORDER = ['E01', 'E02', 'E03', 'E15', 'E04', 'E05', 'E12', 'E16', 'E06', 'E08', 'E11', 'E07', 'E09', 'E13', 'E17', 'E14', 'E10'];
+  const ORDER = ['E07', 'E02', 'E04', 'E01', 'E06', 'E03', 'E15', 'E05', 'E08', 'E11', 'E16', 'E12', 'E09', 'E13', 'E17', 'E14', 'E10'];
   const byId = (id) => EVENTS.find(e => e.id === id);
 
   // ───── 保存まわり ─────
