@@ -192,7 +192,36 @@ textarea{width:100%;height:5rem;font-size:.65rem;border:1px solid var(--line);bo
 .shelf-c b{font-size:.78rem}
 .shelf-g{display:grid;grid-template-columns:repeat(auto-fill,minmax(5.5rem,1fr));gap:.3rem;margin-top:.3rem}
 .shelf-s{border:1px solid #2f5a3a;border-radius:.5rem;padding:.25rem .1rem;text-align:center;font-size:.56rem;line-height:1.3;min-height:4rem;background:#0b1224}
-.shelf-s .e{font-size:1.5rem;display:block}.shelf-s.sil .e{filter:brightness(0);opacity:.4}.shelf-s.sil{opacity:.7}
+.shelf-s .e{font-size:1.5rem;display:block}
+/* 結果の報告（手紙カード・顔アイコン・吹き出し） */
+.rp-card{background:#fdfbf7;color:#1e293b;border:2px solid #d97706;border-radius:1rem;padding:.8rem;width:100%;max-width:25rem;max-height:92vh;overflow:auto;display:flex;flex-direction:column;gap:.5rem;box-shadow:0 8px 28px rgba(0,0,0,.5)}
+.rp-card.first{animation:rpSlide .45s ease-out}
+@keyframes rpSlide{0%{transform:translateY(60px) scale(.95);opacity:0}100%{transform:none;opacity:1}}
+@keyframes rpPop{0%{transform:translateY(8px);opacity:0}100%{transform:none;opacity:1}}
+@keyframes rpBob{0%,100%{transform:translateY(0)}50%{transform:translateY(3px)}}
+.rp-head{display:flex;justify-content:space-between;align-items:center;gap:.3rem;border-bottom:2px solid #f3f4f6;padding-bottom:.35rem}
+.rp-badge{color:#fff;font-size:.68rem;font-weight:bold;border-radius:.3rem;padding:.12rem .55rem;background:#16a34a}
+.rp-badge.great{background:#d97706}.rp-badge.good{background:#16a34a}.rp-badge.bitter{background:#ea580c}.rp-badge.odd{background:#7c3aed}
+.rp-sub{font-size:.64rem;color:#92400e;font-weight:bold}
+.rp-title{margin:0;font-size:.92rem}
+.rp-cut{height:4.6rem;border-radius:.5rem;display:flex;align-items:center;justify-content:center;font-size:2.4rem;color:#fff;position:relative;overflow:hidden;background:linear-gradient(135deg,#1e3a8a,#3b82f6);border:1px solid #93c5fd}
+.rp-cut.quake{background:linear-gradient(135deg,#7f1d1d,#ea580c);border-color:#fdba74}.rp-cut.bad{background:linear-gradient(135deg,#4c1d95,#7c3aed);border-color:#c4b5fd}.rp-cut.good{background:linear-gradient(135deg,#166534,#22c55e);border-color:#86efac}
+.rp-cut img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.rp-news{font-size:.8rem;line-height:1.65;color:#374151;background:#f8fafc;border-left:3px solid #94a3b8;border-radius:.3rem;padding:.4rem .55rem;animation:rpPop .3s ease-out}
+.rp-sp{display:flex;gap:.5rem;align-items:flex-start;animation:rpPop .3s ease-out}
+.rp-av{width:2.7rem;height:2.7rem;border-radius:50%;border:2px solid #16a34a;background:#fff;object-fit:cover;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:bold;color:#166534}
+.rp-av.big{animation:fdStretch .7s ease-out}.rp-av.small{transform:scale(.88)}
+.rp-nm{font-size:.62rem;font-weight:bold;color:#166534;margin-bottom:.1rem}
+.rp-bub{font-size:.8rem;line-height:1.55;font-weight:bold;color:#14532d;background:#f0fdf4;border:1px solid #86efac;padding:.45rem .6rem;border-radius:.2rem .8rem .8rem .8rem}
+.rp-next{align-self:center;background:#f59e0b;color:#fff;border:none;border-radius:1rem;padding:.4rem 1.3rem;font-weight:bold;font-size:.76rem;cursor:pointer;animation:rpBob 1.1s infinite;font-family:inherit}
+.rp-skip{align-self:flex-end;background:none;border:none;color:#9ca3af;font-size:.65rem;text-decoration:underline;cursor:pointer;font-family:inherit}
+.rp-ax{display:flex;gap:.3rem;justify-content:center;flex-wrap:wrap}
+.rp-ax span{font-size:.7rem;font-weight:bold;border:1px solid #16a34a;color:#166534;background:#f0fdf4;border-radius:1rem;padding:.05rem .55rem}
+.rp-ax span.neg{border-color:#f87171;color:#b91c1c;background:#fef2f2}
+.rp-item{display:flex;align-items:center;gap:.5rem;background:#fffbeb;border:2px solid #f59e0b;border-radius:.7rem;padding:.4rem .55rem;font-size:.76rem;animation:rpPop .3s ease-out}
+.rp-item .em{font-size:1.9rem}
+.rp-btns{display:flex;gap:.4rem;flex-wrap:wrap}.rp-btns button{flex:1;min-width:7rem;min-height:2.3rem;border:none;border-radius:.6rem;font-weight:bold;font-size:.78rem;font-family:inherit;cursor:pointer;background:#16a34a;color:#fff}
+.rp-btns button.sub{background:#9ca3af}
 </style>
 </head>
 <body>
@@ -509,36 +538,47 @@ function updateObsBar(){
 }
 function fdClose(){ const o=$('fdOv'); if(o) o.remove(); updateObsBar(); updateUI(); }
 function fdOpen(html){ fdClose(); const o=document.createElement('div'); o.className='fdov'; o.id='fdOv'; o.innerHTML=`<div class="fdcard">${html}</div>`; document.body.appendChild(o); }
+function fdOpenRaw(html){ fdClose(); const o=document.createElement('div'); o.className='fdov'; o.id='fdOv'; o.innerHTML=html; document.body.appendChild(o); }
 function axesHtml(ax){
   return Object.keys(ax||{}).filter(k=>ax[k]).map(k=>{ const a=FD.AXES.find(x=>x.k===k); const v=ax[k]; return `<span class="${v<0?'neg':''}">${a.e}${a.n} ${v>0?'+':''}${v}</span>`; }).join('');
 }
+const rpEsc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const rpAv=(cls)=>`<img class="rp-av ${cls||''}" src="${CHARA_PREFIX}Tb.png" alt="テルビウム" onerror="this.outerHTML='<div class=&quot;rp-av&quot;>テ</div>'">`;
+const rpSay=(t,cls)=>`<div class="rp-sp">${rpAv(cls)}<div><div class="rp-nm">テルビウム</div><div class="rp-bub">${rpEsc(t)}</div></div></div>`;
+const rpLines=(t)=>String(t||'').replace(/\n/g,'。').match(/[^。！？]+[。！？]?/g)||[String(t||'')];
 function openReports(){
   if(!window.FD){ toast('財団のデータが読み込めません（foundation.js）'); return; }
   FD.ensure(gameState);
-  const F=gameState.foundation, rid=gameState.observatory.unread[0];
+  const rid=gameState.observatory.unread[0];
   if(!rid){
-    fdOpen(`${tbImg('intro')}<div class="fdsay"><b>テルビウム</b><br>「まだ見ていない結果はありません。次の知らせが届くまで、ゆっくりどうぞ。」</div><div class="fdbtns"><button class="btn" onclick="location.href='foundation.html'">🏛 財団へ</button><button class="btn sub" onclick="fdClose()">閉じる</button></div>`); return;
+    fdOpenRaw(`<div class="rp-card first">${tbImg('intro')}${rpSay('まだ見ていない結果はありません。次の知らせが届くまで、ゆっくりどうぞ。')}<div class="rp-btns"><button onclick="location.href='foundation.html'">🏛 財団へ</button><button class="sub" onclick="fdClose()">閉じる</button></div></div>`); return;
   }
-  const rep=F.reports.find(r=>r.rid===rid);
-  const big=(rep.result==='great'||rep.result==='good'), small=rep.result==='bitter';
-  fdOpen(`${tbImg('intro','big')}<div class="fdsay"><b>テルビウム</b><br>「結果が出ました。一緒に見てみましょう。」</div><div class="fdbtns"><button class="btn" onclick="showReport('${rid}')">結果を見る</button><button class="btn sub" onclick="fdClose()">あとで</button></div>`);
+  fdOpenRaw(`<div class="rp-card first">${tbImg('intro','big')}${rpSay('結果が出ました。一緒に見てみましょう。')}<div class="rp-btns"><button onclick="showReport('${rid}',1)">結果を見る</button><button class="sub" onclick="fdClose()">あとで</button></div></div>`);
 }
-function showReport(rid){
+/* 結果は、文を1つずつタップで読み進める（最後にまとめて：評判・おみやげ・テルビウムの一言） */
+function showReport(rid,n){
   const F=gameState.foundation, rep=F.reports.find(r=>r.rid===rid); if(!rep) return fdClose();
+  n=n||1;
+  const ev=FD.byId(rep.id)||{}, kind=ev.kind||'good', lines=rpLines(rep.text), more=n<lines.length;
   const big=(rep.result==='great'||rep.result==='good'), small=rep.result==='bitter';
   const itemId=rep.souvenir||rep.decor, it=itemId?FD.itemInfo(itemId):null;
-  const body=rep.choice
-    ? `<div class="fdbtns">${rep.choice.map((c,i)=>`<button class="btn ${i?'sub':''}" onclick="claimReport('${rid}',${i})">${c.label}</button>`).join('')}</div>`
-    : `<div class="fdbtns"><button class="btn" onclick="claimReport('${rid}')">${it?'おみやげを受け取る':'受け取る'}</button></div>`;
-  fdOpen(`${tbImg(rep.result,big?'big':small?'small':'')}
-    <h3>${rep.icon} ${rep.title}</h3>
-    <span class="fdres ${rep.result}">${FD.RESULT_NAME[rep.result]}</span>
-    <div class="fdtext">${rep.text.replace(/</g,'&lt;')}</div>
-    <div class="fdax">${rep.choice?'':axesHtml(rep.axes)}</div>
-    ${it?`<div class="fditem"><span class="em">${it.emoji}</span><div>観測室に届いたもの<br><b>${it.name}</b></div></div>`:''}
-    <div class="fdsay">${FD.TB_LINE[rep.result]}</div>
-    ${rep.closing&&!rep.choice?`<div class="fdsay">「${rep.closing}」</div>`:''}
-    ${body}`);
+  let tail='';
+  if(!more){
+    tail+=`<div class="rp-ax">${rep.choice?'':axesHtml(rep.axes).replace(/<span class="neg">/g,'<span class="neg">')}</div>`;
+    if(it) tail+=`<div class="rp-item"><span class="em">${it.emoji}</span><div>観測室に届いたもの<br><b>${rpEsc(it.name)}</b></div></div>`;
+    tail+=rpSay(FD.TB_LINE[rep.result].replace(/^「|」$/g,''),big?'big':small?'small':'');
+    if(rep.closing&&!rep.choice) tail+=rpSay(rep.closing);
+    tail+=rep.choice
+      ? `<div class="rp-btns">${rep.choice.map((c,i)=>`<button class="${i?'sub':''}" onclick="claimReport('${rid}',${i})">${rpEsc(c.label)}</button>`).join('')}</div>`
+      : `<div class="rp-btns"><button onclick="claimReport('${rid}')">${it?'おみやげを受け取る':'受け取る'}</button></div>`;
+  }
+  fdOpenRaw(`<div class="rp-card ${n===1?'first':''}">
+    <div class="rp-head"><span class="rp-badge ${rep.result}">${FD.RESULT_NAME[rep.result]}</span><span class="rp-sub">観測室に結果が届きました</span></div>
+    <h3 class="rp-title">${rep.icon} ${rpEsc(rep.title)}</h3>
+    <div class="rp-cut ${kind}"><span>${rep.icon}</span><img src="cutin_${rep.id}.png" alt="" onerror="this.remove()"></div>
+    ${lines.slice(0,n).map(l=>`<div class="rp-news">${rpEsc(l)}</div>`).join('')}
+    ${more?`<button class="rp-next" onclick="showReport('${rid}',${n+1})">▼ タップでつづき</button><button class="rp-skip" onclick="showReport('${rid}',999)">全部読む</button>`:tail}
+  </div>`);
 }
 function claimReport(rid,idx){
   const r=FD.claim(gameState,rid,idx);
@@ -547,7 +587,7 @@ function claimReport(rid,idx){
   const names=(r.items||[]).map(id=>(FD.itemInfo(id)||{}).name).filter(Boolean);
   if(names.length) toast(`🎁 『${names[0]}』が届きました。「📦配置」で飾れます`);
   const nxt=gameState.observatory.unread[0];
-  if(nxt) fdOpen(`${tbImg('intro')}<div class="fdsay"><b>テルビウム</b><br>「まだ見ていない結果があります。続けて見ますか？」</div><div class="fdbtns"><button class="btn" onclick="showReport('${nxt}')">続けて見る</button><button class="btn sub" onclick="fdClose()">あとで</button></div>`);
+  if(nxt) fdOpenRaw(`<div class="rp-card first">${rpSay('まだ見ていない結果があります。続けて見ますか？')}<div class="rp-btns"><button onclick="showReport('${nxt}',1)">続けて見る</button><button class="sub" onclick="fdClose()">あとで</button></div></div>`);
   else fdClose();
 }
 function openShelf(){
