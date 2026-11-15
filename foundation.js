@@ -396,7 +396,6 @@
     if (F.lastAnswer === undefined) F.lastAnswer = -99;
     const O = gs.observatory || (gs.observatory = {});
     O.unread = O.unread || []; O.souvenirs = O.souvenirs || []; O.decor = O.decor || [];
-    if (O.silhouettes === undefined) O.silhouettes = true;
     return F;
   }
   // ───── 行動の回数 ─────
@@ -518,7 +517,7 @@
     });
     persist(gs); return { ok: true, items: got };
   }
-  // おみやげ棚の表示用データ（国ごとに4枠。届かなかった枠はシルエット）
+  // おみやげ棚の表示用データ（国ごとの状態。表示側は「終わったイベントの、受け取ったおみやげ」だけを出す）
   function shelf(gs) {
     const F = ensure(gs), O = gs.observatory;
     return Object.keys(COUNTRIES).map(cid => {

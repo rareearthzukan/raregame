@@ -166,7 +166,7 @@ textarea{width:100%;height:5rem;font-size:.65rem;border:1px solid var(--line);bo
 .price.ok{color:#16a34a;font-weight:bold}.price.no{opacity:.6}
 .dot{display:inline-block;background:#ef4444;color:#fff;border-radius:1rem;font-size:.55rem;min-width:1rem;padding:0 .25rem;margin-left:.15rem;line-height:1.1rem}
 /* ───── 観測室：財団・結果・おみやげ ───── */
-.obsbar{position:absolute;left:.4rem;right:.4rem;bottom:.4rem;z-index:11;display:flex;gap:.3rem;justify-content:center;pointer-events:none}
+.obsbar{position:absolute;left:.4rem;right:.4rem;top:3.4rem;z-index:11;display:flex;gap:.3rem;justify-content:center;pointer-events:none}
 .obsbar .btn{pointer-events:auto;background:#14301c;color:#e9ffe9;border:1px solid #a8e6a1;min-height:1.9rem;padding:.2rem .6rem;font-size:.68rem;opacity:.96}
 .obsbar .btn.new{background:#a8e6a1;color:#14301c;animation:fdPulse 1.4s ease-in-out infinite}
 @keyframes fdPulse{0%,100%{box-shadow:0 0 0 0 rgba(168,230,161,.7)}50%{box-shadow:0 0 0 .45rem rgba(168,230,161,0)}}
@@ -190,7 +190,7 @@ textarea{width:100%;height:5rem;font-size:.65rem;border:1px solid var(--line);bo
 .fdbtns .btn{background:#a8e6a1;color:#14301c}.fdbtns .btn.sub{background:#475569;color:#fff}
 .shelf-c{border:1px solid #2f5a3a;border-radius:.7rem;padding:.4rem;margin:.4rem 0;text-align:left}
 .shelf-c b{font-size:.78rem}
-.shelf-g{display:grid;grid-template-columns:repeat(4,1fr);gap:.3rem;margin-top:.3rem}
+.shelf-g{display:grid;grid-template-columns:repeat(auto-fill,minmax(5.5rem,1fr));gap:.3rem;margin-top:.3rem}
 .shelf-s{border:1px solid #2f5a3a;border-radius:.5rem;padding:.25rem .1rem;text-align:center;font-size:.56rem;line-height:1.3;min-height:4rem;background:#0b1224}
 .shelf-s .e{font-size:1.5rem;display:block}.shelf-s.sil .e{filter:brightness(0);opacity:.4}.shelf-s.sil{opacity:.7}
 </style>
@@ -503,6 +503,7 @@ function obsUnread(){ return ((gameState.observatory||{}).unread||[]).length; }
 function updateObsBar(){
   const bar=$('obsBar'); if(!bar) return;
   bar.style.display=(dir===OBS_DIR&&obsOpen())?'flex':'none';
+  const ctl=document.querySelector('#stage .controls'); if(ctl) bar.style.top=(ctl.offsetTop+ctl.offsetHeight+4)+'px';   // 操作ボタンの行のすぐ下（家具の邪魔にならない位置）
   const b=$('obsRepBtn'), n=obsUnread();
   if(b){ b.textContent=n?`📮 結果が届いています（${n}）`:'📮 結果'; b.classList.toggle('new',n>0); }
 }
@@ -553,15 +554,16 @@ function openShelf(){
   if(!window.FD){ toast('財団のデータが読み込めません（foundation.js）'); return; }
   FD.ensure(gameState);
   const own=new Set(gameState.observatory.souvenirs);
-  const blocks=FD.shelf(gameState).map(c=>{
-    let inner='';
-    if(c.state==='wait') inner=`<div style="font-size:.7rem;opacity:.75;margin-top:.2rem">🔒 まだ地震は起きていません</div>`;
-    else inner=`<div class="shelf-g">${c.slots.map(s=>{ const it=FD.itemInfo(s.id); return s.got?`<div class="shelf-s"><span class="e">${it.emoji}</span>${it.name}</div>`:`<div class="shelf-s sil"><span class="e">${it.emoji}</span>？？？</div>`; }).join('')}</div>${c.state==='skipped'?'<div style="font-size:.66rem;opacity:.75;margin-top:.2rem">この地震は見送りました</div>':''}`;
-    return `<div class="shelf-c"><b>${c.flag} ${c.name}</b>${inner}</div>`;
+  /* 受け取ったおみやげだけを表示する（これから起きること・届かなかった結果は出さない） */
+  const blocks=FD.shelf(gameState).filter(c=>c.state==='done').map(c=>{
+    const got=c.slots.filter(s=>s.got); if(!got.length) return '';
+    return `<div class="shelf-c"><b>${c.flag} ${c.name}</b><div class="shelf-g">${got.map(s=>{ const it=FD.itemInfo(s.id); return `<div class="shelf-s"><span class="e">${it.emoji}</span>${it.name}</div>`; }).join('')}</div></div>`;
   }).join('');
-  const decor=Object.keys(FD.DECOR).map(id=>{ const it=FD.DECOR[id]; return own.has(id)?`<span class="fdax"><span>${it.emoji} ${it.name}</span></span>`:`<span class="fdax"><span style="opacity:.5">？？？</span></span>`; }).join('');
-  fdOpen(`<h3>🎁 おみやげ棚</h3><div class="fdsay" style="font-size:.72rem">届かなかった結果のおみやげは、影で表示されます。</div>${blocks}<div class="shelf-c"><b>🌅 島からの飾り</b>${decor}</div><div class="fdbtns"><button class="btn sub" onclick="fdClose()">閉じる</button></div>`);
+  const dec=Object.keys(FD.DECOR).filter(id=>own.has(id));
+  const decor=dec.length?`<div class="shelf-c"><b>🌅 島からの飾り</b><div class="shelf-g">${dec.map(id=>{ const it=FD.DECOR[id]; return `<div class="shelf-s"><span class="e">${it.emoji}</span>${it.name}</div>`; }).join('')}</div></div>`:'';
+  fdOpen(`<h3>🎁 おみやげ棚</h3>${(blocks||decor)?blocks+decor:'<div class="fdsay">まだおみやげはありません。</div>'}<div class="fdbtns"><button class="btn sub" onclick="fdClose()">閉じる</button></div>`);
 }
+window.addEventListener('resize',()=>{ try{ updateObsBar(); }catch(e){} });
 window.onFoundationTick=function(){ try{ updateObsBar(); }catch(e){} };      // areaconfig.js の財団チェックのあとで呼ばれる
 window.addEventListener('hashchange',()=>{ if(location.hash==='#obs'&&obsOpen()) changeDirection(OBS_DIR); });
 function checkObsUnlock(tries){
