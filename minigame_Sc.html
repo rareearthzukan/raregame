@@ -133,6 +133,10 @@ canvas.game{display:block;touch-action:none}
 .ring-ent,.ring-ext{width:var(--cs);height:var(--cs);display:flex;align-items:center;justify-content:center;font-size:calc(var(--cs)*.6)}
 .ring-ext.on{filter:drop-shadow(0 0 10px #ffe66d) drop-shadow(0 0 20px #ffe66d);animation:bump .5s}
 .ring-ext.off{filter:grayscale(1) brightness(.7)}
+.ring-ext.off.reach{filter:grayscale(.1) brightness(1.1) drop-shadow(0 0 8px #7dffd4)}
+.ring-ent{position:relative;transition:filter .2s}
+.ring-ent.ok{filter:drop-shadow(0 0 8px #7dffd4) drop-shadow(0 0 14px #7dffd4)}
+.ring-ent.ok::after{content:"✓";position:absolute;right:2px;top:0;font-size:calc(var(--cs)*.34);font-weight:900;color:#7dffd4;text-shadow:0 1px 0 var(--ink)}
 .deco{width:var(--cs);height:var(--cs);border-radius:8px;background:rgba(0,0,0,.28)}
 .drop{position:absolute;left:0;top:0;width:var(--cs);height:var(--cs);display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:5;transition:transform .16s linear}
 .drop i{font-style:normal;width:78%;height:78%;border-radius:50% 50% 50% 8%;transform:rotate(-45deg) scale(1);background:radial-gradient(circle at 35% 30%,#fff,#5ec8ff 45%,#1f78d6);border:2px solid var(--ink);display:flex;align-items:center;justify-content:center}
@@ -378,7 +382,7 @@ const MODES = {
   ion: {
     icon: '⚡', title: '酸素イオンの高速道路', sub: '燃料電池を 発電させよう', tag: 'Scを まぜると 酸素イオンが 通りやすい！',
     stages: [{ name: 'ならしうんてん', icon: '🌱' }, { name: 'いわの じゃま', icon: '🪨' }, { name: 'ぐるぐる めいろ', icon: '🌀' }, { name: 'ダブル発電', icon: '🔋' }],
-    tut: [['💧', '左の 酸素イオン(O²⁻)を、右の 電球まで とどけよう！'], ['⬛', 'かたい かべ(ジルコニア)を タップして スカンジウムを おくと、すき間の 道が できるよ！'], ['⚡', '道が つながったら「発電スタート」！ 少ない数ほど ★が ふえるよ！']],
+    tut: [['💧', '左の 酸素イオン(O²⁻)を、右の 電球まで とどけよう！'], ['⬛', 'かたい かべ(ジルコニア)を タップして スカンジウムを おくと、すき間の 道が できるよ！'], ['⚡', '道が つながったら「発電スタート」！ しずくが ふたつの ときは、どの電球でも OK。ぜんぶ べつべつの 電球に つなごう！ 少ない数ほど ★が ふえるよ']],
     facts: [
       '燃料電池は、水素と 酸素で 電気を つくるよ。このとき 酸素イオンが 電解質の 中を 通りぬけるんだ。',
       'スカンジウムを まぜた ジルコニアは、酸素イオンが とても 通りやすく なるんだ。',
@@ -888,7 +892,7 @@ Games.ion = (() => {
     stop(); const d = ION_STAGES[idx];
     S = { idx, d, placed: new Set(), hints: 2, state: 'play', budget: d.par + 2, cs: 40 };
     build(); update(true);
-    say('ion', idx === 0 ? 'かたい かべを タップして Sc を おこう！ 道を つなげて 左から 右へ！' : (d.ent.length > 1 ? 'イオンが ふたつ！ 道を うまく 共有できるかな？' : 'すき間を うまく つかって 少ない Sc で つなごう！'), '', 'N');
+    say('ion', idx === 0 ? 'かたい かべを タップして Sc を おこう！ 道を つなげて 左から 右へ！' : (d.ent.length > 1 ? 'しずくが ふたつ！ どの電球でも いいから、べつべつの 電球に つなごう！ 道を わけあうと おとくだよ' : 'すき間を うまく つかって 少ない Sc で つなごう！'), '', 'N');
     $('ioPar').textContent = d.par;
   }
   function stop() { timers.forEach(clearTimeout); timers = []; if (S) S.state = 'off'; }
@@ -898,7 +902,7 @@ Games.ion = (() => {
     grid.style.setProperty('--cs', cs + 'px'); grid.style.gridTemplateColumns = `repeat(${d.cols + 2}, ${cs}px)`; grid.innerHTML = '';
     for (let r = 0; r < d.rows; r++) {
       const L = document.createElement('div'), ei = d.ent.indexOf(r);
-      if (ei >= 0) { L.className = 'ring-ent'; L.innerHTML = '<span>💧</span>'; } else L.className = 'deco'; grid.appendChild(L);
+      if (ei >= 0) { L.className = 'ring-ent'; L.id = 'ent' + ei; L.innerHTML = '<span>💧</span>'; } else L.className = 'deco'; grid.appendChild(L);
       for (let c = 0; c < d.cols; c++) {
         const t = d.grid[r][c], el = document.createElement('div');
         el.className = 'cell ' + (t === '#' ? 'wall' : t === '.' ? 'open' : 'rock'); el.dataset.r = r; el.dataset.c = c; grid.appendChild(el);
@@ -922,11 +926,19 @@ Games.ion = (() => {
     return null;
   }
   function update(silent) {
-    const d = S.d; S.paths = d.ent.map((er, i) => findPath(er, d.ext[i]));
-    const ok = S.paths.every(p => p);
+    const d = S.d, n = d.ent.length;
+    const P = d.ent.map(er => d.ext.map(xr => findPath(er, xr)));   // しずく → 電球 の道（どの組み合わせでも調べる）
+    let best = null;
+    (n === 1 ? [[0]] : [[0, 1], [1, 0]]).forEach(perm => { if (perm.every((j, i) => P[i][j])) { const len = perm.reduce((a, j, i) => a + P[i][j].length, 0); if (!best || len < best.len) best = { perm, len }; } });
+    const ok = !!best; S.paths = ok ? best.perm.map((j, i) => P[i][j]) : []; S.perm = ok ? best.perm : [];
+    const ionOk = d.ent.map((_, i) => P[i].some(Boolean)), bulbOk = d.ext.map((_, j) => P.some(row => row[j]));
+    d.ent.forEach((_, i) => $('ent' + i).classList.toggle('ok', ionOk[i]));
+    d.ext.forEach((_, j) => { const b = $('bulb' + j); if (b && !b.classList.contains('on')) b.classList.toggle('reach', bulbOk[j]); });
     grid.querySelectorAll('.cell.lit').forEach(e => e.classList.remove('lit'));
-    if (ok) S.paths.forEach(p => p.forEach(([r, c]) => cellEl(r, c).classList.add('lit')));
+    const show = ok ? S.paths : P.map(row => row.filter(Boolean).sort((a, b) => a.length - b.length)[0]).filter(Boolean);
+    show.forEach(p => p.forEach(([r, c]) => cellEl(r, c).classList.add('lit')));
     const left = S.budget - S.placed.size; $('ioLeft').textContent = left; $('ioGo').disabled = !ok || S.state !== 'play';
+    S.nIon = ionOk.filter(Boolean).length; S.sameBulb = n > 1 && !ok && S.nIon === n;
     if (ok && !silent) say('ion', 'つながった！ 「発電スタート」を おしてね。もっと 少なく できるかな？', 'ok', 'C', 'jump');
     S.connected = ok;
   }
@@ -942,7 +954,7 @@ Games.ion = (() => {
       const rc = el.getBoundingClientRect(); burst(rc.left + rc.width / 2, rc.top + rc.height / 2, 8, 5, ['#3de0ff', '#ffffff']);
     }
     bumpEl($('ioLeftChip')); update();
-    if (!S.connected) say('ion', 'のこり ' + (S.budget - S.placed.size) + ' こ。左から 右まで 道を つなごう！', '', 'N');
+    if (!S.connected) { const n = S.d.ent.length; say('ion', n === 1 ? 'のこり ' + (S.budget - S.placed.size) + ' こ。左から 右まで 道を つなごう！' : (S.sameBulb ? 'ふたつとも おなじ 電球に つながってるよ。もうひとつの 電球にも つなごう！' : `つながった しずく: ${S.nIon} / ${n}。ぜんぶの しずくを べつべつの 電球に つなごう！（どの電球でも OK）`), '', 'N'); }
   });
   $('ioReset').onclick = () => { if (!S || S.state !== 'play') return; SE.click(); S.placed.clear(); grid.querySelectorAll('.cell.sc').forEach(e => e.classList.remove('sc')); update(true); say('ion', 'ぜんぶ もどしたよ。もういちど！', '', 'N'); };
   $('ioHint').onclick = () => {
@@ -959,14 +971,14 @@ Games.ion = (() => {
     S.state = 'run'; $('ioGo').disabled = true; SE.click(); say('ion', 'イオンが 走るよ！ いけー！', 'ok', 'C', 'jump');
     const cs = S.cs, gap = 3, cols = S.d.cols; let done = 0; const total = S.paths.length;
     S.paths.forEach((path, i) => {
-      const full = [[S.d.ent[i], -1], ...path, [S.d.ext[i], cols]];
+      const jx = S.perm[i], full = [[S.d.ent[i], -1], ...path, [S.d.ext[jx], cols]];
       const dp = document.createElement('div'); dp.className = 'drop'; dp.innerHTML = '<i><b>O²⁻</b></i>'; grid.appendChild(dp);
       const pos = ([r, c]) => { const el = grid.children[r * (cols + 2) + c + 1]; return [el.offsetLeft, el.offsetTop]; };
       const p0 = pos(full[0]); dp.style.transform = `translate(${p0[0]}px,${p0[1]}px)`;
       full.forEach((cell, j) => timers.push(setTimeout(() => {
         const p = pos(cell); dp.style.transform = `translate(${p[0]}px,${p[1]}px)`; SE.hop();
         if (j === full.length - 1) {
-          dp.remove(); $('bulb' + i).className = 'ring-ext on'; SE.bulb(); const rc = $('bulb' + i).getBoundingClientRect(); burst(rc.left + rc.width / 2, rc.top + rc.height / 2, 24, 9, ['#ffe66d', '#ffffff', '#ffd23f']); flash('#ffe66d');
+          dp.remove(); $('bulb' + jx).className = 'ring-ext on'; SE.bulb(); const rc = $('bulb' + jx).getBoundingClientRect(); burst(rc.left + rc.width / 2, rc.top + rc.height / 2, 24, 9, ['#ffe66d', '#ffffff', '#ffd23f']); flash('#ffe66d');
           if (++done === total) timers.push(setTimeout(finish, 1100));
         }
       }, 300 + j * 170 + i * 260)));

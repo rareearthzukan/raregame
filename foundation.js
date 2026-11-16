@@ -58,11 +58,22 @@
     pac_ukulele: { name: '小さなウクレレ', emoji: '🎸', size: 12, bonus: 0.2, y: 70, country: 'pacific', slot: 'bitter' },
     pac_table_set: { name: 'トロピカルフルーツが並ぶテーブルと椅子セット', emoji: '🍍', size: 34, bonus: 0.5, y: 92, country: 'pacific', slot: 'odd' }
   };
+  // 災害以外のイベントで、お礼として届く品（大成功／成功のとき）。絵は kagu_<ID>.png を置くと表示される
+  const GIFTS = {
+    gift_e02: { name: '鉱物の写真パネル（奨学生より）', emoji: '🖼️', size: 22, bonus: 0.3, y: 45, from: 'E02' },
+    gift_e03: { name: '在来植物の鉢植え', emoji: '🪴', size: 16, bonus: 0.3, y: 88, from: 'E03' },
+    gift_e04: { name: '元素キャラのパネル（科学館より）', emoji: '🪧', size: 24, bonus: 0.3, y: 70, from: 'E04' },
+    gift_e05: { name: '試作モーターの模型', emoji: '⚙️', size: 14, bonus: 0.4, y: 80, from: 'E05' },
+    gift_e07: { name: '『みなみとりブルー』のチーム旗', emoji: '🚩', size: 22, bonus: 0.3, y: 50, from: 'E07' },
+    gift_e09: { name: '光ファイバーのランプ', emoji: '💡', size: 14, bonus: 0.4, y: 85, from: 'E09' },
+    gift_e10: { name: '蛍光のオブジェ', emoji: '✨', size: 16, bonus: 0.3, y: 80, from: 'E10' },
+    gift_e15: { name: 'ガラスのトロフィー「透明な財団」', emoji: '🏆', size: 14, bonus: 0.5, y: 80, from: 'E15' }
+  };
   const DECOR = {
     obs_sunset: { name: '観測室の飾り「南鳥島の夕焼け」', emoji: '🌅', size: 30, bonus: 0.4, y: 40 },
     obs_shell: { name: '観測室の飾り「南鳥島の貝殻」', emoji: '🐚', size: 12, bonus: 0.2, y: 88 }
   };
-  function itemInfo(id) { return SOUVENIRS[id] || DECOR[id] || null; }
+  function itemInfo(id) { return SOUVENIRS[id] || DECOR[id] || GIFTS[id] || null; }
 
   // ───── 小さな関数たち ─────
   const A = (o) => o;                                      // 評判の変化を読みやすく書くための印
@@ -116,8 +127,8 @@
     news: [['', '大学の研究室の先生から。「南鳥島の泥からレアアースを分ける研究をしている学生がいます。ところが奨学金も実験器具も足りません。未来の担い手を、いっしょに育てていただけませんか。」']],
     opts: ['奨学生1名', '奨学生3名＋実験器具', '財団名を冠した寄付講座を設立'],
     results: {
-      great: { text: '第一期の奨学生が学会で最優秀発表賞。「南鳥島の泥から重レアアースを効率よく分ける新手法」の発表に、会場がどよめきました。', axes: A({ academic: 3 }), bonus: 'refine+1%' },
-      good: { text: '奨学生から手紙。「顕微鏡でみる鉱物は、宝石みたいでした。将来は南鳥島の技術者になりたいです」。高専の学生チームがロボコンに出場したとの報告も。', axes: A({ academic: 2, local: 1 }) },
+      great: { souvenir: 'gift_e02', text: '第一期の奨学生が学会で最優秀発表賞。「南鳥島の泥から重レアアースを効率よく分ける新手法」の発表に、会場がどよめきました。', axes: A({ academic: 3 }), bonus: 'refine+1%' },
+      good: { souvenir: 'gift_e02', text: '奨学生から手紙。「顕微鏡でみる鉱物は、宝石みたいでした。将来は南鳥島の技術者になりたいです」。高専の学生チームがロボコンに出場したとの報告も。', axes: A({ academic: 2, local: 1 }) },
       bitter: { text: '優秀な卒業生が海外企業にスカウトされました（頭脳流出）。「向こうで学んだことを、いつか日本に持ち帰ります」と手紙。', axes: A({ academic: 1, intl: 1 }), flags: ['F_BRAIN_DRAIN'] },
       odd: { text: '学生の「失敗した実験」から、これまでにない磁石材料の手がかりが見つかりました。', axes: A({ academic: 2 }), flags: ['F_EDU_SEED'] }
     },
@@ -139,9 +150,9 @@
     results: {
       great: (F, p) => {
         const t = { A: 'モニタリングが小さな漏水を早期に見つけ、被害ゼロで修繕。漁協から「海がきれいなままでありがとう」。', B: '緑化した斜面に、渡り鳥が休むようになりました。', C: '回収した磁石から取り出した元素が、在庫に少量加わりました（ネオジム＋2、ジスプロシウム＋1）。' };
-        return { text: (p.picks || ['A']).map(k => t[k]).join(' '), axes: A({ env: 3 }), give: (p.picks || []).includes('C') ? { Nd: 2, Dy: 1 } : null };
+        return { souvenir: 'gift_e03', text: (p.picks || ['A']).map(k => t[k]).join(' '), axes: A({ env: 3 }), give: (p.picks || []).includes('C') ? { Nd: 2, Dy: 1 } : null };
       },
-      good: { text: '対策が計画どおり動き、年次報告の環境評価が上がりました。', axes: A({ env: 2 }) },
+      good: { souvenir: 'gift_e03', text: '対策が計画どおり動き、年次報告の環境評価が上がりました。', axes: A({ env: 2 }) },
       bitter: {
         text: '調査で「想定外の影響」が見つかりました。どう扱いますか？',
         choice: [
@@ -161,8 +172,8 @@
     tip: 'レアアースは地殻に意外と多くあります。難しいのは「分けて取り出す」こと。',
     opts: ['パンフレットと解説動画', '全国の学校への出前授業', '科学館に常設展示＋元素キャラのパネル'],
     results: {
-      great: { text: '中学生の自由研究「身の回りのレアアース探し」が県の科学賞に。同級生が元素キャラへのファンレターを送ってくれました。', axes: A({ academic: 2, local: 2 }), bonus: 'zukan_special' },
-      good: { text: '来場者アンケート「スマホにも入っているなんて！」。理解度が大きく上がりました。', axes: A({ academic: 1, local: 2 }) },
+      great: { souvenir: 'gift_e04', text: '中学生の自由研究「身の回りのレアアース探し」が県の科学賞に。同級生が元素キャラへのファンレターを送ってくれました。', axes: A({ academic: 2, local: 2 }), bonus: 'zukan_special' },
+      good: { souvenir: 'gift_e04', text: '来場者アンケート「スマホにも入っているなんて！」。理解度が大きく上がりました。', axes: A({ academic: 1, local: 2 }) },
       bitter: { text: '報道が「夢の資源！」と盛り上がりすぎ、「南鳥島ですぐ大金持ち」という誤解も広まります。訂正の解説動画づくりを提案されました。', axes: A({ local: 1 }), flags: ['F_HYPE'] },
       odd: { text: '取材に来た記者が元素キャラの大ファンに。「推しはランタン」と大特集を組んでくれました。', axes: A({ local: 2 }) }
     },
@@ -178,8 +189,8 @@
     opts: ['材料の提供', '試作モーターの製作費', '実証機（小型風力発電機やロボットの関節）まで'],
     mods: (F) => ({ great: hasF(F, 'F_EDU_SEED') ? 10 : 0 }),
     results: {
-      great: { text: '国産磁石を使ったモーターが回りました。ニュース「材料から完成品まで国産、実証に成功」。風力発電の小型機とロボットの腕への採用が決まります。', axes: A({ academic: 2, intl: 1, local: 1 }), bonus: 'magnet_price+3%' },
-      good: { text: '試作モーターが回転しました。「力は目標の9割。でも、回った！」エンジニアが写真を送ってくれます。', axes: A({ academic: 1, local: 1 }) },
+      great: { souvenir: 'gift_e05', text: '国産磁石を使ったモーターが回りました。ニュース「材料から完成品まで国産、実証に成功」。風力発電の小型機とロボットの腕への採用が決まります。', axes: A({ academic: 2, intl: 1, local: 1 }), bonus: 'magnet_price+3%' },
+      good: { souvenir: 'gift_e05', text: '試作モーターが回転しました。「力は目標の9割。でも、回った！」エンジニアが写真を送ってくれます。', axes: A({ academic: 1, local: 1 }) },
       bitter: { text: '性能は出ましたがコストが高い。「量産にはあと3つの壁があります（材料の安定供給・コスト・検査）」。', axes: A({ academic: 1 }) },
       odd: { text: '試作の見学会に来た小学生が「ぼくも作りたい！」と目を輝かせました。', axes: A({ local: 2 }), flags: ['F_EDU_SEED'] }
     },
@@ -208,7 +219,7 @@
       ['Tb', '文化祭を思い出してください。劇をやるなら、台本を書く人、衣装を作る人、場所を決めてくれる先生がいますよね。レアアースの仕事も同じです。大学は『調べるチーム』、会社は『作るチーム』、役所は『ルールを作って応援するチーム』。一人ではできないことも、チームなら早くできます！']],
     opts: ['みんなで集まる部屋の費用', 'チームの事務スタッフ', 'みんなで使える実験室'],
     results: {
-      great: { text: 'チームの愛称が『みなみとりブルー』に決まりました！ 会社の人が『作り方』、大学の人が『調べ方』、役所の人が『お願いの出し方』を教え合って、半年かかるはずの仕事が3か月で終わりました！', axes: A({ academic: 2, intl: 1, local: 1 }) },
+      great: { souvenir: 'gift_e07', text: 'チームの愛称が『みなみとりブルー』に決まりました！ 会社の人が『作り方』、大学の人が『調べ方』、役所の人が『お願いの出し方』を教え合って、半年かかるはずの仕事が3か月で終わりました！', axes: A({ academic: 2, intl: 1, local: 1 }) },
       good: { text: 'みんなの得意なことが分かりました。一人より、チームのほうが、ずっと楽しいです！', axes: A({ academic: 1, local: 1 }) },
       bitter: { text: '話し合いで、意見がぶつかりました。会社は『早く売りたい』、大学は『しっかり調べたい』、役所は『ルールを守ってください』。でも『目指すゴールは同じですよね』と確かめて、仲直りしました', axes: A({ academic: 1 }) },
       odd: { text: '見学に来た小学生が「泥をふるいにかけたらどう？」と言いました。やってみたら、本当に成功！', axes: A({ academic: 2, local: 1 }), flags: ['F_EDU_SEED'] }
@@ -244,8 +255,8 @@
       ['Er', '出張で見た港には、どこにも海からケーブルが上がってくる小さな建物があったよね。あれが世界の入口なんだ。日本の端っこ、南鳥島も、海の向こうとつながる入口にしたいな']],
     opts: ['光アンプの基礎研究', '島と本土をつなぐ通信回線の強化（遠隔で実験を見守る）', 'ケーブル保守船との共同訓練＋研究'],
     results: {
-      great: { text: '島の採掘試験を本土から遠隔で見守れるようになりました。 Er「ボクが見てきた世界が、島ともつながったね」', axes: A({ intl: 2, academic: 1 }), bonus: 'trend_preview' },
-      good: { text: '島の通信が安定しました。', axes: A({ local: 1, intl: 1 }) },
+      great: { souvenir: 'gift_e09', text: '島の採掘試験を本土から遠隔で見守れるようになりました。 Er「ボクが見てきた世界が、島ともつながったね」', axes: A({ intl: 2, academic: 1 }), bonus: 'trend_preview' },
+      good: { souvenir: 'gift_e09', text: '島の通信が安定しました。', axes: A({ local: 1, intl: 1 }) },
       bitter: { text: '船のいかりでケーブルが傷つき、数日つながらなくなりました。でも復旧船が駆けつけます。 Er「世界はこうやって、誰かに守られながらつながってるんだ」', axes: A({ intl: 1 }) },
       odd: { text: '出張先で知り合った各国の友人から一斉に連絡が。「日本の財団のこと、聞いたよ！」（全パートナーの友好度が＋1）', axes: A({ intl: 2 }), affinityAll: 1 }
     },
@@ -263,8 +274,8 @@
     opts: ['ブラックライトで光る展示室', '蛍光材料の研究', 'にせ札防止・医療検査への応用研究'],
     mods: (F) => ({ great: hasF(F, 'F_TB_GLOW') ? 10 : 0 }),
     results: {
-      great: { text: '展示室に行列ができました。「見て見て、光ってる！ ボク、まだ光れるんだ！」Euは大感激。', axes: A({ academic: 2, local: 2 }), bonus: 'blacklight+3/Eu_illust' },
-      good: { text: '「ブラックライトの下で、ふだん見えない模様が浮かぶ」と評判に。', axes: A({ academic: 1, local: 1 }), bonus: 'blacklight+1' },
+      great: { souvenir: 'gift_e10', text: '展示室に行列ができました。「見て見て、光ってる！ ボク、まだ光れるんだ！」Euは大感激。', axes: A({ academic: 2, local: 2 }), bonus: 'blacklight+3/Eu_illust' },
+      good: { souvenir: 'gift_e10', text: '「ブラックライトの下で、ふだん見えない模様が浮かぶ」と評判に。', axes: A({ academic: 1, local: 1 }), bonus: 'blacklight+1' },
       bitter: { text: '新しい素材が登場し、用途の一部が置き換わりました。Eu「流行は変わるね」。でも別の用途を見つけて前向きに。 Tb「元素の出番は、時代といっしょに変わっていくんですね」', axes: A({ academic: 1 }) },
       odd: { text: '展示にブラウン管テレビを持ち込んだおじいさん。「このテレビの赤は、きみが光らせていたんだね」。世代を超えた交流が生まれました。', axes: A({ local: 2 }) }
     },
@@ -348,12 +359,12 @@
   E({
     id: 'E15', title: '寄付金の不祥事（負の側面）', icon: '📰', kind: 'bad', wait: 4,
     cond: (c) => doneOK(c.F, 'E01') && spentIn(c.F, ['E01', 'E02', 'E04']),
-    news: [['', 'ニュース：「財団が寄付金を届ける際に使った団体の一つ『みらいこどもネット』（架空）で、寄付金の一部が不適切に使われていた疑い」。財団にも問い合わせの電話が鳴りはじめました。'],
+    news: [['', 'ニュース：「財団が寄付金を届ける際に使った団体の一つ、市民団体『プロジェクト・ネクスト・ジェネレーション・ホープ』（架空）で、寄付金の一部が不適切に使われていた疑い」。財団にも問い合わせの電話が鳴りはじめました。'],
       ['Tb', 'みんなの気持ちを預かっています。ちゃんと向き合いましょう']],
     opts: ['声明を出し、団体に説明を求める', '第三者による監査（費用は財団負担）', '被害を受けた事業の肩代わり＋寄付先の審査制度づくり'],
     mods: (F) => ({ great: hasF(F, 'F_AID_DONE') ? 10 : 0 }),
     results: {
-      great: { text: '監査で財団の寄付分は適正と確認されました。審査基準を公開し、「お金の流れが見える財団」と評判に。称号「透明な財団」を手に入れました。', axes: A({ local: 2, intl: 1, academic: 1 }), title: '透明な財団' },
+      great: { souvenir: 'gift_e15', text: '監査で財団の寄付分は適正と確認されました。審査基準を公開し、「お金の流れが見える財団」と評判に。称号「透明な財団」を手に入れました。', axes: A({ local: 2, intl: 1, academic: 1 }), title: '透明な財団' },
       good: { text: '財団分に問題なし。団体は再発防止策を発表しました。', axes: A({ local: 1, intl: 1 }) },
       bitter: { text: '監査で、財団側の小さな管理ミス（領収書の保存漏れなど）が見つかりました。「悪意はないが、チェックが甘かった」。すぐ改善します。', axes: A({ local: 1 }) },
       odd: { text: '厳しい監査の様子を知った別の団体から「うちも見てほしい」と相談が来ました。新しい寄付先の候補が増えます。', axes: A({ local: 2 }) }
@@ -532,6 +543,9 @@
     });
   }
 
+  // 「財団からのお礼」棚：受け取った品だけ
+  function gifts(gs) { const own = ensure(gs) && gs.observatory.souvenirs; return Object.keys(GIFTS).filter(id => own.includes(id)); }
+
   // ───── 通知（どのページでも小さく出す。画面は止めない）─────
   function notify(kind) {
     try {
@@ -552,9 +566,9 @@
 
   global.FD = {
     EVENTS: EVENTS, ORDER: ORDER, AXES: AXES, TIER: TIER, KEYS: KEYS, RESULT_NAME: RESULT_NAME, TB_LINE: TB_LINE, WHO: WHO,
-    SOUVENIRS: SOUVENIRS, DECOR: DECOR, COUNTRIES: COUNTRIES, FOUND_LEVEL: FOUND_LEVEL,
+    SOUVENIRS: SOUVENIRS, DECOR: DECOR, GIFTS: GIFTS, COUNTRIES: COUNTRIES, FOUND_LEVEL: FOUND_LEVEL,
     byId: byId, itemInfo: itemInfo, ensure: ensure, acts: acts, tradeCount: tradeCount, optionsFor: optionsFor, weights: weights,
-    tick: tick, spend: spend, claim: claim, shelf: shelf, notify: notify, persist: persist, loadGS: loadGS,
+    tick: tick, spend: spend, claim: claim, shelf: shelf, gifts: gifts, notify: notify, persist: persist, loadGS: loadGS,
     _setRand: (f) => { rand = f || Math.random; }
   };
 })(window);
