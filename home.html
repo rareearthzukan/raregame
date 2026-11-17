@@ -384,7 +384,7 @@ const GOLD_ROWS=[
 MILE_ROWS.forEach(r=>furnitureMaster[r[0]]={name:r[1],emoji:r[2],cost:r[3],bonus:r[4],size:r[5],x:50,y:r[6],img:IMG_PREFIX+r[0]+'.png'});
 GOLD_ROWS.forEach(r=>furnitureMaster[r[0]]={name:r[1],emoji:r[2],gold:r[3],cost:0,bonus:r[4],size:r[5],x:50,y:r[6],img:IMG_PREFIX+r[0]+'.png'});
 /* 財団のおみやげ・観測室の飾り（foundation.js のデータ）。ショップには並ばず、観測室で受け取ると「📦配置」に入る。絵は kagu_<ID>.png を置くと表示される */
-if(window.FD){ [FD.SOUVENIRS,FD.DECOR].forEach(M=>Object.keys(M).forEach(id=>{ const o=M[id]; furnitureMaster[id]={name:o.name,emoji:o.emoji,cost:0,bonus:o.bonus,size:o.size,x:50,y:o.y,img:IMG_PREFIX+id+'.png',obs:true}; })); }
+if(window.FD){ [FD.SOUVENIRS,FD.DECOR,FD.GIFTS].forEach(M=>Object.keys(M).forEach(id=>{ const o=M[id]; furnitureMaster[id]={name:o.name,emoji:o.emoji,cost:0,bonus:o.bonus,size:o.size,x:50,y:o.y,img:IMG_PREFIX+id+'.png',obs:true}; })); }
 
 /* ═════════ 家具の分類（ショップ・配置の絞り込み用） ═════════
    ■ シリーズ：IDの末尾（_natural/_mono/_stand/_lab）で自動判定。末尾なし→マイル品は「ふつう」、G品は「ごうか」
@@ -599,9 +599,11 @@ function openShelf(){
     const got=c.slots.filter(s=>s.got); if(!got.length) return '';
     return `<div class="shelf-c"><b>${c.flag} ${c.name}</b><div class="shelf-g">${got.map(s=>{ const it=FD.itemInfo(s.id); return `<div class="shelf-s"><span class="e">${it.emoji}</span>${it.name}</div>`; }).join('')}</div></div>`;
   }).join('');
+  const gf=FD.gifts(gameState);
+  const gifts=gf.length?`<div class="shelf-c"><b>🏛 財団からのお礼</b><div class="shelf-g">${gf.map(id=>{ const it=FD.GIFTS[id]; return `<div class="shelf-s"><span class="e">${it.emoji}</span>${it.name}</div>`; }).join('')}</div></div>`:'';
   const dec=Object.keys(FD.DECOR).filter(id=>own.has(id));
   const decor=dec.length?`<div class="shelf-c"><b>🌅 島からの飾り</b><div class="shelf-g">${dec.map(id=>{ const it=FD.DECOR[id]; return `<div class="shelf-s"><span class="e">${it.emoji}</span>${it.name}</div>`; }).join('')}</div></div>`:'';
-  fdOpen(`<h3>🎁 おみやげ棚</h3>${(blocks||decor)?blocks+decor:'<div class="fdsay">まだおみやげはありません。</div>'}<div class="fdbtns"><button class="btn sub" onclick="fdClose()">閉じる</button></div>`);
+  fdOpen(`<h3>🎁 おみやげ棚</h3>${(blocks||gifts||decor)?blocks+gifts+decor:'<div class="fdsay">まだおみやげはありません。</div>'}<div class="fdbtns"><button class="btn sub" onclick="fdClose()">閉じる</button></div>`);
 }
 window.addEventListener('resize',()=>{ try{ updateObsBar(); }catch(e){} });
 window.onFoundationTick=function(){ try{ updateObsBar(); }catch(e){} };      // areaconfig.js の財団チェックのあとで呼ばれる
