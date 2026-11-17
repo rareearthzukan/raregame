@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>スタンプカード デモ（本編の かわり）</title>
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;font-family:"Hiragino Maru Gothic ProN","Yu Gothic UI","Meiryo",system-ui,sans-serif;background:linear-gradient(165deg,#12305f,#2a1d66);color:#fff;min-height:100dvh;padding:14px 14px 120px}
+  h1{font-size:19px;margin:0 0 4px}
+  p.note{font-size:12px;opacity:.85;margin:0 0 12px;line-height:1.6}
+  .panel{background:rgba(255,255,255,.12);border:2px solid rgba(255,255,255,.3);border-radius:16px;padding:10px 12px;margin-bottom:12px}
+  .panel h2{font-size:13px;margin:0 0 8px;color:#ffd23f}
+  .stat{display:flex;gap:8px;flex-wrap:wrap;font-weight:900;font-size:14px}
+  .stat span{background:rgba(0,0,0,.3);border-radius:10px;padding:3px 10px}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  button{font-family:inherit;font-weight:900;font-size:13px;border:3px solid #1b1f3b;border-radius:14px;background:#fff;color:#1b1f3b;padding:10px 4px;cursor:pointer;box-shadow:0 4px 0 #1b1f3b;line-height:1.25}
+  button:active{transform:translateY(3px);box-shadow:0 1px 0 #1b1f3b}
+  button.mint{background:linear-gradient(#c5ffe9,#5fe8b4)} button.yel{background:linear-gradient(#fff3a0,#ffd23f)} button.pink{background:linear-gradient(#ffb3cf,#ff5d8f);color:#fff} button.cyan{background:linear-gradient(#a8f4ff,#3de0ff)}
+  #log{font-size:12px;line-height:1.6;max-height:130px;overflow:auto;background:rgba(0,0,0,.3);border-radius:10px;padding:6px 10px}
+  small{opacity:.8}
+</style>
+</head>
+<body>
+<h1>📒 スタンプカード デモ</h1>
+<p class="note">ここは「本編のかわり」の テスト画面です。ボタンを おすと、本編の各ページで 呼ぶ <b>Stamp.report('…')</b> と おなじことが おきます。右下の 📒 を タップすると カードが ひらきます。</p>
+
+<div class="panel"><h2>いまの ようす（本編の保存データ）</h2><div class="stat" id="stat"></div></div>
+
+<div class="panel"><h2>ふだんの あそび</h2>
+  <div class="grid">
+    <button class="cyan" data-ev="mine">⛏️ 採掘</button>
+    <button class="cyan" data-ev="generate">🧪 生成</button>
+    <button class="cyan" data-ev="refine">⚗️ 精製</button>
+    <button class="mint" data-ev="ship">📦 出荷</button>
+    <button class="mint" data-ev="shop_buy">🛍️ ショップで 買う</button>
+    <button class="mint" data-ev="zukan_open">📖 図鑑を ひらく</button>
+    <button class="yel" data-ev="furniture_place">🪑 家具を 置く</button>
+    <button class="yel" data-ev="taste_change">🎨 テイスト変更</button>
+    <button class="yel" data-ev="char_place">🧸 キャラを 置く</button>
+  </div>
+</div>
+
+<div class="panel"><h2>ミニゲーム（ゲームの名前も いっしょに 報告）</h2>
+  <div class="grid">
+    <button class="pink" data-game="Ho">🎱 Ho ビリヤード</button>
+    <button class="pink" data-game="Pr">👀 Pr まちがい</button>
+    <button class="pink" data-game="Sc">🏟️ Sc ラボ</button>
+    <button class="pink" data-game="Tb">🟢 Tb 磁歪</button>
+    <button class="pink" data-game="Yb">💡 Yb ひかり</button>
+    <button class="pink" data-game="Nd">⚙️ Nd しわけ</button>
+    <button class="yel" data-ev="recycle_play">♻️ リサイクル</button>
+  </div>
+</div>
+
+<div class="panel"><h2>まとめ体験チケットの つかいかた（本編では こう書く）</h2>
+  <div class="grid">
+    <button class="mint" id="useGen">🧪 生成する<br><small>券があれば 10こ</small></button>
+    <button class="mint" id="useMine">⛏️ 採掘する<br><small>券があれば 5こ</small></button>
+  </div>
+</div>
+
+<div class="panel"><h2>テスト用（本編には いりません）</h2>
+  <div class="grid">
+    <button data-lv="+1">Lv +1</button><button data-lv="5">Lv 5 に</button><button data-lv="40">Lv 40 に</button>
+    <button data-lv="50">Lv 50 に</button><button data-exp="100">EXP +100</button><button id="reset" class="pink">ぜんぶ リセット</button>
+  </div>
+</div>
+
+<div class="panel"><h2>ログ</h2><div id="log"></div></div>
+
+<!-- ★ 本編では この1行だけ 入れます ★ -->
+<script src="stampcard.js"></script>
+<script>
+  const GK = 'rareEarthGameState';
+  const gs = () => { try { return JSON.parse(localStorage.getItem(GK)) || {}; } catch (e) { return {}; } };
+  const setGs = o => localStorage.setItem(GK, JSON.stringify(o));
+  if (gs().money == null) setGs({ money: 1500, level: 1, exp: 0, elements: {}, mudStock: 5 });
+  const logEl = document.getElementById('log');
+  const log = t => { logEl.innerHTML = '・' + t + '<br>' + logEl.innerHTML; };
+  function showStat() {
+    const g = gs(), t = Stamp.tickets(), el = Object.keys(g.elements || {}).map(k => k + '×' + g.elements[k]).join(' ') || 'なし';
+    document.getElementById('stat').innerHTML = `<span>Lv ${g.level || 1}</span><span>EXP ${g.exp || 0}</span><span>💰 ${(g.money || 0).toLocaleString()}G</span><span>🧪 ${el}</span><span>🎫 生成×${t.bulkGen || 0} 掘削×${t.bulkMine || 0}</span>`;
+  }
+  setInterval(showStat, 400); showStat();
+
+  const NAMES = { mine: '採掘', generate: '生成', refine: '精製', ship: '出荷', shop_buy: 'ショップで 購入', zukan_open: '図鑑を ひらいた', furniture_place: '家具を 置いた', taste_change: 'テイスト変更', char_place: 'キャラを 置いた', recycle_play: 'リサイクル' };
+  document.querySelectorAll('[data-ev]').forEach(b => b.onclick = () => { Stamp.report(b.dataset.ev); log(NAMES[b.dataset.ev] + ' → Stamp.report(\'' + b.dataset.ev + '\')'); });
+  document.querySelectorAll('[data-game]').forEach(b => b.onclick = () => { Stamp.report('minigame_play', 1, { game: b.dataset.game }); log('ミニゲーム ' + b.dataset.game + ' → Stamp.report(\'minigame_play\', 1, {game:\'' + b.dataset.game + '\'})'); });
+  document.getElementById('useGen').onclick = () => { const bulk = Stamp.useTicket('bulkGen'); log(bulk ? '🎫 券を つかって 10こ まとめて 生成！' : '生成 1こ（券なし）'); Stamp.report('generate', 1); };
+  document.getElementById('useMine').onclick = () => { const bulk = Stamp.useTicket('bulkMine'); log(bulk ? '🎫 券を つかって 5こ まとめて 掘削！' : '採掘 1こ（券なし）'); Stamp.report('mine', 1); };
+  document.querySelectorAll('[data-lv]').forEach(b => b.onclick = () => { const g = gs(); const v = b.dataset.lv; g.level = v[0] === '+' ? (g.level || 1) + 1 : +v; g.exp = 0; setGs(g); Stamp.refresh(); log('レベルを ' + g.level + ' に'); });
+  document.querySelectorAll('[data-exp]').forEach(b => b.onclick = () => { const g = gs(); let lv = g.level || 1, ex = (g.exp || 0) + +b.dataset.exp; while (ex >= lv * 100) { ex -= lv * 100; lv++; } g.level = lv; g.exp = ex; setGs(g); Stamp.refresh(); log('EXP +' + b.dataset.exp); });
+  document.getElementById('reset').onclick = () => { setGs({ money: 1500, level: 1, exp: 0, elements: {}, mudStock: 5 }); Stamp.reset(); log('リセットしました'); };
+</script>
+</body>
+</html>
