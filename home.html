@@ -51,8 +51,7 @@ body{margin:0;height:100%;overflow:hidden;overscroll-behavior:none;background:#0
 
 /* オブジェクトのスタイル（小さい家具もタッチできるように反応エリアを拡張） */
 .obj{position:absolute;transform:translate(-50%,-100%);touch-action:none;cursor:grab;z-index:5;min-width:36px;min-height:36px;display:flex;align-items:flex-end;justify-content:center;padding:4px}
-/* 元素キャラは常に一番手前（最前面） */
-.obj.is-chara{z-index:120 !important}
+/* 重なり順は配置順（placedItems の並び）で決まる。キャラも家具と同じ扱い */
 .obj:active{cursor:grabbing;filter:brightness(1.05)}
 .obj img{width:100%;height:auto;display:block;pointer-events:none;filter:drop-shadow(0 .3rem .4rem rgba(0,0,0,.28))}
 .obj .ph{display:flex;flex-direction:column;align-items:center;font-size:7cqw;line-height:1.1;text-align:center;filter:drop-shadow(0 .2rem .3rem rgba(0,0,0,.3))}
@@ -381,18 +380,80 @@ const GOLD_ROWS=[
   ['trash_lab','ペダル式ダストボックス','🗑️',150,0.1,12,90],
   ['whiteboard_lab','ホワイトボード','📋',500,0.3,28,76],
 ];
+
+/* ── スイーツシリーズ（kagu_okashi1〜24.png）── [ID,名前,絵文字,ゴールド,ボーナス,大きさ%,足元y%] */
+const SWEETS_ROWS=[
+  ['okashi1','ショートケーキベッド','🛏️',3000,0.8,34,90],
+  ['okashi2','クッキーソファ','🛋️',2400,0.6,28,90],
+  ['okashi3','キャンディケーンのラウンドテーブル','🍓',1200,0.3,18,90],
+  ['okashi4','ウエハースのテレビ台','📺',2200,0.7,30,86],
+  ['okashi5','ビスケットのクローゼット','🚪',2000,0.5,20,86],
+  ['okashi6','スイーツキッチン','🍳',2800,0.6,24,82],
+  ['okashi7','ケーキテーブルのダイニングセット','🍽️',2200,0.4,28,90],
+  ['okashi8','キャンディガチャマシン','🍬',1500,0.3,12,88],
+  ['okashi9','おかしの窓とカーテン','🪟',1800,0.3,24,50],
+  ['okashi10','チョコロールのラグ','🟫',1400,0.3,30,94],
+  ['okashi11','キャンディジャーの食器棚','🍭',2000,0.5,22,86],
+  ['okashi12','シンク付きクッキーカウンター','🧁',2600,0.6,30,84],
+  ['okashi13','いちごのアームチェア','🍓',1600,0.3,18,90],
+  ['okashi14','パソコンデスク＆チェア','💻',2400,0.6,28,88],
+  ['okashi15','キャンディツリーの鉢植え','🪴',1000,0.3,14,86],
+  ['okashi16','おかしの水槽','🐠',3000,0.8,26,86],
+  ['okashi17','カップケーキのチェスト','🗄️',2000,0.5,28,86],
+  ['okashi18','ジンジャーハウスの鳩時計','🕰️',1200,0.2,14,40],
+  ['okashi19','クッキーバスケット','🍪',1100,0.2,18,90],
+  ['okashi20','ストロベリードレッサー','🪞',2000,0.4,20,88],
+  ['okashi21','ギンガムのこたつ','🔥',1800,0.4,26,92],
+  ['okashi22','チョコレート本棚','📚',2200,0.5,22,86],
+  ['okashi23','チョコレートグランドピアノ','🎹',3500,0.8,32,90],
+  ['okashi24','カップケーキフロアランプ','💡',1000,0.2,10,88],
+];
+/* ── ブルーシリーズ（kagu_ao1〜30.png）── */
+const BLUE_ROWS=[
+  ['ao1','ブルーのコンソールミラー','🪞',2200,0.4,24,86],
+  ['ao2','ハンギングエッグチェア','🪑',2200,0.4,16,88],
+  ['ao3','ドラム式洗濯機','🧺',2400,0.5,18,86],
+  ['ao4','ミニジャグジー','🛁',3200,0.7,28,90],
+  ['ao5','ブルーキッチン','🍳',3000,0.7,32,84],
+  ['ao6','天体望遠鏡','🔭',2200,0.4,16,88],
+  ['ao7','ブルーソファ＆ローテーブル','🛋️',3000,0.8,30,90],
+  ['ao8','ブルーのテレビ台','📺',2600,0.8,30,86],
+  ['ao9','ゲーミングデスク＆チェア','🖥️',3600,1.0,28,88],
+  ['ao10','クリスタルディスプレイ棚','💎',3000,0.6,18,86],
+  ['ao11','リング振り子時計','🕰️',1400,0.2,14,40],
+  ['ao12','ブルーの窓とカーテン','🪟',1800,0.3,24,50],
+  ['ao13','ウェーブローテーブル','🪵',1500,0.3,22,90],
+  ['ao14','ブルーのスタンドミラー','🪞',1600,0.3,12,86],
+  ['ao15','ブルーサーキュレーター','🌀',1300,0.3,10,86],
+  ['ao16','ブルーの本棚','📚',2400,0.5,22,86],
+  ['ao17','ブルー冷蔵庫','🧊',2600,0.5,14,86],
+  ['ao18','スターラグ','🟦',1500,0.3,28,94],
+  ['ao19','クラゲの円柱水槽','🪼',3400,0.9,18,86],
+  ['ao20','パラソル付きテラスソファ','⛱️',3200,0.7,30,88],
+  ['ao21','ブルーBBQグリル','🍖',2400,0.4,22,88],
+  ['ao22','花のアーチ','🌸',2800,0.6,28,90],
+  ['ao23','ブルーの噴水','⛲',3600,0.7,26,88],
+  ['ao24','ガラスの温室','🌱',4000,0.9,32,88],
+  ['ao25','ブルーバーカウンター','🍸',3400,0.8,32,88],
+  ['ao26','野菜のプランター','🍅',1800,0.4,26,88],
+  ['ao27','ブルーのダイニングセット','🍽️',2400,0.5,26,90],
+  ['ao28','ブルーの花瓶','💐',1000,0.2,10,88],
+  ['ao29','睡蓮の池','🪷',2600,0.5,28,92],
+  ['ao30','さくらの木','🌸',3600,0.8,28,88],
+];
 MILE_ROWS.forEach(r=>furnitureMaster[r[0]]={name:r[1],emoji:r[2],cost:r[3],bonus:r[4],size:r[5],x:50,y:r[6],img:IMG_PREFIX+r[0]+'.png'});
-GOLD_ROWS.forEach(r=>furnitureMaster[r[0]]={name:r[1],emoji:r[2],gold:r[3],cost:0,bonus:r[4],size:r[5],x:50,y:r[6],img:IMG_PREFIX+r[0]+'.png'});
+GOLD_ROWS.concat(SWEETS_ROWS,BLUE_ROWS).forEach(r=>furnitureMaster[r[0]]={name:r[1],emoji:r[2],gold:r[3],cost:0,bonus:r[4],size:r[5],x:50,y:r[6],img:IMG_PREFIX+r[0]+'.png'});
 /* 財団のおみやげ・観測室の飾り（foundation.js のデータ）。ショップには並ばず、観測室で受け取ると「📦配置」に入る。絵は kagu_<ID>.png を置くと表示される */
 if(window.FD){ [FD.SOUVENIRS,FD.DECOR,FD.GIFTS].forEach(M=>Object.keys(M).forEach(id=>{ const o=M[id]; furnitureMaster[id]={name:o.name,emoji:o.emoji,cost:0,bonus:o.bonus,size:o.size,x:50,y:o.y,img:IMG_PREFIX+id+'.png',obs:true}; })); }
 
 /* ═════════ 家具の分類（ショップ・配置の絞り込み用） ═════════
-   ■ シリーズ：IDの末尾（_natural/_mono/_stand/_lab）で自動判定。末尾なし→マイル品は「ふつう」、G品は「ごうか」
-     新シリーズ（例 _blue）を作るときは SERIES に1行＋ furnSeries の正規表現に追記
+   ■ シリーズ：IDの末尾（_natural/_stand→シンプル・ナチュラルに統合、_mono、_lab）、okashi数字→スイーツ、ao数字→ブルー で自動判定。末尾なし→マイル品は「ふつう」、G品は「ごうか」
+     新シリーズを作るときは SERIES に1行＋ furnSeries に判定を追記
    ■ しゅるい：名前のことば（CAT_RULES）で自動判定。合わないものは CAT_OVERRIDE に {id:'種類'} で指定 */
 const SERIES=[
-  {k:'all',e:'🌈',n:'ぜんぶ'},{k:'std',e:'🏠',n:'ふつう'},{k:'natural',e:'🌿',n:'ナチュラル'},{k:'mono',e:'🎱',n:'モノトーン'},
-  {k:'stand',e:'🧍',n:'シンプル'},{k:'lab',e:'🔬',n:'けんきゅうしつ'},{k:'lux',e:'👑',n:'ごうか'},{k:'obs',e:'🔭',n:'観測室'}
+  {k:'all',e:'🌈',n:'ぜんぶ'},{k:'std',e:'🏠',n:'ふつう'},{k:'natural',e:'🌿',n:'シンプル・ナチュラル'},{k:'mono',e:'🎱',n:'モノトーン'},
+  {k:'sweets',e:'🍰',n:'スイーツ'},{k:'blue',e:'💠',n:'ブルー'},
+  {k:'lab',e:'🔬',n:'けんきゅうしつ'},{k:'lux',e:'👑',n:'ごうか'},{k:'obs',e:'🔭',n:'観測室'}
 ];
 const CATS=[
   {k:'all',e:'🌈',n:'ぜんぶ'},{k:'seat',e:'🛋️',n:'すわる・ねる'},{k:'desk',e:'🪵',n:'つくえ'},{k:'store',e:'🗄️',n:'たな'},
@@ -401,15 +462,16 @@ const CATS=[
 const CAT_RULES=[
   ['light',/ライト|ランプ|シャンデリア|照明/],
   ['rug',/ラグ|マット|絨毯|カーテン|窓/],
-  ['green',/観葉|植物|庭木|ツリー|グリーン|温室|噴水|ポット/],
+  ['green',/観葉|植物|庭木|ツリー|グリーン|温室|噴水|ポット|鉢植え|アーチ|プランター|睡蓮|さくら|桜/],
   ['store',/棚|シェルフ|書棚|クローゼット|チェスト|キャビネット|ラック|ワゴン|ストレージ|ボックス|ケース|セラー|ナイトテーブル|試験管/],
   ['desk',/デスク|テーブル|カウンター|ベンチ|ダイニング|バー|ビリヤード台/],
   ['seat',/ソファ|チェア|椅子|スツール|ベッド|クッション|ビーズ/],
-  ['machine',/テレビ|PC|モニター|冷蔵庫|キッチン|レンジ|扇風機|サーキュレーター|エスプレッソ|掃除機|暖炉|サウナ|ジャグジー|遠心|インキュベーター|オーブン|顕微鏡|天秤|解析|分析|スターラー|シアター/]
+  ['machine',/テレビ|PC|モニター|冷蔵庫|キッチン|レンジ|扇風機|サーキュレーター|エスプレッソ|掃除機|暖炉|サウナ|ジャグジー|洗濯機|遠心|インキュベーター|オーブン|顕微鏡|天秤|解析|分析|スターラー|シアター/]
 ];
-const CAT_OVERRIDE={cleanbench_lab:'machine'};
+const CAT_OVERRIDE={cleanbench_lab:'machine', okashi12:'machine', okashi20:'desk', okashi19:'store', okashi15:'green', ao1:'desk', ao10:'store', ao25:'desk', ao7:'seat'};
 const _fc={};
-function furnSeries(id){ const f=furnitureMaster[id]; if(!f) return 'std'; if(f.obs) return 'obs'; const m=id.match(/_(natural|mono|stand|lab)$/); return m?m[1]:(f.gold?'lux':'std'); }
+function furnSeries(id){ const f=furnitureMaster[id]; if(!f) return 'std'; if(f.obs) return 'obs'; if(/^okashi\d+$/.test(id)) return 'sweets'; if(/^ao\d+$/.test(id)) return 'blue';
+  const m=id.match(/_(natural|stand|mono|lab)$/); return m?(m[1]==='stand'?'natural':m[1]):(f.gold?'lux':'std'); }
 function furnCat(id){ if(_fc[id]) return _fc[id]; const f=furnitureMaster[id]; let c='deco';
   if(CAT_OVERRIDE[id]) c=CAT_OVERRIDE[id]; else if(f){ const r=CAT_RULES.find(r=>r[1].test(f.name)); if(r) c=r[0]; } return _fc[id]=c; }
 const seriesName=k=>(SERIES.find(x=>x.k===k)||{}).n||'';
@@ -890,6 +952,7 @@ function csMain(id){
        <button class="cs-tile cs-work" onclick="csWork('${id}')"><span class="ic">🛠️</span><span class="lb">おしごと</span><small>おねがいする</small></button>
        <button class="cs-tile cs-talk" onclick="csTalk('${id}')"><span class="ic">💬</span><span class="lb">おはなし</span><small>きいてみよう</small></button>
      </div>
+     <div style="display:flex;gap:.5rem"><button class="cs-sub" onclick="charaLayer('${id}',true)">🔝 前へ</button><button class="cs-sub" onclick="charaLayer('${id}',false)">🔚 うしろへ</button></div>
      <button class="cs-sub put" onclick="removeChara('${id}')">🏠 おへやにしまう</button>`);
 }
 
@@ -999,7 +1062,7 @@ function renderRoom(){
       it.s=it.s||1;
       const el=document.createElement('div'); 
       
-      /* 元素キャラの場合は is-chara クラスを付与し、常に一番手前に表示 */
+      /* 元素キャラの場合は is-chara クラスを付与（アニメ用。重なり順は他の家具と同じ） */
       el.className='obj' + (isChara ? ' is-chara' : '');
       el.style.cssText=`left:${it.x}%;top:${it.y}%;width:${size*it.s}%`;
       const im=document.createElement('img'); im.src=IMG_DIR+src; im.alt=name;
@@ -1043,7 +1106,8 @@ function drag(el,it,idx,name,size,isChara,charaId){
           <button class="btn" style="background:#3b82f6" onclick="changeSizeScale(${idx},0.25)">🔍 拡大 (+)</button>
         </div>
         <div style="display:flex; justify-content:center; gap:8px; margin-bottom:12px">
-          <button class="btn" style="background:#8b5cf6" onclick="bringToFront(${idx})">🔝 最前列に置く</button>
+          <button class="btn" style="background:#8b5cf6" onclick="bringToFront(${idx})">🔝 最前列</button>
+          <button class="btn" style="background:#6366f1" onclick="sendToBack(${idx})">🔚 最背面</button>
           <button class="btn" style="background:#ef4444" onclick="removePlacedItem(${idx})">📦 片付ける</button>
         </div>
       </div>
@@ -1068,7 +1132,11 @@ function drag(el,it,idx,name,size,isChara,charaId){
     tot+=Math.abs(dx)+Math.abs(dy); if(tot>6) moved=true;
     const stageEl = $('stage'); if(!stageEl) return;
     const r=stageEl.getBoundingClientRect();
-    it.x=Math.max(0,Math.min(100,it.x+dx/r.width*100)); it.y=Math.max(10,Math.min(100,it.y+dy/r.height*100));
+    /* 部屋の外（左右・下）にはみ出して置ける。はみ出し分は .stage の overflow:hidden で非表示。
+       ただし拾えなくならないよう、家具の一部(最低 m px)は必ず部屋の中に残す */
+    const w=el.offsetWidth, h=el.offsetHeight, m=Math.min(28,w/2,h/2);
+    const xMin=(-w/2+m)/r.width*100, xMax=100+(w/2-m)/r.width*100, yMax=100+(h-m)/r.height*100;
+    it.x=Math.max(xMin,Math.min(xMax,it.x+dx/r.width*100)); it.y=Math.max(10,Math.min(yMax,it.y+dy/r.height*100));
     el.style.left=it.x+'%'; el.style.top=it.y+'%';
   });
 
@@ -1110,6 +1178,20 @@ function bringToFront(idx){
   toast('🔝 最前列に移動しました');
 }
 
+function sendToBack(idx){
+  if(!gameState.placedItems || !gameState.placedItems[idx]) return;
+  hist();
+  const item = gameState.placedItems.splice(idx, 1)[0];
+  gameState.placedItems.unshift(item);
+  save(); closeModal(); updateUI();
+  toast('🔚 最背面に移動しました');
+}
+/* キャラの重なり順（キャラは家具のうしろにも置ける） */
+function charaLayer(id,front){
+  const list=gameState.placedItems||[], i=list.findIndex(x=>x.type==='chara'&&x.id===id); if(i<0) return;
+  hist(); const it=list.splice(i,1)[0]; if(front) list.push(it); else list.unshift(it);
+  save(); csClose(); updateUI(); toast(front?'🔝 いちばん前に出たよ':'🔚 家具のうしろに回ったよ');
+}
 function removePlacedItem(idx){
   if(!gameState.placedItems || !gameState.placedItems[idx]) return;
   hist();
