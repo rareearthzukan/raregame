@@ -21,7 +21,7 @@
   const PAGE_LABEL = { map: 'マップ', mine: '採掘', seisei: '精製', factory: '工場', home: 'ホーム' };
   // ── ステップ定義：sel=指すボタン（クリックで次へ）/ type:'msg'=OKボタンで次へ / se=表示時のSE（省略は kira） ──
   const STEPS = [
-    { page: 'map.html',     type: 'msg', text: 'ようこそ！案内役のテルビウムだよ。このゲームの目標は、レベルを上げて「南鳥島」のエリアを解放すること。まずは採掘に出かけよう！' + REW_HINT },
+    { page: 'map.html',     type: 'msg', text: 'ようこそ！案内役のイットリウムだよ。このゲームの目標は、レベルを上げて「南鳥島」のエリアを解放すること。まずは採掘に出かけよう！' + REW_HINT },
     { page: 'map.html',     sel: '#spot-baiyun', text: '採掘エリアを選ぼう。まずは中国の「白雲鄂博」のピンをタップ！' },
     { page: 'map.html',     sel: '#action-btn:not([disabled])', text: '「移動」ボタンをタップして、採掘エリアへ出発だ！' },
     { page: 'mine.html',    sel: '#mine-btn', text: 'ここが採掘エリア。このボタンをタップして、資源を掘り出してみよう！' },
