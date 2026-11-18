@@ -3,8 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>ぼくたちレアアース - レアアース17元素キャラ図鑑</title>
-<meta name="description" content="スマホ、電気自動車、最新の医療機器……。現代の産業や医療に欠かせないレアアースの「唯一無二の力」を体験するゲーム。">
+<title>ぼくたちレアアース（ぼくレア）- レアアース17元素キャラ図鑑</title>
+<meta name="description" content="「ぼくたちレアアース」（略して「ぼくレア」）は、スマホ、電気自動車、最新の医療機器……。現代の産業や医療に欠かせないレアアースの「唯一無二の力」を、掘って・精製して・つくって・届けながら体験するゲーム。レアアース17元素キャラ図鑑のキャラクターたちと遊べます。">
+<meta name="keywords" content="ぼくたちレアアース,ぼくレア,レアアース,レアアースゲーム,レアアース17元素キャラ図鑑,元素,シミュレーションゲーム">
+<meta property="og:type" content="website">
+<meta property="og:title" content="ぼくたちレアアース（ぼくレア）">
+<meta property="og:description" content="「ぼくたちレアアース」（略して「ぼくレア」）は、スマホ、電気自動車、最新の医療機器……。現代の産業や医療に欠かせないレアアースの「唯一無二の力」を、掘って・精製して・つくって・届けながら体験するゲーム。レアアース17元素キャラ図鑑のキャラクターたちと遊べます。">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"VideoGame","name":"ぼくたちレアアース","alternateName":["ぼくレア","Bokutachi Rare Earth"],"description":"「ぼくたちレアアース」（略して「ぼくレア」）は、スマホ、電気自動車、最新の医療機器……。現代の産業や医療に欠かせないレアアースの「唯一無二の力」を、掘って・精製して・つくって・届けながら体験するゲーム。レアアース17元素キャラ図鑑のキャラクターたちと遊べます。","inLanguage":"ja","genre":["シミュレーションゲーム","教育ゲーム"],"keywords":"ぼくたちレアアース,ぼくレア,レアアース,元素,17元素","applicationCategory":"Game","operatingSystem":"Web browser","isPartOf":{"@type":"CreativeWork","name":"レアアース17元素キャラ図鑑 - 未来をつくる元素たち -"},"illustrator":{"@type":"Person","name":"バルバロッサ上田"}}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
@@ -89,7 +97,7 @@ footer a{color:var(--cyan)}footer p{margin:.2rem 0}
   <div class="hero"><img src="header.png" alt="レアアース17元素キャラ図鑑 - 未来をつくる元素たち -" onerror="this.remove()"></div>
 
   <section class="title">
-    <p class="site">レアアース17元素キャラ図鑑 - 未来をつくる元素たち -</p>
+    <p class="site">レアアース17元素キャラ図鑑 - 未来をつくる元素たち -（愛称：ぼくレア）</p>
     <h1>ぼくたちレアアース</h1>
     <p class="lead">スマホ、電気自動車、最新の医療機器……。現代の産業や医療に欠かせない場所で活躍する大切な成分、それがレアアース。掘って、精製して、つくって、届けながら、彼らの「唯一無二の力」を体験しよう。</p>
   </section>
@@ -118,7 +126,7 @@ footer a{color:var(--cyan)}footer p{margin:.2rem 0}
       <div id="tt"></div>
       <div class="stage" id="stage"></div>
       <div class="guide" id="guide">
-        <img class="chr" id="chr" src="navtb.png" alt="テルビウム" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='hata_cn.png'}else{this.remove()}">
+        <img class="chr" id="chr" src="nav_y.png" alt="イットリウム" onerror="this.remove()">
         <div class="bubble" id="tb" aria-live="polite"></div>
       </div>
     </div>
@@ -150,13 +158,13 @@ const STEPS=[
 // 紹介スライド：5枚（プレイヤーの動作ベース）。shot=スクショ、cap=ラベル、shot2/cap2=小さい添え画像、g=背景グラデ
 const SLIDES=[
  {k:'ようこそ！',w:'はじまり',e:'✨',hero:1,g:'linear-gradient(160deg,#1b2a6b,#6a3a9c 60%,#e94560)',
-  t:'テルビウムだよ！元素のなかまたちと、世界をめぐる旅に出よう✨'},
- {k:'掘って、運ぼう',w:'1. 採掘・運搬',e:'⛏️',shot:'shot_map.png',cap:'マップ画面',g:'linear-gradient(160deg,#5a2e12,#b8641c 70%,#f0a040)',
+  t:'イットリウムだよ！元素のなかまたちと、世界をめぐる旅に出よう✨'},
+ {k:'掘って、運ぼう',w:'1. 採掘・運搬',e:'⛏️',shot:'shot_map.png',cap:'採掘画面',shot2:'shot_area.png',cap2:'エリア選択',g:'linear-gradient(160deg,#5a2e12,#b8641c 70%,#f0a040)',
   t:'好きな場所を選んで出発！何が眠ってるかは、掘ってからのお楽しみ✨'},
- {k:'精製して、なかま集め',w:'2. 精製・素材',e:'🧪',shot:'shot_refine.png',cap:'5個まとめて精製',g:'linear-gradient(160deg,#0d2b5e,#1b6fb5 70%,#00c2d6)',
-  t:'掘ったものから元素キャラが登場！5個まとめると、何が出るかな？'},
+ {k:'元素を取り出そう',w:'2. 精製・素材',e:'🧪',shot:'shot_refine.png',cap:'精製画面',g:'linear-gradient(160deg,#0d2b5e,#1b6fb5 70%,#00c2d6)',
+  t:'掘ったものから元素が登場！何が出るかな？'},
  {k:'つくって、売って成長',w:'3. 製造・出荷',e:'🏭',shot:'shot_factory.png',cap:'工場画面',g:'linear-gradient(160deg,#143a2f,#1f8a6a 70%,#e9c43a)',
-  t:'元素でヘッドホンなどをクラフト！売ってゴールドとEXPをゲット💰'},
+  t:'元素からアイテムをクラフト！売ってゴールドとEXPをゲット💰'},
  {k:'お部屋づくり💓',w:'もっと楽しむ',e:'🏠',shot:'shot_room.png',cap:'ホーム画面',shot2:'shot_room2.png',cap2:'雰囲気も変えられる',g:'linear-gradient(160deg,#ffd6e4,#f7a8c4 70%,#ffcf9e)',light:1,
   t:'家具を置いて、なかまと暮らす自分だけの部屋に。精製ボーナスもつくよ！'}
 ];
@@ -190,7 +198,7 @@ if(hasSave||inProg){
 
 // ===== 紹介スライド =====
 const T=id=>document.getElementById(id);
-const CHR='<img class="chr herochr" src="navtb.png" alt="テルビウム" onerror="if(!this.dataset.f){this.dataset.f=1;this.src=\'hata_cn.png\'}else{this.remove()}">';
+const CHR='<img class="chr herochr" src="nav_y.png" alt="イットリウム" onerror="this.remove()">';
 const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
 let idx=0,mode='first',typer=null;
 
