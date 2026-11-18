@@ -61,9 +61,9 @@ footer a{color:var(--cyan)}footer p{margin:.2rem 0}
 .sp{position:absolute;font-style:normal;animation:tw 2.4s ease-in-out infinite}
 .s1{left:8%;top:18%}.s2{right:9%;top:42%;animation-delay:.8s}.s3{left:14%;top:56%;animation-delay:1.5s}
 @keyframes tw{50%{transform:scale(1.5) rotate(20deg);opacity:.5}}
-.reel{display:flex;gap:1rem;overflow-x:auto;scroll-snap-type:x mandatory;padding:1.4rem 1.2rem .8rem;scrollbar-width:none}
+.reel{display:flex;gap:1rem;overflow-x:auto;padding:1.4rem 1.2rem .8rem;scrollbar-width:none}
 .reel::-webkit-scrollbar{display:none}
-.reel figure{flex:none;margin:0;scroll-snap-align:center;text-align:center}
+.reel figure{flex:none;margin:0;text-align:center}
 .reel figure:nth-child(odd){transform:rotate(-2deg)}.reel figure:nth-child(even){transform:rotate(2deg) translateY(.5rem)}
 .reel img{display:block;height:17rem;width:auto;border:.3rem solid #0a0f1f;border-radius:1.1rem;background:#0a0f1f;box-shadow:0 .6rem 1.2rem rgba(0,0,0,.5),0 0 0 2px rgba(255,255,255,.15)}
 .reel figcaption{display:inline-block;margin-top:.6rem;background:var(--yellow);color:#3a2b00;font-size:.75rem;font-weight:900;padding:.05rem .8rem;border-radius:1rem}
@@ -245,6 +245,23 @@ if(hasSave||inProg){
   const f=T0('fab'),fb=T0('fabbtn');fb.textContent=m.textContent;fb.onclick=()=>m.click();
   new IntersectionObserver(([e])=>f.classList.toggle('show',!e.isIntersecting&&e.boundingClientRect.top<0),{threshold:0}).observe(m);
   function T0(i){return document.getElementById(i)}})();
+
+// スクショ帯：ゆっくり自動スクロール（触れている間は止まり、離して2.5秒後に再開。スワイプも可）
+(()=>{const r=document.getElementById('reel');
+  if(!r||matchMedia('(prefers-reduced-motion:reduce)').matches)return;
+  const n=r.children.length;
+  [...r.children].forEach(c=>{const k=c.cloneNode(true);k.setAttribute('aria-hidden','true');const i=k.querySelector('img');i.alt='';i.removeAttribute('loading');r.appendChild(k)});
+  const sw=document.querySelector('.swipe');if(sw)sw.hidden=true;
+  let pos=0,last=0,hold=false,tm;
+  const stop=()=>{hold=true;clearTimeout(tm)};
+  const resume=()=>{clearTimeout(tm);tm=setTimeout(()=>{pos=r.scrollLeft;hold=false},2500)};
+  ['touchstart','pointerdown','wheel','mouseenter'].forEach(e=>r.addEventListener(e,stop,{passive:true}));
+  ['touchend','touchcancel','pointerup','mouseleave'].forEach(e=>r.addEventListener(e,resume,{passive:true}));
+  function tick(t){const dt=Math.min(t-last,50);last=t;
+    if(!hold){const w=r.children[n].offsetLeft-r.children[0].offsetLeft;pos+=dt*.035;if(w>0&&pos>=w)pos-=w;r.scrollLeft=pos}
+    requestAnimationFrame(tick)}
+  requestAnimationFrame(t=>{last=t;tick(t)});
+})();
 
 // ===== 紹介スライド =====
 const T=id=>document.getElementById(id);
