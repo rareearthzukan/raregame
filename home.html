@@ -1280,6 +1280,7 @@ function buy(id){
   save();
   const seU=$('se-unlock'); if(seU){ seU.currentTime=0; seU.play().catch(()=>{}); }
   toast(`🎉 『${f.name}』を購入！「📦配置」にあるよ`); updateUI();
+  window.Stamp&&Stamp.report('shop_buy');   // スタンプカード：ショップで購入
 }
 
 let dispF={k:'all',s:'all',t:'all'};
@@ -1355,6 +1356,7 @@ function place(type,id){
   gameState.placedItems.push({type,id,dir,s:1,x:(f?f.x:30+Math.random()*40),y:(f?f.y:(type==='chara'?90:80))});
   save(); const seG=$('nyu2'); if(seG){ seG.currentTime=0; seG.play().catch(()=>{}); }
   toast(type==='chara'?`✨ ${CHARAS[id]?CHARAS[id].name:''}をよんだよ！タップして話しかけてね`:'✨ 配置！ドラッグで移動・ホイールやタップ操作で拡大縮小'); updateUI();
+  window.Stamp&&Stamp.report(type==='chara'?'char_place':'furniture_place');   // スタンプカード：キャラ／家具を置いた
 }
 
 function renderTheme(){
@@ -1378,6 +1380,7 @@ function setTheme(k){
   if(dir===OBS_DIR) gameState.obsTheme=k; else gameState.currentTheme=k;
   save(); applyTheme(roomThemeKey()); updateUI();
   toast(dir===OBS_DIR?'🎨 観測室のテイストを変更しました！':'🎨 テイストを変更しました！');
+  window.Stamp&&Stamp.report('taste_change');   // スタンプカード：テイスト変更
 }
 
 function renderMusic(){
@@ -1491,6 +1494,7 @@ window.addEventListener('load',()=>{
   } catch(e){}
 });
 </script>
+<script src="stampcard.js"></script>
 <script src="uranai.js"></script>
 <script src="tutorial.js"></script>
 </body>

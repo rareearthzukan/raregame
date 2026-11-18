@@ -720,6 +720,7 @@ function showResult(early) {
   state = 'result';
   const R = RANKS.find(r => score >= r.min), coins = score * CFG.COIN_PER_Q + maxCombo * CFG.COIN_PER_COMBO, exp = R.exp(score), pr = R.pr;
   const lvInfo = mainGameReward(coins, exp, pr);
+  window.Stamp&&Stamp.report('minigame_play',1,{game:'Pr'});   // スタンプカード：ミニゲームをあそんだ
   const prev = (() => { try { return JSON.parse(store.get('prDiffBest')) || null; } catch (e) { return null; } })();
   const isRec = score > 0 && (!prev || score > prev.score);
   if (isRec) store.set('prDiffBest', JSON.stringify({ score, rank: R.rank, combo: maxCombo }));
@@ -780,5 +781,7 @@ window.addEventListener('resize', () => { sizeFx(); fitBoard(); });
 window.addEventListener('load', () => { sizeFx(); updateSoundUI(); updateBest(); });
 sizeFx(); updateSoundUI(); updateBest();
 </script>
+<script>window.STAMP_OPTS={button:false};</script>
+<script src="stampcard.js"></script>
 </body>
 </html>

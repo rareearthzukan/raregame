@@ -632,6 +632,7 @@ $('tutOk').onclick = () => { SE.click(); closeModal('tutModal'); paused = false;
 function showResult(r) {
   // r: { mode, idx, win, stars, lines:[[label,value]], sub }
   endGame(); Music.stop();
+  window.Stamp&&Stamp.report('minigame_play',1,{game:'Sc'});   // スタンプカード：ミニゲームをあそんだ
   const M = MODES[r.mode], first = prog[r.mode][r.idx] === 0;
   let coins = 0, exp = 0, scEl = 0, rw = null;
   if (r.win) {
@@ -1117,5 +1118,7 @@ window.addEventListener('resize', () => { sizeFx(); if (curScreen === 'game' && 
 document.addEventListener('pointerdown', () => { initAudio(); if (curScreen === 'hub' || curScreen === 'stageSel') Music.start('hub'); }, { once: true });
 sizeFx(); updateSoundUI(); renderHub();
 </script>
+<script>window.STAMP_OPTS={button:false};</script>
+<script src="stampcard.js"></script>
 </body>
 </html>
