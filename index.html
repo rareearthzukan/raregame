@@ -49,6 +49,30 @@ h2{margin:2rem 1.2rem .2rem;font-size:1.15rem;font-weight:900}
 footer{margin-top:2rem;padding:1.2rem;border-top:2px solid var(--pink);background:var(--panel);font-size:.75rem;color:var(--mute)}
 footer a{color:var(--cyan)}footer p{margin:.2rem 0}
 
+/* ===== 扉絵 ===== */
+.cover{position:relative;overflow:hidden;text-align:center;padding:1.2rem 0 1.4rem;background:radial-gradient(circle at 50% 0%,#3a2f8f,transparent 60%),linear-gradient(180deg,#1b2a6b,var(--deep))}
+.logo{margin:0 auto;width:86%}.logo img{display:block;width:100%;height:auto;filter:drop-shadow(0 .4rem .6rem rgba(0,0,0,.45));animation:pop .8s cubic-bezier(.2,1.4,.4,1) both}
+@keyframes pop{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:none}}
+.cvrow{display:flex;align-items:flex-end;justify-content:center;gap:.5rem;margin:.4rem 1.2rem 0}
+.cvchr{width:6.5rem;height:6.5rem;object-fit:contain;filter:drop-shadow(0 4px 4px rgba(0,0,0,.35));animation:float 3s ease-in-out infinite}
+.cvb{position:relative;margin:0 0 1.2rem;background:#f8f9fa;color:#1a1a2e;font-weight:700;font-size:.9rem;line-height:1.4;padding:.5rem .8rem;border-radius:1rem;text-align:left;box-shadow:0 .3rem .8rem rgba(0,0,0,.3)}
+.cvb::before{content:"";position:absolute;left:-.45rem;bottom:.8rem;border:.5rem solid transparent;border-right-color:#f8f9fa;border-left:0}
+.tag{margin:.8rem 1.2rem 0;font-size:1.02rem;font-weight:900;text-shadow:0 2px 0 rgba(0,0,0,.3)}
+.sp{position:absolute;font-style:normal;animation:tw 2.4s ease-in-out infinite}
+.s1{left:8%;top:18%}.s2{right:9%;top:42%;animation-delay:.8s}.s3{left:14%;top:56%;animation-delay:1.5s}
+@keyframes tw{50%{transform:scale(1.5) rotate(20deg);opacity:.5}}
+.reel{display:flex;gap:1rem;overflow-x:auto;scroll-snap-type:x mandatory;padding:1.4rem 1.2rem .8rem;scrollbar-width:none}
+.reel::-webkit-scrollbar{display:none}
+.reel figure{flex:none;margin:0;scroll-snap-align:center;text-align:center}
+.reel figure:nth-child(odd){transform:rotate(-2deg)}.reel figure:nth-child(even){transform:rotate(2deg) translateY(.5rem)}
+.reel img{display:block;height:17rem;width:auto;border:.3rem solid #0a0f1f;border-radius:1.1rem;background:#0a0f1f;box-shadow:0 .6rem 1.2rem rgba(0,0,0,.5),0 0 0 2px rgba(255,255,255,.15)}
+.reel figcaption{display:inline-block;margin-top:.6rem;background:var(--yellow);color:#3a2b00;font-size:.75rem;font-weight:900;padding:.05rem .8rem;border-radius:1rem}
+.swipe{margin:0;text-align:center;font-size:.72rem;color:var(--mute)}
+.start{margin:1rem 1.2rem 0;text-align:left}
+.start .status{justify-content:center}
+#fab{position:fixed;left:0;right:0;bottom:0;z-index:10;padding:.6rem 1.2rem calc(.6rem + env(safe-area-inset-bottom));background:linear-gradient(transparent,rgba(5,9,20,.85) 40%);transform:translateY(120%);transition:transform .3s;pointer-events:none}
+#fab.show{transform:none}#fab .btn{max-width:calc(var(--maxw) - 2.4rem);margin:0 auto;pointer-events:auto;box-shadow:0 .3rem 0 rgba(0,0,0,.25)}
+@media (prefers-reduced-motion:reduce){.cvchr,.sp,.logo img{animation:none!important}#fab{transition:none}}
 /* ===== 紹介スライド（予告編） ===== */
 #tut{position:fixed;inset:0;z-index:20;background:#050914;display:none;overflow-y:auto}
 #tut.open{display:block}
@@ -96,15 +120,33 @@ footer a{color:var(--cyan)}footer p{margin:.2rem 0}
 <div class="wrap">
   <div class="hero"><img src="header.png" alt="レアアース17元素キャラ図鑑 - 未来をつくる元素たち -" onerror="this.remove()"></div>
 
-  <section class="title">
-    <p class="site">レアアース17元素キャラ図鑑 - 未来をつくる元素たち -</p>
-    <h1>ぼくたちレアアース</h1>
-    <p class="lead">スマホ、電気自動車、最新の医療機器……。現代の産業や医療に欠かせない場所で活躍する大切な成分、それがレアアース。掘って、精製して、つくって、届けながら、彼らの「唯一無二の力」を体験しよう。</p>
+  <section class="cover">
+    <i class="sp s1">✨</i><i class="sp s2">✨</i><i class="sp s3">⭐</i>
+    <h1 class="logo"><img src="logo.webp" width="960" height="399" alt="ぼくたちレアアース"></h1>
+    <div class="cvrow">
+      <img class="cvchr" src="nav_y.webp" alt="イットリウム" width="104" height="104" onerror="this.remove()">
+      <p class="cvb">いっしょに元素をあつめにいこう！</p>
+    </div>
+    <p class="tag">掘って、精製して、つくって、飾って。<br>元素キャラと遊ぶ、レアアースの旅✨</p>
+    <section class="start" aria-live="polite">
+      <p class="status" id="status"></p>
+      <div id="actions"></div>
+    </section>
   </section>
 
-  <section class="start" aria-live="polite">
-    <p class="status" id="status"></p>
-    <div id="actions"></div>
+  <div class="reel" id="reel" aria-label="プレイ画面">
+    <figure><img src="shot_area.webp" alt="採掘エリア選択" loading="lazy"><figcaption>世界のエリアへ出発</figcaption></figure>
+    <figure><img src="shot_map.webp" alt="採掘画面" loading="lazy"><figcaption>掘って、運ぶ</figcaption></figure>
+    <figure><img src="shot_refine.webp" alt="精製画面" loading="lazy"><figcaption>元素キャラが登場</figcaption></figure>
+    <figure><img src="shot_factory.webp" alt="工場画面" loading="lazy"><figcaption>クラフトして出荷</figcaption></figure>
+    <figure><img src="shot_room.webp" alt="ホーム画面" loading="lazy"><figcaption>お部屋づくり💓</figcaption></figure>
+    <figure><img src="shot_room2.webp" alt="宇宙ステーションのお部屋" loading="lazy"><figcaption>雰囲気もチェンジ</figcaption></figure>
+  </div>
+  <p class="swipe">← 画面をスワイプして見てみよう →</p>
+
+  <section class="title">
+    <p class="site">レアアース17元素キャラ図鑑 - 未来をつくる元素たち -</p>
+    <p class="lead">スマホ、電気自動車、最新の医療機器……。現代の産業や医療に欠かせない場所で活躍する大切な成分、それがレアアース。掘って、精製して、つくって、届けながら、彼らの「唯一無二の力」を体験しよう。</p>
   </section>
 
   <h2>レアアースが製品になるまで</h2>
@@ -118,6 +160,8 @@ footer a{color:var(--cyan)}footer p{margin:.2rem 0}
   </footer>
 </div>
 
+<div id="fab"><button class="btn" id="fabbtn" tabindex="-1" aria-hidden="true"></button></div>
+
 <div id="tut" role="dialog" aria-modal="true" aria-label="あそびかた">
   <div class="tbox" id="tbox">
     <div class="dots" id="td" aria-hidden="true"></div>
@@ -126,7 +170,7 @@ footer a{color:var(--cyan)}footer p{margin:.2rem 0}
       <div id="tt"></div>
       <div class="stage" id="stage"></div>
       <div class="guide" id="guide">
-        <img class="chr" id="chr" src="nav_y.png" alt="イットリウム" onerror="this.remove()">
+        <img class="chr" id="chr" src="nav_y.webp" alt="イットリウム" onerror="this.remove()">
         <div class="bubble" id="tb" aria-live="polite"></div>
       </div>
     </div>
@@ -159,13 +203,13 @@ const STEPS=[
 const SLIDES=[
  {k:'ようこそ！',w:'はじまり',e:'✨',hero:1,g:'linear-gradient(160deg,#1b2a6b,#6a3a9c 60%,#e94560)',
   t:'イットリウムだよ！元素のなかまたちと、世界をめぐる旅に出よう✨'},
- {k:'掘って、運ぼう',w:'1. 採掘・運搬',e:'⛏️',shot:'shot_map.png',cap:'採掘画面',shot2:'shot_area.png',cap2:'エリア選択',g:'linear-gradient(160deg,#5a2e12,#b8641c 70%,#f0a040)',
+ {k:'掘って、運ぼう',w:'1. 採掘・運搬',e:'⛏️',shot:'shot_map.webp',cap:'採掘画面',shot2:'shot_area.webp',cap2:'エリア選択',g:'linear-gradient(160deg,#5a2e12,#b8641c 70%,#f0a040)',
   t:'好きな場所を選んで出発！何が眠ってるかは、掘ってからのお楽しみ✨'},
- {k:'元素を取り出そう',w:'2. 精製・素材',e:'🧪',shot:'shot_refine.png',cap:'精製画面',g:'linear-gradient(160deg,#0d2b5e,#1b6fb5 70%,#00c2d6)',
+ {k:'元素を取り出そう',w:'2. 精製・素材',e:'🧪',shot:'shot_refine.webp',cap:'精製画面',g:'linear-gradient(160deg,#0d2b5e,#1b6fb5 70%,#00c2d6)',
   t:'掘ったものから元素が登場！何が出るかな？'},
- {k:'つくって、売って成長',w:'3. 製造・出荷',e:'🏭',shot:'shot_factory.png',cap:'工場画面',g:'linear-gradient(160deg,#143a2f,#1f8a6a 70%,#e9c43a)',
+ {k:'つくって、売って成長',w:'3. 製造・出荷',e:'🏭',shot:'shot_factory.webp',cap:'工場画面',g:'linear-gradient(160deg,#143a2f,#1f8a6a 70%,#e9c43a)',
   t:'元素からアイテムをクラフト！売ってゴールドとEXPをゲット💰'},
- {k:'お部屋づくり💓',w:'もっと楽しむ',e:'🏠',shot:'shot_room.png',cap:'ホーム画面',shot2:'shot_room2.png',cap2:'雰囲気も変えられる',g:'linear-gradient(160deg,#ffd6e4,#f7a8c4 70%,#ffcf9e)',light:1,
+ {k:'お部屋づくり💓',w:'もっと楽しむ',e:'🏠',shot:'shot_room.webp',cap:'ホーム画面',shot2:'shot_room2.webp',cap2:'雰囲気も変えられる',g:'linear-gradient(160deg,#ffd6e4,#f7a8c4 70%,#ffcf9e)',light:1,
   t:'家具を置いて、なかまと暮らす自分だけの部屋に。精製ボーナスもつくよ！'}
 ];
 
@@ -196,9 +240,15 @@ if(hasSave||inProg){
   btn('しくみを見る','sub',()=>openTut('replay'));
 }
 
+// 下へスクロールしたら、画面下に「はじめる」バーを追従表示
+(()=>{const m=ac.querySelector('.btn');if(!m||!window.IntersectionObserver)return;
+  const f=T0('fab'),fb=T0('fabbtn');fb.textContent=m.textContent;fb.onclick=()=>m.click();
+  new IntersectionObserver(([e])=>f.classList.toggle('show',!e.isIntersecting&&e.boundingClientRect.top<0),{threshold:0}).observe(m);
+  function T0(i){return document.getElementById(i)}})();
+
 // ===== 紹介スライド =====
 const T=id=>document.getElementById(id);
-const CHR='<img class="chr herochr" src="nav_y.png" alt="イットリウム" onerror="this.remove()">';
+const CHR='<img class="chr herochr" src="nav_y.webp" alt="イットリウム" onerror="this.remove()">';
 const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
 let idx=0,mode='first',typer=null;
 
