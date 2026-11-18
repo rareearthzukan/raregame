@@ -40,28 +40,48 @@ h2{margin:2rem 1.2rem .2rem;font-size:1.15rem;font-weight:900}
 .line p{margin:0;font-size:.8rem;color:var(--mute);line-height:1.5}
 footer{margin-top:2rem;padding:1.2rem;border-top:2px solid var(--pink);background:var(--panel);font-size:.75rem;color:var(--mute)}
 footer a{color:var(--cyan)}footer p{margin:.2rem 0}
-/* チュートリアル */
-#tut{position:fixed;inset:0;z-index:20;background:rgba(5,9,20,.94);display:none;overflow-y:auto}
+
+/* ===== 紹介スライド（予告編） ===== */
+#tut{position:fixed;inset:0;z-index:20;background:#050914;display:none;overflow-y:auto}
 #tut.open{display:block}
-.tbox{max-width:var(--maxw);margin:0 auto;min-height:100%;display:flex;flex-direction:column;background:var(--deep);padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
-.tbar{display:flex;justify-content:space-around;background:rgba(15,23,42,.9);border-bottom:1px solid var(--cyan);padding:.5rem .25rem}
-.tbar div{text-align:center;font-size:.6rem;opacity:.45;transition:opacity .25s}
-.tbar div.on{opacity:1}
-.tbar .ico{width:2.4rem;height:2.4rem;margin:0 auto .1rem;border-color:transparent}
-.tbar .on .ico{border-color:var(--yellow)}
-.tbody{flex:1;padding:1.2rem;display:flex;flex-direction:column;align-items:center;text-align:center}
-.big{width:7rem;height:7rem;border-radius:1rem;margin-bottom:.8rem}
-.big .em{font-size:3.4rem}
-.chip{display:inline-block;background:var(--pink);color:#fff;font-size:.75rem;font-weight:700;padding:.1rem .8rem;border-radius:1rem}
-#tt{margin:.4rem 0;font-size:1.5rem;font-weight:900;line-height:1.3}
-.guide{display:flex;gap:.6rem;align-items:center;text-align:left;background:rgba(22,33,62,.9);border:1px solid var(--cyan);border-radius:.8rem;padding:.6rem;margin-top:.6rem;width:100%}
-.guide img{width:4rem;height:4rem;object-fit:contain;flex:none}
-.bubble{background:#f8f9fa;color:#1a1a2e;font-weight:700;font-size:.9rem;line-height:1.55;border-radius:.6rem;padding:.55rem .75rem;flex:1}
-.tnav{display:flex;gap:.6rem;padding:.8rem 1.2rem 1rem;align-items:center}
-.tnav .btn{margin:0;flex:1}.tnav .btn.sub{flex:none;width:6rem}
-.dots{text-align:center;font-size:.75rem;color:var(--mute);padding-bottom:.2rem}
+.tbox{max-width:var(--maxw);margin:0 auto;min-height:100%;display:flex;flex-direction:column;background:var(--g,var(--deep));transition:background .5s;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);position:relative;overflow:hidden}
+.dots{display:flex;justify-content:center;gap:.5rem;padding:1rem 0 .2rem}
+.dots i{width:.55rem;height:.55rem;border-radius:1rem;background:rgba(255,255,255,.3);transition:all .3s}
+.dots i.on{width:1.8rem;background:var(--yellow)}
+.dots i.past{background:#fff}
+.tbody{flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;padding:.6rem 1.2rem 0;min-height:0}
+.chip{display:inline-block;background:var(--pink);color:#fff;font-size:.78rem;font-weight:700;padding:.1rem .9rem;border-radius:1rem}
+#tt{margin:.3rem 0 .6rem;font-size:1.7rem;font-weight:900;line-height:1.25;text-shadow:0 2px 0 rgba(0,0,0,.25)}
+.stage{position:relative;display:flex;justify-content:center;align-items:center;width:100%;flex:1;min-height:12rem}
+.phone{position:relative;display:inline-block;border:.35rem solid #0a0f1f;border-radius:1.3rem;background:#0a0f1f;box-shadow:0 .8rem 1.8rem rgba(0,0,0,.5),0 0 0 2px rgba(255,255,255,.18);transform:rotate(-3deg);animation:pin .6s cubic-bezier(.2,1.3,.4,1) both;max-width:78%}
+.phone>img{display:block;max-width:100%;max-height:38vh;width:auto;height:auto;border-radius:.9rem}
+.phone.miss>img{display:none}
+.phone.miss::before{content:attr(data-e);display:block;font-size:4rem;padding:2rem}
+.mini{position:absolute;right:-1.6rem;bottom:-1.2rem;width:42%;border:.25rem solid #fff;border-radius:.8rem;overflow:hidden;transform:rotate(5deg);box-shadow:0 .4rem 1rem rgba(0,0,0,.5);background:#0a0f1f;animation:pin .6s .25s cubic-bezier(.2,1.3,.4,1) both}
+.mini img{display:block;width:100%;height:auto}
+.mini span{position:absolute;left:0;right:0;bottom:0;background:rgba(0,0,0,.65);color:#fff;font-size:.6rem;font-weight:700;padding:.05rem .2rem;line-height:1.3}
+.cap{position:absolute;left:-.8rem;top:-.8rem;background:var(--yellow);color:#3a2b00;font-size:.72rem;font-weight:900;padding:.05rem .7rem;border-radius:1rem;transform:rotate(-6deg);box-shadow:0 2px 6px rgba(0,0,0,.35)}
+@keyframes pin{from{opacity:0;transform:translateY(2.5rem) rotate(-3deg) scale(.92)}to{opacity:1;transform:rotate(-3deg)}}
+.herochr{width:min(62vw,15rem);height:auto}
+.glow{position:absolute;width:min(70vw,17rem);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,rgba(255,222,89,.45),transparent 65%);animation:pulse 3s ease-in-out infinite}
+@keyframes pulse{50%{transform:scale(1.12);opacity:.7}}
+
+.guide{display:flex;align-items:flex-end;gap:.4rem;width:100%;margin:.4rem 0 .2rem}
+.guide.solo .chr{display:none}
+.chr{flex:none;width:5.2rem;height:5.2rem;object-fit:contain;cursor:pointer;transform-origin:50% 100%;filter:drop-shadow(0 4px 4px rgba(0,0,0,.35));animation:float 3s ease-in-out infinite,squish 4s ease-in-out infinite}
+.chr.hop{animation:hop .6s ease-out,float 3s .6s ease-in-out infinite}
+.herochr.chr{width:min(62vw,15rem);height:auto}
+@keyframes float{0%,100%{translate:0 0}50%{translate:0 -.45rem}}
+@keyframes squish{0%,100%{scale:1 1}45%{scale:1.03 .97}55%{scale:.98 1.03}}
+@keyframes hop{0%{transform:scale(1.12,.84)}30%{transform:translateY(-1.6rem) scale(.92,1.1)}65%{transform:translateY(0) scale(1.12,.86)}100%{transform:none}}
+.bubble{position:relative;background:#f8f9fa;color:#1a1a2e;font-weight:700;font-size:.98rem;line-height:1.55;border-radius:1rem;padding:.7rem .9rem;flex:1;text-align:left;min-height:4.2rem;box-shadow:0 .3rem .8rem rgba(0,0,0,.3)}
+.guide:not(.solo) .bubble::before{content:"";position:absolute;left:-.45rem;bottom:1.2rem;border:.5rem solid transparent;border-right-color:#f8f9fa;border-left:0}
+.heart{position:fixed;z-index:40;pointer-events:none;font-size:1.4rem;animation:up 1s ease-out forwards}
+@keyframes up{to{transform:translate(var(--dx),-5rem) scale(1.4);opacity:0}}
+.tnav{display:flex;gap:.6rem;padding:.6rem 1.2rem .2rem;align-items:center}
+.tnav .btn{margin:0;flex:1;box-shadow:0 .3rem 0 rgba(0,0,0,.25)}.tnav .btn.sub{flex:none;width:6rem;box-shadow:none}
 .skip{display:block;margin:0 auto .8rem;width:auto;padding:0 1rem}
-@media (prefers-reduced-motion:reduce){.tbar div{transition:none}}
+@media (prefers-reduced-motion:reduce){.chr,.glow,.phone,.mini{animation:none!important}.tbox,.dots i{transition:none}}
 </style>
 </head>
 <body>
@@ -91,18 +111,17 @@ footer a{color:var(--cyan)}footer p{margin:.2rem 0}
 </div>
 
 <div id="tut" role="dialog" aria-modal="true" aria-label="あそびかた">
-  <div class="tbox">
-    <div class="tbar" id="tbar"></div>
+  <div class="tbox" id="tbox">
+    <div class="dots" id="td" aria-hidden="true"></div>
     <div class="tbody">
-      <div class="ico big" id="tico"></div>
       <span class="chip" id="tw"></span>
       <div id="tt"></div>
-      <div class="guide">
-        <img src="navtb.png" alt="テルビウム" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='hata_cn.png'}else{this.remove()}">
-        <div class="bubble" id="tb"></div>
+      <div class="stage" id="stage"></div>
+      <div class="guide" id="guide">
+        <img class="chr" id="chr" src="navtb.png" alt="テルビウム" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='hata_cn.png'}else{this.remove()}">
+        <div class="bubble" id="tb" aria-live="polite"></div>
       </div>
     </div>
-    <div class="dots" id="td"></div>
     <div class="tnav">
       <button class="btn sub" id="tprev">もどる</button>
       <button class="btn" id="tnext">つぎへ</button>
@@ -118,25 +137,32 @@ const set=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
 const del=k=>{try{localStorage.removeItem(k)}catch(e){}};
 const go=()=>{location.href='map.html'};
 
-// 工程（ゲーム上部の 1.採掘〜6.出荷 と同じ並び）
+// ページ下部の工程ライン（ゲーム上部の 1.採掘〜6.出荷 と同じ並び）
 const STEPS=[
- {n:1,k:'採掘',e:'⛏️',w:'マップ画面',d:'世界地図から採掘エリアを選ぶ',t:'世界地図から気になるエリアを選んで出発！移動にはゴールドがかかるけど、マイルも貯まるよ。エリアごとに眠っているレアアースが違うんだ。'},
- {n:2,k:'運搬',e:'🚚',w:'採掘のあと',d:'掘り出した掘削物を持ち帰る',t:'掘り出した「掘削物」を持ち帰ろう。たくさん持ち帰るほど、次の精製がはかどるよ。'},
- {n:3,k:'精製',e:'🧪',w:'精製画面',d:'掘削物から元素をとり出す',t:'精製プラントで、掘削物1個につき50Gで元素をとり出せるよ。お金が足りないときは、リサイクル工場で働いてかせごう。'},
- {n:4,k:'素材',e:'🔩',w:'精製画面',d:'元素がインゴットなどの素材になる',t:'精製した元素は素材として、所持元素コレクションに並ぶよ。次の製品づくりの大切な材料になるんだ。'},
- {n:5,k:'製造',e:'🏭',w:'工場画面',d:'素材を使って製品をクラフト',t:'工場で素材を使って、レアアースが活躍する工業製品をクラフトしよう！'},
- {n:6,k:'出荷',e:'📦',w:'工場画面',d:'製品を売却してお金と経験値に',t:'できた製品は小口売却で出荷！ゴールドとEXPが増えて、レベルが上がると新しい展開が待っているよ。'}
+ {n:1,k:'採掘',e:'⛏️',d:'世界地図から採掘エリアを選ぶ'},
+ {n:2,k:'運搬',e:'🚚',d:'掘り出した掘削物を持ち帰る'},
+ {n:3,k:'精製',e:'🧪',d:'掘削物から元素をとり出す'},
+ {n:4,k:'素材',e:'🔩',d:'元素がインゴットなどの素材になる'},
+ {n:5,k:'製造',e:'🏭',d:'素材を使って製品をクラフト'},
+ {n:6,k:'出荷',e:'📦',d:'製品を売却してお金と経験値に'}
 ];
+
+// 紹介スライド：5枚（プレイヤーの動作ベース）。shot=スクショ、cap=ラベル、shot2/cap2=小さい添え画像、g=背景グラデ
 const SLIDES=[
- {k:'ようこそ！',e:'✨',w:'あそびかた',t:'ようこそ、レアアースの世界へ！案内役のテルビウムだよ。まずは、レアアースが製品になるまでの6つの工程を見ていこう。',on:0},
- ...STEPS.map(s=>({k:s.n+'. '+s.k,e:s.e,w:s.w,t:s.t,on:s.n,img:'koutei'+s.n+'.png'})),
- {k:'もっと楽しむ',e:'🏠',w:'図鑑・ホーム',t:'図鑑では17元素のキャラクターを解放できるよ。ホームに家具を置くと居心地が上がって、精製ボーナスがつくよ。進行は自動で保存されるから安心してね！',on:6}
+ {k:'ようこそ！',w:'はじまり',e:'✨',hero:1,g:'linear-gradient(160deg,#1b2a6b,#6a3a9c 60%,#e94560)',
+  t:'テルビウムだよ！元素のなかまたちと、世界をめぐる旅に出よう✨'},
+ {k:'掘って、運ぼう',w:'1. 採掘・運搬',e:'⛏️',shot:'shot_map.png',cap:'マップ画面',g:'linear-gradient(160deg,#5a2e12,#b8641c 70%,#f0a040)',
+  t:'好きな場所を選んで出発！何が眠ってるかは、掘ってからのお楽しみ✨'},
+ {k:'精製して、なかま集め',w:'2. 精製・素材',e:'🧪',shot:'shot_refine.png',cap:'5個まとめて精製',g:'linear-gradient(160deg,#0d2b5e,#1b6fb5 70%,#00c2d6)',
+  t:'掘ったものから元素キャラが登場！5個まとめると、何が出るかな？'},
+ {k:'つくって、売って成長',w:'3. 製造・出荷',e:'🏭',shot:'shot_factory.png',cap:'工場画面',g:'linear-gradient(160deg,#143a2f,#1f8a6a 70%,#e9c43a)',
+  t:'元素でヘッドホンなどをクラフト！売ってゴールドとEXPをゲット💰'},
+ {k:'お部屋づくり💓',w:'もっと楽しむ',e:'🏠',shot:'shot_room.png',cap:'ホーム画面',shot2:'shot_room2.png',cap2:'雰囲気も変えられる',g:'linear-gradient(160deg,#ffd6e4,#f7a8c4 70%,#ffcf9e)',light:1,
+  t:'家具を置いて、なかまと暮らす自分だけの部屋に。精製ボーナスもつくよ！'}
 ];
 
-const icon=(s,cls)=>`<div class="ico ${cls||''}">${s.img?`<img src="${s.img}" alt="${s.k}" onerror="this.parentNode.classList.add('noimg')">`:''}<span class="em">${s.e}</span></div>`;
-
-// 工程ライン
-document.getElementById('line').innerHTML=STEPS.map(s=>`<li>${icon({...s,img:'koutei'+s.n+'.png'})}<div><h3>${s.n}. ${s.k}</h3><p>${s.d}</p></div></li>`).join('');
+const icon=(s,cls)=>`<div class="ico ${cls||''}"><img src="koutei${s.n}.png" alt="${s.k}" onerror="this.parentNode.classList.add('noimg')"><span class="em">${s.e}</span></div>`;
+document.getElementById('line').innerHTML=STEPS.map(s=>`<li>${icon(s)}<div><h3>${s.n}. ${s.k}</h3><p>${s.d}</p></div></li>`).join('');
 
 // スタート状態
 let save=null;try{save=JSON.parse(get(KEY))}catch(e){}
@@ -162,28 +188,50 @@ if(hasSave||inProg){
   btn('しくみを見る','sub',()=>openTut('replay'));
 }
 
-// チュートリアル
+// ===== 紹介スライド =====
 const T=id=>document.getElementById(id);
-let idx=0,mode='first';
-T('tbar').innerHTML=STEPS.map(s=>`<div>${icon({...s,img:'koutei'+s.n+'.png'})}${s.n}.${s.k}</div>`).join('');
+const CHR='<img class="chr herochr" src="navtb.png" alt="テルビウム" onerror="if(!this.dataset.f){this.dataset.f=1;this.src=\'hata_cn.png\'}else{this.remove()}">';
+const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+let idx=0,mode='first',typer=null;
+
+function typeText(txt){
+  clearInterval(typer);const b=T('tb');b.dataset.full=txt;
+  if(reduce){b.textContent=txt;return}
+  let i=0;b.textContent='';
+  typer=setInterval(()=>{b.textContent=txt.slice(0,++i);if(i>=txt.length)clearInterval(typer)},28);
+}
+function hop(){const c=T('chr');if(!c)return;c.classList.remove('hop');void c.offsetWidth;c.classList.add('hop')}
+
 function render(){
   const s=SLIDES[idx];
-  [...T('tbar').children].forEach((c,i)=>c.classList.toggle('on',s.on>i||s.on===6));
-  T('tico').outerHTML=icon(s,'big').replace('class="ico big','id="tico" class="ico big');
-  T('tw').textContent=s.w;T('tt').textContent=s.k;T('tb').textContent=s.t;
-  T('td').textContent=(idx+1)+' / '+SLIDES.length;
+  T('tbox').style.setProperty('--g',s.g);
+  T('tbox').style.color=s.light?'#4a1230':'';
+  T('td').innerHTML=SLIDES.map((_,i)=>`<i class="${i===idx?'on':i<idx?'past':''}"></i>`).join('');
+  T('tw').textContent=s.w;T('tt').textContent=s.k;
+  T('stage').innerHTML=s.hero
+    ?`<div class="glow"></div>${CHR}`
+    :`<div class="phone" data-e="${s.e}"><span class="cap">${s.cap}</span><img src="${s.shot}" alt="${s.cap}" onerror="this.parentNode.classList.add('miss')">${s.shot2?`<div class="mini"><img src="${s.shot2}" alt=""><span>${s.cap2}</span></div>`:''}</div>`;
+  T('guide').classList.toggle('solo',!!s.hero);
+  typeText(s.t);hop();
   T('tprev').style.visibility=idx?'visible':'hidden';
-  const last=idx===SLIDES.length-1;
-  T('tnext').textContent=last?'マップへ出発！':'つぎへ';
+  T('tnext').textContent=idx===SLIDES.length-1?'マップへ出発！':'つぎへ';
 }
 function openTut(m){mode=m;idx=0;T('tskip').textContent=m==='first'?'紹介をスキップしてマップへ':'とじる';T('tut').classList.add('open');document.body.style.overflow='hidden';render();T('tnext').focus()}
-function closeTut(){T('tut').classList.remove('open');document.body.style.overflow=''}
+function closeTut(){clearInterval(typer);T('tut').classList.remove('open');document.body.style.overflow=''}
 // 初回は、ゲーム内チュートリアル(tutorial.js)を開始状態(0)にしてマップへ。完了の記録は tutorial.js 側が行う
 function finish(){if(mode==='first'&&get(STEP)===null)set(STEP,'0');go()}
 function next(){idx<SLIDES.length-1?(idx++,render()):finish()}
 function prev(){if(idx>0){idx--;render()}}
 T('tnext').onclick=next;T('tprev').onclick=prev;
 T('tskip').onclick=()=>mode==='first'?finish():closeTut();
+T('tb').onclick=()=>{clearInterval(typer);T('tb').textContent=T('tb').dataset.full||''};
+// キャラをタップ：ぴょん＋ハート
+T('tut').addEventListener('click',e=>{
+  if(!e.target.closest('.chr'))return;hop();
+  for(let i=0;i<4;i++){const h=document.createElement('span');h.className='heart';h.textContent=['💗','✨','💛','💖'][i%4];
+    h.style.left=(e.clientX-10+Math.random()*30-15)+'px';h.style.top=(e.clientY-10)+'px';h.style.setProperty('--dx',(Math.random()*80-40)+'px');
+    document.body.appendChild(h);setTimeout(()=>h.remove(),1000)}
+});
 addEventListener('keydown',e=>{if(!T('tut').classList.contains('open'))return;
   if(e.key==='ArrowRight')next();else if(e.key==='ArrowLeft')prev();else if(e.key==='Escape')T('tskip').click()});
 let x0=null;
