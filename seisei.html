@@ -609,6 +609,10 @@
     function isModeUnlocked(n) {
       return (gameState.level || 1) >= REFINE_MODES[n].unlockLv;
     }
+    // スタンプカードの「まとめ精製おためし券」：Lvが足りなくても 5個・10個まとめ精製を1回つかえる
+    function ticketOK(n) {
+      return n > 1 && n < 50 && !isModeUnlocked(n) && !!window.Stamp && Stamp.hasTicket('bulkGen');
+    }
 
     function updateRefineButtons() {
       const lv = gameState.level || 1;
@@ -620,6 +624,9 @@
         if (lv >= cfg.unlockLv) {
           btn.classList.remove('btn-locked');
           txt.innerHTML = `🎴 ${n}個まとめて<br>${cfg.cost}G / 掘削物${cfg.mud}個`;
+        } else if (ticketOK(n)) {   // スタンプカードの「おためし券」で 1回だけ つかえる
+          btn.classList.remove('btn-locked');
+          txt.innerHTML = `🎫 ${n}個まとめて(おためし券)<br>${cfg.cost}G / 掘削物${cfg.mud}個`;
         } else {
           btn.classList.add('btn-locked');
           txt.innerHTML = `🔒 ${n}個まとめて<br>Lv${cfg.unlockLv}で解放`;
@@ -983,7 +990,7 @@
 
       const cfg = REFINE_MODES[n];
       if (!cfg) return;
-      if (!isModeUnlocked(n)) { showLockedModal(n); return; }
+      if (!isModeUnlocked(n) && !ticketOK(n)) { showLockedModal(n); return; }
 
       if (gameState.mudStock < cfg.mud) { showShortageModal('mud', n); return; }
       if (gameState.money < cfg.cost)   { showShortageModal('money', n); return; }
@@ -992,6 +999,7 @@
       const se = document.getElementById(soundId);
       if (se) { se.currentTime = 0; se.play().catch(e => {}); }
 
+      if (!isModeUnlocked(n) && ticketOK(n)) Stamp.useTicket('bulkGen');   // おためし券を1枚つかう（掘削物・お金が足りたときだけ）
       gameState.money -= cfg.cost;
 
       // 掘削物の産地配合から n 個を引き、その産地の出現率で元素を1個ずつ抽選
@@ -1023,6 +1031,7 @@
       }
       localStorage.setItem('rareEarthGameState', JSON.stringify(gameState));
       updateUI();
+      window.Stamp&&Stamp.report('refine');   // スタンプカード：精製した
 
       const shownIdx = Math.max(0, cards.findIndex((k, i) => !chanceIdx.includes(i)));
       const shown = cards[shownIdx];
@@ -1436,6 +1445,8 @@
     RE.initCommon(gameState, { page: 'seisei', busy: seiseiBusy, exclude: SEISEI_OWN_REPORTS, delay: 1200 });
   </script>
   <div id="rfx-band" aria-hidden="true"></div>
+<script src="stampcard.js"></script>
+<script>window.Stamp&&(Stamp.config.onTicketChange=function(){try{updateRefineButtons();}catch(e){}});</script>
 <script src="tutorial.js"></script>
 </body>
 </html>

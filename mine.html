@@ -1218,6 +1218,7 @@
 
       playMineFx(gained, isRareJewel, obtainedJewel);
       if (Math.random() < .12) setTimeout(showCameo, 1800);
+      window.Stamp&&Stamp.report('mine');   // スタンプカード：採掘した
     }
 
     function showFirstJewelModal(arg) {   // 1個でも複数でも、出た分すべての画像・名前を紹介（同じ石は ×個数 にまとめる）
@@ -1381,6 +1382,7 @@
       <div class="row"><button id="drillNo" style="background:#00fff5;color:#0f3460">つづける</button><button id="drillYes" style="background:#e94560;color:#fff">中止する</button></div>
     </div>
   </div>
+  <script src="stampcard.js"></script>
   <script src="tutorial.js"></script>
 </body>
 </html>
