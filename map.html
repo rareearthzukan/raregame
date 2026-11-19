@@ -226,16 +226,10 @@
     @keyframes popup { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
     .spot.recommend { animation: spotPulse 0.9s ease-in-out infinite alternate; border-color: #ffde59; }
     @keyframes spotPulse { from { box-shadow: 0 0 0 0 rgba(255,222,89,0.9); } to { box-shadow: 0 0 14px 5px rgba(255,222,89,0.9); } }
-      /* エリア選択直後に出る「ここへGO！」ミニボタン */
-    .go-mini { display: none; width: 100%; margin-top: .5rem; padding: .55rem; min-height: 2.6rem; border: 2px solid #fff; border-radius: .7rem;
-      font-size: .9rem; font-weight: bold; color: #0f3460; font-family: inherit; cursor: pointer; touch-action: manipulation; box-shadow: 0 3px 10px rgba(0,0,0,.4); }
-    .go-mini.show { display: block; animation: goPop .35s cubic-bezier(.175,.885,.32,1.275); }
-    .go-mini:active { transform: scale(.97); }
-    @keyframes goPop { 0% { transform: scale(.6); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-  </style>
+    </style>
 </head>
 <body>
-  <audio id="bgm" loop preload="auto"><source src="BGM_map.mp3" type="audio/mpeg"><source src="BGM_map.ogg" type="audio/ogg"></audio>
+  <audio id="bgm" src="BGM_map.ogg" loop preload="auto"></audio>
 
   <div class="phone">
     <div class="header">
@@ -303,7 +297,6 @@
           <div class="spot" id="spot-okinotori" style="top: 45%; left: 88%;" onclick="selectSpot('okinotori')"><img src="hata_jp.png" alt="JP">南鳥島</div>
           <div class="spot" id="spot-tahiti" style="top: 75%; left: 18%;" onclick="selectSpot('tahiti')"><img src="hata_pf.png" alt="PF">南太平洋</div>
         </div>
-        <button class="go-mini" id="go-mini" onclick="goToMine()">🚀 ここの採掘へGO！</button>
       </div>
 
       <div class="card" id="info-card">
@@ -559,21 +552,16 @@
       document.getElementById('area-img').src = data.img;
       document.getElementById('area-img').classList.remove('dim');
 
-      // ミニGOボタンを出し、メインボタン＋下の画像エリアが見える位置へ自動スクロール
-      const gm = document.getElementById('go-mini');
-      gm.style.background = data.btnColor; gm.classList.add('show');
+      // エリア名が見える位置まで自動スクロール（その下にボタンと画像エリア）
       setTimeout(scrollToGo, 120);
     }
 
     function scrollToGo() {
-      const c = document.querySelector('.content'), a = document.getElementById('action-btn'), z = document.querySelector('.area-image-box');
-      if (!c || !a || !z) return;
-      const cr = c.getBoundingClientRect(), ar = a.getBoundingClientRect(), zr = z.getBoundingClientRect();
-      if (ar.top >= cr.top && zr.bottom <= cr.bottom) return;   // もう全部見えているなら動かさない
-      const d = (zr.bottom - ar.top > cr.height)
-        ? ar.top - cr.top - 12                                  // 入りきらない時はボタンを上寄せ
-        : (ar.top + zr.bottom) / 2 - (cr.top + cr.height / 2);  // ボタン＋画像エリアを画面中央へ
-      c.scrollBy({ top: d, behavior: 'smooth' });
+      const c = document.querySelector('.content'), card = document.getElementById('info-card'), z = document.querySelector('.area-image-box');
+      if (!c || !card || !z) return;
+      const cr = c.getBoundingClientRect(), ir = card.getBoundingClientRect(), zr = z.getBoundingClientRect();
+      if (ir.top >= cr.top && zr.bottom <= cr.bottom) return;   // エリア名〜画像まで全部見えているなら動かさない
+      c.scrollBy({ top: ir.top - cr.top - 6, behavior: 'smooth' });   // エリア名（カード上端）を画面上端にそろえる
     }
 
     function goToMine() {
