@@ -2,11 +2,12 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>レアアース・クラフト - 都市鉱山リサイクル</title>
   <style>
     :root { --binH: clamp(58px, 10vh, 86px); --it: clamp(52px, min(16vw, 9.5vh), 78px); }
     * { -webkit-tap-highlight-color: transparent; }
+    html, body { touch-action: manipulation; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
     html, body { height: 100%; }
     body { background-color: #1a1a2e; color: #fff; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; height: 100dvh; margin: 0; overflow: hidden; }
     .phone { width: 100%; max-width: 480px; height: 100%; background: #0f3460; border: 0; border-radius: 0; display: flex; flex-direction: column; overflow: hidden; position: relative; box-sizing: border-box; }
@@ -136,9 +137,15 @@
       text-align: center;
       transition: background 0.1s;
     }
-    .catch-btn:active { background: #00fff5; color: #0f3460; }
+    .catch-btn { touch-action: manipulation; font-family: inherit; }
+    .catch-btn:active, .catch-btn.press { background: #00fff5; color: #0f3460; }
+    .catch-btn.guide { box-shadow: 0 0 0 3px #ffde59, 0 0 16px #ffde59; animation: gl .6s infinite alternate; }
+    @keyframes gl { from { box-shadow: 0 0 0 3px #ffde59, 0 0 4px #ffde59; } to { box-shadow: 0 0 0 3px #ffde59, 0 0 18px #ffde59; } }
+    .finger { position: absolute; z-index: 6; display: none; font-size: clamp(36px, 10vw, 50px); line-height: 1; pointer-events: none; transform: translateX(-50%);
+      filter: drop-shadow(0 2px 4px #000); animation: fg .6s ease-in-out infinite alternate; }
+    @keyframes fg { from { margin-top: 0; } to { margin-top: -12px; } }
     .catch-btn.danger { border-color: #ff4757; color: #ff4757; }
-    .catch-btn.danger:active { background: #ff4757; color: #fff; }
+    .catch-btn.danger:active, .catch-btn.danger.press { background: #ff4757; color: #fff; }
 
     /* スコア・状況表示 */
     .status-panel {
@@ -277,12 +284,13 @@
 
       <!-- キャッチボタン -->
       <div class="controls">
-        <button class="catch-btn" onclick="catchItem('board')">📱<br>基板回収</button>
-        <button class="catch-btn" onclick="catchItem('magnet')">🧲<br>磁石回収</button>
-        <button class="catch-btn danger" onclick="catchItem('danger')">⚡<br>バッテリー避難</button>
+        <button class="catch-btn" data-t="board">📱<br>基板回収</button>
+        <button class="catch-btn" data-t="magnet">🧲<br>磁石回収</button>
+        <button class="catch-btn danger" data-t="danger">⚡<br>バッテリー避難</button>
       </div>
 
       <button class="btn-back" onclick="location.href='map.html'">🗺️ マップに戻る</button>
+      <div class="finger" id="finger">👆</div>
     </div>
 
     <!-- スタート説明画面モーダル（2ページ・大きな文字） -->
@@ -350,6 +358,34 @@
   <script src="areaconfig.js"></script>
 <script>function reGS(){try{return JSON.parse(localStorage.getItem("rareEarthGameState"))||{}}catch(e){return {}}}</script>
 <script>
+    // ───── 効果音：音量調整つき・エラーで操作が止まらない安全再生 ─────
+    const SE_VOL = { seSeikai: .35, seRakka: .3, seFuseikai: .4, seType: .5, seCountdown: .5, seSyutudai: .5 };   // ★効果音の音量（0〜1）
+    const IS_IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    let actx = null;
+    function setupSE() {
+      Object.keys(SE_VOL).forEach(id => { const el = document.getElementById(id); if (el) el.volume = SE_VOL[id]; });
+      // iPhone/iPadは audio.volume が効かないため、Web Audioのゲインで音量を下げる
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (IS_IOS && AC && /^https?:/.test(location.protocol)) {
+        try {
+          actx = new AC();
+          Object.keys(SE_VOL).forEach(id => {
+            const el = document.getElementById(id); if (!el) return;
+            const g = actx.createGain(); g.gain.value = SE_VOL[id];
+            actx.createMediaElementSource(el).connect(g); g.connect(actx.destination);
+          });
+        } catch (e) { actx = null; }
+      }
+    }
+    function playSE(id) {
+      try {
+        const el = document.getElementById(id); if (!el) return;
+        if (actx && actx.state === 'suspended') actx.resume();
+        try { el.currentTime = 0; } catch (e) {}
+        const p = el.play(); if (p && p.catch) p.catch(() => {});
+      } catch (e) {}
+    }
+
     // BGMの設定・再生制御（自動再生ブロック対応）
     const bgm = document.getElementById('bgm');
     const bgmBtn = document.getElementById('bgm-btn');
@@ -466,6 +502,7 @@
     }
     function calcLevel(add) {   // 経験値を足したあとのレベル（共通の経験値表：areaconfig.js）
       const gs = reGS(); const l0 = gs.level || 1;
+      if (typeof RE === 'undefined') return { level: l0, exp: gs.exp || 0, up: false };
       RE.addExp(gs, add, { raw: true });
       return { level: gs.level || 1, exp: gs.exp || 0, up: (gs.level || 1) > l0 };
     }
@@ -481,16 +518,19 @@
 
     // ページ読み込み時の処理
     window.onload = function() {
+      setupSE();
       if (isFirstPlay()) { document.getElementById('tutFirst').style.display = 'inline-block'; document.getElementById('tutHard').style.display = 'none'; }
       updateBgmUI();
       tryPlayBgm();
-      document.getElementById('seSyutudai').play().catch(e => console.log(e));
+      playSE('seSyutudai');
     };
 
     // 「スタート！」ボタンを押したときの処理
+    let started = false;
     function startMainGame() {
+      if (started) return; started = true;
       tryPlayBgm();
-      document.getElementById('seType').play().catch(e => console.log(e));
+      playSE('seType');
       document.getElementById('startModal').style.display = 'none';
       startGame();
     }
@@ -510,6 +550,8 @@
       fallSpeed = challenge ? 4.8 : 3;
       currentList = newKit ? newItemList : itemList;
       setIndicator(); showBanner();
+      firstPlay = first; guideLeft = first ? 3 : 0; guideType = null; running = true;
+      if (first) showTip('👇 下の<b>ボタン</b>で仕分けよう！<br>（カゴは押さなくてOK）', 3200);
       document.getElementById('score').innerText = score;
       document.getElementById('time').innerText = timeLeft;
 
@@ -518,7 +560,7 @@
         document.getElementById('time').innerText = timeLeft;
 
         if (timeLeft === 3) {
-          document.getElementById('seCountdown').play().catch(e => console.log(e));
+          playSE('seCountdown');
         }
 
         if (timeLeft <= 15 && !isHardMode) {
@@ -538,6 +580,7 @@
     }
 
     function endGame() {
+      running = false; guideLeft = 0; updateGuide(true);
       clearInterval(timerInterval);
       clearInterval(spawnerInterval);
       clearInterval(gameInterval);
@@ -553,7 +596,7 @@
       const bonus = complete ? COMPLETE_BONUS : 0;
       const mult = rewardMult();
       const totalEarn = Math.max(0, earnBoard + earnMagnet - totalPenalty + bonus) * mult;
-      const earnedExp = RE.capExp(reGS(), (EXP_BASE + (challenge ? EXP_HARD : 0)) * expMult(), 0.15);
+      const earnedExp = (typeof RE !== 'undefined') ? RE.capExp(reGS(), (EXP_BASE + (challenge ? EXP_HARD : 0)) * expMult(), 0.15) : EXP_BASE;
       const lvInfo = calcLevel(earnedExp);
 
       document.getElementById('countBoard').innerText = collectedBoard;
@@ -614,6 +657,43 @@
       });
     }
 
+    // ───── 初回ナビ（指マーク）─────
+    let firstPlay = false, guideLeft = 0, guideType = null, running = false;
+    function showTip(html, ms) {
+      const b = document.getElementById('banner');
+      b.innerHTML = html; b.classList.add('show');
+      clearTimeout(showTip.t); showTip.t = setTimeout(() => b.classList.remove('show'), ms);
+    }
+    function updateGuide(force) {
+      const f = document.getElementById('finger');
+      const t = (guideLeft > 0 && activeItems.length) ? activeItems[0].type : null;
+      if (t === guideType && !force) return;
+      guideType = t;
+      document.querySelectorAll('.catch-btn').forEach(b => b.classList.toggle('guide', b.dataset.t === t));
+      if (!t) { f.style.display = 'none'; return; }
+      const b = document.querySelector('.catch-btn[data-t="' + t + '"]'), c = document.querySelector('.content');
+      const br = b.getBoundingClientRect(), cr = c.getBoundingClientRect();
+      f.style.left = (br.left + br.width / 2 - cr.left + c.scrollLeft) + 'px';
+      f.style.top = (br.bottom - cr.top + c.scrollTop - 16) + 'px';
+      f.style.display = 'block';
+    }
+    window.addEventListener('resize', () => updateGuide(true));
+    // ボタンは pointerdown で即反応（ダブルタップ拡大・click取りこぼし対策）
+    document.querySelectorAll('.catch-btn').forEach(b => {
+      b.addEventListener('pointerdown', e => {
+        e.preventDefault();
+        b.classList.add('press'); setTimeout(() => b.classList.remove('press'), 120);
+        if (running) catchItem(b.dataset.t);
+      });
+    });
+    // カゴをタップしてしまった人へ（初回プレイのみ）
+    document.getElementById('gameArea').addEventListener('pointerdown', e => {
+      if (running && firstPlay && e.target.closest('.bin')) {
+        showTip('カゴは見るだけ！<br>👇 下の<b>ボタン</b>を押してね', 2200);
+        guideLeft = Math.max(guideLeft, 1); updateGuide(true);
+      }
+    });
+
     function updateItems() {
       const areaK = document.getElementById('gameArea').clientHeight / 480;   // 画面の高さに合わせて落下速度を調整（どの端末でも落下時間は同じ）
       for (let i = activeItems.length - 1; i >= 0; i--) {
@@ -622,8 +702,7 @@
         item.element.style.top = item.y + 'px';
 
         if (item.y + item.element.offsetHeight > dropLine.offsetTop) {   // 落下ラインを越えた
-          document.getElementById('seRakka').currentTime = 0;
-          document.getElementById('seRakka').play().catch(e => console.log(e));
+          playSE('seRakka');
 
           missCount++;
           if (item.type === 'danger') {
@@ -634,6 +713,7 @@
           activeItems.splice(i, 1);
         }
       }
+      updateGuide();
     }
 
     function catchItem(actionType) {
@@ -642,8 +722,7 @@
       let targetItem = activeItems[0];
 
       if (targetItem.type === actionType) {
-        document.getElementById('seSeikai').currentTime = 0;
-        document.getElementById('seSeikai').play().catch(e => console.log(e));
+        playSE('seSeikai');
 
         score++;
         correctCount++;
@@ -653,8 +732,7 @@
         document.getElementById('score').innerText = score;
         targetItem.element.style.borderColor = '#00fff5';
       } else {
-        document.getElementById('seFuseikai').currentTime = 0;
-        document.getElementById('seFuseikai').play().catch(e => console.log(e));
+        playSE('seFuseikai');
 
         score = Math.max(0, score - 1);
         penaltyCount++;
@@ -671,6 +749,8 @@
       el.style.top = (dropLine.offsetTop - el.offsetHeight / 2) + 'px';
       el.style.opacity = '0';
       setTimeout(() => el.remove(), 260);
+      if (guideLeft > 0) guideLeft--;
+      updateGuide(true);
     }
   </script>
 </body>
