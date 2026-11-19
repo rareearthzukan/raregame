@@ -1177,6 +1177,7 @@
       showNotice('💰', `${recipe.name} をすべて売却！`, `計 ${stock}個 売却し、+${totalEarn.toLocaleString()} G 獲得！ (EXP +${earnedExp})`);
       saveGameState();
       updateUI();
+      window.Stamp&&Stamp.report('ship');   // スタンプカード：まとめて出荷（売却）した
       closeProductPreview();
     }
 
@@ -2350,6 +2351,7 @@
       checkYHelperAppearance();
       saveGameState();
       updateUI();
+      window.Stamp&&Stamp.report('generate');   // スタンプカード：製造した
     }
 
     let timingInterval = null;
@@ -2450,6 +2452,7 @@
       checkYHelperAppearance();
       saveGameState();
       updateUI();
+      window.Stamp&&Stamp.report('generate');   // スタンプカード：製造した（タイミング製造）
     }
 
     function sellProduct(recipeId) {
@@ -2474,6 +2477,7 @@
       showNotice('💰', `${recipe.name} を売却！`, `+${recipe.reward.toLocaleString()} G 獲得！（EXP +${earnedExp}）`);
       saveGameState();
       updateUI();
+      window.Stamp&&Stamp.report('ship');   // スタンプカード：出荷（売却）した
     }
 
     // ═══ 🔍 画像ビューア ═══
@@ -2569,6 +2573,7 @@
     updateUI();
       RE.initCommon(gameState, { page: 'factory' });
   </script>
+<script src="stampcard.js"></script>
 <script src="tutorial.js"></script>
 </body>
 </html>
