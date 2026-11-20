@@ -381,6 +381,7 @@ function endGame(clear) {
   const d = DIFFS[diff];
   result = { money: clear ? d.money : 100, exp: clear ? RE.capExp(reGS(), d.exp, 0.15) : 0, er: clear ? 10 : 0 };
   claim();
+  window.Stamp&&Stamp.report('minigame_play',1,{game:'Er'});   // スタンプカード：ミニゲームをあそんだ
   if (clear) { se('clear', SFX.clearSynth); flash = 1; for (let i = 0; i < 4; i++) setTimeout(() => burst(rnd(40, W - 40), rnd(60, 220), ['#ffd23f', '#ff7eb3', '#7fe0ee', '#ffffff'][i], 40, 5, .05), i * 160); banner('✨ つるつる肌に！', 1500); say('✨ ぴかぴかお肌、完成！'); cheer() }
   else { SFX.over(); say('💦 エネルギー切れ…') }
   $('resultTitle').textContent = clear ? '✨ 美肌スキンクリア！' : '💦 レーザーエネルギー切れ…';
@@ -434,5 +435,7 @@ function loop(n) { const dt = Math.min(2.5, (n - last) / 16.67); last = n; updat
 initBlocks(); balls = [newBall(false)]; layout(); requestAnimationFrame(loop);
 })();
 </script>
+<script>window.STAMP_OPTS={button:false};</script>
+<script src="stampcard.js"></script>
 </body>
 </html>

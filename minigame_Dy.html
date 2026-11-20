@@ -424,6 +424,7 @@ function result(){
   const rank=total>=.92?'S':total>=.78?'A':total>=.6?'B':'C';
   const m=ORD==='ingot'?1.3:1; const g=Math.round((15+150*total*total)*m), e=capX(reGS(),Math.round((5+30*total*total)*m),0.15);
   try{ addReward(g,e); }catch(err){ console.error(err); }
+  window.Stamp&&Stamp.report('minigame_play',1,{game:'Dy'});   // スタンプカード：ミニゲームをあそんだ
   const word={S:'極上！こりゃ店の看板だ！',A:'いい仕事だ。また頼むぜ',B:'まずまずだな。次は純度を上げよう',C:'まだ修行が足りねぇな…'}[rank];
   say(word); mood(rank==='S'||rank==='A'?'h':rank==='C'?'s':'n');
   if(rank==='S'||rank==='A')SFX.ok(); else if(rank==='C')SFX.fail();
@@ -478,5 +479,7 @@ paintMute(); showBar(); setImg($('#dy'),'n');
   };
 })();
 </script>
+<script>window.STAMP_OPTS={button:false};</script>
+<script src="stampcard.js"></script>
 </body>
 </html>

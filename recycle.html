@@ -614,6 +614,7 @@
       window.earnedMoney = totalEarn;
       try { const g0 = JSON.parse(localStorage.getItem('rareEarthGameState')); if (g0) { g0.recyclePlayed = true; localStorage.setItem('rareEarthGameState', JSON.stringify(g0)); } } catch (e) {}
       document.getElementById('resultModal').style.display = 'flex';
+      window.Stamp&&Stamp.report('recycle_play');   // スタンプカード：リサイクル工場をあそんだ
     }
 
     function saveAndReturn() {
@@ -753,5 +754,7 @@
       updateGuide(true);
     }
   </script>
+<script>window.STAMP_OPTS={button:false};</script>
+<script src="stampcard.js"></script>
 </body>
 </html>
