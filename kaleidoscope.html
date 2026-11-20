@@ -236,49 +236,153 @@
     <div id="toast" class="fixed left-1/2 -translate-x-1/2 bottom-6 z-40 px-4 py-2 rounded-full bg-gray-900/95 border border-sky-500/60 text-xs text-sky-100 shadow-lg opacity-0 pointer-events-none transition-opacity duration-300 max-w-[90vw] text-center" role="status" aria-live="polite"></div>
 
     <script>
-        // 💎 100 Gem Master Data
+        // 💎 Gem Master Data（図鑑 zukan.html と同じ120種）
         const gemsMaster = [
-            { id: 1, name: 'ダイヤモンド', img: 'houseki1.png', color: '#e0f7fa', desc: '永遠の輝きを放つ最高硬度の宝石。' },
-            { id: 2, name: 'ルビー', img: 'houseki2.png', color: '#ff1744', desc: '情熱的な赤色を持つ宝石の女王。' },
-            { id: 3, name: 'サファイア', img: 'houseki3.png', color: '#2979ff', desc: '気高き青色を湛える知性の石。' },
-            { id: 4, name: 'エメラルド', img: 'houseki4.png', color: '#00e676', desc: '深緑の美しさが際立つ癒やしの宝石。' },
-            { id: 5, name: 'アメジスト', img: 'houseki5.png', color: '#d500f9', desc: '高貴な紫色が美しい神秘的な水晶。' },
-            { id: 6, name: 'シトリン', img: 'houseki6.png', color: '#ffc400', desc: '太陽の光を閉じ込めた黄色の水晶。' },
+            { id: 1, name: 'ダイヤモンド', img: 'houseki1.png', color: '#e0f7fa', desc: '永遠の輝きを放つ、世界最高硬度の宝石。' },
+            { id: 2, name: 'ルビー', img: 'houseki2.png', color: '#ff1744', desc: '情熱的な赤色を持つ、宝石の女王。' },
+            { id: 3, name: 'サファイア', img: 'houseki3.png', color: '#2979ff', desc: '気高き青色を湛える、知性の石。' },
+            { id: 4, name: 'エメラルド', img: 'houseki4.png', color: '#00e676', desc: '深緑の美しさが際立つ、癒やしの宝石。' },
+            { id: 5, name: 'アメジスト', img: 'houseki5.png', color: '#d500f9', desc: '高貴な紫色が美しい、神秘的な水晶。' },
+            { id: 6, name: 'シトリン', img: 'houseki6.png', color: '#ffc400', desc: '太陽の光を閉じ込めたような黄色の水晶。' },
             { id: 7, name: 'トパーズ', img: 'houseki7.png', color: '#00b0ff', desc: '透明感と豊かな色彩を持つ硬い鉱物。' },
             { id: 8, name: 'ガーネット', img: 'houseki8.png', color: '#d50000', desc: 'ざくろの実のように深い赤色の結晶。' },
-            { id: 9, name: 'アクアマリン', img: 'houseki9.png', color: '#80deea', desc: '穏やかな海の水面を思わせる宝石。' },
-            { id: 10, name: 'ペリドット', img: 'houseki10.png', color: '#76ff03', desc: '夜でも輝きを失わない黄緑色の石。' },
+            { id: 9, name: 'アクアマリン', img: 'houseki9.png', color: '#80deea', desc: '穏やかな海の水面を思わせる爽やかな宝石。' },
+            { id: 10, name: 'ペリドット', img: 'houseki10.png', color: '#76ff03', desc: '夜の照明の下でも輝きを失わない黄緑色の石。' },
             { id: 11, name: 'オパール', img: 'houseki11.png', color: '#ea80fc', desc: '虹色の遊色効果を持つ神秘の石。' },
-            { id: 12, name: 'ターコイズ', img: 'houseki12.png', color: '#00e5ff', desc: '空の色を映したスカイブルーの石。' },
-            { id: 13, name: '翡翠（ヒスイ）', img: 'houseki13.png', color: '#69f0ae', desc: '神聖視されてきた東洋の緑色宝石。' },
-            { id: 14, name: '琥珀（アンバー）', img: 'houseki14.png', color: '#ff9100', desc: '樹液が化石化した温もりある宝石。' },
-            { id: 15, name: 'フローライト', img: 'houseki15.png', color: '#b388ff', desc: 'グラデーションが美しい蛍石。' },
-            { id: 18, name: '水晶', img: 'houseki18.png', color: '#ffffff', desc: '無色透明で完璧な美しさの石。' },
-            { id: 21, name: 'ラピスラズリ', img: 'houseki21.png', color: '#3d5aff', desc: '群青色に黄金が輝く聖なる石。' },
-            { id: 26, name: 'ムーンストーン', img: 'houseki26.png', color: '#e0e0e0', desc: '月光のようなシラー効果の石。' },
-            { id: 31, name: 'クンツァイト', img: 'houseki31.png', color: '#ff80ab', desc: 'ライラックピンクの上品な石。' },
-            { id: 39, name: 'マラカイト', img: 'houseki39.png', color: '#00c853', desc: '孔雀の羽のような同心円模様の石。' },
-            { id: 48, name: 'ラリマー', img: 'houseki48.png', color: '#40c4ff', desc: 'カリブ海の海と空のような水色の石。' },
-            { id: 63, name: 'パライバトルマリン', img: 'houseki63.png', color: '#1de9b6', desc: 'ネオンブルーに発光する奇跡のトルマリン。' },
-            { id: 77, name: 'ルチルクォーツ', img: 'houseki77.png', color: '#ffd700', desc: '金色の針状結晶が内包された水晶。' },
-            { id: 100, name: 'レアアース・プリズム鉱', img: 'houseki100.png', color: '#ff4081', desc: 'すべての希土類を束ねた究極の鉱物。' }
+            { id: 12, name: 'ターコイズ', img: 'houseki12.png', color: '#00e5ff', desc: '空の色を映したような鮮やかなスカイブルーの石。' },
+            { id: 13, name: '翡翠（ヒスイ）', img: 'houseki13.png', color: '#69f0ae', desc: '古来より神聖視されてきた東洋の緑色宝石。' },
+            { id: 14, name: '琥珀（アンバー）', img: 'houseki14.png', color: '#ff9100', desc: '太古の樹液が化石化した温もりある黄金色の宝石。' },
+            { id: 15, name: 'フローライト', img: 'houseki15.png', color: '#b388ff', desc: '色とりどりのグラデーションが美しい蛍石。' },
+            { id: 16, name: 'ジャスパー', img: 'houseki16.png', color: 'hsl(232, 75%, 65%)', desc: '大地の模様が織りなす個性豊かな碧玉。' },
+            { id: 17, name: 'メノウ', img: 'houseki17.png', color: 'hsl(269, 75%, 65%)', desc: '縞模様が美しい、温かみのある微晶質クォーツ。' },
+            { id: 18, name: '水晶', img: 'houseki18.png', color: '#ffffff', desc: '無色透明で完璧なまでの美しさを持つ万能の石。' },
+            { id: 19, name: 'スモーキークォーツ', img: 'houseki19.png', color: 'hsl(343, 75%, 65%)', desc: '大地のような落ち着いた煙色を帯びた水晶。' },
+            { id: 20, name: 'ローズクォーツ', img: 'houseki20.png', color: 'hsl(20, 75%, 65%)', desc: '優しいピンク色が心を癒やす愛の石。' },
+            { id: 21, name: 'ラピスラズリ', img: 'houseki21.png', color: '#3d5aff', desc: '夜空のような群青色に黄金のパイライトが輝く石。' },
+            { id: 22, name: 'タンザナイト', img: 'houseki22.png', color: 'hsl(94, 75%, 65%)', desc: 'キリマンジャロの夕暮れのような多色性の青紫石。' },
+            { id: 23, name: 'トルマリン', img: 'houseki23.png', color: 'hsl(131, 75%, 65%)', desc: '豊富なカラーバリエーションを持つ電気石。' },
+            { id: 24, name: 'ジルコン', img: 'houseki24.png', color: 'hsl(168, 75%, 65%)', desc: 'ダイヤモンドに匹敵する強い輝きを持つ天然石。' },
+            { id: 25, name: 'スピネル', img: 'houseki25.png', color: 'hsl(205, 75%, 65%)', desc: 'かつて王冠の宝石としてルビーと間違えられた美石。' },
+            { id: 26, name: 'ムーンストーン', img: 'houseki26.png', color: '#e0e0e0', desc: '月光のようなシラー効果を宿す幻想的な石。' },
+            { id: 27, name: 'サンストーン', img: 'houseki27.png', color: 'hsl(279, 75%, 65%)', desc: '内部のインクルージョンが黄金色に輝く石。' },
+            { id: 28, name: 'ブラッドストーン', img: 'houseki28.png', color: 'hsl(316, 75%, 65%)', desc: '深緑に血飛沫のような赤斑が入る神聖な石。' },
+            { id: 29, name: 'カルセドニー', img: 'houseki29.png', color: 'hsl(353, 75%, 65%)', desc: '滑らかな手触りと優しい半透明感を持つ石。' },
+            { id: 30, name: 'プレナイト', img: 'houseki30.png', color: 'hsl(30, 75%, 65%)', desc: 'マスカットのような爽やかなグリーンが特徴の石。' },
+            { id: 31, name: 'クンツァイト', img: 'houseki31.png', color: '#ff80ab', desc: 'ライラックピンクの優しい輝きを放つ上品な石。' },
+            { id: 32, name: 'モルガナイト', img: 'houseki32.png', color: 'hsl(104, 75%, 65%)', desc: '春の桜を思わせるピーチピンクのエレガントな石。' },
+            { id: 33, name: 'ヒデナイト', img: 'houseki33.png', color: 'hsl(141, 75%, 65%)', desc: '淡い黄緑色が美しいスポジュメンの変種。' },
+            { id: 34, name: 'アパタイト', img: 'houseki34.png', color: 'hsl(178, 75%, 65%)', desc: 'ネオンブルーや鮮やかなグリーンが目を引く石。' },
+            { id: 35, name: 'アイオライト', img: 'houseki35.png', color: 'hsl(215, 75%, 65%)', desc: '見る角度によって色が変わるバイオレットブルーの石。' },
+            { id: 36, name: 'ジオード', img: 'houseki36.png', color: 'hsl(252, 75%, 65%)', desc: '割ると内部に美しい結晶が広がる自然の宝箱。' },
+            { id: 37, name: 'ヘマタイト', img: 'houseki37.png', color: 'hsl(289, 75%, 65%)', desc: 'メタリックな銀灰色で磨くと鏡面になる重厚な石。' },
+            { id: 38, name: 'パイライト', img: 'houseki38.png', color: 'hsl(326, 75%, 65%)', desc: '黄金色に輝く立方体の結晶。「愚者の黄金」。' },
+            { id: 39, name: 'マラカイト', img: 'houseki39.png', color: '#00c853', desc: '美しい孔雀の羽のような緑色の同心円模様を持つ石。' },
+            { id: 40, name: 'アズライト', img: 'houseki40.png', color: 'hsl(40, 75%, 65%)', desc: '吸い込まれそうな深い群青色を持つ銅の鉱物。' },
+            { id: 41, name: 'ロードナイト', img: 'houseki41.png', color: 'hsl(77, 75%, 65%)', desc: 'バラ色の素地に黒い脈模様が入る愛の石。' },
+            { id: 42, name: 'ロードクロサイト', img: 'houseki42.png', color: 'hsl(114, 75%, 65%)', desc: 'インカローズとも呼ばれる鮮やかなピンクの石。' },
+            { id: 43, name: 'クリソコラ', img: 'houseki43.png', color: 'hsl(151, 75%, 65%)', desc: '地球を宇宙から見たようなマーブル模様の美しい石。' },
+            { id: 44, name: 'サーペンタイン', img: 'houseki44.png', color: 'hsl(188, 75%, 65%)', desc: '蛇の皮膚のような模様を持つ滑らかな緑色の石。' },
+            { id: 45, name: 'ソーダライト', img: 'houseki45.png', color: 'hsl(225, 75%, 65%)', desc: 'ディープブルーの落ち着いた色合いを持つ鉱物。' },
+            { id: 46, name: 'チャロアイト', img: 'houseki46.png', color: 'hsl(262, 75%, 65%)', desc: 'マーブル模様の紫が織りなす世界三大ヒーリングストーン。' },
+            { id: 47, name: 'スギライト', img: 'houseki47.png', color: 'hsl(299, 75%, 65%)', desc: '日本で発見された深い紫色が神秘的な癒やしの石。' },
+            { id: 48, name: 'ラリマー', img: 'houseki48.png', color: '#40c4ff', desc: 'カリブ海の海と空を閉じ込めたような美しい水色の石。' },
+            { id: 49, name: 'アンモライト', img: 'houseki49.png', color: 'hsl(13, 75%, 65%)', desc: '化石が遊色効果を持つようになった奇跡の宝石。' },
+            { id: 50, name: 'テクタイト', img: 'houseki50.png', color: 'hsl(50, 75%, 65%)', desc: '隕石衝突の衝撃で生まれた神秘的な黒いガラス質鉱物。' },
+            { id: 51, name: 'モルダバイト', img: 'houseki51.png', color: 'hsl(87, 75%, 65%)', desc: '深いオリーブグリーンが特徴の美しいテクタイト。' },
+            { id: 52, name: 'オブシディアン', img: 'houseki52.png', color: 'hsl(124, 75%, 65%)', desc: '漆黒の輝きを持つ火山ガラス。' },
+            { id: 53, name: 'リビアンガラス', img: 'houseki53.png', color: 'hsl(161, 75%, 65%)', desc: 'エジプトの砂漠で見つかる黄金色の神秘的なガラス。' },
+            { id: 54, name: 'セレスタイト', img: 'houseki54.png', color: 'hsl(198, 75%, 65%)', desc: '天使の羽のような空色の結晶が広がる天青石。' },
+            { id: 55, name: 'バライト', img: 'houseki55.png', color: 'hsl(235, 75%, 65%)', desc: '重晶石と呼ばれ、ずっしりとした重みがある結晶。' },
+            { id: 56, name: 'アラゴナイト', img: 'houseki56.png', color: 'hsl(272, 75%, 65%)', desc: '温かみのある黄色や白の放射状結晶を持つ石。' },
+            { id: 57, name: 'カルサイト', img: 'houseki57.png', color: 'hsl(309, 75%, 65%)', desc: '多彩なカラーと高い複屈折を持つ方解石。' },
+            { id: 58, name: 'ドロマイト', img: 'houseki58.png', color: 'hsl(346, 75%, 65%)', desc: '白亜の美しい結晶を形成する苦灰石。' },
+            { id: 59, name: 'ロードライト', img: 'houseki59.png', color: 'hsl(23, 75%, 65%)', desc: '紫がかった上品な赤色を持つガーネットの仲間。' },
+            { id: 60, name: 'ヘソナイト', img: 'houseki60.png', color: 'hsl(60, 75%, 65%)', desc: 'シナモンカラーの温かい輝きを持つガーネット。' },
+            { id: 61, name: 'アルマンディン', img: 'houseki61.png', color: 'hsl(97, 75%, 65%)', desc: '深い赤紫色の鉄マンガン榴石。' },
+            { id: 62, name: 'パペイア', img: 'houseki62.png', color: 'hsl(134, 75%, 65%)', desc: '蓮の花のようなピンクオレンジ色の幻のサファイア。' },
+            { id: 63, name: 'パライバトルマリン', img: 'houseki63.png', color: '#1de9b6', desc: 'ネオンブルーに発光する奇跡の稀少トルマリン。' },
+            { id: 64, name: 'デマントイド', img: 'houseki64.png', color: 'hsl(208, 75%, 65%)', desc: 'ダイヤモンドを超える強い分散光を持つ緑のガーネット。' },
+            { id: 65, name: 'ツァボライト', img: 'houseki65.png', color: 'hsl(245, 75%, 65%)', desc: 'サバンナの緑を思わせる鮮やかなグリーンのガーネット。' },
+            { id: 66, name: 'スフェーン', img: 'houseki66.png', color: 'hsl(282, 75%, 65%)', desc: '強いファイアと独特の多色性を持つ黄緑の宝石。' },
+            { id: 67, name: 'アウイン', img: 'houseki67.png', color: 'hsl(319, 75%, 65%)', desc: '鮮やかなコバルトブルーが強烈な印象を残すレアストーン。' },
+            { id: 68, name: 'ベニトアイト', img: 'houseki68.png', color: 'hsl(356, 75%, 65%)', desc: 'サファイアを超える青い輝きを放つアメリカの稀少石。' },
+            { id: 69, name: 'グランディディエライト', img: 'houseki69.png', color: 'hsl(33, 75%, 65%)', desc: '青緑色の神秘的な色合いを持つマダガスカルの秘宝。' },
+            { id: 70, name: 'ターフェライト', img: 'houseki70.png', color: 'hsl(70, 75%, 65%)', desc: '発見が極めて少ない幻のモーヴカラー宝石。' },
+            { id: 71, name: 'ペタライト', img: 'houseki71.png', color: 'hsl(107, 75%, 65%)', desc: '清らかな透明感を持つ、別名キャストライト。' },
+            { id: 72, name: 'ポルサイト', img: 'houseki72.png', color: 'hsl(144, 75%, 65%)', desc: '美しい等軸晶系を描くレアなセシウム鉱物。' },
+            { id: 73, name: 'ダンビュライト', img: 'houseki73.png', color: 'hsl(181, 75%, 65%)', desc: 'ダイヤモンドに似た清らかな透明感と強い輝きの石。' },
+            { id: 74, name: 'ベリル', img: 'houseki74.png', color: 'hsl(218, 75%, 65%)', desc: 'エメラルドやアクアマリンの母体となる基本鉱物。' },
+            { id: 75, name: 'ジンカイト', img: 'houseki75.png', color: 'hsl(255, 75%, 65%)', desc: '鮮やかな赤やオレンジの燃えるような亜鉛鉱物。' },
+            { id: 76, name: 'クォーツインクォーツ', img: 'houseki76.png', color: 'hsl(292, 75%, 65%)', desc: '水晶の中に別の水晶が入り込んだ神秘的な鉱物。' },
+            { id: 77, name: 'ルチルクォーツ', img: 'houseki77.png', color: '#ffd700', desc: '金色の針状結晶が内包された「金運の石」。' },
+            { id: 78, name: 'スーパーセブン', img: 'houseki78.png', color: 'hsl(6, 75%, 65%)', desc: '7つの鉱物要素が奇跡的に共生した最強のパワーストーン。' },
+            { id: 79, name: 'オーラライト', img: 'houseki79.png', color: 'hsl(43, 75%, 65%)', desc: '古代の波動を宿すとされる多層構造のスピリチュアルストーン。' },
+            { id: 80, name: 'ファントムクォーツ', img: 'houseki80.png', color: 'hsl(80, 75%, 65%)', desc: '成長の軌跡が山型に刻まれた幻影水晶。' },
+            { id: 81, name: 'ギベオン', img: 'houseki81.png', color: 'hsl(117, 75%, 65%)', desc: '宇宙から飛来した鉄隕石。ウィドマンシュテッテン構造。' },
+            { id: 82, name: 'メテオライト', img: 'houseki82.png', color: 'hsl(154, 75%, 65%)', desc: '大気圏を突破して地球に到達した宇宙のロマン。' },
+            { id: 83, name: 'コンドライト', img: 'houseki83.png', color: 'hsl(191, 75%, 65%)', desc: '太陽系誕生初期の物質をそのまま残す原始隕石。' },
+            { id: 84, name: 'パラサイト', img: 'houseki84.png', color: 'hsl(228, 75%, 65%)', desc: '鉄ニッケルとカンラン石が混ざり合う宇宙の芸術品。' },
+            { id: 85, name: 'テクタイト鉱脈石', img: 'houseki85.png', color: 'hsl(265, 75%, 65%)', desc: '未知のエネルギーを秘めた特殊なインパクト石。' },
+            { id: 86, name: 'ネフライト', img: 'houseki86.png', color: 'hsl(302, 75%, 65%)', desc: 'しっとりとした深い緑色を持つ硬度の高い軟玉。' },
+            { id: 87, name: 'ジェダイト', img: 'houseki87.png', color: 'hsl(339, 75%, 65%)', desc: '瑞々しい艶と美しい緑色を誇る本翡翠。' },
+            { id: 88, name: 'ピクチャージャスパー', img: 'houseki88.png', color: 'hsl(16, 75%, 65%)', desc: 'まるで自然の風景画が描かれているかのような不思議な石。' },
+            { id: 89, name: 'オーシャンジャスパー', img: 'houseki89.png', color: 'hsl(53, 75%, 65%)', desc: '波打ち際のような美しい模様が浮かぶ海の碧玉。' },
+            { id: 90, name: 'ユナカイト', img: 'houseki90.png', color: 'hsl(90, 75%, 65%)', desc: '緑の緑泥石とピンクの長石が混ざり合う大地の石。' },
+            { id: 91, name: 'ホークスアイ', img: 'houseki91.png', color: 'hsl(127, 75%, 65%)', desc: '鋭い眼光を思わせるブルーグレーのタイガーアイ。' },
+            { id: 92, name: 'タイガーアイ', img: 'houseki92.png', color: 'hsl(164, 75%, 65%)', desc: '虎の目のようなシャトヤンシー効果を持つ金茶色の石。' },
+            { id: 93, name: 'ブルータイガーアイ', img: 'houseki93.png', color: 'hsl(201, 75%, 65%)', desc: '落ち着いた青色と美しい光の筋を持つ石。' },
+            { id: 94, name: 'レッドタイガーアイ', img: 'houseki94.png', color: 'hsl(238, 75%, 65%)', desc: '情熱的な赤褐色に光の筋が走るタイガーアイ。' },
+            { id: 95, name: 'ピーターサイト', img: 'houseki95.png', color: 'hsl(275, 75%, 65%)', desc: '嵐の空のような複雑な模様が渦巻く神秘の石。' },
+            { id: 96, name: 'セイクリッドセブン', img: 'houseki96.png', color: 'hsl(312, 75%, 65%)', desc: '高次元のエネルギーを宿すと言われる神秘の結晶。' },
+            { id: 97, name: 'ボルダーオパール', img: 'houseki97.png', color: 'hsl(349, 75%, 65%)', desc: '母岩の隙間に虹色の輝きが宿るワイルドなオパール。' },
+            { id: 98, name: 'ファイヤーオパール', img: 'houseki98.png', color: 'hsl(26, 75%, 65%)', desc: '夕焼けのように燃えるオレンジ色の美しいオパール。' },
+            { id: 99, name: 'ブラックオパール', img: 'houseki99.png', color: 'hsl(63, 75%, 65%)', desc: '黒い母岩の上で虹色の遊色が一層引き立つ最高級オパール。' },
+            { id: 100, name: 'レアアース・プリズム鉱', img: 'houseki100.png', color: '#ff4081', desc: 'すべての希土類エネルギーを束ねた究極の幻の鉱物。' },
+            { id: 101, name: 'ムオニナルスタ隕石', img: 'houseki101.png', color: 'hsl(137, 75%, 65%)', desc: 'スウェーデンに落ちた鉄隕石。切って磨くと、宇宙でゆっくり冷えてできた美しい格子模様が浮かび上がる。' },
+            { id: 102, name: '火星隕石', img: 'houseki102.png', color: 'hsl(174, 75%, 65%)', desc: '火星への衝突で飛び出し、地球に届いた火星のかけら。' },
+            { id: 103, name: '月隕石', img: 'houseki103.png', color: 'hsl(211, 75%, 65%)', desc: '月への衝突で飛び出し、地球に落ちてきた月のかけら。' },
+            { id: 104, name: 'エンハイドロ水晶', img: 'houseki104.png', color: 'hsl(248, 75%, 65%)', desc: '結晶の中に本物の水が閉じ込められた水晶。傾けると小さな泡が動く。' },
+            { id: 105, name: '針ニッケル鉱', img: 'houseki105.png', color: 'hsl(285, 75%, 65%)', desc: '光る針状の結晶が珍しい鉱物。硫化ニッケルが主成分。' },
+            { id: 106, name: 'デザートローズ', img: 'houseki106.png', color: 'hsl(322, 75%, 65%)', desc: '砂漠で結晶が育ち、バラの花びらのような形になった鉱物。' },
+            { id: 107, name: '閃電石（フルグライト）', img: 'houseki107.png', color: 'hsl(359, 75%, 65%)', desc: '雷が砂に落ち、溶けた砂が固まってできた枝のような管状のガラス。' },
+            { id: 108, name: 'プディングストーン', img: 'houseki108.png', color: 'hsl(36, 75%, 65%)', desc: '丸い小石がプディングの具のように固まった、ふしぎな礫岩。' },
+            { id: 109, name: 'セプタリア（ドラゴンストーン）', img: 'houseki109.png', color: 'hsl(73, 75%, 65%)', desc: 'ひび割れが黄色い結晶で埋まり、竜のうろこのような模様になった団塊。' },
+            { id: 110, name: 'バンブルビージャスパー', img: 'houseki110.png', color: 'hsl(110, 75%, 65%)', desc: 'マルハナバチのような黄色と黒の模様が入った、火山地帯で採れる石。' },
+            { id: 111, name: 'ブルージョン', img: 'houseki111.png', color: 'hsl(147, 75%, 65%)', desc: 'イギリスの限られた場所だけで採れる、紫と黄色の縞模様の蛍石。' },
+            { id: 112, name: 'ストロマトライト', img: 'houseki112.png', color: 'hsl(184, 75%, 65%)', desc: '海の微生物がつくった層状の岩。何十億年も前の生命の痕跡。' },
+            { id: 113, name: '珪化木', img: 'houseki113.png', color: 'hsl(221, 75%, 65%)', desc: '木が長い年月をかけて石に置き換わった石の木。年輪もそのまま残っている。' },
+            { id: 114, name: 'ゴールドナゲット', img: 'houseki114.png', color: 'hsl(258, 75%, 65%)', desc: '自然の中でできた金の塊。見つけたらお宝！' },
+            { id: 115, name: 'ブルーアンバー', img: 'houseki115.png', color: 'hsl(295, 75%, 65%)', desc: 'ドミニカ共和国で採れる琥珀。日光や紫外線に当たると青く光る。' },
+            { id: 116, name: 'フランクリン蛍光鉱物', img: 'houseki116.png', color: 'hsl(332, 75%, 65%)', desc: 'アメリカのフランクリンで採れる鉱物。ブラックライトで赤や緑に光る。' },
+            { id: 117, name: 'ペレの毛', img: 'houseki117.png', color: 'hsl(9, 75%, 65%)', desc: 'ハワイの火山で、溶岩が風に引き伸ばされてできた髪の毛のような火山ガラス。' },
+            { id: 118, name: 'アイスランドスパー', img: 'houseki118.png', color: 'hsl(46, 75%, 65%)', desc: '無色透明の方解石。文字の上に置くと二重に見える。' },
+            { id: 119, name: 'ハーキマーダイヤモンド', img: 'houseki119.png', color: 'hsl(83, 75%, 65%)', desc: '両端がとがった小さな水晶。ダイヤではないけれど、ダイヤのように輝く。' },
+            { id: 120, name: 'ビスマス結晶', img: 'houseki120.png', color: 'hsl(120, 75%, 65%)', desc: '虹色の階段のような結晶。自然にはほとんど見られず、溶かした金属を冷やして育てた人工の結晶。' }
         ];
-
-        // Fill remaining IDs up to 100
-        for (let i = 1; i <= 100; i++) {
-            if (!gemsMaster.some(g => g.id === i)) {
-                gemsMaster.push({
-                    id: i,
-                    name: `宝石 #${i}`,
-                    img: `houseki${i}.png`,
-                    color: `hsl(${ (i * 37) % 360 }, 75%, 65%)`,
-                    desc: `コレクションナンバー #${i} の綺麗な鉱物。`
-                });
-            }
-        }
         gemsMaster.sort((a, b) => a.id - b.id);
 
-        let playerUnlockedGemIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 18, 21, 26, 31, 39, 48, 63, 77, 100];
+        // 🔗 本編（zukan.html 等）が保存している入手済み鉱物を読み込む
+        function loadUnlockedGemIds() {
+            try {
+                const saved = JSON.parse(localStorage.getItem('rareEarthGameState'));
+                if (saved && saved.houseki) {
+                    return Object.keys(saved.houseki)
+                        .filter(id => saved.houseki[id])
+                        .map(Number)
+                        .filter(id => gemsMaster.some(g => g.id === id))
+                        .sort((a, b) => a - b);
+                }
+            } catch (e) {}
+            return [];
+        }
+        let playerUnlockedGemIds = loadUnlockedGemIds();
+        // 別タブで本編を進めた場合も、戻ってきた時に反映する
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible' && typeof initGemTray === 'function') {
+                playerUnlockedGemIds = loadUnlockedGemIds();
+                initGemTray();
+            }
+        });
 
         const CONFIG = {
             maxCapacity: 10,
@@ -819,7 +923,7 @@
         const panels=[...root.querySelectorAll('.tp')], hole=$('tHole'), fing=$('tFinger'), rip=$('tRip'), card=$('tCard');
 
         const firstGem=()=>gemsMaster.find(g=>playerUnlockedGemIds.includes(g.id));
-        const ensureGem=()=>{ if(!placedGems.length) addGemToKaleido(firstGem()); };
+        const ensureGem=()=>{ if(!placedGems.length){ const g=firstGem()||gemsMaster[0]; addGemToKaleido(g); } };
         const cvRect=()=>$('kaleidoCanvas').getBoundingClientRect();
         const ease=p=>{ if(p<.15)return 0; if(p>.85)return 1; const q=(p-.15)/.7; return q*q*(3-2*q); };
         function gemPos(i){
@@ -914,7 +1018,7 @@
             if(s.enter) s.enter(s);
             $('tStep').textContent=`ガイド ${i+1} / ${steps.length}`;
             $('tText').innerHTML=s.text; $('tOk').textContent='';
-            $('tNext').textContent=(i===steps.length-1)?'あそぶ！':(s.cond?'できない・次へ ▶':'次へ ▶');
+            $('tNext').textContent=(i===steps.length-1)?'あそぶ！':'次へ ▶';
             $('tSkip').style.display=(i===steps.length-1)?'none':'';
             hole.classList.add('anim'); setTimeout(()=>hole.classList.remove('anim'),450);
             const el=s.target&&s.target(); if(el) el.scrollIntoView({block:'nearest'});
