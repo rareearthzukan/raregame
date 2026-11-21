@@ -1,20 +1,20 @@
-/*! stampcard.js  ─  レアアース ゲーム用「スタンプカード（ミッション）」システム  v1.0
+/*! stampcard.js  ─  レアアース ゲーム用「スタンプカード（ミッション）」システム  v1.2
  *
  * ■ つかいかた（本編の各ページに 2行 たすだけ）
  *   <script src="stampcard.js"></script>             ← </body> の前に1行
  *   Stamp.report('mine');                            ← 採掘した瞬間に1行
  *
  * ■ 報告するイベント名（Stamp.report の第1引数）
- *   mine=採掘  generate=生成  refine=精製(工場)  ship=出荷  shop_buy=ショップで購入
+ *   mine=採掘  refine=精製(精製プラント)  generate=製造(工場)  ship=出荷(工場で売却)  shop_buy=ショップで購入
  *   furniture_place=家具を置いた  taste_change=テイスト変更  char_place=キャラをお部屋に置いた
  *   minigame_play=ミニゲームをあそんだ（第3引数 {game:'Ho'} のように ゲームの名前も渡す）
  *   zukan_open=図鑑を開いた  recycle_play=リサイクル工場をあそんだ
  *   ※ 個数がまとまるときは Stamp.report('generate', 10) のように個数も渡せます
  *   ※ レベルのミッションは 本編の保存データ(rareEarthGameState.level)を 自動で読みます
  *
- * ■ まとめ体験チケット（ごほうび）を 本編で使うとき
- *   if (Stamp.useTicket('bulkGen'))  { …10個まとめて生成… }   // 券があれば true（1枚へる）
- *   if (Stamp.useTicket('bulkMine')) { …5個まとめて採掘… }
+ * ■ まとめ精製おためし券（ごほうび）を 本編で使うとき（seisei.html につないであります）
+ *   if (Stamp.hasTicket('bulkGen')) …   // 券があるか
+ *   Stamp.useTicket('bulkGen')           // 1枚つかう（つかえたら true）
  *
  * ■ ミッションの追加・変更は 下の CARDS を 書きかえるだけ
  */
@@ -32,10 +32,12 @@
     button: true,                       // 画面の📒ボタンを自動で出す
     buttonBottom: 78,                   // 📒ボタンの位置（下からのpx）
     buttonSide: 'right',                // 'right' か 'left'
+    expFrac: 0.15,                      // EXPの1回の上限（そのレベルに必要なEXPに対する割合。ミニゲーム相当）
     dailyBonus: 150,                    // 「きょうのおすすめ」ボーナス(G)
     maxLineDraws: 3,                    // 1枚のカードで 福引を引ける ビンゴ列の数
     grant: null,                        // ごほうびの渡し方を自分で決めたいとき (reward)=>{}
-    onGraduate: null                    // Lv50そつぎょうのときに呼ばれる
+    onGraduate: null,                   // Lv50そつぎょうのときに呼ばれる
+    onTicketChange: null                // チケットがふえた／へったときに呼ばれる（ボタン表示の更新用）
   };
   const SYMS = ['La', 'Ce', 'Pr', 'Nd', 'Pm', 'Sm', 'Eu', 'Gd', 'Tb', 'Dy', 'Ho', 'Er', 'Tm', 'Yb', 'Lu', 'Sc', 'Y'];
   const LINES = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]];
@@ -53,8 +55,8 @@
     { id: 'c1', title: 'はじめての レアアース', sub: 'ぜんぶの きのうを ちょっとずつ ためしてみよう！', ink: '#ff5d8f', nav: 'Y', unlock: { lv: 1 },
       missions: [
         M('⛏️', 'ほってみよう', '採掘を 1かい やってみよう', 'mine', 1, 'La', { money: 200 }, 'マップから 採掘に いってみよう'),
-        M('🧪', 'つくってみよう', '生成を 1かい やってみよう', 'generate', 1, 'Ce', { money: 200 }),
-        M('⚗️', 'みがいてみよう', '精製を 1かい やってみよう', 'refine', 1, 'Pr', { money: 200 }),
+        M('⚗️', 'みがいてみよう', '精製を 1かい やってみよう', 'refine', 1, 'Ce', { money: 200 }, '精製プラント（🧪精製）で 元素を とりだそう'),
+        M('🏭', 'つくってみよう', '製造を 1かい やってみよう', 'generate', 1, 'Pr', { money: 200 }, '工場で 製品を つくってみよう'),
         M('📦', 'おくりだそう', '出荷を 1かい やってみよう', 'ship', 1, 'Nd', { money: 250 }),
         M('🛍️', 'おかいもの', 'ショップで 1こ 買ってみよう', 'shop_buy', 1, 'Sm', { money: 200 }),
         M('🪑', 'かざってみよう', 'お部屋に 家具を 1こ 置いてみよう', 'furniture_place', 1, 'Eu', { money: 200 }),
@@ -62,11 +64,11 @@
         M('📖', 'ずかんを みてみよう', '図鑑を ひらいてみよう', 'zukan_open', 1, 'Dy', { money: 200 }),
         L('🆙', 'Lv2に なろう', 'レベルを 2に しよう', 2, 'Y', { money: 300 })
       ],
-      finish: { money: 1000, exp: 50, elements: { Y: 5 }, tickets: { bulkGen: 1, bulkMine: 1 } } },
+      finish: { money: 1000, exp: 50, elements: { Y: 5 }, tickets: { bulkGen: 1 } } },
     { id: 'c2', title: 'もっと つかいこなそう', sub: '同じ作業も あきずに くりかえして みよう', ink: '#35a7ff', nav: 'Ho', unlock: { lv: 5 }, diag: true,
       missions: [
         M('⛏️', 'ほりほり 3かい', '採掘を 3かい やろう', 'mine', 3, 'Gd', { money: 300 }),
-        M('🧪', 'つくりまくろう', '生成を 3かい やろう', 'generate', 3, 'Er', { money: 300 }),
+        M('🏭', 'つくりまくろう', '製造を 3かい やろう', 'generate', 3, 'Er', { money: 300 }),
         M('⚗️', 'ピカピカに', '精製を 3かい やろう', 'refine', 3, 'Tm', { money: 300 }),
         M('📦', 'どんどん 出荷', '出荷を 3かい やろう', 'ship', 3, 'Yb', { money: 350 }),
         M('🎨', 'イメチェン', 'お部屋の テイストを かえてみよう', 'taste_change', 1, 'Lu', { money: 300 }),
@@ -75,7 +77,7 @@
         D('🕹️', 'ちがう ゲームも！', 'ちがう ミニゲームを 2しゅるい あそぼう', 'minigame_play', 2, 'game', 'Pm', { money: 400 }, 'ミニゲームを ぜんぶ ためしてみよう'),
         L('🆙', 'Lv5に なろう', 'レベルを 5に しよう', 5, 'La', { money: 500 })
       ],
-      finish: { money: 2000, exp: 120, elements: { Nd: 5 }, tickets: { bulkGen: 2, bulkMine: 1 } } },
+      finish: { money: 2000, exp: 120, elements: { Nd: 5 }, tickets: { bulkGen: 2 } } },
     { id: 'c3', title: 'コレクター', sub: '集めて かざって あそびつくそう！', ink: '#2fbf71', nav: 'Lu', unlock: { lv: 15 },
       missions: [
         M('🪑', 'おへやを にぎやかに', '家具を 5こ 置こう', 'furniture_place', 5, 'Ce', { money: 500 }),
@@ -85,14 +87,14 @@
         D('🕹️', 'ゲーム めぐり', 'ちがう ミニゲームを 4しゅるい あそぼう', 'minigame_play', 4, 'game', 'Eu', { money: 600 }),
         M('♻️', 'リサイクル', 'リサイクル工場を あそぼう', 'recycle_play', 1, 'Tb', { money: 500 }),
         M('📦', '出荷 10かい', '出荷を 10かい やろう', 'ship', 10, 'Dy', { money: 600 }),
-        M('🧪', '生成 10かい', '生成を 10かい やろう', 'generate', 10, 'Er', { money: 600 }),
+        M('🏭', '製造 10かい', '製造を 10かい やろう', 'generate', 10, 'Er', { money: 600 }),
         L('🆙', 'Lv15に なろう', 'レベルを 15に しよう', 15, 'Gd', { money: 800 })
       ],
-      finish: { money: 4000, exp: 250, elements: { Dy: 5 }, tickets: { bulkGen: 2, bulkMine: 2 } } },
+      finish: { money: 4000, exp: 250, elements: { Dy: 5 }, tickets: { bulkGen: 2 } } },
     { id: 'c4', title: '工場長', sub: 'もう ベテラン！ はたらく 工場を まわそう', ink: '#a46bff', nav: 'Nd', unlock: { lv: 30 },
       missions: [
         M('⛏️', 'ほって ほって 10かい', '採掘を 10かい やろう', 'mine', 10, 'Tm', { money: 800 }),
-        M('🧪', '生成ライン 20かい', '生成を 20かい やろう', 'generate', 20, 'Yb', { money: 900 }),
+        M('🏭', '製造ライン 20かい', '製造を 20かい やろう', 'generate', 20, 'Yb', { money: 900 }),
         M('⚗️', '精製ライン 15かい', '精製を 15かい やろう', 'refine', 15, 'Pm', { money: 900 }),
         M('📦', '出荷 20かい', '出荷を 20かい やろう', 'ship', 20, 'Ho', { money: 900 }),
         M('🎮', 'ゲーム 10かい', 'ミニゲームを 10かい あそぼう', 'minigame_play', 10, 'La', { money: 900 }),
@@ -101,11 +103,11 @@
         D('🕹️', 'ゲーム マスター', 'ちがう ミニゲームを 6しゅるい あそぼう', 'minigame_play', 6, 'game', 'Y', { money: 1000 }),
         L('🆙', 'Lv30に なろう', 'レベルを 30に しよう', 30, 'Ce', { money: 1200 })
       ],
-      finish: { money: 8000, exp: 500, elements: { Tb: 8 }, tickets: { bulkGen: 3, bulkMine: 2 } } },
-    { id: 'c5', title: 'Lv50 そつぎょう試験', sub: 'ここまで きたら もう すぐ！ まとめ生成・まとめ掘削が ひらくよ', ink: '#e8a317', nav: 'Eu', unlock: { lv: 40 }, graduation: true,
+      finish: { money: 8000, exp: 500, elements: { Tb: 8 }, tickets: { bulkGen: 3 } } },
+    { id: 'c5', title: 'Lv50 そつぎょう試験', sub: 'ここまで きたら もう すぐ！ Lv50で ひみつの 50こ まとめ精製が めざめるよ', ink: '#e8a317', nav: 'Eu', unlock: { lv: 40 }, graduation: true,
       missions: [
         M('📦', '出荷 30かい', '出荷を 30かい やろう', 'ship', 30, 'Sm', { money: 1200 }),
-        M('🧪', '生成 40かい', '生成を 40かい やろう', 'generate', 40, 'Pr', { money: 1200 }),
+        M('🏭', '製造 40かい', '製造を 40かい やろう', 'generate', 40, 'Pr', { money: 1200 }),
         M('⚗️', '精製 30かい', '精製を 30かい やろう', 'refine', 30, 'Gd', { money: 1200 }),
         M('🪑', 'おへやの たつじん', '家具を 10こ 置こう', 'furniture_place', 10, 'Er', { money: 1200 }),
         M('🎮', 'ゲーム 15かい', 'ミニゲームを 15かい あそぼう', 'minigame_play', 15, 'Dy', { money: 1200 }),
@@ -114,15 +116,15 @@
         M('📖', 'ずかん かんぺき', '図鑑を 20かい ひらこう', 'zukan_open', 20, 'Tm', { money: 1200 }),
         L('🎓', 'Lv50に なろう！', 'レベルを 50に しよう（そつぎょう！）', 50, 'Y', { money: 5000 })
       ],
-      finish: { money: 20000, exp: 1000, elements: { Sc: 3, Pm: 3 }, tickets: { bulkGen: 5, bulkMine: 5 } } }
+      finish: { money: 20000, exp: 1000, elements: { Sc: 3, Pm: 3 }, tickets: { bulkGen: 5 } } }
   ];
   CARDS.forEach(c => c.missions.forEach((m, i) => { m.id = 'm' + (i + 1); }));
 
   // 好み診断（カード2が かんせいしたとき）
   const CATS = {
     mine: { n: '採掘', icon: '⛏️', type: 'ほりほり 探検家', tip: '掘削の まとめ体験券で もっと ほれるよ！ 採掘の レベルを 上げてみよう' },
-    generate: { n: '生成', icon: '🧪', type: 'ものづくり 職人', tip: '生成を いっぱい まわして 元素を ためよう！ Lv50で 10こ まとめて つくれるよ' },
-    refine: { n: '精製', icon: '⚗️', type: '精製 マスター', tip: '精製ボーナスの あるお部屋アイテムを ショップで さがしてみよう' },
+    generate: { n: '製造', icon: '🏭', type: 'ものづくり 職人', tip: '工場で いろんな 製品を つくってみよう！ 出荷すると お金に なるよ' },
+    refine: { n: '精製', icon: '⚗️', type: '精製 マスター', tip: 'Lv7で 5こ、Lv15で 10こ まとめて 精製できるよ！ いっぱい 精製して 元素を ためよう' },
     ship: { n: '出荷', icon: '📦', type: 'おしごと 商人', tip: '出荷で お金を ためて ショップで お買いもの！ あたらしい家具を ねらおう' },
     shop: { n: 'お買いもの', icon: '🛍️', type: 'お買いもの 名人', tip: 'マイル価格の アイテムは 精製ボーナスつき！ チェックしてみよう' },
     room: { n: 'お部屋づくり', icon: '🏠', type: 'お部屋 デザイナー', tip: 'テイストや 家具で お部屋を 自分色に！ キャラも ふやして にぎやかに' },
@@ -130,7 +132,7 @@
     zukan: { n: '図鑑', icon: '📖', type: '元素 はかせ', tip: '図鑑の キャラを ぜんぶ しらべて ものしりに なろう！' }
   };
   const EVENT_CAT = { mine: 'mine', generate: 'generate', refine: 'refine', ship: 'ship', shop_buy: 'shop', furniture_place: 'room', taste_change: 'room', char_place: 'room', minigame_play: 'mini', recycle_play: 'mini', zukan_open: 'zukan' };
-  const TICKET_NAMES = { bulkGen: 'まとめ生成(10こ)', bulkMine: 'まとめ掘削(5こ)' };
+  const TICKET_NAMES = { bulkGen: 'まとめ精製' };
 
   /* ============================================================
    * 3. ユーティリティ・保存
@@ -146,7 +148,7 @@
 
   let S = null;
   function freshState() {
-    const st = { v: 1, t0: Date.now(), cards: {}, tickets: { bulkGen: 0, bulkMine: 0 }, counters: {}, fresh: [], pending: [], seenIntro: false, daily: { d: '', id: '', done: false }, stars: 0, graduated: false, view: 'c1' };
+    const st = { v: 1, t0: Date.now(), cards: {}, tickets: { bulkGen: 0 }, counters: {}, fresh: [], pending: [], seenIntro: false, daily: { d: '', id: '', done: false }, stars: 0, graduated: false, view: 'c1' };
     CARDS.forEach((c, i) => { st.cards[c.id] = { unlocked: i === 0, finished: false, lines: [], draws: 0, m: {} }; c.missions.forEach(m => { st.cards[c.id].m[m.id] = { p: 0, done: false, at: 0, rot: 0, holo: false, keys: [] }; }); });
     return st;
   }
@@ -160,8 +162,8 @@
     return st;
   }
   const save = () => ls.set(CFG.storageKey, JSON.stringify(S));
-  // いまのページが gameState（home.html などの変数）を持っているときは それを使う ＝ ページが持つデータと食いちがわない
-  function liveGS() { try { if (typeof gameState === 'object' && gameState && typeof save === 'function') return gameState; } catch (e) {} return null; }
+  // いまのページが gameState（home/mine/seisei/map の変数）を持っているときは それを使う ＝ ページが持つデータと食いちがわない
+  function liveGS() { try { if (typeof gameState === 'object' && gameState) return gameState; } catch (e) {} return null; }
   function readGS() { const g = liveGS(); if (g) return g; try { return JSON.parse(ls.get(CFG.gameKey)) || {}; } catch (e) { return {}; } }
   const playerLevel = () => readGS().level || 1;
 
@@ -172,20 +174,28 @@
     if (gs.level == null) { gs.level = 1; if (gs.mudStock == null) gs.mudStock = 5; }
     if (r.money) gs.money += r.money;
     if (r.elements) { gs.elements = gs.elements || {}; Object.keys(r.elements).forEach(k => { gs.elements[k] = (gs.elements[k] || 0) + r.elements[k]; }); }
+    let lvBefore = gs.level || 1;
     if (r.exp) {
-      if (global.RE && typeof global.RE.addExp === 'function') { try { global.RE.addExp(gs, r.exp); } catch (e) {} }   // 本編に経験値の入口(RE.addExp)があれば それを使う
+      if (global.RE && typeof global.RE.addExp === 'function') { try { const b = global.RE.addExp(gs, r.exp, { frac: CFG.expFrac }); if (typeof b === 'number') lvBefore = b; } catch (e) {} }   // 本編の経験値表(areaconfig.js)を使う
       else { let lv = gs.level, ex = (gs.exp || 0) + r.exp; while (ex >= lv * 100) { ex -= lv * 100; lv++; } gs.level = lv; gs.exp = ex; }
     }
-    if (live) { try { save(); } catch (e) { ls.set(CFG.gameKey, JSON.stringify(gs)); } try { if (typeof updateUI === 'function') updateUI(); } catch (e) {} }
-    else ls.set(CFG.gameKey, JSON.stringify(gs));
+    ls.set(CFG.gameKey, JSON.stringify(gs));
+    if (live) {
+      try { if (typeof save === 'function') save(); else if (typeof saveGameState === 'function') saveGameState(); } catch (e) {}
+      try { if (typeof updateUI === 'function') updateUI(); else if (typeof updateDisplay === 'function') updateDisplay(); } catch (e) {}
+    }
+    if ((gs.level || 1) > lvBefore) {   // レベルアップの お知らせ（解放された機能の案内）。スタンプの画面が閉じてから出す
+      setTimeout(() => { try { if (global.RE && typeof global.RE.announceUnlocks === 'function') global.RE.announceUnlocks(gs, { fromLevel: lvBefore, page: 'stampcard', busy: () => openFlag || modalOpen || cerBusy }); } catch (e) {} }, 400);
+    }
   }
   function applyReward(r) {
     r = JSON.parse(JSON.stringify(r || {}));
     if (r.elements && r.elements.__rand) { const n = r.elements.__rand; r.elements = {}; r.elements[pick(SYMS)] = n; }
     (CFG.grant || defaultGrant)({ money: r.money || 0, exp: r.exp || 0, elements: r.elements || null });
-    if (r.tickets) Object.keys(r.tickets).forEach(k => { S.tickets[k] = (S.tickets[k] || 0) + r.tickets[k]; });
+    if (r.tickets) { Object.keys(r.tickets).forEach(k => { S.tickets[k] = (S.tickets[k] || 0) + r.tickets[k]; }); tickChanged(); }
     return r;
   }
+  function tickChanged() { try { if (CFG.onTicketChange) CFG.onTicketChange(); } catch (e) {} }
   function rewardLines(r) {
     const out = []; if (!r) return out;
     if (r.money) out.push('💰 ' + r.money.toLocaleString() + ' G');
@@ -258,21 +268,22 @@
   function report(event, n, meta) {
     try {
       if (!S) { pendingReports.push([event, n, meta]); return; }
-      n = n == null ? 1 : n; if (busy) return; busy = true;
+      n = n == null ? 1 : n; if (busy) return; busy = true; const adv = [];
       try {
         S.counters[event] = (S.counters[event] || 0) + n; const cat = EVENT_CAT[event]; if (cat) S.counters['cat_' + cat] = (S.counters['cat_' + cat] || 0) + n;
         ensureDaily();
         CARDS.forEach(c => {
           const cs = S.cards[c.id]; if (!cs.unlocked) return;
           c.missions.forEach(m => {
-            const st = cs.m[m.id]; if (st.done || m.event !== event) return;
+            const st = cs.m[m.id]; if (st.done || m.event !== event) return; const before = st.p;
             if (m.type === 'distinct') { const k = meta && meta[m.key]; if (k != null && !st.keys.includes(String(k))) st.keys.push(String(k)); st.p = Math.min(m.count, st.keys.length); }
             else st.p = Math.min(m.count, st.p + n);
-            if (st.p >= m.count) stampMission(c, m);
+            if (st.p >= m.count) stampMission(c, m); else if (st.p !== before) adv.push({ m, p: st.p });
           });
         });
         save();
       } finally { busy = false; }
+      pillShow(adv);
       dirty = true; refreshLevels();   // ごほうびEXPで レベルが あがったときも拾う
     } catch (e) { try { console.warn('[stampcard]', e); } catch (_) {} }
   }
@@ -405,9 +416,9 @@
 .bar span{width:84px;flex:none}
 .gold{background:linear-gradient(#fff8c4,#ffd23f)}
 /* スタンプの演出（カードを とじているときに 出る） */
-.cer{position:fixed;inset:0;z-index:2147483200;background:rgba(10,14,34,.45);display:none;align-items:center;justify-content:center;pointer-events:auto}
+.cer{position:fixed;inset:0;z-index:2147483200;background:rgba(10,14,34,.28);display:none;align-items:center;justify-content:center;pointer-events:none}
 .cer.show{display:flex;animation:fadeIn .15s}
-.cerp{position:relative;width:min(80vw,300px);background:#fff8e7;border:4px solid #1b1f3b;border-radius:24px;box-shadow:0 8px 0 #1b1f3b;padding:16px 14px 14px;text-align:center;color:#1b1f3b;animation:popIn .25s cubic-bezier(.2,1.5,.4,1)}
+.cerp{pointer-events:auto;position:relative;width:min(80vw,300px);background:#fff8e7;border:4px solid #1b1f3b;border-radius:24px;box-shadow:0 8px 0 #1b1f3b;padding:16px 14px 14px;text-align:center;color:#1b1f3b;animation:popIn .25s cubic-bezier(.2,1.5,.4,1)}
 .cerp .big{width:128px;height:128px;margin:0 auto 6px;position:relative}
 .cerp .big .sw{width:100%;height:auto;animation:slam .75s cubic-bezier(.2,1.3,.4,1) both}
 .cerp .big::before{content:"";position:absolute;left:50%;top:50%;width:40px;height:40px;margin:-20px;border-radius:50%;border:5px solid var(--ink);opacity:0;animation:ink .9s .3s ease-out}
@@ -415,6 +426,8 @@
 .cerp .t2{font-size:14px;font-weight:900;margin-top:2px}
 .cerp .t3{font-size:12.5px;font-weight:900;margin-top:6px;color:#b36b00;line-height:1.5}
 .cerp .t4{font-size:12.5px;font-weight:900;margin-top:6px;color:#fff;background:#ff5d8f;border-radius:10px;padding:3px 8px;display:inline-block}
+.pill{position:fixed;z-index:2147483050;background:#fff;color:#1b1f3b;border:3px solid #1b1f3b;border-radius:14px;padding:4px 12px;font-weight:900;font-size:13px;box-shadow:0 3px 0 #1b1f3b;opacity:0;transform:translateY(10px) scale(.9);pointer-events:none;transition:opacity .2s,transform .2s;white-space:nowrap}
+.pill.show{opacity:1;transform:none}
 .toast{position:fixed;left:50%;top:12px;transform:translate(-50%,-90px);z-index:2147483250;background:#fff;color:#1b1f3b;border:3px solid #1b1f3b;border-radius:16px;box-shadow:0 4px 0 #1b1f3b;padding:8px 14px;font-weight:900;font-size:13px;max-width:92vw;text-align:center;transition:transform .35s cubic-bezier(.2,1.5,.4,1);line-height:1.5}
 .toast.show{transform:translate(-50%,0)}
 .toast button{margin-left:8px;border:2px solid #1b1f3b;background:#ffd23f;border-radius:10px;font-weight:900;padding:2px 10px;cursor:pointer}
@@ -444,6 +457,7 @@
       <div class="cer" id="cer"><div class="cerp" id="cerp"></div></div>
       <div class="md" id="md"><div class="mdc" id="mdc"></div></div>
       <div class="toast" id="toast"></div>
+      <div class="pill" id="pill"></div>
       <canvas id="fx"></canvas>`;
     $ = id => root.getElementById(id);
     fx = $('fx'); fxc = fx.getContext('2d'); sizeFx(); global.addEventListener('resize', sizeFx);
@@ -453,10 +467,17 @@
     $('ov').addEventListener('pointerdown', e => { if (e.target === $('ov')) closeCard(); });
     $('snd').onclick = () => { soundOn = !soundOn; ls.set(CFG.soundKey, soundOn ? 'on' : 'off'); $('snd').textContent = soundOn ? '🔊' : '🔇'; initAudio(); SE.click(); };
     $('snd').textContent = soundOn ? '🔊' : '🔇';
-    $('cer').addEventListener('pointerdown', () => { cerClose(true); });
+    $('cerp').addEventListener('pointerdown', () => { cerClose(true); });
     root.addEventListener('pointerdown', initAudio, { once: true });
   }
 
+  /* ---- 回数ミッションの 進みぐあい（スタンプになる前でも「ちゃんと数えてるよ」が わかる） ---- */
+  let pillT = 0;
+  function pillShow(adv) {
+    if (!uiReady || !adv.length) return; const a = adv.sort((x, y) => y.p / y.m.count - x.p / x.m.count)[0], pl = $('pill');
+    pl.textContent = a.m.icon + ' ' + a.m.title + '　' + a.p + ' / ' + a.m.count; pl.style.bottom = (CFG.button ? CFG.buttonBottom + 74 : 24) + 'px'; pl.style[CFG.buttonSide === 'left' ? 'left' : 'right'] = '12px';
+    pl.classList.remove('show'); void pl.offsetWidth; pl.classList.add('show'); clearTimeout(pillT); pillT = setTimeout(() => pl.classList.remove('show'), 1800);
+  }
   /* ---- ふわっと出るお知らせ ---- */
   let toastT = 0;
   function toast(html, action, ms) {
@@ -573,7 +594,7 @@
     // フッター
     const foot = document.createElement('div'); foot.className = 'foot';
     const lineNote = `ビンゴ(たて・よこ・ななめ): 🎰 ミニ福引（${cs.draws}/${CFG.maxLineDraws}）　かんせい: 🎁 ごほうび箱`;
-    foot.innerHTML = `<div>${lineNote}</div><div>かんせいの ごほうび: ${rewardLines(c.finish).map(esc).join(' ／ ')}</div><div class="tk"><span class="chip">🎫 ${TICKET_NAMES.bulkGen} ×${S.tickets.bulkGen || 0}</span><span class="chip">🎫 ${TICKET_NAMES.bulkMine} ×${S.tickets.bulkMine || 0}</span><span class="chip">⭐ ${S.stars}</span></div>`;
+    foot.innerHTML = `<div>${lineNote}</div><div>かんせいの ごほうび: ${rewardLines(c.finish).map(esc).join(' ／ ')}</div><div class="tk"><span class="chip">🎫 ${TICKET_NAMES.bulkGen} ×${S.tickets.bulkGen || 0}</span><span class="chip">⭐ ${S.stars}</span></div>`;
     body.appendChild(foot);
     const pend = S.pending;
     if (pend.length) { const b = document.createElement('button'); b.className = 'btn go'; b.textContent = `🎁 ごほうびを うけとる (${pend.length})`; b.onclick = () => { SE.click(); runPending(); }; body.appendChild(b); }
@@ -615,7 +636,7 @@
     SE.chime(); burstAt($('mdc'), 24, 9); $('ok').onclick = () => { SE.click(); mdDone(); };
   }
   function gradModal() {
-    mdOpen(`<h3 style="color:#c98a00">🎓 Lv50 そつぎょう！</h3><div style="font-size:64px">🏆</div><p style="font-size:15px">ここまで あそんでくれて ありがとう！<br>Lv50で ひらく <b>まとめ生成(10こ)</b> と <b>まとめ掘削(5こ)</b> で、<br>これからも 工場を どんどん まわそう！</p><button class="btn gold" id="ok">ありがとう！</button>`);
+    mdOpen(`<h3 style="color:#c98a00">🎓 Lv50 そつぎょう！</h3><div style="font-size:64px">🏆</div><p style="font-size:15px">ここまで あそんでくれて ありがとう！<br>Lv50で めざめる ひみつの <b>50こ まとめ精製</b> で、<br>これからも どんどん 元素を ふやそう！</p><button class="btn gold" id="ok">ありがとう！</button>`);
     SE.fanfare(); rain(120); [0, 400, 800, 1200].forEach(t => setTimeout(() => burst(innerWidth * rnd(.2, .8), innerHeight * rnd(.15, .5), 40, 12), t));
     $('ok').onclick = () => { SE.click(); mdDone(); try { if (CFG.onGraduate) CFG.onGraduate(); } catch (e) {} };
   }
@@ -639,7 +660,7 @@
   const API = {
     init, report, open: openCard, close: closeCard, refresh: refreshLevels,
     hasTicket: k => !!S && (S.tickets[k] || 0) > 0,
-    useTicket: k => { if (!S || (S.tickets[k] || 0) <= 0) return false; S.tickets[k]--; save(); updateFab(); if (openFlag) renderCard(); return true; },
+    useTicket: k => { if (!S || (S.tickets[k] || 0) <= 0) return false; S.tickets[k]--; save(); tickChanged(); updateFab(); if (openFlag) renderCard(); return true; },
     addTicket: (k, n) => { if (!S) return; S.tickets[k] = (S.tickets[k] || 0) + (n || 1); save(); },
     tickets: () => Object.assign({}, S && S.tickets),
     state: () => S, config: CFG, cards: CARDS,
