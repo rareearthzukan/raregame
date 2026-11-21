@@ -58,6 +58,31 @@
     pac_ukulele: { name: '小さなウクレレ', emoji: '🎸', size: 12, bonus: 0.2, y: 70, country: 'pacific', slot: 'bitter' },
     pac_table_set: { name: 'トロピカルフルーツが並ぶテーブルと椅子セット', emoji: '🍍', size: 34, bonus: 0.5, y: 92, country: 'pacific', slot: 'odd' }
   };
+  // 「家具セット」は、複数の家具をまとめてプレゼントする。部品の絵は kagu_<部品ID>.png（セット自体には絵は不要）
+  //   想定外の「テーブルと椅子セット」＝2点（屋台＋テーブルと椅子）／大成功の「家具5点セット」＝5点（上の2点＋3点）
+  const PARTS = {
+    asia_table_set_food: { name: '麺料理の屋台', emoji: '🍜', size: 44, bonus: 0.35, y: 86 },
+    asia_table_set_table: { name: 'テーブルと椅子（4脚）', emoji: '🪑', size: 34, bonus: 0.30, y: 92 },
+    asia_rattan_chair: { name: '籐の椅子', emoji: '🪑', size: 20, bonus: 0.15, y: 90 },
+    asia_bamboo_shelf: { name: '竹の棚', emoji: '🗄️', size: 22, bonus: 0.15, y: 88 },
+    asia_lantern: { name: '籐のランタン', emoji: '🏮', size: 14, bonus: 0.10, y: 60 },
+    afr_table_set_food: { name: 'シチューとパンの屋台', emoji: '🍲', size: 44, bonus: 0.35, y: 86 },
+    afr_table_set_table: { name: 'テーブルと椅子（4脚）', emoji: '🪑', size: 34, bonus: 0.30, y: 92 },
+    afr_stool: { name: '木のスツール', emoji: '🪑', size: 16, bonus: 0.15, y: 90 },
+    afr_rug: { name: '織物のラグ', emoji: '🧶', size: 28, bonus: 0.15, y: 95 },
+    afr_lantern: { name: 'ランタン', emoji: '🏮', size: 14, bonus: 0.10, y: 60 },
+    pac_table_set_food: { name: 'トロピカルフルーツの屋台', emoji: '🍍', size: 44, bonus: 0.35, y: 86 },
+    pac_table_set_table: { name: 'テーブルと椅子（4脚）', emoji: '🪑', size: 34, bonus: 0.30, y: 92 },
+    pac_hammock: { name: 'ハンモック', emoji: '🛏️', size: 30, bonus: 0.15, y: 80 },
+    pac_shell_lantern: { name: '貝殻のランタン', emoji: '🐚', size: 14, bonus: 0.10, y: 60 },
+    pac_rattan_chair: { name: '籐の椅子', emoji: '🪑', size: 20, bonus: 0.15, y: 90 }
+  };
+  [['asia', ['asia_table_set_food', 'asia_table_set_table', 'asia_rattan_chair', 'asia_bamboo_shelf', 'asia_lantern']],
+   ['afr', ['afr_table_set_food', 'afr_table_set_table', 'afr_stool', 'afr_rug', 'afr_lantern']],
+   ['pac', ['pac_table_set_food', 'pac_table_set_table', 'pac_hammock', 'pac_shell_lantern', 'pac_rattan_chair']]].forEach(([k, five]) => {
+    SOUVENIRS[k + '_furniture5'].parts = five;                 // 大成功：5点まとめて
+    SOUVENIRS[k + '_table_set'].parts = five.slice(0, 2);      // 想定外：2点（屋台＋テーブルと椅子）
+  });
   // 災害以外のイベントで、お礼として届く品（大成功／成功のとき）。絵は kagu_<ID>.png を置くと表示される
   const GIFTS = {
     gift_e02: { name: '鉱物の写真パネル（奨学生より）', emoji: '🖼️', size: 22, bonus: 0.3, y: 45, from: 'E02' },
@@ -73,7 +98,7 @@
     obs_sunset: { name: '観測室の飾り「南鳥島の夕焼け」', emoji: '🌅', size: 30, bonus: 0.4, y: 40 },
     obs_shell: { name: '観測室の飾り「南鳥島の貝殻」', emoji: '🐚', size: 12, bonus: 0.2, y: 88 }
   };
-  function itemInfo(id) { return SOUVENIRS[id] || DECOR[id] || GIFTS[id] || null; }
+  function itemInfo(id) { return SOUVENIRS[id] || DECOR[id] || GIFTS[id] || PARTS[id] || null; }
 
   // ───── 小さな関数たち ─────
   const A = (o) => o;                                      // 評判の変化を読みやすく書くための印
@@ -524,8 +549,11 @@
     [rep.souvenir, rep.decor].forEach(id => {
       if (!id) return;
       if (!O.souvenirs.includes(id)) O.souvenirs.push(id);
+      const info = itemInfo(id), ids = (info && info.parts) ? info.parts : [id];     // セットなら、部品を1点ずつ追加
       gs.homeFurnishings = gs.homeFurnishings || [];
-      if (!gs.homeFurnishings.includes(id)) { gs.homeFurnishings.push(id); gs.newFurn = Array.isArray(gs.newFurn) ? gs.newFurn : []; gs.newFurn.push(id); }
+      ids.forEach(pid => {
+        if (!gs.homeFurnishings.includes(pid)) { gs.homeFurnishings.push(pid); gs.newFurn = Array.isArray(gs.newFurn) ? gs.newFurn : []; gs.newFurn.push(pid); }
+      });
       got.push(id);
     });
     persist(gs); return { ok: true, items: got };
@@ -566,7 +594,7 @@
 
   global.FD = {
     EVENTS: EVENTS, ORDER: ORDER, AXES: AXES, TIER: TIER, KEYS: KEYS, RESULT_NAME: RESULT_NAME, TB_LINE: TB_LINE, WHO: WHO,
-    SOUVENIRS: SOUVENIRS, DECOR: DECOR, GIFTS: GIFTS, COUNTRIES: COUNTRIES, FOUND_LEVEL: FOUND_LEVEL,
+    SOUVENIRS: SOUVENIRS, DECOR: DECOR, GIFTS: GIFTS, PARTS: PARTS, COUNTRIES: COUNTRIES, FOUND_LEVEL: FOUND_LEVEL,
     byId: byId, itemInfo: itemInfo, ensure: ensure, acts: acts, tradeCount: tradeCount, optionsFor: optionsFor, weights: weights,
     tick: tick, spend: spend, claim: claim, shelf: shelf, gifts: gifts, notify: notify, persist: persist, loadGS: loadGS,
     _setRand: (f) => { rand = f || Math.random; }
