@@ -248,7 +248,7 @@ function finish(){phase="end";status();let bonus=0;const m=wy>we?"win":wy<we?"lo
  else if(m==="tie")pay(100);else{SV.streak=0;save()}
  $("endT").textContent=m==="win"?"キミの勝ち！":m==="lose"?"ボクの勝ち！":"ひきわけ！";
  $("endM").innerHTML=`${wy} − ${we}／持っているG：${fmt(gold)}${m==="win"?`（ごほうび ${200+bonus}G！）${SV.streak>=2?"<br>🔥 "+SV.streak+"連勝！ボーナス +"+bonus+"G":""}`:m==="tie"?"（100Gがもどったよ）":""}${extra}`;
- say(m==="win"?"うわー、負けちゃった！キミ、すごいよ！\nごほうびをどうぞ！":m==="lose"?"やったー、ボクの勝ち！\nまた遊んでね！":"いい勝負だったね！\nまたやろうよ！");$("end").hidden=false;$("again").focus()}
+ say(m==="win"?"うわー、負けちゃった！キミ、すごいよ！\nごほうびをどうぞ！":m==="lose"?"やったー、ボクの勝ち！\nまた遊んでね！":"いい勝負だったね！\nまたやろうよ！");$("end").hidden=false;$("again").focus();window.Stamp&&Stamp.report("minigame_play",1,{game:"Eu"})}   /* スタンプカード：ミニゲームをあそんだ */
 $("again").onclick=()=>{$("end").hidden=true;startRps()};
 $("toTitle").onclick=()=>{$("end").hidden=true;$("title").hidden=false};
 /* ---- タイトル・ガイド・じゃんけん ---- */
@@ -314,5 +314,7 @@ document.addEventListener("pointerdown",()=>{started=true;bgmPlay()});
 document.addEventListener("visibilitychange",()=>{if(document.hidden)stopAll();else bgmPlay()});
 window.addEventListener("pagehide",stopAll);
 </script>
+<script>window.STAMP_OPTS={button:false,stateRef:function(){return SV},afterGrant:function(){gold=SV.money;save();try{status()}catch(e){}}};</script>
+<script src="stampcard.js"></script>
 </body>
 </html>

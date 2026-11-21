@@ -1,4 +1,4 @@
-/*! stampcard.js  ─  レアアース ゲーム用「スタンプカード（ミッション）」システム  v1.2
+/*! stampcard.js  ─  レアアース ゲーム用「スタンプカード（ミッション）」システム  v1.3
  *
  * ■ つかいかた（本編の各ページに 2行 たすだけ）
  *   <script src="stampcard.js"></script>             ← </body> の前に1行
@@ -37,7 +37,9 @@
     maxLineDraws: 3,                    // 1枚のカードで 福引を引ける ビンゴ列の数
     grant: null,                        // ごほうびの渡し方を自分で決めたいとき (reward)=>{}
     onGraduate: null,                   // Lv50そつぎょうのときに呼ばれる
-    onTicketChange: null                // チケットがふえた／へったときに呼ばれる（ボタン表示の更新用）
+    onTicketChange: null,               // チケットがふえた／へったときに呼ばれる（ボタン表示の更新用）
+    stateRef: null,                     // ページのデータを返す関数（gameState以外の名前のとき）  例: () => SV
+    afterGrant: null                    // ごほうびを渡したあとに呼ばれる（ページ側の変数を合わせる用）
   };
   const SYMS = ['La', 'Ce', 'Pr', 'Nd', 'Pm', 'Sm', 'Eu', 'Gd', 'Tb', 'Dy', 'Ho', 'Er', 'Tm', 'Yb', 'Lu', 'Sc', 'Y'];
   const LINES = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]];
@@ -163,7 +165,10 @@
   }
   const save = () => ls.set(CFG.storageKey, JSON.stringify(S));
   // いまのページが gameState（home/mine/seisei/map の変数）を持っているときは それを使う ＝ ページが持つデータと食いちがわない
-  function liveGS() { try { if (typeof gameState === 'object' && gameState) return gameState; } catch (e) {} return null; }
+  function liveGS() {
+    if (CFG.stateRef) { try { const g = CFG.stateRef(); if (g && typeof g === 'object') return g; } catch (e) {} }   // ページが 別の名前で データを持っているとき用（例: ユウロピウムのゲームの SV）
+    try { if (typeof gameState === 'object' && gameState) return gameState; } catch (e) {} return null;
+  }
   function readGS() { const g = liveGS(); if (g) return g; try { return JSON.parse(ls.get(CFG.gameKey)) || {}; } catch (e) { return {}; } }
   const playerLevel = () => readGS().level || 1;
 
@@ -184,6 +189,7 @@
       try { if (typeof save === 'function') save(); else if (typeof saveGameState === 'function') saveGameState(); } catch (e) {}
       try { if (typeof updateUI === 'function') updateUI(); else if (typeof updateDisplay === 'function') updateDisplay(); } catch (e) {}
     }
+    try { if (CFG.afterGrant) CFG.afterGrant(gs); } catch (e) {}
     if ((gs.level || 1) > lvBefore) {   // レベルアップの お知らせ（解放された機能の案内）。スタンプの画面が閉じてから出す
       setTimeout(() => { try { if (global.RE && typeof global.RE.announceUnlocks === 'function') global.RE.announceUnlocks(gs, { fromLevel: lvBefore, page: 'stampcard', busy: () => openFlag || modalOpen || cerBusy }); } catch (e) {} }, 400);
     }
