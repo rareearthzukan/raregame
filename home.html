@@ -444,7 +444,7 @@ const BLUE_ROWS=[
 MILE_ROWS.forEach(r=>furnitureMaster[r[0]]={name:r[1],emoji:r[2],cost:r[3],bonus:r[4],size:r[5],x:50,y:r[6],img:IMG_PREFIX+r[0]+'.png'});
 GOLD_ROWS.concat(SWEETS_ROWS,BLUE_ROWS).forEach(r=>furnitureMaster[r[0]]={name:r[1],emoji:r[2],gold:r[3],cost:0,bonus:r[4],size:r[5],x:50,y:r[6],img:IMG_PREFIX+r[0]+'.png'});
 /* 財団のおみやげ・観測室の飾り（foundation.js のデータ）。ショップには並ばず、観測室で受け取ると「📦配置」に入る。絵は kagu_<ID>.png を置くと表示される */
-if(window.FD){ [FD.SOUVENIRS,FD.DECOR,FD.GIFTS].forEach(M=>Object.keys(M).forEach(id=>{ const o=M[id]; furnitureMaster[id]={name:o.name,emoji:o.emoji,cost:0,bonus:o.bonus,size:o.size,x:50,y:o.y,img:IMG_PREFIX+id+'.png',obs:true}; })); }
+if(window.FD){ [FD.SOUVENIRS,FD.DECOR,FD.GIFTS,FD.PARTS].forEach(M=>Object.keys(M).forEach(id=>{ const o=M[id]; if(o.parts) return; /* セットは部品を1点ずつ登録 */ furnitureMaster[id]={name:o.name,emoji:o.emoji,cost:0,bonus:o.bonus,size:o.size,x:50,y:o.y,img:IMG_PREFIX+id+'.png',obs:true}; })); }
 
 /* ═════════ 家具の分類（ショップ・配置の絞り込み用） ═════════
    ■ シリーズ：IDの末尾（_natural/_stand→シンプル・ナチュラルに統合、_mono、_lab）、okashi数字→スイーツ、ao数字→ブルー で自動判定。末尾なし→マイル品は「ふつう」、G品は「ごうか」
@@ -627,7 +627,7 @@ function showReport(rid,n){
   let tail='';
   if(!more){
     tail+=`<div class="rp-ax">${rep.choice?'':axesHtml(rep.axes).replace(/<span class="neg">/g,'<span class="neg">')}</div>`;
-    if(it) tail+=`<div class="rp-item"><span class="em">${it.emoji}</span><div>観測室に届いたもの<br><b>${rpEsc(it.name)}</b></div></div>`;
+    if(it) tail+=`<div class="rp-item"><span class="em">${it.emoji}</span><div>観測室に届いたもの<br><b>${rpEsc(it.name)}</b>${it.parts?`<br><small>（${it.parts.length}点セット：まとめて持ち物に入ります）</small>`:''}</div></div>`;
     tail+=rpSay(FD.TB_LINE[rep.result].replace(/^「|」$/g,''),big?'big':small?'small':'');
     if(rep.closing&&!rep.choice) tail+=rpSay(rep.closing);
     tail+=rep.choice
@@ -659,7 +659,7 @@ function openShelf(){
   /* 受け取ったおみやげだけを表示する（これから起きること・届かなかった結果は出さない） */
   const blocks=FD.shelf(gameState).filter(c=>c.state==='done').map(c=>{
     const got=c.slots.filter(s=>s.got); if(!got.length) return '';
-    return `<div class="shelf-c"><b>${c.flag} ${c.name}</b><div class="shelf-g">${got.map(s=>{ const it=FD.itemInfo(s.id); return `<div class="shelf-s"><span class="e">${it.emoji}</span>${it.name}</div>`; }).join('')}</div></div>`;
+    return `<div class="shelf-c"><b>${c.flag} ${c.name}</b><div class="shelf-g">${got.map(s=>{ const it=FD.itemInfo(s.id); return `<div class="shelf-s"><span class="e">${it.emoji}</span>${it.name}${it.parts?`<br>（${it.parts.length}点）`:''}</div>`; }).join('')}</div></div>`;
   }).join('');
   const gf=FD.gifts(gameState);
   const gifts=gf.length?`<div class="shelf-c"><b>🏛 財団からのお礼</b><div class="shelf-g">${gf.map(id=>{ const it=FD.GIFTS[id]; return `<div class="shelf-s"><span class="e">${it.emoji}</span>${it.name}</div>`; }).join('')}</div></div>`:'';
