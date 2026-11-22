@@ -571,6 +571,23 @@
     });
   }
 
+  // 古い版で「セットそのもの」を家具として受け取っていた人のために、セットを部品に展開する（home.html の起動時に呼ぶ）
+  //   戻り値：展開したセットの数（1以上なら、呼び出し側で保存する）
+  function migrate(gs) {
+    if (!gs || !Array.isArray(gs.homeFurnishings)) return 0;
+    let n = 0;
+    gs.homeFurnishings.slice().forEach(id => {
+      const it = SOUVENIRS[id]; if (!(it && it.parts)) return;
+      gs.homeFurnishings = gs.homeFurnishings.filter(x => x !== id);
+      it.parts.forEach(pid => {
+        if (!gs.homeFurnishings.includes(pid)) { gs.homeFurnishings.push(pid); gs.newFurn = Array.isArray(gs.newFurn) ? gs.newFurn : []; gs.newFurn.push(pid); }
+      });
+      n++;
+    });
+    if (n) gs.placedItems = (gs.placedItems || []).filter(i => !(i.type === 'furn' && SOUVENIRS[i.id] && SOUVENIRS[i.id].parts));   // 置いてあったセットは持ち物（部品）に戻す
+    return n;
+  }
+
   // 「財団からのお礼」棚：受け取った品だけ
   function gifts(gs) { const own = ensure(gs) && gs.observatory.souvenirs; return Object.keys(GIFTS).filter(id => own.includes(id)); }
 
@@ -596,7 +613,7 @@
     EVENTS: EVENTS, ORDER: ORDER, AXES: AXES, TIER: TIER, KEYS: KEYS, RESULT_NAME: RESULT_NAME, TB_LINE: TB_LINE, WHO: WHO,
     SOUVENIRS: SOUVENIRS, DECOR: DECOR, GIFTS: GIFTS, PARTS: PARTS, COUNTRIES: COUNTRIES, FOUND_LEVEL: FOUND_LEVEL,
     byId: byId, itemInfo: itemInfo, ensure: ensure, acts: acts, tradeCount: tradeCount, optionsFor: optionsFor, weights: weights,
-    tick: tick, spend: spend, claim: claim, shelf: shelf, gifts: gifts, notify: notify, persist: persist, loadGS: loadGS,
+    tick: tick, spend: spend, claim: claim, shelf: shelf, gifts: gifts, migrate: migrate, notify: notify, persist: persist, loadGS: loadGS,
     _setRand: (f) => { rand = f || Math.random; }
   };
 })(window);

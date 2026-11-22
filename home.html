@@ -1449,7 +1449,8 @@ function importSave(){
     try{ const p=JSON.parse(decodeURIComponent(escape(atob(c)))); if(!p||typeof p!=='object') throw 0;
       localStorage.setItem('rareEarthGameState',JSON.stringify(p)); gameState=p;
       Object.keys(defaults).forEach(k=>{ if(gameState[k]===undefined) gameState[k]=defaults[k]; });
-      applyTheme(roomThemeKey()); updateBgmSource(); ensureCharas(); syncCrafted(); updateUI(); toast('✨ 復元しました！');
+      applyTheme(roomThemeKey()); updateBgmSource(); try{ if(window.FD&&FD.migrate(gameState)) save(); }catch(e){}   /* 古い版で受け取ったセットを部品に展開 */
+      ensureCharas(); syncCrafted(); updateUI(); toast('✨ 復元しました！');
     }catch(e){ toast('⚠️ 無効なセーブコードです'); } });
 }
 
@@ -1520,7 +1521,8 @@ window.addEventListener('load',()=>{
   try {
     try { RE.initCommon(gameState,{page:'home',busy:homeBusy,delay:1500,onClose:()=>checkObsUnlock()}); } catch(e){}   // 他ページで貯まった経験値のレベル確定＋貿易ナビ＋解放のお知らせ
     buildControls(); switchTab('shop'); changeDirection(0);
-    updateBgmSource(); updateBgmUI(); applyTheme(gameState.currentTheme||'natural'); ensureCharas(); syncCrafted(); updateUI(); histBtns(); showGdReward(); if(location.hash==='#obs'&&obsOpen()) changeDirection(OBS_DIR);
+    updateBgmSource(); updateBgmUI(); applyTheme(gameState.currentTheme||'natural'); try{ if(window.FD&&FD.migrate(gameState)) save(); }catch(e){}   /* 古い版で受け取ったセットを部品に展開 */
+      ensureCharas(); syncCrafted(); updateUI(); histBtns(); showGdReward(); if(location.hash==='#obs'&&obsOpen()) changeDirection(OBS_DIR);
     if(!isMuted && bgm) bgm.play().catch(()=>['click','touchstart'].forEach(e=>document.addEventListener(e,unlock)));
   } catch(e){}
 });
