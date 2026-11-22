@@ -197,8 +197,8 @@ function stageClear(){S.ph='clr';S.clrT=S.t;SFX.clear();banner('STAGE CLEAR!<br>
 function grant(g,n){try{const k='rareEarthGameState',d=JSON.parse(localStorage.getItem(k)||'null')||{miles:500,level:1,money:1500,mudStock:5,products:{},homeFurnishings:[],placedItems:[]};d.money=(d.money||0)+g;d.elements=d.elements||{};d.elements.Sm=(d.elements.Sm||0)+n;localStorage.setItem(k,JSON.stringify(d))}catch(e){}}
 function endScr(o){$('et').textContent=o.t;$('ed').innerHTML=o.d;$('erw').style.display=o.rw?'':'none';$('en').textContent=o.n||'';$('eimg').style.display=o.img?'':'none';if(o.rw){$('eg').textContent=o.rw[0];$('es').textContent=o.rw[1]}
 const eb=$('eb');eb.innerHTML='';o.b.forEach(([l,f])=>{const e=document.createElement('button');e.className='big sub';e.textContent=l;e.onclick=f;eb.appendChild(e)});show('end')}
-function win(){S.ph='done';const g=800+Math.floor(tot/15);grant(g,10);SFX.clear();endScr({img:1,t:'🎉 ぜんぶクリア！',d:'ネオジムとサマリウムの 力で オーバーヒートを とめた！<br>スコア <b style="color:#fde047">'+tot+'</b>',rw:[g,10],n:'ごほうびは ほんぺんの ゲームで つかえるよ！',b:[['あそびかた',()=>{from='end';show('how')}]]})}
-function over(){S.ph='over';S.p=null;SFX.lose();
+function win(){S.ph='done';const g=800+Math.floor(tot/15);grant(g,10);window.Stamp&&Stamp.report('minigame_play',1,{game:'Sm'});SFX.clear();endScr({img:1,t:'🎉 ぜんぶクリア！',d:'ネオジムとサマリウムの 力で オーバーヒートを とめた！<br>スコア <b style="color:#fde047">'+tot+'</b>',rw:[g,10],n:'ごほうびは ほんぺんの ゲームで つかえるよ！',b:[['あそびかた',()=>{from='end';show('how')}]]})}
+function over(){S.ph='over';S.p=null;SFX.lose();window.Stamp&&Stamp.report('minigame_play',1,{game:'Sm'});
 setTimeout(()=>{if(mode==='m')endScr({t:'ざんねん…',d:'ブロックが つみあがって しまった！<br>クリアできなかったので ごほうびは ないよ',b:[['このステージを やりなおす',()=>{show('');S.sc=0;startStage()}],['タイトルへ',()=>show('title')]]});
 else{const nw=S.sc>hi;if(nw){hi=S.sc;try{localStorage.setItem('smMagDropHi',hi)}catch(e){}}endScr({t:'ロングモード しゅうりょう',d:'スコア <b style="color:#fde047">'+S.sc+'</b>　LEVEL '+S.lv+(nw?'<br>🎉 ハイスコア こうしん！':'<br>BEST '+hi),n:'ロングモードは ごほうびなしの れんしゅうモードだよ',b:[['もういちど',()=>newGame('l')],['タイトルへ',()=>show('title')]]})}},900)}
 /* ---- update ---- */
@@ -272,5 +272,7 @@ $('mu').onclick=()=>{mute=!mute;$('mu').textContent=mute?'🔇':'🔊';BG.muted=
 document.addEventListener('visibilitychange',()=>{if(document.hidden)BG.pause();else if(!mute&&S.ph!=='title')bgm()});
 rs();addEventListener('load',rs);
 </script>
+<script>window.STAMP_OPTS={button:false};</script>
+<script src="stampcard.js"></script>
 </body>
 </html>

@@ -315,7 +315,7 @@ function endRun(allClear){
   paused=true;
   if(run.cleared>0&&allClear){run.g+=200;run.yb+=5}
   const exp=run.cleared>0?capExp(run.exp):0;
-  if(!run.claimed){run.claimed=true;if(run.cleared>0)grantReward(run.g,exp,{Yb:run.yb})}
+  if(!run.claimed){run.claimed=true;if(run.cleared>0)grantReward(run.g,exp,{Yb:run.yb});window.Stamp&&Stamp.report('minigame_play',1,{game:'Yb'})}   /* スタンプカード：ミニゲームをあそんだ */
   const modeName=mode==='m'?'ミラー・レーザー':'ひかりのカゴ';
   $('et').textContent=allClear?'🎉 ぜんぶクリア！':'おつかれさま！';
   $('ed').innerHTML=modeName+'　クリアしたステージ <b style="color:#fde047">'+run.cleared+' / '+totalStages()+'</b>';
@@ -560,5 +560,7 @@ let last=performance.now();
 (function loop(n){const dt=Math.min(.05,(n-last)/1000);last=n;if(!paused)update(dt);else{for(const p of POP)p.l-=0}render();requestAnimationFrame(loop)})(last);
 resize();addEventListener('load',resize);
 </script>
+<script>window.STAMP_OPTS={button:false};</script>
+<script src="stampcard.js"></script>
 </body>
 </html>
