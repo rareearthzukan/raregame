@@ -62,8 +62,8 @@
   //   想定外の「テーブルと椅子セット」＝2点（屋台＋テーブルと椅子）／大成功の「家具5点セット」＝5点（上の2点＋3点）
   const PARTS = {
     asia_table_set_food: { name: '麺料理の屋台', emoji: '🍜', size: 44, bonus: 0.35, y: 86 },
-    asia_table_set_table: { name: 'テーブルと椅子（4脚）', emoji: '🪑', size: 34, bonus: 0.30, y: 92 },
-    asia_rattan_chair: { name: '籐の椅子', emoji: '🪑', size: 20, bonus: 0.15, y: 90 },
+    asia_table_set_table: { name: '屋台用テーブルと椅子', emoji: '🪑', size: 34, bonus: 0.30, y: 92 },
+    asia_rattan_chair: { name: 'ハイビスカスのランプ', emoji: '🔦', size: 20, bonus: 0.15, y: 90 },
     asia_bamboo_shelf: { name: '竹の棚', emoji: '🗄️', size: 22, bonus: 0.15, y: 88 },
     asia_lantern: { name: '籐のランタン', emoji: '🏮', size: 14, bonus: 0.10, y: 60 },
     afr_table_set_food: { name: 'シチューとパンの屋台', emoji: '🍲', size: 44, bonus: 0.35, y: 86 },
