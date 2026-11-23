@@ -61,28 +61,33 @@
   // 「家具セット」は、複数の家具をまとめてプレゼントする。部品の絵は kagu_<部品ID>.png（セット自体には絵は不要）
   //   想定外の「テーブルと椅子セット」＝2点（屋台＋テーブルと椅子）／大成功の「家具5点セット」＝5点（上の2点＋3点）
   const PARTS = {
-    asia_table_set_food: { name: '麺料理の屋台', emoji: '🍜', size: 44, bonus: 0.35, y: 86 },
-    asia_table_set_table: { name: '屋台用テーブルと椅子', emoji: '🪑', size: 34, bonus: 0.30, y: 92 },
-    asia_rattan_chair: { name: 'ハイビスカスのランプ', emoji: '🔦', size: 20, bonus: 0.15, y: 90 },
-    asia_bamboo_shelf: { name: '竹の棚', emoji: '🗄️', size: 22, bonus: 0.15, y: 88 },
-    asia_lantern: { name: '籐のランタン', emoji: '🏮', size: 14, bonus: 0.10, y: 60 },
-    afr_table_set_food: { name: 'シチューとパンの屋台', emoji: '🍲', size: 44, bonus: 0.35, y: 86 },
-    afr_table_set_table: { name: 'テーブルと椅子（4脚）', emoji: '🪑', size: 34, bonus: 0.30, y: 92 },
-    afr_stool: { name: '木のスツール', emoji: '🪑', size: 16, bonus: 0.15, y: 90 },
-    afr_rug: { name: '織物のラグ', emoji: '🧶', size: 28, bonus: 0.15, y: 95 },
-    afr_lantern: { name: 'ランタン', emoji: '🏮', size: 14, bonus: 0.10, y: 60 },
-    pac_table_set_food: { name: 'トロピカルフルーツの屋台', emoji: '🍍', size: 44, bonus: 0.35, y: 86 },
-    pac_table_set_table: { name: 'テーブルと椅子（4脚）', emoji: '🪑', size: 34, bonus: 0.30, y: 92 },
-    pac_hammock: { name: 'ハンモック', emoji: '🛏️', size: 30, bonus: 0.15, y: 80 },
-    pac_shell_lantern: { name: '貝殻のランタン', emoji: '🐚', size: 14, bonus: 0.10, y: 60 },
-    pac_rattan_chair: { name: '籐の椅子', emoji: '🪑', size: 20, bonus: 0.15, y: 90 }
+    // アジアの某国（台風）：想定外＝屋台＋テーブルと椅子（2点）／大成功＝上の2点＋新しい3点（5点）
+    asia_table_set_food: { name: '麺料理の屋台', emoji: '🍜', size: 44, bonus: 0.30, y: 86 },
+    asia_table_set_table: { name: '屋台用テーブルと椅子', emoji: '🪑', size: 34, bonus: 0.25, y: 92 },
+    asia_dining_set: { name: '花を飾ったテーブルと椅子', emoji: '🪷', size: 36, bonus: 0.20, y: 90 },
+    asia_canopy_bed: { name: '天蓋つきベッド', emoji: '🛏️', size: 40, bonus: 0.30, y: 88 },
+    asia_display_shelf: { name: '飾り棚', emoji: '🗄️', size: 40, bonus: 0.20, y: 86 },
+    // アフリカの某国（洪水）：大成功＝5点／想定外＝シチューとパンのテーブルと椅子（1点）
+    afr_cabinet: { name: 'ぞうとキリンのキャビネット', emoji: '🐘', size: 38, bonus: 0.20, y: 88 },
+    afr_canopy_bed: { name: 'サバンナ風の天蓋ベッド', emoji: '🛏️', size: 42, bonus: 0.30, y: 88 },
+    afr_bookcase: { name: 'サバンナ風の飾り棚', emoji: '🗄️', size: 30, bonus: 0.20, y: 86 },
+    afr_dining_set: { name: 'シチューとパンのテーブルと椅子', emoji: '🍲', size: 38, bonus: 0.30, y: 92 },
+    afr_sofa: { name: 'アカシアのソファ', emoji: '🛋️', size: 40, bonus: 0.30, y: 90 },
+    // 太平洋の島国（火山噴火）：大成功＝5点／想定外＝トロピカルフルーツのテーブルと椅子（1点）
+    pac_hammock: { name: 'ハンモック', emoji: '🛏️', size: 34, bonus: 0.25, y: 84 },
+    pac_rattan_set: { name: '籐のテーブルと椅子', emoji: '🪑', size: 34, bonus: 0.25, y: 90 },
+    pac_shell_lantern: { name: '貝殻のランタン', emoji: '🐚', size: 14, bonus: 0.10, y: 55 },
+    pac_dining_set: { name: 'トロピカルフルーツのテーブルと椅子', emoji: '🍍', size: 38, bonus: 0.30, y: 92 },
+    pac_tiki_shelf: { name: 'ティキの飾り棚', emoji: '🗿', size: 28, bonus: 0.20, y: 86 }
   };
-  [['asia', ['asia_table_set_food', 'asia_table_set_table', 'asia_rattan_chair', 'asia_bamboo_shelf', 'asia_lantern']],
-   ['afr', ['afr_table_set_food', 'afr_table_set_table', 'afr_stool', 'afr_rug', 'afr_lantern']],
-   ['pac', ['pac_table_set_food', 'pac_table_set_table', 'pac_hammock', 'pac_shell_lantern', 'pac_rattan_chair']]].forEach(([k, five]) => {
-    SOUVENIRS[k + '_furniture5'].parts = five;                 // 大成功：5点まとめて
-    SOUVENIRS[k + '_table_set'].parts = five.slice(0, 2);      // 想定外：2点（屋台＋テーブルと椅子）
-  });
+  // 前の仕様で使っていた部品ID（新しい版では存在しない）。持ち物から取り除いて、新しい部品に置き換える
+  const LEGACY_PARTS = ['asia_rattan_chair', 'asia_bamboo_shelf', 'asia_lantern', 'afr_table_set_food', 'afr_table_set_table', 'afr_stool', 'afr_rug', 'afr_lantern', 'pac_table_set_food', 'pac_table_set_table', 'pac_rattan_chair'];
+  SOUVENIRS.asia_furniture5.parts = ['asia_table_set_food', 'asia_table_set_table', 'asia_dining_set', 'asia_canopy_bed', 'asia_display_shelf'];
+  SOUVENIRS.asia_table_set.parts = ['asia_table_set_food', 'asia_table_set_table'];
+  SOUVENIRS.afr_furniture5.parts = ['afr_cabinet', 'afr_canopy_bed', 'afr_bookcase', 'afr_dining_set', 'afr_sofa'];
+  SOUVENIRS.afr_table_set.parts = ['afr_dining_set'];
+  SOUVENIRS.pac_furniture5.parts = ['pac_hammock', 'pac_rattan_set', 'pac_shell_lantern', 'pac_dining_set', 'pac_tiki_shelf'];
+  SOUVENIRS.pac_table_set.parts = ['pac_dining_set'];
   // 災害以外のイベントで、お礼として届く品（大成功／成功のとき）。絵は kagu_<ID>.png を置くと表示される
   const GIFTS = {
     gift_e02: { name: '鉱物の写真パネル（奨学生より）', emoji: '🖼️', size: 22, bonus: 0.3, y: 45, from: 'E02' },
@@ -571,20 +576,24 @@
     });
   }
 
-  // 古い版で「セットそのもの」を家具として受け取っていた人のために、セットを部品に展開する（home.html の起動時に呼ぶ）
-  //   戻り値：展開したセットの数（1以上なら、呼び出し側で保存する）
+  // 古いセーブの整理（home.html の起動時に呼ぶ。戻り値が1以上なら、呼び出し側で保存する）
+  //   ① セットそのものを家具として持っていた → 部品に展開　② 前の仕様の部品ID → 取り除いて、新しい部品を追加
+  //   ③ 受け取ったセット（おみやげ棚にあるもの）の部品が足りなければ追加
   function migrate(gs) {
     if (!gs || !Array.isArray(gs.homeFurnishings)) return 0;
     let n = 0;
-    gs.homeFurnishings.slice().forEach(id => {
-      const it = SOUVENIRS[id]; if (!(it && it.parts)) return;
-      gs.homeFurnishings = gs.homeFurnishings.filter(x => x !== id);
-      it.parts.forEach(pid => {
-        if (!gs.homeFurnishings.includes(pid)) { gs.homeFurnishings.push(pid); gs.newFurn = Array.isArray(gs.newFurn) ? gs.newFurn : []; gs.newFurn.push(pid); }
-      });
-      n++;
-    });
-    if (n) gs.placedItems = (gs.placedItems || []).filter(i => !(i.type === 'furn' && SOUVENIRS[i.id] && SOUVENIRS[i.id].parts));   // 置いてあったセットは持ち物（部品）に戻す
+    const isSet = (id) => !!(SOUVENIRS[id] && SOUVENIRS[id].parts);
+    const have = new Set(gs.homeFurnishings);
+    gs.homeFurnishings.slice().forEach(id => { if (isSet(id) || LEGACY_PARTS.includes(id)) { have.delete(id); n++; } });
+    const owned = (gs.observatory && Array.isArray(gs.observatory.souvenirs)) ? gs.observatory.souvenirs : [];
+    const wanted = new Set();
+    gs.homeFurnishings.forEach(id => { if (isSet(id)) SOUVENIRS[id].parts.forEach(p => wanted.add(p)); });
+    owned.forEach(id => { if (isSet(id)) SOUVENIRS[id].parts.forEach(p => wanted.add(p)); });
+    wanted.forEach(p => { if (!have.has(p)) { have.add(p); n++; gs.newFurn = Array.isArray(gs.newFurn) ? gs.newFurn : []; gs.newFurn.push(p); } });
+    if (n) {
+      gs.homeFurnishings = Array.from(have);
+      gs.placedItems = (gs.placedItems || []).filter(i => !(i.type === 'furn' && (isSet(i.id) || LEGACY_PARTS.includes(i.id))));
+    }
     return n;
   }
 

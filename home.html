@@ -637,7 +637,7 @@ function showReport(rid,n){
   let tail='';
   if(!more){
     tail+=`<div class="rp-ax">${rep.choice?'':axesHtml(rep.axes).replace(/<span class="neg">/g,'<span class="neg">')}</div>`;
-    if(it) tail+=`<div class="rp-item"><span class="em">${it.emoji}</span><div>観測室に届いたもの<br><b>${rpEsc(it.name)}</b>${it.parts?`<br><small>（${it.parts.length}点セット：まとめて持ち物に入ります）</small>`:''}</div></div>`;
+    if(it) tail+=`<div class="rp-item"><span class="em">${it.emoji}</span><div>観測室に届いたもの<br><b>${rpEsc(it.name)}</b>${(it.parts&&it.parts.length>1)?`<br><small>（${it.parts.length}点セット：まとめて持ち物に入ります）</small>`:''}</div></div>`;
     tail+=rpSay(FD.TB_LINE[rep.result].replace(/^「|」$/g,''),big?'big':small?'small':'');
     if(rep.closing&&!rep.choice) tail+=rpSay(rep.closing);
     tail+=rep.choice
@@ -664,19 +664,19 @@ function claimReport(rid,idx){
 }
 /* おみやげ棚：絵（なければ絵文字）を出し、押すと詳しい画面が開く。「📦配置で飾る」で配置タブへ */
 const shThumb=(id,cls)=>{ const it=FD.itemInfo(id)||{}; return `<span class="sh-th ${cls||''}"><img src="${IMG_PREFIX}${id}.png" alt="" onerror="this.remove()"><i>${it.emoji||'📦'}</i></span>`; };
-const shPics=(id)=>{ const it=FD.itemInfo(id)||{}; return it.parts?`<span class="sh-strip">${it.parts.map(p=>shThumb(p,'sm')).join('')}</span>`:shThumb(id); };
+const shPics=(id)=>{ const it=FD.itemInfo(id)||{}; return (it.parts&&it.parts.length>1)?`<span class="sh-strip">${it.parts.map(p=>shThumb(p,'sm')).join('')}</span>`:shThumb((it.parts&&it.parts.length===1)?it.parts[0]:id); };
 function shOrigin(id){
   const it=FD.SOUVENIRS[id], g=FD.GIFTS[id];
   if(it){ const c=FD.COUNTRIES[it.country]; return `${c.flag} ${c.name}で、${FD.RESULT_NAME[it.slot]}のおみやげ`; }
   if(g){ const ev=FD.byId(g.from)||{}; return `🏛 財団からのお礼（${ev.title||''}）`; }
   return '🌅 島からの飾り';
 }
-function shTile(id){ const it=FD.itemInfo(id); return `<button class="shelf-s" onclick="openShelfItem('${id}')">${shPics(id)}<span class="nm">${it.name}</span>${it.parts?`<small>（${it.parts.length}点）</small>`:''}</button>`; }
+function shTile(id){ const it=FD.itemInfo(id); return `<button class="shelf-s" onclick="openShelfItem('${id}')">${shPics(id)}<span class="nm">${it.name}</span>${(it.parts&&it.parts.length>1)?`<small>（${it.parts.length}点）</small>`:''}</button>`; }
 function openShelfItem(id){
   const it=FD.itemInfo(id); if(!it) return;
   const parts=it.parts||[id];
   fdOpen(`<h3>${it.emoji} ${it.name}</h3><div class="fdsay" style="font-size:.72rem">${shOrigin(id)}</div>
-    ${it.parts?`<div style="font-size:.74rem;margin:.2rem 0">セットの中身（${parts.length}点）。まとめて持ち物に入っています。</div>`:''}
+    ${(it.parts&&it.parts.length>1)?`<div style="font-size:.74rem;margin:.2rem 0">セットの中身（${parts.length}点）。まとめて持ち物に入っています。</div>`:''}
     <div class="sh-list">${parts.map(p=>{ const pi=FD.itemInfo(p)||{}; return `<div class="sh-row">${shThumb(p)}<span>${pi.name||p}</span></div>`; }).join('')}</div>
     <div class="fdbtns"><button class="btn" onclick="shGoPlace()">📦 配置で飾る</button><button class="btn sub" onclick="openShelf()">もどる</button></div>`);
 }
