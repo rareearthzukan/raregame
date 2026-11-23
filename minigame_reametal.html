@@ -937,6 +937,7 @@
 
             earnedExp = RE.capExp(state, earnedExp, 0.15);
              addRewards(totalG, earnedExp);
+            window.Stamp&&Stamp.report('minigame_play',1,{game:'Nd'});   // スタンプカード：ミニゲームをあそんだ
 
             document.getElementById('res-score').textContent = score;
             document.getElementById('res-correct').textContent = correctCount;
@@ -1092,5 +1093,7 @@
             });
         });
     </script>
+<script>window.STAMP_OPTS={button:false,stateRef:function(){return state},afterGrant:function(){try{saveState();updateUIState()}catch(e){}}};</script>
+<script src="stampcard.js"></script>
 </body>
 </html>

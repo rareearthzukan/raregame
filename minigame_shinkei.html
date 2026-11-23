@@ -426,15 +426,28 @@
       document.getElementById('totalMoney').innerText = `+${earnedReward.toLocaleString()} G`;
 
       window.earnedMoney = earnedReward;
+      claimReward();   // 訓練報酬は ゲームが終わった時点で 本編のデータに入れる
+      window.Stamp&&Stamp.report('minigame_play',1,{game:'Shinkei'});   // スタンプカード：ミニゲームをあそんだ
       document.getElementById('resultModal').style.display = 'flex';
     }
 
-    function saveAndReturn() {
-      let gameState = JSON.parse(localStorage.getItem('rareEarthGameState')) || { money: 1500, level: 1, mudStock: 5 };
+    let rewardClaimed = false;
+    function claimReward() {
+      if (rewardClaimed) return; rewardClaimed = true;
+      let gameState = {}; try { gameState = JSON.parse(localStorage.getItem('rareEarthGameState')) || {}; } catch (e) {}
+      if (gameState.money == null) gameState.money = 1500;
+      if (gameState.level == null) gameState.level = 1;
+      if (gameState.mudStock == null) gameState.mudStock = 5;
       gameState.money += (window.earnedMoney || 0);
       localStorage.setItem('rareEarthGameState', JSON.stringify(gameState));
+    }
+
+    function saveAndReturn() {
+      claimReward();   // （念のため。終了時に入れてあれば何もしない）
       location.href = 'map.html';
     }
   </script>
+<script>window.STAMP_OPTS={button:false};</script>
+<script src="stampcard.js"></script>
 </body>
 </html>

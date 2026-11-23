@@ -902,6 +902,7 @@
     gameActive = false;
     clearSelection();
     SND.stopBgm();
+    window.Stamp&&Stamp.report('minigame_play',1,{game:'Tm'});   // スタンプカード：ミニゲームをあそんだ
 
     if (isSuccess) {
       // 全員でお祝いしてから結果画面へ
@@ -995,5 +996,7 @@
   }
 </script>
 
+<script>window.STAMP_OPTS={button:false};</script>
+<script src="stampcard.js"></script>
 </body>
 </html>
