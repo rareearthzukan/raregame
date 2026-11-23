@@ -140,7 +140,7 @@ document.querySelectorAll('.b[data-s]').forEach(b=>b.classList.toggle('on',b.dat
 function attack(){if(S.mode!=='play'||!S.cfg||!S.cfg.boss||S.intro>0||S.wait>0||S.cd>0)return;S.cd=.9;S.atk=.55;setShape('R');SFX.beam();S.beams.push({y:SY-R*3});burst(SX,SY-R*3,'#bef264',16,160)}
 function pop(t,x,y,c='#fff'){S.pop.push({t,x,y,c,l:1})}
 function burst(x,y,c,n,sp){for(let i=0;i<n;i++){const a=Math.random()*6.28,v=Math.random()*sp+sp*.3;S.ps.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,l:1,c,s:Math.random()*4+2})}}
-function end(win){S.mode='res';const n=win?4:S.cleared,g=win?n*200+Math.floor(S.score/20)+1000:0,tb=win?20:0;
+function end(win){S.mode='res';window.Stamp&&Stamp.report('minigame_play',1,{game:'Tb'});const n=win?4:S.cleared,g=win?n*200+Math.floor(S.score/20)+1000:0,tb=win?20:0;
 if(win)try{const k='rareEarthGameState',d=JSON.parse(localStorage.getItem(k)||'null')||{miles:500,level:1,money:1500,mudStock:5,products:{},homeFurnishings:[],placedItems:[]};d.money=(d.money||0)+g;d.elements=d.elements||{};d.elements.Tb=(d.elements.Tb||0)+tb;localStorage.setItem(k,JSON.stringify(d))}catch(e){}
 win?SFX.clear():SFX.lose();
 setTimeout(()=>{$('again').style.display=win?'none':'';$('why2').style.display=win?'':'none';document.querySelector('.rw').style.display=win?'':'none';$('rnote').style.display=win?'':'none';$('rt').textContent=win?'🎉 ステージクリア！':'ざんねん… もういちど！';$('rd').innerHTML='スコア <b style="color:#fde047">'+S.score+'</b>　クリア '+n+'/4 ステージ'+(win?'<br>ジャミング怪獣を ひかりの まほうで やっつけた！<br>磁歪マスターだね！':'<br>クリアできなかったので ごほうびは ないよ…<br>もういちど ちょうせん！');$('rg').textContent=g;$('rb').textContent=tb;show('res')},win?900:1100)}
@@ -226,5 +226,7 @@ $('atk').addEventListener('pointerdown',e=>{e.preventDefault();au();attack()});
 addEventListener('keydown',e=>{const k=e.key;if(k==='f'||k==='j'||k==='Enter'){attack();return}if(k==='ArrowUp'||k==='w')setShape('T');else if(k==='ArrowDown'||k==='s')setShape('W');else if(k==='ArrowLeft'||k==='ArrowRight'||k==='c')setShape(S.cfg&&S.cfg.small?'S':'R');else if(k===' '||k==='a'||k==='d')setShape('R')});
 $('ctl').style.display='none';
 </script>
+<script>window.STAMP_OPTS={button:false};</script>
+<script src="stampcard.js"></script>
 </body>
 </html>
